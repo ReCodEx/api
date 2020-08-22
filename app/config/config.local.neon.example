@@ -2,6 +2,9 @@ parameters:
   api:
     address: https://your.recodex.domain/api
 
+  webapp:
+    address: https://recodex.mff.cuni.cz/en
+
   accessManager:
     issuer: https://your.recodex.domain
     audience: https://your.recodex.domain
@@ -23,6 +26,9 @@ parameters:
   monitor:
     address: wss://your.recodex.domain:443/ws
 
+  localRegistration:
+    enabled: false  # set to true if you want to permit simple local registration
+
   CAS:
     options:
       ldap:
@@ -31,22 +37,12 @@ parameters:
         baseUri: "https://your.ldap.server/cas/"
 
   emails:
-    apiUrl: https://your.recodex.domain/api
     footerUrl: https://your.recodex.domain
     from: "ReCodEx <noreply@your.recodex.domain>"
+    defaultAdminTo: "Administrator <admin@example.com>"
     #debugMode: true  # in debug mode, no messages are sent via SMPT (you should also active archiving)
     #archivingDir: "%appDir%/../log/email-debug"  # a directory where copies of all emails sent are stored (in text files)
-
-  failures:
-    emails:
-      to: "Administrator <admin@example.com>"
-
-  forgottenPassword:
-    redirectUrl: "https://your.recodex.domain/forgotten-password/change"
-
-  emailVerification:
-    redirectUrl: "https://your.recodex.domain/email-verification"
-
+    
   mail:
     host: "your.smtp.forwarding.server"
     clientHost: your.recodex.domain
@@ -59,6 +55,12 @@ parameters:
         verify_peer: false
         verify_peer_name: false
         allow_self_signed: true
+
+  removeInactiveUsers:
+    # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).
+    # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
+    threshold: "2 years"
+
 
 # The most important part - a database system connection
 doctrine:

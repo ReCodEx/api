@@ -7,53 +7,61 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
 
-class ExternalLogins extends BaseRepository {
+class ExternalLogins extends BaseRepository
+{
 
-  public function __construct(EntityManager $em) {
-    parent::__construct($em, ExternalLogin::class);
-  }
-
-  /**
-   * @param string $authService
-   * @param string $externalId
-   * @return User|null
-   */
-  public function getUser($authService, $externalId) {
-    $login = $this->findOneBy([
-      "authService" => $authService,
-      "externalId" => $externalId
-    ]);
-
-    if ($login) {
-      return $login->getUser();
+    public function __construct(EntityManager $em)
+    {
+        parent::__construct($em, ExternalLogin::class);
     }
 
-    return null;
-  }
+    /**
+     * @param string $authService
+     * @param string $externalId
+     * @return User|null
+     */
+    public function getUser($authService, $externalId)
+    {
+        $login = $this->findOneBy(
+            [
+                "authService" => $authService,
+                "externalId" => $externalId
+            ]
+        );
 
-  /**
-   * @param User $user
-   * @param string $authService
-   * @return ExternalLogin|null
-   */
-  public function findByUser(User $user, string $authService) {
-    return $this->findOneBy([
-      'authService' => $authService,
-      'user' => $user
-    ]);
-  }
+        if ($login) {
+            return $login->getUser();
+        }
 
-  /**
-   * Connect the user account with the data received from the authentication service server.
-   * @param IExternalLoginService $service
-   * @param User $user
-   * @param string $externalId
-   * @return ExternalLogin
-   */
-  public function connect(IExternalLoginService $service, User $user, string $externalId): ExternalLogin {
-    $externalLogin = new ExternalLogin($user, $service->getServiceId(), $externalId);
-    $this->persist($externalLogin);
-    return $externalLogin;
-  }
+        return null;
+    }
 
+    /**
+     * @param User $user
+     * @param string $authService
+     * @return ExternalLogin|null
+     */
+    public function findByUser(User $user, string $authService)
+    {
+        return $this->findOneBy(
+            [
+                'authService' => $authService,
+                'user' => $user
+            ]
+        );
+    }
+
+    /**
+     * Connect the user account with the data received from the authentication service server.
+     * @param IExternalLoginService $service
+     * @param User $user
+     * @param string $externalId
+     * @return ExternalLogin
+     */
+    public function connect(IExternalLoginService $service, User $user, string $externalId): ExternalLogin
+    {
+        $externalLogin = new ExternalLogin($user, $service->getServiceId(), $externalId);
+        $this->persist($externalLogin);
+        return $externalLogin;
+    }
 }

@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Model\Entity;
+
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
@@ -12,31 +14,32 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  */
 abstract class LocalizedEntity
 {
-  use MagicAccessors;
+    use MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\Column(type="datetime")
-  */
-  protected $createdAt;
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $createdAt;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $locale;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $locale;
 
-  public function __construct(string $locale) {
-    $this->locale = $locale;
-    $this->createdAt = new DateTime();
-  }
+    public function __construct(string $locale)
+    {
+        $this->locale = $locale;
+        $this->createdAt = new DateTime();
+    }
 
-  public abstract function equals(LocalizedEntity $entity): bool;
+    abstract public function equals(LocalizedEntity $entity): bool;
 
-  public abstract function setCreatedFrom(LocalizedEntity $entity);
+    abstract public function setCreatedFrom(LocalizedEntity $entity);
 }

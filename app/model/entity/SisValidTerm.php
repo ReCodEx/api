@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Model\Entity;
+
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
@@ -16,76 +18,81 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method DateTime|null getAdvertiseUntil()
  * @method void setAdvertiseUntil(DateTime|null $advertiseUntil)
  */
-class SisValidTerm implements JsonSerializable {
-  use MagicAccessors;
+class SisValidTerm implements JsonSerializable
+{
+    use MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $year;
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $year;
 
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $term;
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $term;
 
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $beginning;
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $beginning;
 
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $end;
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $end;
 
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $advertiseUntil;
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $advertiseUntil;
 
-  public function __construct($year, $term) {
-    $this->year = $year;
-    $this->term = $term;
-  }
-
-  public function isComplete(): bool {
-    return $this->beginning !== null && $this->end !== null;
-  }
-
-  /**
-   * Should courses in the term be advertised to the students by ReCodEx clients?
-   * @param DateTime $now
-   * @return bool
-   */
-  public function isAdvertised(DateTime $now): bool {
-    if (!$this->isComplete()) {
-      return false;
+    public function __construct($year, $term)
+    {
+        $this->year = $year;
+        $this->term = $term;
     }
 
-    $advertiseUntil = $this->advertiseUntil;
-    if ($advertiseUntil === null) {
-      $advertiseUntil = $this->end;
+    public function isComplete(): bool
+    {
+        return $this->beginning !== null && $this->end !== null;
     }
 
-    return $now >= $this->beginning && $now <= $advertiseUntil;
-  }
+    /**
+     * Should courses in the term be advertised to the students by ReCodEx clients?
+     * @param DateTime $now
+     * @return bool
+     */
+    public function isAdvertised(DateTime $now): bool
+    {
+        if (!$this->isComplete()) {
+            return false;
+        }
 
-  function jsonSerialize() {
-    return [
-      'id' => $this->id,
-      'year' => $this->year,
-      'term' => $this->term,
-      'beginning' => $this->beginning ? $this->beginning->getTimestamp() : null,
-      'end' => $this->end ? $this->end->getTimestamp(): null,
-      'advertiseUntil' => $this->advertiseUntil ? $this->advertiseUntil->getTimestamp() : null
-    ];
-  }
+        $advertiseUntil = $this->advertiseUntil;
+        if ($advertiseUntil === null) {
+            $advertiseUntil = $this->end;
+        }
+
+        return $now >= $this->beginning && $now <= $advertiseUntil;
+    }
+
+    function jsonSerialize()
+    {
+        return [
+            'id' => $this->id,
+            'year' => $this->year,
+            'term' => $this->term,
+            'beginning' => $this->beginning ? $this->beginning->getTimestamp() : null,
+            'end' => $this->end ? $this->end->getTimestamp() : null,
+            'advertiseUntil' => $this->advertiseUntil ? $this->advertiseUntil->getTimestamp() : null
+        ];
+    }
 }

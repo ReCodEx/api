@@ -22,75 +22,95 @@ use Tester\Assert;
 class TestEnvironmentConfigValidator extends Tester\TestCase
 {
 
-  private static $table = [
-    [
-      "name" => "input",
-      "type" => "remote-file",
-      "value" => "input.name"
-    ],
-    [
-      "name" => "output",
-      "type" => "file",
-      "value" => "output.name"
-    ]
-  ];
+    private static $table = [
+        [
+            "name" => "input",
+            "type" => "remote-file",
+            "value" => "input.name"
+        ],
+        [
+            "name" => "output",
+            "type" => "file",
+            "value" => "output.name"
+        ]
+    ];
 
-  /** @var Loader */
-  private $loader;
-  /** @var EnvironmentConfigValidator */
-  private $validator;
+    /** @var Loader */
+    private $loader;
+    /** @var EnvironmentConfigValidator */
+    private $validator;
 
-  protected function setUp() {
-    $this->loader = new Loader(new BoxService());
-    $this->validator = new EnvironmentConfigValidator();
-  }
+    protected function setUp()
+    {
+        $this->loader = new Loader(new BoxService());
+        $this->validator = new EnvironmentConfigValidator();
+    }
 
 
-  public function testEmpty() {
-    $exercise = $this->createExercise();
-    $table = new VariablesTable();
+    public function testEmpty()
+    {
+        $exercise = $this->createExercise();
+        $table = new VariablesTable();
 
-    Assert::noError(function () use ($exercise, $table) {
-      $this->validator->validate($exercise, $table);
-    });
-  }
+        Assert::noError(
+            function () use ($exercise, $table) {
+                $this->validator->validate($exercise, $table);
+            }
+        );
+    }
 
-  public function testCannotFindExerciseFile() {
-    $exercise = $this->createExercise();
-    $table = $this->loader->loadVariablesTable([
-      [
-        "name" => "input",
-        "type" => "remote-file",
-        "value" => "input.wrong.name"
-      ]
-    ]);
+    public function testCannotFindExerciseFile()
+    {
+        $exercise = $this->createExercise();
+        $table = $this->loader->loadVariablesTable(
+            [
+                [
+                    "name" => "input",
+                    "type" => "remote-file",
+                    "value" => "input.wrong.name"
+                ]
+            ]
+        );
 
-    Assert::exception(function () use ($exercise, $table) {
-      $this->validator->validate($exercise, $table);
-    }, ExerciseConfigException::class, "Exercise configuration error - Remote file 'input.wrong.name' not found in exercise files.");
-  }
+        Assert::exception(
+            function () use ($exercise, $table) {
+                $this->validator->validate($exercise, $table);
+            },
+            ExerciseConfigException::class,
+            "Exercise configuration error - Remote file 'input.wrong.name' not found in exercise files."
+        );
+    }
 
-  public function testCorrect() {
-    $exercise = $this->createExercise();
-    $table = $this->loader->loadVariablesTable(self::$table);
+    public function testCorrect()
+    {
+        $exercise = $this->createExercise();
+        $table = $this->loader->loadVariablesTable(self::$table);
 
-    Assert::noError(function () use ($exercise, $table) {
-      $this->validator->validate($exercise, $table);
-    });
-  }
+        Assert::noError(
+            function () use ($exercise, $table) {
+                $this->validator->validate($exercise, $table);
+            }
+        );
+    }
 
-  /**
-   * @return Exercise
-   */
-  private function createExercise(): Exercise {
-    $user = new User("", "", "", "", "", "", new Instance());
-    $exercise = Exercise::create($user, new Group("ext", new Instance()));
+    /**
+     * @return Exercise
+     */
+    private function createExercise(): Exercise
+    {
+        $user = new User("", "", "", "", "", "", new Instance());
+        $exercise = Exercise::create($user, new Group("ext", new Instance()));
 
-    $uploadedFile = new UploadedFile("input.name", new DateTime(), 234, $user);
-    SupplementaryExerciseFile::fromUploadedFileAndExercise($uploadedFile, $exercise, "input.hash", "fileserver.path");
+        $uploadedFile = new UploadedFile("input.name", new DateTime(), 234, $user);
+        SupplementaryExerciseFile::fromUploadedFileAndExercise(
+            $uploadedFile,
+            $exercise,
+            "input.hash",
+            "fileserver.path"
+        );
 
-    return $exercise;
-  }
+        return $exercise;
+    }
 
 }
 

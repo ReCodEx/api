@@ -4,6 +4,7 @@ App\Model\Entity\SolutionEvaluation:
         evaluatedAt: "<dateTime()>"
         initFailed: false
         score: 0.95
+        scoreConfig: @weightedTwoTests
         points: 10
         initiationOutputs: ""
         testResults: []
@@ -25,13 +26,38 @@ App\Model\Entity\SolutionFile:
             - "@demoSolution<current()>"
 
 App\Model\Entity\AssignmentSolution:
-    "solution{1..2}":
+    "solution1":
         __construct:
             createSolution:
                 - "Random note"
                 - @demoAssignment
-                - "@demoSolution<current()>"
+                - "@demoSolution1"
         bonusPoints: 1
+        lastSubmission: @submission6
+    "solution2":
+        __construct:
+            createSolution:
+                - "Random note"
+                - @demoAssignment
+                - "@demoSolution2"
+        bonusPoints: 1
+        lastSubmission: @submission4
+
+App\Model\Entity\SubmissionFailure:
+    "resolvedSubmissionFailure":
+        __construct:
+            create:
+                - evaluation_failure
+                - Things went south
+                - "<dateTime()>"
+        resolve:
+            - Got it!
+    unresolvedSubmissionFailure:
+        __construct:
+            create:
+                - evaluation_failure
+                - Things went south
+                - "<dateTime()>"
 
 App\Model\Entity\AssignmentSolutionSubmission:
     "submission{1..2}":
@@ -48,21 +74,17 @@ App\Model\Entity\AssignmentSolutionSubmission:
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
-
-App\Model\Entity\SubmissionFailure:
-    "resolvedSubmissionFailure":
+    "submission5":
         __construct:
-            forSubmission:
-                - evaluation_failure
-                - Things went south
-                - @submission1
-                - "<dateTime()>"
-        resolve:
-            - Got it!
-    unresolvedSubmissionFailure:
+            - "@solution1"
+            - "jobConfigPath"
+            - @submitUser1
+        resultsUrl: localhost/results/hehe.zip
+        failure: "@resolvedSubmissionFailure"
+    "submission6":
         __construct:
-            forSubmission:
-                - evaluation_failure
-                - Things went south
-                - @submission1
-                - "<dateTime()>"
+            - "@solution1"
+            - "jobConfigPath"
+            - @submitUser1
+        resultsUrl: localhost/results/hehe.zip
+        failure: "@unresolvedSubmissionFailure"

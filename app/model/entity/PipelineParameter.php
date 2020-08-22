@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -11,36 +12,39 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @ORM\DiscriminatorColumn("discriminator")
  * @method string getName()
  */
-abstract class PipelineParameter implements JsonSerializable {
-  use MagicAccessors;
+abstract class PipelineParameter implements JsonSerializable
+{
+    use MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\ManyToOne(targetEntity="Pipeline", inversedBy="parameters")
-   */
-  protected $pipeline;
+    /**
+     * @ORM\ManyToOne(targetEntity="Pipeline", inversedBy="parameters")
+     */
+    protected $pipeline;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $name;
 
-  public function __construct(Pipeline $pipeline, string $name) {
-    $this->pipeline = $pipeline;
-    $this->name = $name;
-  }
+    public function __construct(Pipeline $pipeline, string $name)
+    {
+        $this->pipeline = $pipeline;
+        $this->name = $name;
+    }
 
-  abstract public function getValue();
+    abstract public function getValue();
 
-  abstract public function setValue($value);
+    abstract public function setValue($value);
 
-  public function jsonSerialize() {
-    return $this->getValue();
-  }
+    public function jsonSerialize()
+    {
+        return $this->getValue();
+    }
 }

@@ -9,84 +9,90 @@ use App\Model\Repository\Pipelines;
 /**
  * Cache for pipelines and parsed pipeline configurations.
  */
-class PipelinesCache {
+class PipelinesCache
+{
 
-  /**
-   * @var Loader
-   */
-  private $loader;
+    /**
+     * @var Loader
+     */
+    private $loader;
 
-  /**
-   * @var Pipelines
-   */
-  private $pipelines;
+    /**
+     * @var Pipelines
+     */
+    private $pipelines;
 
-  /**
-   * @var array
-   */
-  private $cache = [];
+    /**
+     * @var array
+     */
+    private $cache = [];
 
-  /**
-   * Constructor
-   * @param Loader $loader
-   * @param Pipelines $pipelines
-   */
-  public function __construct(Loader $loader, Pipelines $pipelines) {
-    $this->loader = $loader;
-    $this->pipelines = $pipelines;
-  }
-
-
-  /**
-   * Load pipeline from database based on given identification.
-   * @param string $id
-   * @throws NotFoundException
-   * @throws ExerciseConfigException
-   */
-  private function loadPipeline(string $id) {
-    if (array_key_exists($id, $this->cache)) {
-      return;
+    /**
+     * Constructor
+     * @param Loader $loader
+     * @param Pipelines $pipelines
+     */
+    public function __construct(Loader $loader, Pipelines $pipelines)
+    {
+        $this->loader = $loader;
+        $this->pipelines = $pipelines;
     }
 
-    $pipelineEntity = $this->pipelines->findOrThrow($id);
-    $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-    $this->cache[$id] = [ $pipelineEntity, $pipelineConfig ];
-  }
 
-  /**
-   * Get pipeline entity for given identification.
-   * @param string $id identification of pipeline entity
-   * @return \App\Model\Entity\Pipeline
-   * @throws ExerciseConfigException
-   * @throws NotFoundException
-   */
-  public function getPipeline(string $id): \App\Model\Entity\Pipeline {
-    $this->loadPipeline($id);
-    return $this->cache[$id][0];
-  }
+    /**
+     * Load pipeline from database based on given identification.
+     * @param string $id
+     * @throws NotFoundException
+     * @throws ExerciseConfigException
+     */
+    private function loadPipeline(string $id)
+    {
+        if (array_key_exists($id, $this->cache)) {
+            return;
+        }
 
-  /**
-   * Get pipeline configuration structure for given pipeline identification.
-   * @param string $id identification of pipeline entity
-   * @return Pipeline
-   * @throws ExerciseConfigException
-   * @throws NotFoundException
-   */
-  public function getPipelineConfig(string $id): Pipeline {
-    $this->loadPipeline($id);
-    return $this->cache[$id][1];
-  }
+        $pipelineEntity = $this->pipelines->findOrThrow($id);
+        $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+        $this->cache[$id] = [$pipelineEntity, $pipelineConfig];
+    }
 
-  /**
-   * Get newly created pipeline configuration and not the cached one.
-   * @param string $id identification of pipeline entity
-   * @return Pipeline
-   * @throws ExerciseConfigException
-   * @throws NotFoundException
-   */
-  public function getNewPipelineConfig(string $id): Pipeline {
-    $this->loadPipeline($id);
-    $pipelineEntity = $this->cache[$id][0];
-    return $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-  }
+    /**
+     * Get pipeline entity for given identification.
+     * @param string $id identification of pipeline entity
+     * @return \App\Model\Entity\Pipeline
+     * @throws ExerciseConfigException
+     * @throws NotFoundException
+     */
+    public function getPipeline(string $id): \App\Model\Entity\Pipeline
+    {
+        $this->loadPipeline($id);
+        return $this->cache[$id][0];
+    }
+
+    /**
+     * Get pipeline configuration structure for given pipeline identification.
+     * @param string $id identification of pipeline entity
+     * @return Pipeline
+     * @throws ExerciseConfigException
+     * @throws NotFoundException
+     */
+    public function getPipelineConfig(string $id): Pipeline
+    {
+        $this->loadPipeline($id);
+        return $this->cache[$id][1];
+    }
+
+    /**
+     * Get newly created pipeline configuration and not the cached one.
+     * @param string $id identification of pipeline entity
+     * @return Pipeline
+     * @throws ExerciseConfigException
+     * @throws NotFoundException
+     */
+    public function getNewPipelineConfig(string $id): Pipeline
+    {
+        $this->loadPipeline($id);
+        $pipelineEntity = $this->cache[$id][0];
+        return $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+    }
 }

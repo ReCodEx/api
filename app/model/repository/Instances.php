@@ -8,9 +8,11 @@ use App\Model\Entity\Instance;
 /**
  * @method Instance findOrThrow($id)
  */
-class Instances extends BaseSoftDeleteRepository {
+class Instances extends BaseSoftDeleteRepository
+{
 
-  public function __construct(EntityManager $em) {
-    parent::__construct($em, Instance::class);
-  }
+    public function __construct(EntityManager $em)
+    {
+        parent::__construct($em, Instance::class);
+    }
 }

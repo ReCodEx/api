@@ -1,4 +1,5 @@
 <?php
+
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
@@ -27,537 +28,596 @@ use Nette\Http;
  */
 class TestAssignmentsPresenter extends Tester\TestCase
 {
-  /** @var AssignmentsPresenter */
-  protected $presenter;
+    /** @var AssignmentsPresenter */
+    protected $presenter;
 
-  /** @var Kdyby\Doctrine\EntityManager */
-  protected $em;
+    /** @var Kdyby\Doctrine\EntityManager */
+    protected $em;
 
-  /** @var  Nette\DI\Container */
-  protected $container;
+    /** @var  Nette\DI\Container */
+    protected $container;
 
-  /** @var App\Model\Repository\Assignments */
-  protected $assignments;
+    /** @var App\Model\Repository\Assignments */
+    protected $assignments;
 
-  /** @var Nette\Security\User */
-  private $user;
+    /** @var Nette\Security\User */
+    private $user;
 
-  /** @var RuntimeEnvironments */
-  private $runtimeEnvironments;
+    /** @var RuntimeEnvironments */
+    private $runtimeEnvironments;
 
-  /** @var HardwareGroups */
-  private $hardwareGroups;
+    /** @var HardwareGroups */
+    private $hardwareGroups;
 
-  /** @var AssignmentSolutionViewFactory */
-  private $assignmentSolutionViewFactory;
+    /** @var AssignmentSolutionViewFactory */
+    private $assignmentSolutionViewFactory;
 
-  /** @var Http\Request */
-  private $originalHttpRequest;
+    /** @var Http\Request */
+    private $originalHttpRequest;
 
-  /** @var Http\Request|Mockery\Mock */
-  private $mockHttpRequest;
+    /** @var Http\Request|Mockery\Mock */
+    private $mockHttpRequest;
 
-  public function __construct()
-  {
-    global $container;
-    $this->container = $container;
-    $this->em = PresenterTestHelper::getEntityManager($container);
-    $this->user = $container->getByType(\Nette\Security\User::class);
-    $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
-    $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);
-    $this->hardwareGroups = $container->getByType(HardwareGroups::class);
-    $this->assignmentSolutionViewFactory = $container->getByType(AssignmentSolutionViewFactory::class);
-  }
-
-  protected function setUp()
-  {
-    PresenterTestHelper::fillDatabase($this->container);
-
-    $this->originalHttpRequest = $this->container->getByType(Http\Request::class);
-    $this->mockHttpRequest = Mockery::mock($this->originalHttpRequest);
-    PresenterTestHelper::replaceService($this->container, $this->mockHttpRequest, Http\Request::class);
-
-    $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
-  }
-
-  protected function tearDown()
-  {
-    Mockery::close();
-
-    if ($this->user->isLoggedIn()) {
-      $this->user->logout(true);
+    public function __construct()
+    {
+        global $container;
+        $this->container = $container;
+        $this->em = PresenterTestHelper::getEntityManager($container);
+        $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
+        $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);
+        $this->hardwareGroups = $container->getByType(HardwareGroups::class);
+        $this->assignmentSolutionViewFactory = $container->getByType(AssignmentSolutionViewFactory::class);
     }
-  }
 
-  public function testDetail()
-  {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    protected function setUp()
+    {
+        PresenterTestHelper::fillDatabase($this->container);
 
-    $assignments = $this->assignments->findAll();
-    $assignment = array_pop($assignments);
+        $this->originalHttpRequest = $this->container->getByType(Http\Request::class);
+        $this->mockHttpRequest = Mockery::mock($this->originalHttpRequest);
+        PresenterTestHelper::replaceService($this->container, $this->mockHttpRequest, Http\Request::class);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'detail', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+    }
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal($assignment->getId(), $result['payload']["id"]);
-  }
+    protected function tearDown()
+    {
+        Mockery::close();
 
-  public function testUpdateDetail()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        if ($this->user->isLoggedIn()) {
+            $this->user->logout(true);
+        }
+    }
 
-    $assignments = $this->assignments->findAll();
-    $assignment = array_pop($assignments);
-    $assignment->setIsPublic(false); // for testing of notification emails
+    public function testDetail()
+    {
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
-    $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
-    $mockAssignmentEmailsSender->shouldReceive("assignmentCreated")->with($assignment)->andReturn(true)->once();
-    $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
+        $assignments = $this->assignments->findAll();
+        $assignment = array_pop($assignments);
 
-    $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
-    $mockEvaluations->shouldReceive("flush")->once();
-    $this->presenter->solutionEvaluations = $mockEvaluations;
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'GET',
+            ['action' => 'detail', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $isPublic = true;
-    $localizedTexts = [
-      [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
-    ];
-    $firstDeadline = (new \DateTime())->getTimestamp();
-    $maxPointsBeforeFirstDeadline = 123;
-    $submissionsCountLimit = 321;
-    $allowSecondDeadline = true;
-    $canViewLimitRatios = false;
-    $secondDeadline = (new \DateTime())->getTimestamp();
-    $maxPointsBeforeSecondDeadline = 543;
-    $isBonus = true;
-    $pointsPercentualThreshold = 90;
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal($assignment->getId(), $result['payload']["id"]);
+    }
 
-    $request = new Nette\Application\Request('V1:Assignments', 'POST',
-      ['action' => 'updateDetail', 'id' => $assignment->getId()],
-      [
-        'isPublic' => $isPublic,
-        'version' => 1,
-        'localizedTexts' => $localizedTexts,
-        'firstDeadline' => $firstDeadline,
-        'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
-        'submissionsCountLimit' => $submissionsCountLimit,
-        'allowSecondDeadline' => $allowSecondDeadline,
-        'canViewLimitRatios' => $canViewLimitRatios,
-        'secondDeadline' => $secondDeadline,
-        'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
-        'isBonus' => $isBonus,
-        'pointsPercentualThreshold' => $pointsPercentualThreshold,
-      ]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+    public function testUpdateDetail()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
+        $assignments = $this->assignments->findAll();
+        $assignment = array_pop($assignments);
+        $assignment->setIsPublic(false); // for testing of notification emails
 
-    // check updated assignment
-    /** @var Assignment $updatedAssignment */
-    $updatedAssignment = $result['payload'];
-    Assert::equal($isPublic, $updatedAssignment["isPublic"]);
-    Assert::equal($firstDeadline, $updatedAssignment["firstDeadline"]);
-    Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment["maxPointsBeforeFirstDeadline"]);
-    Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
-    Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
-    Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
-    Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
-    Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
-    Assert::equal($isBonus, $updatedAssignment["isBonus"]);
-    Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment["pointsPercentualThreshold"]);
+        /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
+        $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
+        $mockAssignmentEmailsSender->shouldReceive("assignmentCreated")->with($assignment)->andReturn(true)->once();
+        $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
 
-    // check localized texts
-    Assert::count(1, $updatedAssignment["localizedTexts"]);
-    $localized = current($localizedTexts);
-    $updatedLocalized = $updatedAssignment["localizedTexts"][0];
-    Assert::equal($updatedLocalized["locale"], $localized["locale"]);
-    Assert::equal($updatedLocalized["text"], $localized["text"]);
-  }
+        $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
+        $mockEvaluations->shouldReceive("flush")->once();
+        $this->presenter->solutionEvaluations = $mockEvaluations;
 
-  public function testUpdateDetailWithoutNotifications()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $isPublic = true;
+        $localizedTexts = [
+            ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+        ];
+        $firstDeadline = (new \DateTime())->getTimestamp();
+        $maxPointsBeforeFirstDeadline = 123;
+        $submissionsCountLimit = 32;
+        $allowSecondDeadline = true;
+        $canViewLimitRatios = false;
+        $canViewJudgeOutputs = true;
+        $secondDeadline = (new \DateTime())->getTimestamp();
+        $maxPointsBeforeSecondDeadline = 543;
+        $visibleFrom = (new \DateTime())->getTimestamp();
+        $isBonus = true;
+        $pointsPercentualThreshold = 90.0;
+        $solutionFilesLimit = 3;
+        $solutionSizeLimit = null;
 
-    $assignments = $this->assignments->findAll();
-    $assignment = array_pop($assignments);
-    $assignment->setIsPublic(false); // for testing of notification emails
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => $isPublic,
+                'version' => 1,
+                'localizedTexts' => $localizedTexts,
+                'firstDeadline' => $firstDeadline,
+                'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
+                'submissionsCountLimit' => $submissionsCountLimit,
+                'allowSecondDeadline' => $allowSecondDeadline,
+                'canViewLimitRatios' => $canViewLimitRatios,
+                'canViewJudgeOutputs' => $canViewJudgeOutputs,
+                'secondDeadline' => $secondDeadline,
+                'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
+                'visibleFrom' => $visibleFrom,
+                'isBonus' => $isBonus,
+                'pointsPercentualThreshold' => $pointsPercentualThreshold,
+                'solutionFilesLimit' => $solutionFilesLimit,
+                'solutionSizeLimit' => $solutionSizeLimit,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
-    $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
-    $mockAssignmentEmailsSender->shouldReceive()->never(); // this is the main assertion of this test (no mail is sent)
-    $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
 
-    $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
-    $mockEvaluations->shouldReceive("flush")->once();
-    $this->presenter->solutionEvaluations = $mockEvaluations;
+        // check updated assignment
+        /** @var Assignment $updatedAssignment */
+        $updatedAssignment = $result['payload'];
+        Assert::equal($isPublic, $updatedAssignment["isPublic"]);
+        Assert::equal($firstDeadline, $updatedAssignment["firstDeadline"]);
+        Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment["maxPointsBeforeFirstDeadline"]);
+        Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
+        Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
+        Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
+        Assert::equal($canViewJudgeOutputs, $updatedAssignment["canViewJudgeOutputs"]);
+        Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
+        Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
+        Assert::equal($visibleFrom, $updatedAssignment["visibleFrom"]);
+        Assert::equal($isBonus, $updatedAssignment["isBonus"]);
+        Assert::equal($pointsPercentualThreshold, $updatedAssignment["pointsPercentualThreshold"]);
+        Assert::equal($solutionFilesLimit, $updatedAssignment['solutionFilesLimit']);
+        Assert::equal($solutionSizeLimit, $updatedAssignment['solutionSizeLimit']);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'POST',
-      ['action' => 'updateDetail', 'id' => $assignment->getId()],
-      [
-        'isPublic' => true,
-        'version' => 1,
-        'sendNotification' => false,
-        'localizedTexts' => [
-          [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
-        ],
-        'firstDeadline' => (new \DateTime())->getTimestamp(),
-        'maxPointsBeforeFirstDeadline' => 42,
-        'submissionsCountLimit' => 10,
-        'allowSecondDeadline' => false,
-        'canViewLimitRatios' => false,
-        'isBonus' => false,
-        'pointsPercentualThreshold' => 50,
-      ]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        // check localized texts
+        Assert::count(1, $updatedAssignment["localizedTexts"]);
+        $localized = current($localizedTexts);
+        $updatedLocalized = $updatedAssignment["localizedTexts"][0];
+        Assert::equal($updatedLocalized["locale"], $localized["locale"]);
+        Assert::equal($updatedLocalized["text"], $localized["text"]);
+    }
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
+    public function testUpdateDetailWithoutNotifications()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    // check updated assignment
-    /** @var Assignment $updatedAssignment */
-    $updatedAssignment = $result['payload'];
-    Assert::true($updatedAssignment["isPublic"]);
-  }
+        $assignments = $this->assignments->findAll();
+        $assignment = array_pop($assignments);
+        $assignment->setIsPublic(false); // for testing of notification emails
 
-  public function testAddStudentHints()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
+        $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
+        $mockAssignmentEmailsSender->shouldReceive()->never(
+        ); // this is the main assertion of this test (no mail is sent)
+        $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
 
-    $assignments = $this->assignments->findAll();
-    /** @var Assignment $assignment */
-    $assignment = array_pop($assignments);
-    $disabledEnv = $assignment->getRuntimeEnvironments()->first();
+        $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
+        $mockEvaluations->shouldReceive("flush")->once();
+        $this->presenter->solutionEvaluations = $mockEvaluations;
 
-    $request = new Nette\Application\Request('V1:Assignments', 'POST',
-      ['action' => 'updateDetail', 'id' => $assignment->getId()],
-      [
-        'isPublic' => true,
-        'version' => 1,
-        'localizedTexts' => [
-          ["locale" => "locA", "text" => "descA", "name" => "nameA", "studentHint" => "Try hard"]
-        ],
-        'firstDeadline' => (new \DateTime())->getTimestamp(),
-        'maxPointsBeforeFirstDeadline' => 123,
-        'submissionsCountLimit' => 321,
-        'allowSecondDeadline' => true,
-        'canViewLimitRatios' => false,
-        'secondDeadline' => (new \DateTime())->getTimestamp(),
-        'maxPointsBeforeSecondDeadline' => 543,
-        'isBonus' => true,
-        'pointsPercentualThreshold' => 90,
-        'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
-      ]
-    );
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => true,
+                'version' => 1,
+                'sendNotification' => false,
+                'localizedTexts' => [
+                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+                ],
+                'firstDeadline' => (new \DateTime())->getTimestamp(),
+                'maxPointsBeforeFirstDeadline' => 42,
+                'submissionsCountLimit' => 10,
+                'allowSecondDeadline' => false,
+                'canViewLimitRatios' => false,
+                'canViewJudgeOutputs' => false,
+                'isBonus' => false,
+                'pointsPercentualThreshold' => 50.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => 42,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $response = $this->presenter->run($request);
-    $updatedAssignment = PresenterTestHelper::extractPayload($response);
-    Assert::count(1, $updatedAssignment["localizedTexts"]);
-    Assert::equal("locA", $updatedAssignment["localizedTexts"][0]["locale"]);
-    Assert::equal("Try hard", $updatedAssignment["localizedTexts"][0]["studentHint"]);
-  }
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
 
-  public function testDisableRuntimeEnvironments()
-  {
-    $this->mockHttpRequest->shouldReceive("getHeader")->andReturn("application/json");
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        // check updated assignment
+        /** @var Assignment $updatedAssignment */
+        $updatedAssignment = $result['payload'];
+        Assert::true($updatedAssignment["isPublic"]);
+        Assert::equal(null, $updatedAssignment["solutionFilesLimit"]);
+        Assert::equal(42, $updatedAssignment["solutionSizeLimit"]);
+    }
 
-    $assignments = $this->assignments->findAll();
-    /** @var Assignment $assignment */
-    $assignment = array_pop($assignments);
-    $disabledEnv = $assignment->getRuntimeEnvironments()->first();
+    public function testAddStudentHints()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'POST',
-      ['action' => 'updateDetail', 'id' => $assignment->getId()],
-      [
-        'isPublic' => true,
-        'version' => 1,
-        'localizedTexts' => [
-          [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
-        ],
-        'firstDeadline' => (new \DateTime())->getTimestamp(),
-        'maxPointsBeforeFirstDeadline' => 123,
-        'submissionsCountLimit' => 321,
-        'allowSecondDeadline' => true,
-        'canViewLimitRatios' => false,
-        'secondDeadline' => (new \DateTime())->getTimestamp(),
-        'maxPointsBeforeSecondDeadline' => 543,
-        'isBonus' => true,
-        'pointsPercentualThreshold' => 90,
-        'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
-      ]
-    );
+        $assignments = $this->assignments->findAll();
+        /** @var Assignment $assignment */
+        $assignment = array_pop($assignments);
+        $disabledEnv = $assignment->getRuntimeEnvironments()->first();
 
-    $response = $this->presenter->run($request);
-    $updatedAssignment = PresenterTestHelper::extractPayload($response);
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => true,
+                'version' => 1,
+                'localizedTexts' => [
+                    ["locale" => "locA", "text" => "descA", "name" => "nameA", "studentHint" => "Try hard"]
+                ],
+                'firstDeadline' => (new \DateTime())->getTimestamp(),
+                'maxPointsBeforeFirstDeadline' => 123,
+                'submissionsCountLimit' => 32,
+                'allowSecondDeadline' => true,
+                'canViewLimitRatios' => false,
+                'canViewJudgeOutputs' => false,
+                'secondDeadline' => (new \DateTime())->getTimestamp(),
+                'maxPointsBeforeSecondDeadline' => 543,
+                'isBonus' => true,
+                'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => 3,
+                'solutionSizeLimit' => 42,
+                'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
+            ]
+        );
 
-    Assert::same([$disabledEnv->getId()], $updatedAssignment["disabledRuntimeEnvironmentIds"]);
-    Assert::true(in_array($disabledEnv->getId(), $updatedAssignment["runtimeEnvironmentIds"]));
-  }
+        $response = $this->presenter->run($request);
+        $updatedAssignment = PresenterTestHelper::extractPayload($response);
+        Assert::count(1, $updatedAssignment["localizedTexts"]);
+        Assert::equal("locA", $updatedAssignment["localizedTexts"][0]["locale"]);
+        Assert::equal("Try hard", $updatedAssignment["localizedTexts"][0]["studentHint"]);
+    }
 
-  public function testCreateAssignment()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+    public function testDisableRuntimeEnvironments()
+    {
+        $this->mockHttpRequest->shouldReceive("getHeader")->andReturn("application/json");
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $exercise = $this->presenter->exercises->findAll()[0];
-    $group = $this->presenter->groups->findAll()[0];
+        $assignments = $this->assignments->findAll();
+        /** @var Assignment $assignment */
+        $assignment = array_pop($assignments);
+        $disabledEnv = $assignment->getRuntimeEnvironments()->first();
 
-    $request = new Nette\Application\Request(
-      'V1:Assignments',
-      'POST',
-      ['action' => 'create'],
-      ['exerciseId' => $exercise->id, 'groupId' => $group->id]
-    );
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => true,
+                'version' => 1,
+                'localizedTexts' => [
+                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+                ],
+                'firstDeadline' => (new \DateTime())->getTimestamp(),
+                'maxPointsBeforeFirstDeadline' => 123,
+                'submissionsCountLimit' => 32,
+                'allowSecondDeadline' => true,
+                'canViewLimitRatios' => false,
+                'canViewJudgeOutputs' => false,
+                'secondDeadline' => (new \DateTime())->getTimestamp(),
+                'maxPointsBeforeSecondDeadline' => 543,
+                'isBonus' => true,
+                'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => null,
+                'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
+            ]
+        );
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $response = $this->presenter->run($request);
+        $updatedAssignment = PresenterTestHelper::extractPayload($response);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
+        Assert::same([$disabledEnv->getId()], $updatedAssignment["disabledRuntimeEnvironmentIds"]);
+        Assert::true(in_array($disabledEnv->getId(), $updatedAssignment["runtimeEnvironmentIds"]));
+    }
 
-    /** @var AssignmentViewFactory $viewFactory */
-    $viewFactory = $this->container->getByType(AssignmentViewFactory::class);
+    public function testCreateAssignment()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    // Make sure the assignment was persisted
-    Assert::same(
-      $viewFactory->getAssignment($this->presenter->assignments->findOneBy(['id' => $result['payload']["id"]])),
-      $result['payload']
-    );
-  }
+        $exercise = $this->presenter->exercises->findAll()[0];
+        $group = $this->presenter->groups->findAll()[0];
 
-  public function testCreateAssignmentFromLockedExercise()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'create'],
+            ['exerciseId' => $exercise->id, 'groupId' => $group->id]
+        );
 
-    /** @var Exercise $exercise */
-    $exercise = $this->presenter->exercises->findAll()[0];
-    $group = $this->presenter->groups->findAll()[0];
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $exercise->setLocked(true);
-    $this->presenter->exercises->flush();
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
 
-    $request = new Nette\Application\Request(
-      'V1:Assignments',
-      'POST',
-      ['action' => 'create'],
-      ['exerciseId' => $exercise->id, 'groupId' => $group->id]
-    );
+        /** @var AssignmentViewFactory $viewFactory */
+        $viewFactory = $this->container->getByType(AssignmentViewFactory::class);
 
-    Assert::exception(function () use ($request) {
-      $this->presenter->run($request);
-    }, App\Exceptions\BadRequestException::class);
-  }
+        // Make sure the assignment was persisted
+        Assert::same(
+            $viewFactory->getAssignment($this->presenter->assignments->findOneBy(['id' => $result['payload']["id"]])),
+            $result['payload']
+        );
+    }
 
-  public function testCreateAssignmentInOrganizationalGroup()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+    public function testCreateAssignmentFromLockedExercise()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var Exercise $exercise */
-    $exercise = $this->presenter->exercises->findAll()[0];
-    /** @var Group $group */
-    $group = $this->presenter->groups->findAll()[0];
+        /** @var Exercise $exercise */
+        $exercise = $this->presenter->exercises->findAll()[0];
+        $group = $this->presenter->groups->findAll()[0];
 
-    $group->setOrganizational(true);
-    $this->presenter->groups->flush();
+        $exercise->setLocked(true);
+        $this->presenter->exercises->flush();
 
-    $request = new Nette\Application\Request(
-      'V1:Assignments',
-      'POST',
-      ['action' => 'create'],
-      ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
-    );
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'create'],
+            ['exerciseId' => $exercise->id, 'groupId' => $group->id]
+        );
 
-    Assert::exception(function () use ($request) {
-      $this->presenter->run($request);
-    }, App\Exceptions\BadRequestException::class);
-  }
+        Assert::exception(
+            function () use ($request) {
+                $this->presenter->run($request);
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
 
-  public function testSyncWithExercise()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $user = PresenterTestHelper::getUser($this->container);
+    public function testCreateAssignmentInOrganizationalGroup()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var RuntimeEnvironment $environment */
-    $environment = $this->runtimeEnvironments->findAll()[0];
+        /** @var Exercise $exercise */
+        $exercise = $this->presenter->exercises->findAll()[0];
+        /** @var Group $group */
+        $group = $this->presenter->groups->findAll()[0];
 
-    /** @var HardwareGroup $hwGroup */
-    $hwGroup = $this->hardwareGroups->findAll()[0];
+        $group->setOrganizational(true);
+        $this->presenter->groups->flush();
 
-    /** @var Group $group */
-    $group = $this->presenter->groups->findAll()[0];
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'create'],
+            ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
+        );
 
-    $limits = "
+        Assert::exception(
+            function () use ($request) {
+                $this->presenter->run($request);
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testSyncWithExercise()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = PresenterTestHelper::getUser($this->container);
+
+        /** @var RuntimeEnvironment $environment */
+        $environment = $this->runtimeEnvironments->findAll()[0];
+
+        /** @var HardwareGroup $hwGroup */
+        $hwGroup = $this->hardwareGroups->findAll()[0];
+
+        /** @var Group $group */
+        $group = $this->presenter->groups->findAll()[0];
+
+        $limits = "
       memory: 42,
       wall-time: 33
     ";
 
-    $newLimits = "
+        $newLimits = "
       memory: 33,
       wall-time: 44
     ";
 
-    /** @var Exercise $exercise */
-    $exercise = $this->presenter->exercises->findAll()[0];
-    $exerciseLimits = new ExerciseLimits($environment, $hwGroup, $limits, $user);
-    $this->em->persist($exerciseLimits);
+        /** @var Exercise $exercise */
+        $exercise = $this->presenter->exercises->findAll()[0];
+        $exerciseLimits = new ExerciseLimits($environment, $hwGroup, $limits, $user);
+        $this->em->persist($exerciseLimits);
 
-    $exercise->addExerciseLimits($exerciseLimits);
-    $assignment = Assignment::assignToGroup($exercise, $group);
-    $this->em->persist($assignment);
+        $exercise->addExerciseLimits($exerciseLimits);
+        $assignment = Assignment::assignToGroup($exercise, $group);
+        $this->em->persist($assignment);
 
-    $this->em->flush();
+        $this->em->flush();
 
-    $newExerciseLimits = new ExerciseLimits($environment, $hwGroup, $newLimits, $user);
-    $this->em->persist($newExerciseLimits);
-    $exercise->clearExerciseLimits();
-    $exercise->addExerciseLimits($newExerciseLimits);
+        $newExerciseLimits = new ExerciseLimits($environment, $hwGroup, $newLimits, $user);
+        $this->em->persist($newExerciseLimits);
+        $exercise->clearExerciseLimits();
+        $exercise->addExerciseLimits($newExerciseLimits);
 
-    $this->em->flush();
+        $this->em->flush();
 
-    $request = new Nette\Application\Request('V1:Assignments', 'POST',
-      ['action' => 'syncWithExercise', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-    $payload = $response->getPayload();
-    $data = $payload["payload"];
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'POST',
+            ['action' => 'syncWithExercise', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $payload = $response->getPayload();
+        $data = $payload["payload"];
 
-    Assert::same($assignment->getId(), $data["id"]);
-    Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
-  }
+        Assert::same($assignment->getId(), $data["id"]);
+        Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
+    }
 
-  public function testRemove()
-  {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    public function testRemove()
+    {
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $assignment = current($this->assignments->findAll());
+        $assignment = current($this->assignments->findAll());
 
-    $request = new Nette\Application\Request('V1:Assignments', 'DELETE',
-      ['action' => 'remove', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'DELETE',
+            ['action' => 'remove', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-    Assert::exception(function () use ($assignment) {
-      $this->assignments->findOrThrow($assignment->getId());
-    }, NotFoundException::class);
-  }
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+        Assert::exception(
+            function () use ($assignment) {
+                $this->assignments->findOrThrow($assignment->getId());
+            },
+            NotFoundException::class
+        );
+    }
 
-  public function testSolutions()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+    public function testSolutions()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $solution = current($this->presenter->assignmentSolutions->findAll());
-    $assignment = $solution->getAssignment();
-    $solutions = $assignment->getAssignmentSolutions()->getValues();
-    $solutions = array_map(function (AssignmentSolution $solution) {
-      return $this->assignmentSolutionViewFactory->getSolutionData($solution);
-    }, $solutions);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
+        $assignment = $solution->getAssignment();
+        $solutions = $assignment->getAssignmentSolutions()->getValues();
+        $solutions = array_map(
+            function (AssignmentSolution $solution) {
+                return $this->assignmentSolutionViewFactory->getSolutionData($solution);
+            },
+            $solutions
+        );
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'solutions', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'GET',
+            ['action' => 'solutions', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::count(count($solutions), $result['payload']);
-    Assert::same($solutions, $result['payload']);
-  }
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::count(count($solutions), $result['payload']);
+        Assert::same($solutions, $result['payload']);
+    }
 
-  public function testUserSolutions()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+    public function testUserSolutions()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $solution = current($this->presenter->assignmentSolutions->findAll());
-    $user = $solution->getSolution()->getAuthor();
-    $assignment = $solution->getAssignment();
-    $solutions = $this->presenter->assignmentSolutions->findSolutions($assignment, $user);
-    $solutions = array_map(function (AssignmentSolution $solution) {
-      return $this->assignmentSolutionViewFactory->getSolutionData($solution);
-    }, $solutions);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
+        $user = $solution->getSolution()->getAuthor();
+        $assignment = $solution->getAssignment();
+        $solutions = $this->presenter->assignmentSolutions->findSolutions($assignment, $user);
+        $solutions = array_map(
+            function (AssignmentSolution $solution) {
+                return $this->assignmentSolutionViewFactory->getSolutionData($solution);
+            },
+            $solutions
+        );
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'userSolutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'GET',
+            ['action' => 'userSolutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::count(count($solutions), $result['payload']);
-    Assert::same($solutions, $result['payload']);
-  }
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::count(count($solutions), $result['payload']);
+        Assert::same($solutions, $result['payload']);
+    }
 
-  public function testBestSolution()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+    public function testBestSolution()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $assignments = $this->presenter->assignments->findAll();
+        foreach ($assignments as $assignment) {
+            $assignmentSolutions = $assignment->getAssignmentSolutions()->toArray();
+            foreach ($assignmentSolutions as $baseSolution) {
+                $user = $baseSolution->getSolution()->getAuthor();
+                $best = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
 
-    $assignment = current($this->presenter->assignments->findAll());
-    $user = $assignment->getAssignmentSolutions()->first()->getSolution()->getAuthor();
-    $submission = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
+                $request = new Nette\Application\Request(
+                    'V1:Assignments', 'GET',
+                    ['action' => 'bestSolution', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+                );
+                $response = $this->presenter->run($request);
+                Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'bestSolution', 'id' => $assignment->getId(), 'userId' => $user->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+                $result = $response->getPayload();
+                Assert::equal(200, $result['code']);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
+                $payload = $result['payload'];
+                if ($best) {
+                    Assert::equal($best->getId(), $payload['id']);
+                } else {
+                    Assert::equal(null, $payload);
+                }
+            }
+        }
+    }
 
-    $payload = $result['payload'];
-    Assert::equal($submission->getId(), $payload['id']);
-  }
+    public function testBestSolutions()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-  public function testBestSolutions()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $assignment = current($this->presenter->assignments->findAll());
+        $users = $assignment->getGroup()->getStudents();
 
-    $assignment = current($this->presenter->assignments->findAll());
-    $users = $assignment->getGroup()->getStudents();
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'GET',
+            ['action' => 'bestSolutions', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'bestSolutions', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
+        $payload = $result['payload'];
+        Assert::count(count($users), $payload);
+    }
 
-    $payload = $result['payload'];
-    Assert::count(count($users), $payload);
-  }
+    public function testDownloadSolutionArchive()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $assignment = current($this->presenter->assignments->findAll());
 
-  public function testDownloadSolutionArchive()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $assignment = current($this->presenter->assignments->findAll());
+        $request = new Nette\Application\Request(
+            'V1:Assignments', 'GET',
+            ['action' => 'downloadBestSolutionsArchive', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\ZipFilesResponse::class, $response);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'downloadBestSolutionsArchive', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(App\Responses\ZipFilesResponse::class, $response);
-
-    // Check invariants
-    Assert::equal("assignment-" . $assignment->getId() . '.zip', $response->getName());
-  }
+        // Check invariants
+        Assert::equal("assignment-" . $assignment->getId() . '.zip', $response->getName());
+    }
 
 }
 

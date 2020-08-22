@@ -1,0 +1,10 @@
+{emailSubject}Termín odevzdání úlohy se blíží - {$assignment}{/emailSubject}
+<h3>Termín odevzdání úlohy '{$assignment}' se nezadržitelně blíží</h3>
+<p>
+    Úloha '{$assignment}' zadaná ve skupině '{$group}' má první termín odevzdání
+    nastaven na {$firstDeadline|localizedDate:'cs'}{if $allowSecondDeadline} a druhý termín na
+    {$secondDeadline|localizedDate:'cs'}{/if}.
+    Rádi bychom vás upozornili, že termín odevzdání se blíží, avšak Váš seznam odevzdaných řešení
+    k této úloze dosud zeje prázdnotou.
+    Detail se zadáním úlohy se nachází na následující adrese: <a href="{$link}">{$link}</a>.
+</p>

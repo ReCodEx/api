@@ -2,7 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -10,44 +10,54 @@ use Doctrine\DBAL\Schema\Schema;
  */
 class Version20171013150305 extends AbstractMigration
 {
-  /**
-   * @param Schema $schema
-   */
-  public function up(Schema $schema)
-  {
-    // this up() migration is auto-generated, please modify it to your needs
-    $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+    /**
+     * @param Schema $schema
+     */
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
 
-    $this->addSql('ALTER TABLE test_result ADD used_memory INT NOT NULL, ADD used_time DOUBLE PRECISION NOT NULL');
-  }
-
-  /**
-   * @param Schema $schema
-   */
-  public function postUp(Schema $schema)
-  {
-    $this->connection->beginTransaction();
-
-    $task_results = $this->connection->executeQuery("SELECT test_result_id, used_time, used_memory FROM task_result");
-    foreach ($task_results as $row) {
-      $testResultId = $row["test_result_id"];
-      $usedTime = $row["used_time"];
-      $usedMemory = $row["used_memory"];
-
-      $this->connection->executeQuery("UPDATE test_result SET used_time = $usedTime, used_memory = $usedMemory WHERE id = '$testResultId'");
+        $this->addSql('ALTER TABLE test_result ADD used_memory INT NOT NULL, ADD used_time DOUBLE PRECISION NOT NULL');
     }
 
-    $this->connection->commit();
-  }
+    /**
+     * @param Schema $schema
+     */
+    public function postUp(Schema $schema): void
+    {
+        $this->connection->beginTransaction();
 
-  /**
-   * @param Schema $schema
-   */
-  public function down(Schema $schema)
-  {
-    // this down() migration is auto-generated, please modify it to your needs
-    $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $task_results = $this->connection->executeQuery(
+            "SELECT test_result_id, used_time, used_memory FROM task_result"
+        );
+        foreach ($task_results as $row) {
+            $testResultId = $row["test_result_id"];
+            $usedTime = $row["used_time"];
+            $usedMemory = $row["used_memory"];
 
-    $this->addSql('ALTER TABLE test_result DROP used_memory, DROP used_time');
-  }
+            $this->connection->executeQuery(
+                "UPDATE test_result SET used_time = $usedTime, used_memory = $usedMemory WHERE id = '$testResultId'"
+            );
+        }
+
+        $this->connection->commit();
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
+
+        $this->addSql('ALTER TABLE test_result DROP used_memory, DROP used_time');
+    }
 }

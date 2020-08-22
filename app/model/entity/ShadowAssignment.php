@@ -21,96 +21,102 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class ShadowAssignment extends AssignmentBase
 {
-  use MagicAccessors;
+    use MagicAccessors;
 
-  private function __construct(
-    int $maxPoints,
-    Group $group,
-    bool $isPublic,
-    bool $isBonus = false
-  ) {
-    $this->group = $group;
-    $this->maxPoints = $maxPoints;
-    $this->shadowAssignmentPointsCollection = new ArrayCollection();
-    $this->isPublic = $isPublic;
-    $this->localizedTexts = new ArrayCollection();
-    $this->version = 1;
-    $this->isBonus = $isBonus;
-    $this->createdAt = new \DateTime();
-    $this->updatedAt = new \DateTime();
-  }
+    private function __construct(
+        int $maxPoints,
+        Group $group,
+        bool $isPublic,
+        bool $isBonus = false
+    ) {
+        $this->group = $group;
+        $this->maxPoints = $maxPoints;
+        $this->shadowAssignmentPointsCollection = new ArrayCollection();
+        $this->isPublic = $isPublic;
+        $this->localizedTexts = new ArrayCollection();
+        $this->version = 1;
+        $this->isBonus = $isBonus;
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
 
-  public static function createInGroup(Group $group, $isPublic = false) {
-    $assignment = new self(
-      0,
-      $group,
-      $isPublic,
-      false
-    );
+    public static function createInGroup(Group $group, $isPublic = false)
+    {
+        $assignment = new self(
+            0,
+            $group,
+            $isPublic,
+            false
+        );
 
-    $group->addShadowAssignment($assignment);
-    return $assignment;
-  }
+        $group->addShadowAssignment($assignment);
+        return $assignment;
+    }
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\ManyToMany(targetEntity="LocalizedShadowAssignment", indexBy="locale")
-   * @var Collection|Selectable
-   */
-  protected $localizedTexts;
+    /**
+     * @ORM\ManyToMany(targetEntity="LocalizedShadowAssignment", indexBy="locale")
+     * @var Collection|Selectable
+     */
+    protected $localizedTexts;
 
-  public function getLocalizedTexts(): Collection {
-    return $this->localizedTexts;
-  }
+    public function getLocalizedTexts(): Collection
+    {
+        return $this->localizedTexts;
+    }
 
-  public function addLocalizedText(LocalizedShadowAssignment $localizedText) {
-    $this->localizedTexts->add($localizedText);
-  }
+    public function addLocalizedText(LocalizedShadowAssignment $localizedText)
+    {
+        $this->localizedTexts->add($localizedText);
+    }
 
-  /**
-   * Get localized text based on given locale.
-   * @param string $locale
-   * @return LocalizedExercise|null
-   */
-  public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->localizedTexts->matching($criteria)->first();
-    return $first === false ? null : $first;
-  }
+    /**
+     * Get localized text based on given locale.
+     * @param string $locale
+     * @return LocalizedExercise|null
+     */
+    public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity
+    {
+        $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+        $first = $this->localizedTexts->matching($criteria)->first();
+        return $first === false ? null : $first;
+    }
 
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $maxPoints;
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $maxPoints;
 
-  public function getMaxPoints(): int {
-    return $this->maxPoints;
-  }
+    public function getMaxPoints(): int
+    {
+        return $this->maxPoints;
+    }
 
-  /**
-   * @ORM\ManyToOne(targetEntity="Group", inversedBy="shadowAssignments")
-   */
-  protected $group;
+    /**
+     * @ORM\ManyToOne(targetEntity="Group", inversedBy="shadowAssignments")
+     */
+    protected $group;
 
-  public function getGroup(): Group {
-    return $this->group;
-  }
+    public function getGroup(): ?Group
+    {
+        return $this->group->isDeleted() ? null : $this->group;
+    }
 
-  /**
-   * @ORM\OneToMany(targetEntity="ShadowAssignmentPoints", mappedBy="shadowAssignment")
-   */
-  protected $shadowAssignmentPointsCollection;
+    /**
+     * @ORM\OneToMany(targetEntity="ShadowAssignmentPoints", mappedBy="shadowAssignment")
+     */
+    protected $shadowAssignmentPointsCollection;
 
-  public function getPointsByUser(User $user) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("awardee", $user));
-    $first = $this->shadowAssignmentPointsCollection->matching($criteria)->first();
-    return $first === false ? null : $first;
-  }
-
+    public function getPointsByUser(User $user)
+    {
+        $criteria = Criteria::create()->where(Criteria::expr()->eq("awardee", $user));
+        $first = $this->shadowAssignmentPointsCollection->matching($criteria)->first();
+        return $first === false ? null : $first;
+    }
 }

@@ -12,84 +12,108 @@ use App\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(indexes={@ORM\Index(name="ref_solution_submission_submitted_at_idx", columns={"submitted_at"})})
  *
  * @method ReferenceExerciseSolution getReferenceSolution()
+ * @method SubmissionFailure getFailure()
+ * @method setFailure(SubmissionFailure $failure)
  */
 class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  const JOB_TYPE = "reference";
+    const JOB_TYPE = "reference";
 
-  /**
-   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="submissions")
-   */
-  protected $referenceSolution;
+    /**
+     * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="submissions")
+     */
+    protected $referenceSolution;
 
-  /**
-   * @ORM\ManyToOne(targetEntity="HardwareGroup")
-   */
-  protected $hwGroup;
-
-
-  public function setEvaluation(SolutionEvaluation $evaluation) {
-    $this->evaluation = $evaluation;
-  }
-
-  /**
-   * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionSubmission", cascade={"remove"})
-   */
-  protected $failures;
+    /**
+     * @ORM\ManyToOne(targetEntity="HardwareGroup")
+     */
+    protected $hwGroup;
 
 
-  public function jsonSerialize() {
-    $evaluationData = null;
-    if ($this->evaluation !== null) {
-      $evaluationData = $this->evaluation->getData(true, true, true);
+    public function setEvaluation(SolutionEvaluation $evaluation)
+    {
+        $this->evaluation = $evaluation;
     }
 
-    return [
-      "id" => $this->id,
-      "referenceSolutionId" => $this->referenceSolution->getId(),
-      "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-      "isCorrect" => $this->isCorrect(),
-      "evaluation" => $evaluationData,
-      "submittedAt" => $this->submittedAt->getTimestamp(),
-      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null
-    ];
-  }
+    /**
+     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"}, inversedBy="referenceSolutionSubmission", fetch="EAGER")
+     * @var SubmissionFailure
+     */
+    protected $failure;
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution,
-      ?HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy) {
-    parent::__construct($submittedBy, $jobConfigPath);
-    $this->referenceSolution = $referenceSolution;
-    $this->hwGroup = $hwGroup;
-    $this->failures = new ArrayCollection();
+    public function jsonSerialize()
+    {
+        $evaluationData = null;
+        if ($this->evaluation !== null) {
+            $evaluationData = $this->evaluation->getData(true, true, true);
+        }
 
-    $referenceSolution->addSubmission($this);
-  }
+        $failure = $this->getFailure();
+        if ($failure && $failure->isConfigErrorFailure()) {
+            $failure = $failure->toSimpleArray();
+        } else {
+            $failure = null;
+        }
 
-  function isFailed(): bool {
-    return $this->failures->count() > 0;
-  }
+        return [
+            "id" => $this->id,
+            "referenceSolutionId" => $this->referenceSolution->getId(),
+            "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
+            "isCorrect" => $this->isCorrect(),
+            "evaluation" => $evaluationData,
+            "submittedAt" => $this->submittedAt->getTimestamp(),
+            "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null,
+            "isDebug" => $this->isDebug,
+            "failure" => $failure,
+        ];
+    }
 
-  function isCorrect(): bool {
-    return $this->hasEvaluation() && $this->evaluation->getTestResults()->forAll(function ($key, TestResult $testResult) {
-      $diff = abs($testResult->getScore() - ER\TestResult::SCORE_MAX);
-      return $diff < 0.001; // Safe float comparison
-    });
-  }
+    public function __construct(
+        ReferenceExerciseSolution $referenceSolution,
+        ?HardwareGroup $hwGroup,
+        string $jobConfigPath,
+        User $submittedBy,
+        bool $isDebug = false
+    ) {
+        parent::__construct($submittedBy, $jobConfigPath, $isDebug);
+        $this->referenceSolution = $referenceSolution;
+        $this->hwGroup = $hwGroup;
 
-  public function getJobType(): string {
-    return static::JOB_TYPE;
-  }
+        $referenceSolution->addSubmission($this);
+    }
 
-  public function getExercise(): IExercise {
-    return $this->getReferenceSolution()->getExercise();
-  }
+    function isFailed(): bool
+    {
+        return $this->failure !== null;
+    }
 
-  public function getAuthor(): User {
-    return $this->getReferenceSolution()->getSolution()->getAuthor();
-  }
+    function isCorrect(): bool
+    {
+        return $this->hasEvaluation() && $this->evaluation->getTestResults()->forAll(
+            function ($key, TestResult $testResult) {
+                $diff = abs($testResult->getScore() - ER\TestResult::SCORE_MAX);
+                return $diff < 0.001; // Safe float comparison
+            }
+        );
+    }
+
+    public function getJobType(): string
+    {
+        return static::JOB_TYPE;
+    }
+
+    public function getExercise(): ?IExercise
+    {
+        return $this->getReferenceSolution()->getExercise();
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->getReferenceSolution()->getSolution()->getAuthor();
+    }
 }

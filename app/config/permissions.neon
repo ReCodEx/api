@@ -17,10 +17,21 @@ roles:
 
 permissions:
     - allow: true
-      role: superadmin
+      role: scope-master
+
+    #######################################
+    # Superadmin can do (almost) anything #
+    #######################################
+
+    - allow: false
+      resource: user
+      actions:
+        - forceChangePassword
+      conditions:
+        - user.isSameUser
 
     - allow: true
-      role: scope-master
+      role: superadmin
 
     #############################
     # User takeover permissions #
@@ -100,7 +111,16 @@ permissions:
       role: student
       resource: group
       actions:
-        - removeStudent # A student can leave any group
+        - removeStudent # A student can leave any group...
+      conditions:
+        - group.isNotDetainingStudents # ... which does not detain students
+        - group.isMember
+        - student.isSameUser
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
         - viewStudentStats
       conditions:
         - group.isMember
@@ -251,17 +271,15 @@ permissions:
       role: supervisor-student
       resource: user
       actions:
-          - viewDetail
+        - viewDetail
       conditions: user.isSupervisorOfJoinedGroup
 
     - allow: true
       role: supervisor
       resource: user
       actions:
-          - viewDetail
-          - viewAll
-
-
+        - viewDetail
+        - viewAll
 
     ##########################
     # Assignment permissions #
@@ -280,10 +298,19 @@ permissions:
       resource: assignment
       actions:
           - viewDetail
+      conditions:
+          - assignment.isAssignee
+          - assignment.isVisible
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
           - submit
       conditions:
           - assignment.isAssignee
-          - assignment.isPublic
+          - assignment.isVisible
+          - student.isSameUser
 
     - allow: true
       resource: assignment
@@ -351,6 +378,7 @@ permissions:
       actions:
           - viewDetail
           - viewEvaluation
+          - update
       conditions:
           - assignmentSolution.isAuthor
 
@@ -370,15 +398,25 @@ permissions:
           - viewEvaluation
           - viewEvaluationDetails
           - viewEvaluationValues
-          - viewEvaluationJudgeOutput
           - deleteEvaluation
           - viewResubmissions
+          - update
           - delete
           - setBonusPoints
           - setAccepted
+          - setFlag
           - downloadResultArchive
       conditions:
           - assignmentSolution.isSupervisor
+
+    - allow: true
+      resource: assignmentSolution
+      actions:
+          - viewEvaluationJudgeOutput
+      conditions:
+          or:
+              - assignmentSolution.isSupervisor
+              - assignmentSolution.areJudgeOutputsPublic
 
     #######################
     # Comment permissions #
@@ -400,6 +438,7 @@ permissions:
           or:
               - comment.isAuthor
               - comment.isSupervisorInGroupOfCommentedSolution
+              - comment.isSupervisorInGroupOfCommentedAssignment
 
     - allow: true # TODO
       role: student
@@ -423,7 +462,9 @@ permissions:
           - viewLimits
           - viewScoreConfig
           - viewPipelines
+          - viewAssignments
           - viewList
+          - viewAllTags
 
     - allow: true
       role: student
@@ -439,6 +480,7 @@ permissions:
           - viewScoreConfig
           - addReferenceSolution
           - viewPipelines
+          - viewAssignments
           - fork
       conditions:
           or:
@@ -454,6 +496,8 @@ permissions:
           - update
           - attachPipeline
           - detachPipeline
+          - addTag
+          - removeTag
       conditions:
           or:
             - exercise.isSuperGroupAdmin
@@ -496,8 +540,9 @@ permissions:
           - deleteEvaluation
       conditions:
           or:
-            - referenceExerciseSolution.isExerciseSuperGroupAdmin
             - referenceExerciseSolution.isExerciseAuthor
+            - referenceExerciseSolution.isExerciseSubGroupSupervisor
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       resource: referenceExerciseSolution
@@ -513,7 +558,9 @@ permissions:
       actions:
           - delete
       conditions:
-          - referenceExerciseSolution.isExerciseAuthor
+          or:
+            - referenceExerciseSolution.isExerciseAuthor
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       role: supervisor-student
@@ -529,6 +576,7 @@ permissions:
       actions:
           - viewAll
           - viewAllAuthors
+          - viewAllTags
 
     - allow: true
       role: supervisor-student
@@ -577,7 +625,7 @@ permissions:
           - viewDetail
       conditions:
           - file.isAttachmentFile
-          - file.isExerciseOrAssignmentPublic
+          - file.isExercisePublic
 
     - allow: true
       role: supervisor-student
@@ -713,7 +761,7 @@ permissions:
       resource: shadowAssignment
       actions:
         - viewDetail
-        - viewPointsList
+        - viewAllPoints
 
     - allow: true
       role: student
@@ -728,10 +776,12 @@ permissions:
       resource: shadowAssignment
       actions:
           - viewDetail
-          - viewPointsList
+          - viewAllPoints
           - update
           - remove
           - createPoints
+          - updatePoints
+          - removePoints
       conditions:
           - assignment.isSupervisor
 
@@ -741,32 +791,6 @@ permissions:
           - createShadowAssignment
       conditions:
           - group.isSupervisor
-
-    ########################################
-    # Shadow Assignment Points permissions #
-    ########################################
-
-    - allow: true
-      role: scope-read-all
-      resource: shadowAssignmentPoints
-      actions:
-        - viewDetail
-
-    - allow: true
-      resource: shadowAssignmentPoints
-      actions:
-          - viewDetail
-      conditions:
-          - assignmentPoints.isAwardee
-
-    - allow: true
-      resource: shadowAssignmentPoints
-      actions:
-          - viewDetail
-          - update
-          - remove
-      conditions:
-          - assignmentPoints.isSupervisor
 
     ############################
     # Notification permissions #

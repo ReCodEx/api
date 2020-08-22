@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: teyras
@@ -8,31 +9,34 @@
 
 namespace App\Security\Policies;
 
-
 use App\Security\ACL\SisGroupContext;
 use App\Security\Identity;
 
-class SisGroupContextPermissionPolicy implements IPermissionPolicy {
-  public function getAssociatedClass() {
-    return SisGroupContext::class;
-  }
-
-  public function doesTermMatch(Identity $identity, SisGroupContext $context): bool {
-    return $context->getParentGroup()->getExternalId() === $context->getCourse()->getTermIdentifier();
-  }
-
-  public function isParentGroupAssociatedWithCourse(Identity $identity, SisGroupContext $context): bool {
-    $cursor = $context->getParentGroup();
-
-    while ($cursor !== null) {
-      $associatedCourses = explode(" ", $cursor->getExternalId());
-      if (in_array($context->getCourse()->getCourseId(), $associatedCourses)) {
-        return true;
-      }
-
-      $cursor = $cursor->getParentGroup();
+class SisGroupContextPermissionPolicy implements IPermissionPolicy
+{
+    public function getAssociatedClass()
+    {
+        return SisGroupContext::class;
     }
 
-    return false;
-  }
+    public function doesTermMatch(Identity $identity, SisGroupContext $context): bool
+    {
+        return $context->getParentGroup()->getExternalId() === $context->getCourse()->getTermIdentifier();
+    }
+
+    public function isParentGroupAssociatedWithCourse(Identity $identity, SisGroupContext $context): bool
+    {
+        $cursor = $context->getParentGroup();
+
+        while ($cursor !== null) {
+            $associatedCourses = explode(" ", $cursor->getExternalId());
+            if (in_array($context->getCourse()->getCourseId(), $associatedCourses)) {
+                return true;
+            }
+
+            $cursor = $cursor->getParentGroup();
+        }
+
+        return false;
+    }
 }

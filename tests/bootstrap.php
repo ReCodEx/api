@@ -14,17 +14,17 @@ $configurator->setTempDirectory(TEMP_DIR);
 $configurator->addParameters(['appDir' => $appDir]);
 
 $configurator->createRobotLoader()
-	->addDirectory($appDir)
-  ->addDirectory(__DIR__ . '/base')
-  ->addDirectory(__DIR__ . '/Authorizator')
-	->register();
+    ->addDirectory($appDir)
+    ->addDirectory(__DIR__ . '/base')
+    ->addDirectory(__DIR__ . '/Authorizator')
+    ->register();
 
 $configurator->addConfig(__DIR__ . '/../app/config/config.neon');
 
 if (getenv("TRAVIS")) {
-  $configurator->addConfig(__DIR__ . '/config.travis.neon');
+    $configurator->addConfig(__DIR__ . '/config.travis.neon');
 } else {
-  $configurator->addConfig(__DIR__ . '/config.tests.neon');
+    $configurator->addConfig(__DIR__ . '/config.tests.neon');
 }
 
 return $configurator->createContainer();

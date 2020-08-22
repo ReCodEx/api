@@ -1,0 +1,20 @@
+{emailSubject}Ověření emailové adresy - {$email}{/emailSubject}
+{if $firstTime}
+<h3>Vítejte v ReCodExu</h3>
+<p>
+  Váš účet asociovaný s adresou {$email} byl úspěšně vytvořen.
+</p>
+{else}
+<h3>Ověření emailové adresy {$email}</h3>
+{/if}
+<p>
+    ReCodEx by rád ověřil Vaší emailovou adresu.
+    Ověření adresy je nezbytné pro korektní zajištění fungování všech služeb ReCodExu.
+    Platnost adresy můžete potvrdit kliknutím na následující odkaz: <a href="{$link}">{$link}</a>.
+    Tento odkaz bude platný do {$expiresAfter}.
+    Nový odkaz vám může být zaslán, pokud znovu požádáte o validaci emailu v aplikaci ReCodEx.
+</p>
+<hr>
+<p>
+    Všechna Vaše data, včetně emailové adresy, jsou uchována v souladu s GDPR.
+</p>

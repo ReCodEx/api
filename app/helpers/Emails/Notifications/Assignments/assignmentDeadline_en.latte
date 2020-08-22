@@ -1,0 +1,10 @@
+{emailSubject}Assignment Deadline Is Around the Corner - {$assignment}{/emailSubject}
+<h3>Deadline for the assignment '{$assignment}' is approaching</h3>
+<p>
+    Your assignment '{$assignment}' in the group '{$group}' has its first deadline on
+    {$firstDeadline|localizedDate:'en'}{if $allowSecondDeadline} and its second one on
+    {$secondDeadline|localizedDate:'en'}{/if}.
+    We would like to remind you that the deadline is approaching whilst your list
+    of assignment solutions is still empty.
+    The assignment can be found here: <a href="{$link}">{$link}</a>.
+</p>

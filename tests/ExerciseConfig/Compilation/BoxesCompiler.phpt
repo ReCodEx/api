@@ -8,17 +8,19 @@ use Tester\Assert;
 
 class TestBoxesCompiler extends Tester\TestCase
 {
-  /** @var BoxesCompiler */
-  private $compiler;
+    /** @var BoxesCompiler */
+    private $compiler;
 
-  public function __construct() {
-    $this->compiler = null;
-  }
+    public function __construct()
+    {
+        $this->compiler = null;
+    }
 
-  public function testTrue() {
-    Assert::true(true);
-    // @todo
-  }
+    public function testTrue()
+    {
+        Assert::true(true);
+        // @todo
+    }
 
 }
 

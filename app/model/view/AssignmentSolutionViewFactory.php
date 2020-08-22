@@ -4,96 +4,162 @@ namespace App\Model\View;
 
 use App\Helpers\PermissionHints;
 use App\Model\Repository\Comments;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Entity\AssignmentSolution;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\UserStorage;
+use App\Exceptions\InternalServerException;
 
 /**
  * Factory for solution views which somehow do not fit into json serialization of entities.
  */
-class AssignmentSolutionViewFactory {
+class AssignmentSolutionViewFactory
+{
 
-  /**
-   * @var IAssignmentSolutionPermissions
-   */
-  public $assignmentSolutionAcl;
+    /**
+     * @var IAssignmentSolutionPermissions
+     */
+    public $assignmentSolutionAcl;
 
-  /**
-   * @var Comments
-   */
-  private $comments;
+    /**
+     * @var Comments
+     */
+    private $comments;
 
-  /**
-   * @var UserStorage
-   */
-  private $userStorage;
+    /**
+     * @var AssignmentSolutions
+     */
+    private $solutions;
 
-  /**
-   * @var AssignmentSolutionSubmissionViewFactory
-   */
-  private $submissionViewFactory;
+    /**
+     * @var UserStorage
+     */
+    private $userStorage;
 
-  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments,
-      UserStorage $userStorage, AssignmentSolutionSubmissionViewFactory $submissionViewFactory) {
-    $this->assignmentSolutionAcl = $assignmentSolutionAcl;
-    $this->comments = $comments;
-    $this->userStorage = $userStorage;
-    $this->submissionViewFactory = $submissionViewFactory;
-  }
+    /**
+     * @var AssignmentSolutionSubmissionViewFactory
+     */
+    private $submissionViewFactory;
 
+    public function __construct(
+        IAssignmentSolutionPermissions $assignmentSolutionAcl,
+        Comments $comments,
+        AssignmentSolutions $solutions,
+        UserStorage $userStorage,
+        AssignmentSolutionSubmissionViewFactory $submissionViewFactory
+    ) {
+        $this->assignmentSolutionAcl = $assignmentSolutionAcl;
+        $this->comments = $comments;
+        $this->solutions = $solutions;
+        $this->userStorage = $userStorage;
+        $this->submissionViewFactory = $submissionViewFactory;
+    }
 
-  /**
-   * Parametrized view.
-   * @param AssignmentSolution $solution
-   * @return array
-   */
-  public function getSolutionData(AssignmentSolution $solution) {
-    // Get permission details
-    $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
+    /**
+     * Determine whether given solution is the best solution for the author and corresponding assignment.
+     * @param AssignmentSolution $solution
+     * @return bool
+     * @throws InternalServerException
+     */
+    private function isBestSolution(AssignmentSolution $solution): bool
+    {
+        $assignment = $solution->getAssignment();
+        if (!$assignment) {
+            return false;
+        }
+        $best = $this->solutions->findBestSolution($assignment, $solution->getSolution()->getAuthor());
+        return $best ? $best->getId() === $solution->getId() : false;
+    }
 
-    $lastSubmissionId = $solution->getLastSubmission() ? $solution->getLastSubmission()->getId() : null;
-    $lastSubmissionIdArray = $lastSubmissionId ? [ $lastSubmissionId ] : [];
-    $submissions = $canViewResubmissions ? $solution->getSubmissionsIds() : $lastSubmissionIdArray;
+    /**
+     * Parametrized view.
+     * @param AssignmentSolution $solution
+     * @param bool|array|null $bestSolutionsHints
+     *   If bool value is provided, it holds the `isBestSolution` value already.
+     *   If array value is provided, it holds index of best solutions.
+     *   Otherwise the view factory determines the `isBestSolution` value on its own.
+     * @return array
+     * @throws InternalServerException
+     */
+    public function getSolutionData(AssignmentSolution $solution, $bestSolutionsHints = null)
+    {
+        // Get permission details
+        $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
 
-    $lastSubmission = !$solution->getLastSubmission() ? null :
-      $this->submissionViewFactory->getSubmissionData($solution->getLastSubmission());
+        $lastSubmissionId = $solution->getLastSubmission() ? $solution->getLastSubmission()->getId() : null;
+        $lastSubmissionIdArray = $lastSubmissionId ? [$lastSubmissionId] : [];
+        $submissions = $canViewResubmissions ? $solution->getSubmissionsIds() : $lastSubmissionIdArray;
 
-    $thread = $this->comments->getThread($solution->getId());
-    $user = $this->userStorage->getUserData();
-    $threadCommentsCount = ($thread && $user) ? $this->comments->getThreadCommentsCount($thread, $user) : 0;
+        $lastSubmission = !$solution->getLastSubmission() ? null :
+            $this->submissionViewFactory->getSubmissionData($solution->getLastSubmission());
 
-    return [
-      "id" => $solution->getId(),
-      "note" => $solution->getNote(),
-      "exerciseAssignmentId" => $solution->getAssignment()->getId(),
-      "solution" => $solution->getSolution(),
-      "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
-      "maxPoints" => $solution->getMaxPoints(),
-      "accepted" => $solution->getAccepted(),
-      "actualPoints" => $solution->getPoints(),
-      "bonusPoints" => $solution->getBonusPoints(),
-      "overriddenPoints" => $solution->getOverriddenPoints(),
-      "lastSubmission" => $lastSubmission,
-      "submissions" => $submissions,
-      "commentsStats" => $threadCommentsCount ? [
-        "count" => $threadCommentsCount,
-        "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
-        "last" => $this->comments->getThreadLastComment($thread, $user),
-        ] : null,
-      "permissionHints" => PermissionHints::get($this->assignmentSolutionAcl, $solution)
-    ];
-  }
+        $thread = $this->comments->getThread($solution->getId());
+        $user = $this->userStorage->getUserData();
+        $threadCommentsCount = ($thread && $user) ? $this->comments->getThreadCommentsCount($thread, $user) : 0;
 
-  /**
-   * Parametrized view.
-   * @param AssignmentSolution[] $solutions
-   * @return array
-   */
-  public function getUserSolutionsData(array $solutions) {
-    $solutions = array_map(function (AssignmentSolution $solution) {
-      return $this->getSolutionData($solution);
-    }, $solutions);
-    return array_values($solutions);
-  }
+        if ($bestSolutionsHints !== null) {
+            if (is_array($bestSolutionsHints)) {
+                $isBestSolution = array_key_exists($solution->getId(), $bestSolutionsHints);
+            } else {
+                $isBestSolution = (bool)$bestSolutionsHints;
+            }
+        } else {
+            $isBestSolution = $this->isBestSolution($solution);
+        }
 
+        return [
+            "id" => $solution->getId(),
+            "note" => $solution->getNote(),
+            "exerciseAssignmentId" => $solution->getAssignment() ? $solution->getAssignment()->getId() : null,
+            "solution" => $solution->getSolution(),
+            "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
+            "maxPoints" => $solution->getMaxPoints(),
+            "accepted" => $solution->getAccepted(),
+            "reviewed" => $solution->isReviewed(),
+            "isBestSolution" => $isBestSolution,
+            "actualPoints" => $solution->getPoints(),
+            "bonusPoints" => $solution->getBonusPoints(),
+            "overriddenPoints" => $solution->getOverriddenPoints(),
+            "lastSubmission" => $lastSubmission,
+            "submissions" => $submissions,
+            "commentsStats" => $threadCommentsCount ? [
+                "count" => $threadCommentsCount,
+                "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
+                "last" => $this->comments->getThreadLastComment($thread, $user),
+            ] : null,
+            "permissionHints" => PermissionHints::get($this->assignmentSolutionAcl, $solution)
+        ];
+    }
+
+    /**
+     * Parametrized view.
+     * @param AssignmentSolution[] $solutions
+     * @param bool|array|null $bestSolutionsHints
+     *   If bool value is provided, it holds the `isBestSolution` value already for all solutions.
+     *   If iterrable value is provided, it holds a list of best solutions
+     *   Otherwise the view factory determines the `isBestSolution` value on its own.
+     * @return array
+     */
+    public function getUserSolutionsData(array $solutions, $bestSolutionsHints = null)
+    {
+        $hint = null;
+        if ($bestSolutionsHints !== null) {
+            if (is_bool($bestSolutionsHints)) {
+                $hint = $bestSolutionsHints;
+            } else {
+                $hint = []; // lets build an index (ids are the keys)
+                foreach ($bestSolutionsHints as $solution) {
+                    $hint[$solution->getId()] = true;
+                }
+            }
+        }
+
+        $solutions = array_map(
+            function (AssignmentSolution $solution) use ($hint) {
+                return $this->getSolutionData($solution, $hint);
+            },
+            $solutions
+        );
+        return array_values($solutions);
+    }
 }

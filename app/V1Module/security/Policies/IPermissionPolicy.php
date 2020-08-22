@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Security\Policies;
 
-interface IPermissionPolicy {
-  function getAssociatedClass();
+interface IPermissionPolicy
+{
+    function getAssociatedClass();
 }

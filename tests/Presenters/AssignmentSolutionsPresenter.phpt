@@ -1,7 +1,10 @@
 <?php
+
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
+use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\AssignmentSolutionsPresenter;
@@ -13,270 +16,449 @@ use Tester\Assert;
  */
 class TestAssignmentSolutionsPresenter extends Tester\TestCase
 {
-  private $adminLogin = "admin@admin.com";
-  private $adminPassword = "admin";
+    /** @var AssignmentSolutionsPresenter */
+    protected $presenter;
 
-  /** @var AssignmentSolutionsPresenter */
-  protected $presenter;
+    /** @var Kdyby\Doctrine\EntityManager */
+    protected $em;
 
-  /** @var Kdyby\Doctrine\EntityManager */
-  protected $em;
+    /** @var  Nette\DI\Container */
+    protected $container;
 
-  /** @var  Nette\DI\Container */
-  protected $container;
+    /** @var Nette\Security\User */
+    private $user;
 
-  /** @var Nette\Security\User */
-  private $user;
-
-  public function __construct()
-  {
-    global $container;
-    $this->container = $container;
-    $this->em = PresenterTestHelper::getEntityManager($container);
-    $this->user = $container->getByType(\Nette\Security\User::class);
-  }
-
-  protected function setUp()
-  {
-    PresenterTestHelper::fillDatabase($this->container);
-    $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentSolutionsPresenter::class);
-  }
-
-  protected function tearDown()
-  {
-    Mockery::close();
-
-    if ($this->user->isLoggedIn()) {
-      $this->user->logout(true);
+    public function __construct()
+    {
+        global $container;
+        $this->container = $container;
+        $this->em = PresenterTestHelper::getEntityManager($container);
+        $this->user = $container->getByType(\Nette\Security\User::class);
     }
-  }
+
+    protected function setUp()
+    {
+        PresenterTestHelper::fillDatabase($this->container);
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentSolutionsPresenter::class);
+    }
+
+    protected function tearDown()
+    {
+        Mockery::close();
+
+        if ($this->user->isLoggedIn()) {
+            $this->user->logout(true);
+        }
+    }
 
 
-  public function testGetSolution()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $solution = current($this->presenter->assignmentSolutions->findAll());
+    public function testGetSolution()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'GET',
-      ['action' => 'solution', 'id' => $solution->id]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'solution', 'id' => $solution->id]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
 
-    // Check invariants
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::same($solution->getId(), $result['payload']['id']);
-  }
+        // Check invariants
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::same($solution->getId(), $result['payload']['id']);
+    }
 
-  public function testGetEvaluations()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $solution = current($this->presenter->assignmentSolutions->findAll());
+    public function testUpdateSolution()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'GET',
-      ['action' => 'evaluations', 'id' => $solution->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+        $result = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'updateSolution', 'id' => $solution->id],
+            ['note' => 'changed note of the solution']
+        );
 
-    // Check invariants
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
+        $solution = $this->presenter->assignmentSolutions->get($solution->id);
+        Assert::equal('changed note of the solution', $result['note']);
+        Assert::equal('changed note of the solution', $solution->getNote());
+    }
 
-    $payload = $result['payload'];
-    Assert::count($solution->getSubmissions()->count(), $payload);
-  }
+    public function testGetSubmissions()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
 
-  public function testGetEvaluation()
-  {
-    $token = PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'submissions', 'id' => $solution->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
 
-    $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
-    $submission = array_pop($allSubmissions);
+        // Check invariants
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-        'GET',
-        ['action' => 'evaluation', 'evaluationId' => $submission->id]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+        $payload = $result['payload'];
+        Assert::count($solution->getSubmissions()->count(), $payload);
+    }
 
-    // Check invariants
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::same($submission->getId(), $result['payload']['id']);
-  }
+    public function testGetSubmission()
+    {
+        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $submissionsWithEval = array_filter(
+            $this->presenter->assignmentSolutionSubmissions->findAll(),
+            function($submission) { return $submission->getEvaluation() !== null; }
+        );
+        $submission = array_pop($submissionsWithEval);
+        $evaluation = $submission->getEvaluation();
+        Assert::truthy($evaluation);
 
-  public function testDeleteEvaluation()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter, 'V1:AssignmentSolutions', 'GET',
+            ['action' => 'submission', 'submissionId' => $submission->id]
+        );
+        Assert::same($submission->getId(), $payload['id']);
+    }
 
-    $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
-    $submission = reset($allSubmissions);
-    $submissionsCount = count($allSubmissions);
+    public function testGetEvaluationScoreConfig()
+    {
+        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $submissionsWithEval = array_filter(
+            $this->presenter->assignmentSolutionSubmissions->findAll(),
+            function($submission) { return $submission->getEvaluation() !== null; }
+        );
+        $submission = array_pop($submissionsWithEval);
+        $evaluation = $submission->getEvaluation();
+        Assert::truthy($evaluation);
 
-    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:AssignmentSolutions', 'DELETE', [
-      'action' => 'deleteEvaluation', 'evaluationId' => $submission->getId() ]);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter, 'V1:AssignmentSolutions', 'GET',
+            ['action' => 'evaluationScoreConfig', 'submissionId' => $submission->id ]
+        );
+        Assert::same('weighted', $payload->getCalculator());
+        Assert::truthy($payload->getConfig());
+    }
 
-    $remainingSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
-    Assert::count($submissionsCount-1, $remainingSubmissions);
-    Assert::notContains($submission->getId(), array_map(function($eval) { return $eval->getId(); }, $remainingSubmissions));
-  }
+    public function testDeleteSubmission()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
+        $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
+        $submission = reset($allSubmissions);
+        $submissionsCount = count($allSubmissions);
 
-  public function testSetBonusPoints()
-  {
-    $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:AssignmentSolutions',
+            'DELETE',
+            [
+                'action' => 'deleteSubmission',
+                'submissionId' => $submission->getId()
+            ]
+        );
 
-    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
-    $submission = array_pop($allSubmissions);
+        $remainingSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
+        Assert::count($submissionsCount - 1, $remainingSubmissions);
+        Assert::notContains(
+            $submission->getId(),
+            array_map(
+                function ($eval) {
+                    return $eval->getId();
+                },
+                $remainingSubmissions
+            )
+        );
+    }
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'POST',
-      ['action' => 'setBonusPoints', 'id' => $submission->id],
-      ['bonusPoints' => 4, 'overriddenPoints' => 857]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    public function testSetBonusPoints()
+    {
+        $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+        $solution = current($this->presenter->assignmentSolutions->findAll());
 
-    // Check invariants
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
+        /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
+        $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
+        $mockPointsEmailsSender->shouldReceive("solutionPointsUpdated")->with($solution)->andReturn(true)->once();
+        $this->presenter->pointsChangedEmailsSender = $mockPointsEmailsSender;
 
-    $submission = $this->presenter->assignmentSolutions->get($submission->id);
-    Assert::equal(4, $submission->getBonusPoints());
-    Assert::equal(857, $submission->getOverriddenPoints());
-  }
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'setBonusPoints', 'id' => $solution->id],
+            ['bonusPoints' => 4, 'overriddenPoints' => 857]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
 
-  public function testSetAcceptedSubmission()
-  {
-    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
-    /** @var AssignmentSolution $submission */
-    $submission = array_pop($allSubmissions);
-    $assignment = $submission->getAssignment();
+        // Check invariants
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
 
-    $user = $assignment->getGroup()->getSupervisors()->filter(
-      function (User $user) use ($submission) {
-        return $submission->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
-      })->first();
+        $solution = $this->presenter->assignmentSolutions->get($solution->id);
+        Assert::equal(4, $solution->getBonusPoints());
+        Assert::equal(857, $solution->getOverriddenPoints());
+    }
 
-    Assert::notSame(null, $user);
+    public function testSetFlagAcceptedTrue()
+    {
+        $allSolutions = $this->presenter->assignmentSolutions->findAll();
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $assignment = $solution->getAssignment();
 
-    PresenterTestHelper::login($this->container, $user->getEmail());
+        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        Assert::notSame(null, $user);
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'POST',
-      ['action' => 'setAcceptedSubmission', 'id' => $submission->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+        PresenterTestHelper::login($this->container, $user->getEmail());
 
-    // Check invariants
-    $submission = $this->presenter->assignmentSolutions->get($submission->getId());
-    Assert::true($submission->isAccepted());
-  }
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'accepted'],
+            ['value' => true]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
-  public function testUnsetAcceptedSubmission()
-  {
-    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
-    /** @var AssignmentSolution $submission */
-    $submission = array_pop($allSubmissions);
-    $assignment = $submission->getAssignment();
+        // Check invariants
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
+        Assert::true($solution->isAccepted());
+    }
 
-    // set accepted flag
-    $submission->setAccepted(true);
-    $this->presenter->assignmentSolutions->flush();
-    Assert::true($submission->getAccepted());
+    public function testSetFlagAcceptedFalse()
+    {
+        $allSolutions = $this->presenter->assignmentSolutions->findAll();
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $assignment = $solution->getAssignment();
 
-    $user = $assignment->getGroup()->getSupervisors()->filter(
-      function (User $user) use ($submission) {
-        return $submission->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
-      })->first();
-    Assert::notSame(null, $user);
+        // set accepted flag
+        $solution->setAccepted(true);
+        $this->presenter->assignmentSolutions->flush();
+        Assert::true($solution->getAccepted());
 
-    PresenterTestHelper::login($this->container, $user->getEmail());
+        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        Assert::notSame(null, $user);
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'DELETE',
-      ['action' => 'unsetAcceptedSubmission', 'id' => $submission->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+        PresenterTestHelper::login($this->container, $user->getEmail());
 
-    // Check invariants
-    $submission = $this->presenter->assignmentSolutions->get($submission->getId());
-    Assert::false($submission->isAccepted());
-  }
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'accepted'],
+            ['value' => false]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
-  public function testDownloadSolutionArchive()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $solution = current($this->presenter->assignmentSolutions->findAll());
+        // Check invariants
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
+        Assert::false($solution->isAccepted());
+    }
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'GET',
-      ['action' => 'downloadSolutionArchive', 'id' => $solution->id]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
+    public function testSetFlagReviewedTrue()
+    {
+        $allSolutions = $this->presenter->assignmentSolutions->findAll();
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $assignment = $solution->getAssignment();
 
-    // Check invariants
-    Assert::equal("solution-" . $solution->getId() . '.zip', $response->getName());
-  }
+        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        Assert::notSame(null, $user);
 
-  public function testDownloadResultArchive()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $submission = current($this->presenter->assignmentSolutionSubmissions->findAll());
+        PresenterTestHelper::login($this->container, $user->getEmail());
 
-    // mock everything you can
-    $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
-    $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
-    $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'reviewed'],
+            ['value' => true]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
-    $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-    $mockProxy->shouldReceive("getFileserverFileStream")->withAnyArgs()->andReturn($mockGuzzleStream);
-    $this->presenter->fileServerProxy = $mockProxy;
+        // Check invariants
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
+        Assert::true($solution->isReviewed());
+    }
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions',
-      'GET',
-      ['action' => 'downloadResultArchive', 'evaluationId' => $submission->id]
-    );
-    $response = $this->presenter->run($request);
-    Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
+    public function testSetFlagReviewedFalse()
+    {
+        $allSolutions = $this->presenter->assignmentSolutions->findAll();
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $assignment = $solution->getAssignment();
 
-    // Check invariants
-    Assert::equal("results-" . $submission->getId() . '.zip', $response->getName());
-  }
+        // set accepted flag
+        $solution->setReviewed(true);
+        $this->presenter->assignmentSolutions->flush();
+        Assert::true($solution->isReviewed());
 
-  public function testDeleteAssignmentSolution()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        Assert::notSame(null, $user);
 
-    /** @var AssignmentSolution $solution */
-    $solution = current($this->presenter->assignmentSolutions->findAll());
-    $solutionId = $solution->getId();
+        PresenterTestHelper::login($this->container, $user->getEmail());
 
-    $request = new Nette\Application\Request('V1:AssignmentSolutions', 'DELETE', [
-      'action' => 'deleteSolution',
-      'id' => $solution->getId()
-    ]);
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'reviewed'],
+            ['value' => false]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        // Check invariants
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
+        Assert::false($solution->isReviewed());
+    }
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal('OK', $result['payload']);
+    public function testSetAccepted()
+    {
+        $allSolutions = $this->presenter->assignmentSolutions->findAll();
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $assignment = $solution->getAssignment();
 
-    Assert::exception(function () use ($solutionId) {
-      $this->presenter->assignmentSolutions->findOrThrow($solutionId);
-    }, NotFoundException::class);
-  }
+        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        Assert::notSame(null, $user);
+
+        PresenterTestHelper::login($this->container, $user->getEmail());
+
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'POST',
+            ['action' => 'setAccepted', 'id' => $solution->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+        // Check invariants
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
+        Assert::true($solution->isAccepted());
+    }
+
+    public function testUnsetAccepted()
+    {
+        $allSolutions = $this->presenter->assignmentSolutions->findAll();
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $assignment = $solution->getAssignment();
+
+        // set accepted flag
+        $solution->setAccepted(true);
+        $this->presenter->assignmentSolutions->flush();
+        Assert::true($solution->getAccepted());
+
+        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        Assert::notSame(null, $user);
+
+        PresenterTestHelper::login($this->container, $user->getEmail());
+
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'DELETE',
+            ['action' => 'unsetAccepted', 'id' => $solution->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+        // Check invariants
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
+        Assert::false($solution->isAccepted());
+    }
+
+    public function testDownloadSolutionArchive()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
+
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'downloadSolutionArchive', 'id' => $solution->id]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
+
+        // Check invariants
+        Assert::equal("solution-" . $solution->getId() . '.zip', $response->getName());
+    }
+
+    public function testDownloadResultArchive()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $submission = current($this->presenter->assignmentSolutionSubmissions->findAll());
+
+        // mock everything you can
+        $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
+        $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
+        $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
+
+        $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+        $mockProxy->shouldReceive("getFileserverFileStream")->withAnyArgs()->andReturn($mockGuzzleStream);
+        $this->presenter->fileServerProxy = $mockProxy;
+
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'downloadResultArchive', 'submissionId' => $submission->id]
+        );
+        $response = $this->presenter->run($request);
+        Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
+
+        // Check invariants
+        Assert::equal("results-" . $submission->getId() . '.zip', $response->getName());
+    }
+
+    public function testDeleteAssignmentSolution()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        /** @var AssignmentSolution $solution */
+        $solution = current($this->presenter->assignmentSolutions->findAll());
+        $solutionId = $solution->getId();
+
+        $request = new Nette\Application\Request(
+            'V1:AssignmentSolutions', 'DELETE', [
+            'action' => 'deleteSolution',
+            'id' => $solution->getId()
+        ]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal('OK', $result['payload']);
+
+        Assert::exception(
+            function () use ($solutionId) {
+                $this->presenter->assignmentSolutions->findOrThrow($solutionId);
+            },
+            NotFoundException::class
+        );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+
+    private function getSupervisorWhoIsNotAuthorOrSuperadmin(Assignment $assignment, AssignmentSolution $solution)
+    {
+        return $assignment->getGroup()->getSupervisors()->filter(
+            function (User $user) use ($solution) {
+                return $solution->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
+            }
+        )->first();
+    }
 
 }
 

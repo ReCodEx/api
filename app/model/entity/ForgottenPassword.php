@@ -10,51 +10,55 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ForgottenPassword
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  public function __construct(
-    User $user,
-    string $sentTo,
-    string $redirectUrl,
-    string $IPaddress
-  ) {
-    $this->user = $user;
-    $this->sentTo = $sentTo;
-    $this->requestedAt = new DateTime();
-    $this->redirectUrl = $redirectUrl;
-    $this->IPaddress = $IPaddress;
-  }
+    public function __construct(
+        User $user,
+        string $sentTo,
+        string $redirectUrl,
+        string $IPaddress
+    ) {
+        $this->user = $user;
+        $this->sentTo = $sentTo;
+        $this->requestedAt = new DateTime();
+        $this->redirectUrl = $redirectUrl;
+        $this->IPaddress = $IPaddress;
+    }
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\ManyToOne(targetEntity="User")
-   */
-  protected $user;
+    /**
+     * @ORM\ManyToOne(targetEntity="User")
+     */
+    protected $user;
 
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $requestedAt;
+    public function getUser(): ?User
+    {
+        return $this->user->isDeleted() ? null : $this->user;
+    }
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $sentTo;
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $requestedAt;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $redirectUrl;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $sentTo;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $IPaddress;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $redirectUrl;
 
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $IPaddress;
 }

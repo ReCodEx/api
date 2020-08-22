@@ -23,12 +23,23 @@ App\Model\Entity\LocalizedExercise:
             - "group supervisor alalal"
             - ""
             - ""
+
+App\Model\Entity\ExerciseScoreConfig:
+    weightedTwoTests:
+        __construct:
+            - 'weighted'
+            - testWeights:
+                "Test 1": 100
+                "Test 2": 100
+
+
 App\Model\Entity\Exercise:
     demoExercise:
         __construct:
             create:
                 - @demoAdmin
                 - @demoGroup
+                - @weightedTwoTests
         difficulty: "moderate"
         addLocalizedText:
             - @demoExerciseText
@@ -49,16 +60,13 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
-        scoreConfig: '''
-        testWeights:
-          "Test 1": 100
-          "Test 2": 100
-        '''
+
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
                 - @demoAdmin
                 - @demoGroup
+                - @weightedTwoTests
         difficulty: "easy"
         addLocalizedText:
             - @sampleExerciseText
@@ -79,22 +87,20 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
-        scoreConfig: '''
-        testWeights:
-          "Test 1": 100
-          "Test 2": 100
-        '''
+
     privateAdminExercise:
         __construct:
             create:
                 - @demoAdmin
-                - @demoGroup
+                - @demoChildGroup
+                - @weightedTwoTests
         difficulty: "moderate"
         addLocalizedText:
             - @privateAdminExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
+            - @MonoRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
@@ -103,17 +109,20 @@ App\Model\Entity\Exercise:
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
+            - @demoMonoEnvironmentConfig
         exerciseTests:
             - @demoExerciseTest1
             - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: false
+
     publicSupervisor2Exercise:
         __construct:
             create:
                 - @demoGroupSupervisor2
                 - @demoGroup
+                - @weightedTwoTests
         difficulty: "moderate"
         addLocalizedText:
             - @publicSupervisor2ExerciseText
@@ -134,11 +143,6 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
-        scoreConfig: '''
-        testWeights:
-          "Test 1": 100
-          "Test 2": 100
-        '''
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:
@@ -154,6 +158,7 @@ App\Model\Entity\SolutionEvaluation:
         evaluatedAt: "<dateTime()>"
         initFailed: false
         score: 0.95
+        scoreConfig: @weightedTwoTests
         points: 10
         initiationOutputs: ""
 
@@ -176,3 +181,25 @@ App\Model\Entity\AttachmentFile:
             - "/some/path"
             - @demoAdmin
             - @demoExercise
+
+App\Model\Entity\ExerciseTag:
+    demoTag1:
+        __construct:
+            - "tag1"
+            - @demoAdmin
+            - @demoExercise
+    demoTag2:
+        __construct:
+            - "tag2"
+            - @demoAdmin
+            - @demoExercise
+    demoTag3a:
+        __construct:
+            - "tag3"
+            - @demoAdmin
+            - @privateAdminExercise
+    demoTag3b:
+        __construct:
+            - "tag3"
+            - @demoAdmin
+            - @sampleExercise_aloha

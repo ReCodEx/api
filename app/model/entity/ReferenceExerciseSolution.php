@@ -13,60 +13,68 @@ use JsonSerializable;
  * @method string getId()
  * @method string getDescription()
  * @method Solution getSolution()
- * @method Exercise getExercise()
  * @method Collection getSubmissions()
  */
 class ReferenceExerciseSolution
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
-   */
-  protected $exercise;
+    /**
+     * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
+     */
+    protected $exercise;
 
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $description;
+    public function getExercise(): ?Exercise
+    {
+        return $this->exercise->isDeleted() ? null : $this->exercise;
+    }
 
-  /**
-   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"})
-   */
-  protected $solution;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $description;
 
-  /**
-   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution", cascade={"remove"})
-   */
-  protected $submissions;
+    /**
+     * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
+     */
+    protected $solution;
 
-  /**
-   * Add submission to solution entity.
-   * @param ReferenceSolutionSubmission $submission
-   */
-  public function addSubmission(ReferenceSolutionSubmission $submission) {
-    $this->submissions->add($submission);
-  }
+    /**
+     * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution", cascade={"remove"})
+     */
+    protected $submissions;
 
-  public function getFiles() {
-    return $this->solution->getFiles();
-  }
+    /**
+     * Add submission to solution entity.
+     * @param ReferenceSolutionSubmission $submission
+     */
+    public function addSubmission(ReferenceSolutionSubmission $submission)
+    {
+        $this->submissions->add($submission);
+    }
 
-  public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime) {
-    $this->exercise = $exercise;
-    $this->description = $description;
-    $this->solution = new Solution($user, $runtime);
-    $this->submissions = new ArrayCollection();
-  }
+    public function getFiles()
+    {
+        return $this->solution->getFiles();
+    }
 
-  public function getRuntimeEnvironment() {
-    return $this->solution->getRuntimeEnvironment();
-  }
+    public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime)
+    {
+        $this->exercise = $exercise;
+        $this->description = $description;
+        $this->solution = new Solution($user, $runtime);
+        $this->submissions = new ArrayCollection();
+    }
+
+    public function getRuntimeEnvironment()
+    {
+        return $this->solution->getRuntimeEnvironment();
+    }
 }

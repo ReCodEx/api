@@ -1,0 +1,10 @@
+{emailSubject}New Assignment - '{$assignment}'{/emailSubject}
+<h3>New exercise '{$assignment}' assigned</h3>
+<p>
+    A new exercise '{$assignment}' has been assigned in your group '{$group}'.
+    The deadline is {$firstDeadline|localizedDate:'en'}
+    {if $allowSecondDeadline} (second deadline is {$secondDeadline|localizedDate:'en'}){/if}
+    and you have {$attempts} attempts for submission.
+    You can acquire a maximum of {$points} points.
+    The assignment can be found at: <a href="{$link}">{$link}</a>.
+</p>

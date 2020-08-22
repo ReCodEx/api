@@ -12,16 +12,18 @@ use App\Helpers\ExerciseConfig\Loader;
  */
 class TestExerciseConfigLoader extends Tester\TestCase
 {
-  /** @var Loader */
-  private $loader;
+    /** @var Loader */
+    private $loader;
 
-  public function __construct() {
-    $this->loader = new Loader(new BoxService());
-  }
+    public function __construct()
+    {
+        $this->loader = new Loader(new BoxService());
+    }
 
-  public function testTrue() {
-    Assert::true(true);
-  }
+    public function testTrue()
+    {
+        Assert::true(true);
+    }
 
 }
 

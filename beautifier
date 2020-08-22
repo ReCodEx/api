@@ -1,0 +1,1 @@
+phpcbf --extensions=php --standard=PSR12 app

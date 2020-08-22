@@ -1,38 +1,40 @@
 <?php
 
 namespace App\Helpers\JobConfig\Tasks;
-use App\Exceptions\JobConfigLoadingException;
 
+use App\Exceptions\JobConfigLoadingException;
 
 /**
  * Holder for task which has evaluation type set.
  */
-class EvaluationTaskType {
-  /** Evaluation task type value */
-  const TASK_TYPE = "evaluation";
+class EvaluationTaskType
+{
+    /** Evaluation task type value */
+    const TASK_TYPE = "evaluation";
 
-  /** @var Task Evaluation task */
-  private $task;
+    /** @var Task Evaluation task */
+    private $task;
 
-  /**
-   * Checks and store evaluation task.
-   * @param Task $task
-   * @throws JobConfigLoadingException
-   */
-  public function __construct(Task $task) {
-    if (!$task->isEvaluationTask()) {
-      throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
+    /**
+     * Checks and store evaluation task.
+     * @param Task $task
+     * @throws JobConfigLoadingException
+     */
+    public function __construct(Task $task)
+    {
+        if (!$task->isEvaluationTask()) {
+            throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
+        }
+
+        $this->task = $task;
     }
 
-    $this->task = $task;
-  }
-
-  /**
-   * Get evaluation task which was given and checked during construction.
-   * @return Task
-   */
-  public function getTask(): Task {
-    return $this->task;
-  }
-
+    /**
+     * Get evaluation task which was given and checked during construction.
+     * @return Task
+     */
+    public function getTask(): Task
+    {
+        return $this->task;
+    }
 }

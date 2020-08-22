@@ -14,54 +14,59 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method setIsPublic(bool $public)
  * @method setIsBonus(bool $bonus)
  */
-abstract class AssignmentBase {
+abstract class AssignmentBase
+{
+    use MagicAccessors;
+    use VersionableEntity;
+    use UpdateableEntity;
+    use DeleteableEntity;
 
-  use MagicAccessors;
-  use VersionableEntity;
-  use UpdateableEntity;
-  use DeleteableEntity;
+    abstract function getGroup(): ?Group;
 
-  abstract function getGroup(): Group;
-  abstract function getMaxPoints(): int;
-  abstract function getLocalizedTexts(): Collection;
-  abstract function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
+    abstract function getMaxPoints(): int;
 
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
+    abstract function getLocalizedTexts(): Collection;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isPublic;
+    abstract function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
 
-  public function isPublic(): bool {
-    return $this->isPublic;
-  }
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $createdAt;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isBonus;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $isPublic;
 
-  public function isBonus(): bool {
-    return $this->isBonus;
-  }
-
-  /**
-   * Assignment can be marked as bonus, then we do not want to add its points
-   * to overall maximum points of group. This function will return 0 if
-   * assignment is marked as bonus one, otherwise it will return result of
-   * $this->getMaxPoints() function.
-   * @return int
-   */
-  public function getGroupPoints(): int {
-    if ($this->isBonus) {
-      return 0;
-    } else {
-      return $this->getMaxPoints();
+    public function isPublic(): bool
+    {
+        return $this->isPublic;
     }
-  }
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $isBonus;
+
+    public function isBonus(): bool
+    {
+        return $this->isBonus;
+    }
+
+    /**
+     * Assignment can be marked as bonus, then we do not want to add its points
+     * to overall maximum points of group. This function will return 0 if
+     * assignment is marked as bonus one, otherwise it will return result of
+     * $this->getMaxPoints() function.
+     * @return int
+     */
+    public function getGroupPoints(): int
+    {
+        if ($this->isBonus) {
+            return 0;
+        } else {
+            return $this->getMaxPoints();
+        }
+    }
 }

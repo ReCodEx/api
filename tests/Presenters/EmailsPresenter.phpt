@@ -1,4 +1,5 @@
 <?php
+
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\EmailHelper;
@@ -13,180 +14,192 @@ use Tester\Assert;
  */
 class TestEmailsPresenter extends Tester\TestCase
 {
-  /** @var EmailsPresenter */
-  protected $presenter;
+    /** @var EmailsPresenter */
+    protected $presenter;
 
-  /** @var Kdyby\Doctrine\EntityManager */
-  protected $em;
+    /** @var Kdyby\Doctrine\EntityManager */
+    protected $em;
 
-  /** @var  Nette\DI\Container */
-  protected $container;
+    /** @var  Nette\DI\Container */
+    protected $container;
 
-  /** @var Nette\Security\User */
-  private $user;
+    /** @var Nette\Security\User */
+    private $user;
 
-  /** @var \App\Security\AccessManager */
-  private $accessManager;
+    /** @var \App\Security\AccessManager */
+    private $accessManager;
 
-  public function __construct()
-  {
-    global $container;
-    $this->container = $container;
-    $this->em = PresenterTestHelper::getEntityManager($container);
-    $this->user = $container->getByType(\Nette\Security\User::class);
-    $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
-  }
-
-  protected function setUp()
-  {
-    PresenterTestHelper::fillDatabase($this->container);
-    $this->presenter = PresenterTestHelper::createPresenter($this->container, EmailsPresenter::class);
-  }
-
-  protected function tearDown()
-  {
-    if ($this->user->isLoggedIn()) {
-      $this->user->logout(true);
+    public function __construct()
+    {
+        global $container;
+        $this->container = $container;
+        $this->em = PresenterTestHelper::getEntityManager($container);
+        $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
     }
-  }
 
-  public function testSendToAll()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+    protected function setUp()
+    {
+        PresenterTestHelper::fillDatabase($this->container);
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, EmailsPresenter::class);
+    }
 
-    $subject = "Subject - ";
-    $message = "New email message";
+    protected function tearDown()
+    {
+        if ($this->user->isLoggedIn()) {
+            $this->user->logout(true);
+        }
+    }
 
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $this->presenter->users->findAll());
+    public function testSendToAll()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
-    $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("sendFromDefault")
-      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
-    $this->presenter->emailHelper = $mockEmailHelper;
+        $subject = "Subject - ";
+        $message = "New email message";
 
-    $request = new Nette\Application\Request(
-      'V1:Emails', 'POST', ['action' => 'default'],
-      [
-        "subject" => $subject,
-        "message" => $message
-      ]
-    );
+        $emails = array_map(
+            function (User $user) {
+                return $user->getEmail();
+            },
+            $this->presenter->users->findAll()
+        );
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
+        $mockEmailHelper = Mockery::mock(EmailHelper::class);
+        $mockEmailHelper->shouldReceive("sendFromDefault")
+            ->withArgs([[], "en", $subject, $message, $emails])->andReturn(true)->once();
+        $this->presenter->emailHelper = $mockEmailHelper;
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-  }
+        $request = new Nette\Application\Request(
+            'V1:Emails', 'POST', ['action' => 'default'],
+            [
+                "subject" => $subject,
+                "message" => $message
+            ]
+        );
 
-  public function testSendToSupervisors()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $subject = "Subject supervisors - ";
-    $message = "New email message for supervisors";
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+    }
 
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $this->presenter->users->findByRoles(Roles::SUPERVISOR_ROLE, Roles::SUPERADMIN_ROLE));
+    public function testSendToSupervisors()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
-    $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("sendFromDefault")
-      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
-    $this->presenter->emailHelper = $mockEmailHelper;
+        $subject = "Subject supervisors - ";
+        $message = "New email message for supervisors";
 
-    $request = new Nette\Application\Request(
-      'V1:Emails', 'POST', ['action' => 'sendToSupervisors'],
-      [
-        "subject" => $subject,
-        "message" => $message
-      ]
-    );
+        $emails = array_map(
+            function (User $user) {
+                return $user->getEmail();
+            },
+            $this->presenter->users->findByRoles(Roles::SUPERVISOR_ROLE, Roles::SUPERADMIN_ROLE)
+        );
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
+        $mockEmailHelper = Mockery::mock(EmailHelper::class);
+        $mockEmailHelper->shouldReceive("sendFromDefault")
+            ->withArgs([[], "en", $subject, $message, $emails])->andReturn(true)->once();
+        $this->presenter->emailHelper = $mockEmailHelper;
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-  }
+        $request = new Nette\Application\Request(
+            'V1:Emails', 'POST', ['action' => 'sendToSupervisors'],
+            [
+                "subject" => $subject,
+                "message" => $message
+            ]
+        );
 
-  public function testSendToRegularUsers()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $subject = "Subject regular users - ";
-    $message = "New email message for regular users";
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+    }
 
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $this->presenter->users->findByRoles(Roles::STUDENT_ROLE));
+    public function testSendToRegularUsers()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
-    $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("sendFromDefault")
-      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
-    $this->presenter->emailHelper = $mockEmailHelper;
+        $subject = "Subject regular users - ";
+        $message = "New email message for regular users";
 
-    $request = new Nette\Application\Request(
-      'V1:Emails', 'POST', ['action' => 'sendToRegularUsers'],
-      [
-        "subject" => $subject,
-        "message" => $message
-      ]
-    );
+        $emails = array_map(
+            function (User $user) {
+                return $user->getEmail();
+            },
+            $this->presenter->users->findByRoles(Roles::STUDENT_ROLE)
+        );
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
+        $mockEmailHelper = Mockery::mock(EmailHelper::class);
+        $mockEmailHelper->shouldReceive("sendFromDefault")
+            ->withArgs([[], "en", $subject, $message, $emails])->andReturn(true)->once();
+        $this->presenter->emailHelper = $mockEmailHelper;
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-  }
+        $request = new Nette\Application\Request(
+            'V1:Emails', 'POST', ['action' => 'sendToRegularUsers'],
+            [
+                "subject" => $subject,
+                "message" => $message
+            ]
+        );
 
-  public function testSendToGroupMembers()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $group = current($this->presenter->groups->findAll());
-    $subject = "Subject group - ";
-    $message = "New email message for group";
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+    }
 
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $group->getMembers()->getValues());
-    $emails[] = PresenterTestHelper::ADMIN_LOGIN;
+    public function testSendToGroupMembers()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
-    $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("sendFromDefault")
-      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
-    $this->presenter->emailHelper = $mockEmailHelper;
+        $group = current($this->presenter->groups->findAll());
+        $subject = "Subject group - ";
+        $message = "New email message for group";
 
-    $request = new Nette\Application\Request(
-      'V1:Emails', 'POST',
-      ['action' => 'sendToGroupMembers', 'groupId' => $group->getId()],
-      [
-        "toSupervisors" => true,
-        "toAdmins" => true,
-        "toMe" => true,
-        "subject" => $subject,
-        "message" => $message
-      ]
-    );
+        $emails = array_map(
+            function (User $user) {
+                return $user->getEmail();
+            },
+            $group->getMembers()->getValues()
+        );
+        $emails[] = PresenterTestHelper::ADMIN_LOGIN;
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
+        $mockEmailHelper = Mockery::mock(EmailHelper::class);
+        $mockEmailHelper->shouldReceive("sendFromDefault")
+            ->withArgs([[], "en", $subject, $message, $emails])->andReturn(true)->once();
+        $this->presenter->emailHelper = $mockEmailHelper;
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-  }
+        $request = new Nette\Application\Request(
+            'V1:Emails', 'POST',
+            ['action' => 'sendToGroupMembers', 'groupId' => $group->getId()],
+            [
+                "toSupervisors" => true,
+                "toAdmins" => true,
+                "toMe" => true,
+                "subject" => $subject,
+                "message" => $message
+            ]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+    }
 
 
 }

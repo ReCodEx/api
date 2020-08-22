@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console;
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
@@ -9,40 +10,63 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SendAssignmentDeadlineNotification extends Command {
-  /** @var AssignmentEmailsSender */
-  private $sender;
+class SendAssignmentDeadlineNotification extends Command
+{
+    /** @var AssignmentEmailsSender */
+    private $sender;
 
-  /** @var Assignments */
-  private $assignments;
+    /** @var Assignments */
+    private $assignments;
 
-  /** @var string */
-  private $threshold;
+    /** @var string */
+    private $thresholdFrom;
 
-  public function __construct(string $threshold, Assignments $assignments, AssignmentEmailsSender $sender) {
-    parent::__construct();
-    $this->sender = $sender;
-    $this->assignments = $assignments;
-    $this->threshold = $threshold;
-  }
+    /** @var string */
+    private $thresholdTo;
 
-  protected function configure() {
-    $this->setName('notifications:assignment-deadlines')->setDescription('Send notifications for assignments with imminent deadlines.');
-    $this->addArgument("period", InputArgument::REQUIRED, "How often is the script run (e.g. '1 day')");
-  }
-
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $period = $input->getArgument("period");
-
-    $from = new DateTime();
-    $from->modify("+" . $this->threshold);
-    $to = clone $from;
-    $to->modify("+" . $period);
-
-    foreach ($this->assignments->findByDeadline($from, $to) as $assignment) {
-      $this->sender->assignmentDeadline($assignment);
+    public function __construct(
+        string $thresholdFrom,
+        string $thresholdTo,
+        Assignments $assignments,
+        AssignmentEmailsSender $sender
+    ) {
+        parent::__construct();
+        $this->sender = $sender;
+        $this->assignments = $assignments;
+        $this->thresholdFrom = $thresholdFrom;
+        $this->thresholdTo = $thresholdTo;
     }
 
-    return 0;
-  }
+    protected function configure()
+    {
+        $this->setName('notifications:assignment-deadlines')->setDescription(
+            'Send notifications for assignments with imminent deadlines.'
+        );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $from = new DateTime();
+        if ($this->thresholdFrom) {
+            $from->modify($this->thresholdFrom);
+        }
+        $to = new DateTime();
+        if ($this->thresholdTo) {
+            $to->modify($this->thresholdTo);
+        }
+        if ($from > $to) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;  // swap
+        }
+
+        foreach ($this->assignments->findByDeadline($from, $to) as $assignment) {
+            $group = $assignment->getGroup();
+            if ($assignment->isVisibleToStudents() && $group && !$group->isArchived()) {
+                $this->sender->assignmentDeadline($assignment);
+            }
+        }
+
+        return 0;
+    }
 }
