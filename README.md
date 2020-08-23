@@ -80,8 +80,7 @@ dependencies to the `vendor/` subdirectory.
    `app/config/config.local.neon` (for an example, see 
    `app/config/config.local.neon.example`)
    do not forget to set the database configuration, especially the credentials.
-4. Setup the database schema by running `php www/index.php
-   migrations:migrate`
+4. Setup the database schema by running `php www/index.php migrations:migrate`
 
 
 ### Post-Install

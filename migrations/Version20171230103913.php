@@ -39,10 +39,21 @@ class Version20171230103913 extends AbstractMigration
         $pipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = 'FreePascal Compilation'"
         )->fetch();
+        if (!$pipeline) {
+            return;
+        }
+
         $pipelineConfig = $this->connection->executeQuery(
             "SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'"
         )->fetch();
+        if (!$pipelineConfig) {
+            return;
+        }
+
         $config = Yaml::parse($pipelineConfig["pipeline_config"]);
+        if (!$config) {
+            return;
+        }
 
         foreach ($config["variables"] as &$variable) {
             if ($variable["name"] == self::SOURCE_FILE) {
