@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.22.0
-%define unmangled_version 288449c5bf48e818735a55bef98756c05e31e961
-%define release 12
+%define unmangled_version 18c0b171133433ec9ac1d24f9f5270d63cbe9675
+%define release 13
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -53,12 +53,6 @@ ln -sf %{install_dir}/app/config/config.local.neon %{buildroot}/%{_sysconfdir}/r
 
 
 %post
-# Install dependencies
-php %{install_dir}/composer-stable.phar install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader --working-dir=%{install_dir}/
-
-# Run cleaner after installation
-%{install_dir}/cleaner
-
 setfacl -Rd -m u:apache:rwX %{install_dir}/temp
 setfacl -Rd -m u:recodex:rwX %{install_dir}/temp
 setfacl -Rd -m u:apache:rwX %{install_dir}/job_config
@@ -67,6 +61,13 @@ setfacl -Rd -m u:apache:rwX %{install_dir}/uploaded_data
 setfacl -Rd -m u:recodex:rwX %{install_dir}/uploaded_data
 setfacl -Rd -m u:apache:rwX /var/log/recodex/core-api
 setfacl -Rd -m u:recodex:rwX /var/log/recodex/core-api
+
+# Install dependencies
+php %{install_dir}/composer-stable.phar install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader --working-dir=%{install_dir}/
+
+# Run cleaner after installation
+%{install_dir}/cleaner
+
 
 
 %postun
@@ -80,6 +81,7 @@ exit 0
 if [ $1 == 0 ]; then
 	%{install_dir}/cleaner
 	rm -rf %{install_dir}/vendor
+	rm -rf %{install_dir}/temp
 fi
 
 %files
