@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.22.0
-%define unmangled_version 19fb2b15004261ddf7bafd30d1a92eb22e0375f4
-%define release 14
+%define unmangled_version 16aec252f35bb3a889f36550c9f53ba90f20875f
+%define release 16
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -44,6 +44,8 @@ mkdir -p %{buildroot}%{install_dir}/temp
 cp -r www %{buildroot}%{install_dir}/www
 cp -r app %{buildroot}%{install_dir}/app
 cp -r migrations %{buildroot}%{install_dir}/migrations
+mkdir -p %{buildroot}%{install_dir}/fixtures
+cp -r fixtures/init %{buildroot}%{install_dir}/fixtures/init
 cp composer.json composer.lock composer-stable.phar cleaner %{buildroot}%{install_dir}/
 mkdir -p %{buildroot}/%{_sysconfdir}/recodex/core-api
 mv %{buildroot}%{install_dir}/app/config/config.local.neon.example %{buildroot}%{install_dir}/app/config/config.local.neon
@@ -110,6 +112,7 @@ fi
 %{install_dir}/composer.lock
 %{install_dir}/composer-stable.phar
 %attr(0770,recodex,recodex) %{install_dir}/cleaner
+%{install_dir}/fixtures
 %{install_dir}/migrations
 %{install_dir}/www
 %attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.local.neon
