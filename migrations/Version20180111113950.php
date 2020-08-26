@@ -22,7 +22,7 @@ class Version20180111113950 extends AbstractMigration
         );
 
         $this->addSql(
-            'ALTER TABLE exercise ADD is_broken TINYINT(1) NOT NULL DEFAULT 0 COMMENT \'(DC2Type:boolean)\', ADD validation_error LONGTEXT NOT NULL DEFAULT ""'
+            'ALTER TABLE exercise ADD is_broken TINYINT(1) NOT NULL DEFAULT 0 COMMENT \'(DC2Type:boolean)\', ADD validation_error LONGTEXT NOT NULL'
         );
     }
 

@@ -150,7 +150,14 @@ class Version20180109174902 extends AbstractMigration
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'"
             )->fetch();
+            if (!$pipelineConfig) {
+                continue;
+            }
+            
             $config = Yaml::parse($pipelineConfig["pipeline_config"]);
+            if (!$config) {
+                continue;
+            }
 
             foreach ($config["boxes"] as &$box) {
                 foreach ($box["portsIn"] as $portName => $portIn) {

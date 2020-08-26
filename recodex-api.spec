@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.22.0
-%define unmangled_version 9d6d8a06f6030364d5c2490fd723bf19c015f9ed
-%define release 7
+%define unmangled_version 16aec252f35bb3a889f36550c9f53ba90f20875f
+%define release 16
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -44,6 +44,8 @@ mkdir -p %{buildroot}%{install_dir}/temp
 cp -r www %{buildroot}%{install_dir}/www
 cp -r app %{buildroot}%{install_dir}/app
 cp -r migrations %{buildroot}%{install_dir}/migrations
+mkdir -p %{buildroot}%{install_dir}/fixtures
+cp -r fixtures/init %{buildroot}%{install_dir}/fixtures/init
 cp composer.json composer.lock composer-stable.phar cleaner %{buildroot}%{install_dir}/
 mkdir -p %{buildroot}/%{_sysconfdir}/recodex/core-api
 mv %{buildroot}%{install_dir}/app/config/config.local.neon.example %{buildroot}%{install_dir}/app/config/config.local.neon
@@ -53,11 +55,22 @@ ln -sf %{install_dir}/app/config/config.local.neon %{buildroot}/%{_sysconfdir}/r
 
 
 %post
+setfacl -Rd -m u:apache:rwX %{install_dir}/temp
+setfacl -Rd -m u:recodex:rwX %{install_dir}/temp
+setfacl -Rd -m u:apache:rwX %{install_dir}/job_config
+setfacl -Rd -m u:recodex:rwX %{install_dir}/job_config
+setfacl -Rd -m u:apache:rwX %{install_dir}/uploaded_data
+setfacl -Rd -m u:recodex:rwX %{install_dir}/uploaded_data
+setfacl -Rd -m u:apache:rwX /var/log/recodex/core-api
+setfacl -Rd -m u:recodex:rwX /var/log/recodex/core-api
+
 # Install dependencies
 php %{install_dir}/composer-stable.phar install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader --working-dir=%{install_dir}/
 
 # Run cleaner after installation
 %{install_dir}/cleaner
+
+
 
 %postun
 
@@ -67,18 +80,21 @@ getent passwd recodex >/dev/null || useradd -r -g recodex -d %{_sysconfdir}/reco
 exit 0
 
 %preun
-%{install_dir}/cleaner
-rm -rf %{install_dir}/vendor
+if [ $1 == 0 ]; then
+	%{install_dir}/cleaner
+	rm -rf %{install_dir}/vendor
+	rm -rf %{install_dir}/temp
+fi
 
 %files
 %defattr(-,recodex,recodex)
 %dir %{install_dir}
 %dir %attr(-,recodex,recodex) %{_sysconfdir}/recodex/core-api
-%dir %attr(0755,apache,recodex) /var/log/recodex/core-api
-%attr(0755,apache,recodex) %{install_dir}/log
-%dir %attr(0755,apache,recodex) %{install_dir}/job_config
-%dir %attr(0755,apache,recodex) %{install_dir}/uploaded_data
-%dir %attr(0755,apache,recodex) %{install_dir}/temp
+%dir %attr(0775,apache,recodex) /var/log/recodex/core-api
+%attr(0775,apache,recodex) %{install_dir}/log
+%dir %attr(0775,apache,recodex) %{install_dir}/job_config
+%dir %attr(0775,apache,recodex) %{install_dir}/uploaded_data
+%dir %attr(0775,apache,recodex) %{install_dir}/temp
 %dir %{install_dir}/app
 
 %{install_dir}/app/bootstrap.php
@@ -95,7 +111,8 @@ rm -rf %{install_dir}/vendor
 %{install_dir}/composer.json
 %{install_dir}/composer.lock
 %{install_dir}/composer-stable.phar
-%attr(0755,recodex,recodex) %{install_dir}/cleaner
+%attr(0770,recodex,recodex) %{install_dir}/cleaner
+%{install_dir}/fixtures
 %{install_dir}/migrations
 %{install_dir}/www
 %attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.local.neon

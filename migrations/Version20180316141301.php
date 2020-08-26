@@ -94,7 +94,13 @@ class Version20180316141301 extends AbstractMigration
             "SELECT * FROM pipeline_config WHERE id = :id",
             ["id" => $pipeline["pipeline_config_id"]]
         )->fetch();
+        if (!$pipelineConfig) {
+            return;
+        }
         $config = Yaml::parse($pipelineConfig["pipeline_config"]);
+        if (!$config) {
+            return;
+        }
 
         foreach ($config["boxes"] as &$box) {
             $this->updateHolyMadafokingPortArray($box, $box["portsIn"]);
@@ -297,5 +303,4 @@ class Version20180316141301 extends AbstractMigration
     {
         $this->throwIrreversibleMigrationException();
     }
-
 }

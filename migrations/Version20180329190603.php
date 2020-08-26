@@ -54,6 +54,9 @@ class Version20180329190603 extends AbstractMigration
                 "SELECT * FROM pipeline_config WHERE id = :id",
                 ["id" => $configId]
             )->fetch();
+            if (!$pipelineConfig || empty($pipelineConfig["pipeline_config"])) {
+                continue;
+            }
             $config = Yaml::parse($pipelineConfig["pipeline_config"]);
 
             foreach ($config["boxes"] as &$box) {
