@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Helpers\FileStorage;
+
+use Nette\SmartObject;
+use ZipArchive;
+
+/**
+ * Abstraction that represents one immutable (read-only) file inside a ZIP archive.
+ */
+class ArchivedImmutableFile implements IImmutableFile
+{
+    use SmartObject;
+
+    /**
+     * @var string
+     * Actual real path to ZIP archive on a local file system.
+     */
+    private $archivePath;
+
+    /**
+     * @var string
+     * Path to an entry within the ZIP file
+     */
+    private $entry;
+
+    /**
+     * @var string
+     * Storage path -- an identifier valid within the storage that created this object.
+     */
+    private $storagePath;
+
+    /**
+     * @var int|null
+     * Internal cache for file size.
+     */
+    private $fileSize = null;
+
+    /**
+     * Initialize the object
+     * @param string $archivePath path to an actual ZIP file
+     * @param string $entry path within the ZIP file
+     * @param string|null $storagePath presented virtual path within specific storage
+     *                                 (if null, it is constructed as archivePath#entry)
+     */
+    public function __construct(string $archivePath, string $entry, string $storagePath = null)
+    {
+        $this->archivePath = $archivePath;
+        $this->entry = $entry;
+        $this->storagePath = $storagePath ?? "$archivePath#$entry";
+    }
+    
+    /**
+     * Creates and opens corresponding ZIP archive as read-only.
+     * @return ZipArchive
+     */
+    private function openZip()
+    {
+        $zip = new ZipArchive();
+        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
+        $res = $zip->open($this->archivePath);
+        if ($res !== true) {
+            throw new FileStorageException("Unable to open ZIP archive (code $res).", $this->archivePath);
+        }
+        return $zip;
+    }
+
+    /*
+     * IImmutableFile
+     */
+
+    public function getStoragePath(): string
+    {
+        return $this->storagePath;
+    }
+
+    public function getSize(): int
+    {
+        if ($this->fileSize === null) {
+            $zip = $this->openZip();
+            $this->fileSize = ZipFileStorage::getZipEntrySize($zip, $this->archivePath, $this->entry);
+            $zip->close();
+        }
+        return $this->fileSize;
+    }
+    
+    public function getContents(): string
+    {
+        $zip = $this->openZip();
+        $contents = $zip->getFromName($this->entry);
+        $zip->close();
+
+        if ($contents === false) {
+            throw new FileStorageException(
+                "The ZIP archive is unable to retrive contents of entry '$this->entry'",
+                $this->archivePath
+            );
+        }
+
+        return $contents;
+    }
+
+    public function saveAs(string $path): void
+    {
+        $zip = $this->openZip();
+        ZipFileStorage::extractZipEntryToFile($zip, $this->archivePath, $this->entry, $path);
+    }
+
+    public function passthru(): void
+    {
+        $zip = $this->openZip();
+        $fp = $zip->getStream($this->entry);
+
+        if ($fp === false) {
+            $zip->close();
+            throw new FileStorageException(
+                "The ZIP archive is unable to provide readable stream for entry '$this->entry'",
+                $this->archivePath
+            );
+        }
+
+        if (fpassthru($fp) === false) {
+            throw new FileStorageException(
+                "Error occured when passing through entry '$this->entry' of a ZIP archive",
+                $this->archivePath
+            );
+        }
+
+        fclose($fp);
+        $zip->close();
+    }
+}
