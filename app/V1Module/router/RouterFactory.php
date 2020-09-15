@@ -8,6 +8,7 @@ use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
 use App\V1Module\Router\GetRoute;
 use App\V1Module\Router\PostRoute;
+use App\V1Module\Router\PutRoute;
 use App\V1Module\Router\DeleteRoute;
 use App\V1Module\Router\PreflightRoute;
 
@@ -52,6 +53,7 @@ class RouterFactory
         $router[] = self::createEmailsRoutes("$prefix/emails");
         $router[] = self::createShadowAssignmentsRoutes("$prefix/shadow-assignments");
         $router[] = self::createNotificationsRoutes("$prefix/notifications");
+        $router[] = self::createWorkerFilesRoutes("$prefix/worker-files");
 
         return $router;
     }
@@ -577,6 +579,15 @@ class RouterFactory
         $router[] = new PostRoute("$prefix", "Notifications:create");
         $router[] = new PostRoute("$prefix/<id>", "Notifications:update");
         $router[] = new DeleteRoute("$prefix/<id>", "Notifications:remove");
+        return $router;
+    }
+
+    private static function createWorkerFilesRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+        $router[] = new GetRoute("$prefix/submission-archive/<type>/<id>", "WorkerFiles:downloadSubmissionArchive");
+        $router[] = new GetRoute("$prefix/supplementary-file/<hash>", "WorkerFiles:downloadSupplementaryFile");
+        $router[] = new PutRoute("$prefix/result/<type>/<id>", "WorkerFiles:uploadResultsFile");
         return $router;
     }
 }

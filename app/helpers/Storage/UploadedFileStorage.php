@@ -14,6 +14,7 @@ use Nette\Utils\Strings;
 
 /**
  * Stores uploaded files in a configured directory
+ * DEPRECATED - to be removed once all functions are moved to central FileStorageManager
  */
 class UploadedFileStorage
 {

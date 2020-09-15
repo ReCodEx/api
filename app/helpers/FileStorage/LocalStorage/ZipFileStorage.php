@@ -271,6 +271,34 @@ class ZipFileStorage implements IFileStorage
     }
 
     /**
+     * At present, the getStream() method of ZipArchive only supports reading,
+     * so we store the stream in tmp file and then use storeFile().
+     * In the future, this implementation may be optimized.
+     */
+    public function storeStream($stream, string $storagePath, bool $overwrite = false): void
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), "rexzip");
+        $fp = fopen($tmpPath, "wb");
+        if (!$fp) {
+            throw new FileStorageException("Unable to open tmp file for writing.", $tmpPath);
+        }
+
+        if (stream_copy_to_stream($stream, $fp) === false || !fclose($fp)) {
+            throw new FileStorageException(
+                "Copying stream data into tmp file failed.",
+                $tmpPath
+            );
+        }
+
+        try {
+            $this->storeFile($tmpPath, $storagePath, false, $overwrite);
+            $this->flush();
+        } finally {
+            unlink($tmpPath);
+        }
+    }
+
+    /**
      * Copying is perhaps the most complex procedure, since it has no direct support from ZIP archive.
      */
     public function copy(string $src, string $dst, bool $overwrite = false): void
