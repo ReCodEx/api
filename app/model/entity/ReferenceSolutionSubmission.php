@@ -22,7 +22,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
 {
     use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-    const JOB_TYPE = "reference";
+    public const JOB_TYPE = "reference";
 
     /**
      * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="submissions")
@@ -87,12 +87,12 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
         $referenceSolution->addSubmission($this);
     }
 
-    function isFailed(): bool
+    public function isFailed(): bool
     {
         return $this->failure !== null;
     }
 
-    function isCorrect(): bool
+    public function isCorrect(): bool
     {
         return $this->hasEvaluation() && $this->evaluation->getTestResults()->forAll(
             function ($key, TestResult $testResult) {
@@ -115,5 +115,10 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     public function getAuthor(): ?User
     {
         return $this->getReferenceSolution()->getSolution()->getAuthor();
+    }
+
+    public function getSolution(): Solution
+    {
+        return $this->getReferenceSolution()->getSolution();
     }
 }

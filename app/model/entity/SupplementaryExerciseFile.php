@@ -23,6 +23,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 
     /**
      * @ORM\Column(type="string")
+     * DEPRECATED -- will be removed in the next migration
      */
     protected $fileServerPath;
 

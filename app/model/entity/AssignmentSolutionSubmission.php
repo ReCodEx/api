@@ -21,7 +21,7 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 {
     use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-    const JOB_TYPE = "student";
+    public const JOB_TYPE = "student";
 
     /**
      * @ORM\ManyToOne(targetEntity="AssignmentSolution", inversedBy="submissions")
@@ -45,12 +45,12 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
         $this->assignmentSolution = $assignmentSolution;
     }
 
-    function isFailed(): bool
+    public function isFailed(): bool
     {
         return $this->failure !== null;
     }
 
-    function isCorrect(): bool
+    public function isCorrect(): bool
     {
         return EvaluationPointsLoader::isStudentCorrect($this);
     }
@@ -68,5 +68,10 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
     public function getAuthor(): ?User
     {
         return $this->getAssignmentSolution()->getSolution()->getAuthor();
+    }
+
+    public function getSolution(): Solution
+    {
+        return $this->getAssignmentSolution()->getSolution();
     }
 }

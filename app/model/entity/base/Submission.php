@@ -45,11 +45,13 @@ abstract class Submission implements IEvaluable
 
     /**
      * @ORM\Column(type="string", nullable=true)
+     * DEPRECATED -- will be removed in next migration
      */
     protected $resultsUrl;
 
     /**
      * @ORM\Column(type="string")
+     * DEPRECATED -- will be removed in next migration
      */
     protected $jobConfigPath;
 
@@ -64,6 +66,13 @@ abstract class Submission implements IEvaluable
      */
     protected $isDebug;
 
+    /**
+     * @ORM\Column(type="string")
+     * Bin subdirectory in paths to related files (job config, results zip).
+     * The subdir names are typically time-related (e.g., YYYY-MM) to optimize backup management.
+     */
+    protected $subdir;
+
 
     public function __construct(User $submittedBy, string $jobConfigPath, bool $isDebug = false)
     {
@@ -71,6 +80,7 @@ abstract class Submission implements IEvaluable
         $this->submittedBy = $submittedBy;
         $this->jobConfigPath = $jobConfigPath;
         $this->isDebug = $isDebug;
+        $this->subdir = $this->submittedAt->format('Y-m');
     }
 
     public function canBeEvaluated(): bool
@@ -98,9 +108,16 @@ abstract class Submission implements IEvaluable
         return $this->isDebug;
     }
 
+    public function getSubdir(): ?string
+    {
+        return $this->subdir;
+    }
+
     abstract public function getJobType(): string;
 
     abstract public function getExercise(): ?IExercise;
 
     abstract public function getAuthor(): ?User;
+
+    abstract public function getSolution(): Solution;
 }

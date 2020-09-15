@@ -67,6 +67,12 @@ class Solution implements JsonSerializable
      */
     protected $solutionParams;
 
+    /**
+     * @ORM\Column(type="string")
+     * Subdirectory in path to the ZIP archive where all solution files are.
+     * The subdir names are typically time-related (e.g., YYYY-MM) to optimize backup management.
+     */
+    protected $subdir;
 
     /**
      * @return array
@@ -93,6 +99,7 @@ class Solution implements JsonSerializable
         $this->createdAt = new DateTime();
         $this->runtimeEnvironment = $runtimeEnvironment;
         $this->solutionParams = "";
+        $this->subdir = $this->createdAt->format('Y-m');
     }
 
     public function addFile(SolutionFile $file)
@@ -122,5 +129,10 @@ class Solution implements JsonSerializable
     {
         $dumped = Yaml::dump($params->toArray());
         $this->solutionParams = $dumped ?: "";
+    }
+
+    public function getSubdir(): ?string
+    {
+        return $this->subdir;
     }
 }

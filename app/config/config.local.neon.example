@@ -5,6 +5,12 @@ parameters:
   webapp:
     address: "https://your.recodex.domain/"
 
+  fileStorage: # where the local files are being stored
+    local:
+      root: %appDir%/../storage/local # this should be replaced with path to existing directory
+    hash:
+      root: %appDir%/../storage/hash # this should be replaced with path to existing directory
+
   accessManager:
     issuer: "%webapp.address"
     audience: "%webapp.address"

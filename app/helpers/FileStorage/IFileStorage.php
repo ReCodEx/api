@@ -53,6 +53,16 @@ interface IFileStorage
     public function storeContents($contents, string $storagePath, bool $overwrite = false): void;
 
     /**
+     * Stores data from an open stream into a storage file.
+     * @param resource $stream
+     * @param string $storagePath relative path within storage (allowing zip archive dereference)
+     * @param bool $overwrite flag indicating whether existing file may be overriden
+     *                            (if false, existing file will cause an error)
+     * @throws FileStorageException if the file cannot be stored (for any reason)
+     */
+    public function storeStream($stream, string $storagePath, bool $overwrite = false): void;
+
+    /**
      * Copy a file within the storage.
      * @param string $src path to the source file (allowing zip archive dereference)
      * @param string $dst path to the target file (allowing zip archive dereference)

@@ -236,6 +236,37 @@ class LocalFileStorage implements IFileStorage
         }
     }
 
+    public function storeStream($stream, string $storagePath, bool $overwrite = false): void
+    {
+        [$realPath, $zipEntry] = $this->decodePath(
+            $storagePath,
+            $overwrite ? null : false, // no overwrite -> not exist check
+            true // construct directory path
+        );
+
+        if (!$zipEntry) {
+            $fp = fopen($realPath, "wb");
+            if (!$fp) {
+                throw new FileStorageException(
+                    "Unable to open target file in the storage for writing.",
+                    $storagePath
+                );
+            }
+
+            if (stream_copy_to_stream($stream, $fp) === false || !fclose($fp)) {
+                throw new FileStorageException(
+                    "Copying stream data into target file failed.",
+                    $storagePath
+                );
+            }
+        } else {
+            // saving a ZIP entry
+            $zip = new ZipFileStorage($realPath, null, false);
+            $zip->storeStream($stream, $zipEntry, $overwrite);
+            $zip->close();
+        }
+    }
+
     public function copy(string $src, string $dst, bool $overwrite = false): void
     {
         [$srcReal, $srcZip] = $this->decodePath($src, true); // true = check exists

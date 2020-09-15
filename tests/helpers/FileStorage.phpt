@@ -285,6 +285,35 @@ class TestFileStorage extends Tester\TestCase
         }, FileStorageException::class, "Target entry already exists.");
     }
 
+    public function testZipFileStorageStoreStream()
+    {
+        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $storage = new ZipFileStorage($zip);
+
+        $tmpX = $this->createTmpFile('XXX');
+        $tmpY = $this->createTmpFile('YYY');
+
+        $fpX = fopen($tmpX, "rb");
+        $storage->storeStream($fpX, 'x.txt');
+        Assert::true(fclose($fpX));
+
+        $fpY = fopen($tmpY, "rb");
+        $storage->storeStream($fpY, 'a.txt', true); // overwrite
+        Assert::true(fclose($fpY));
+        $storage->flush();
+
+        Assert::equal('XXX', $storage->extract('x.txt'));
+        $tmpfile = $this->createTmpFile();
+        $storage->extractToFile('a.txt', $tmpfile);
+        Assert::equal('YYY', file_get_contents($tmpfile));
+        
+        $fpX = fopen($tmpX, "rb");
+        Assert::exception(function() use ($storage, $fpX) {
+            $storage->storeStream($fpX, 'b.txt', false);
+        }, FileStorageException::class, "Target entry already exists.");
+        Assert::true(fclose($fpX));
+    }
+
     public function testZipFileStorageStoreCopy()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
@@ -441,6 +470,46 @@ class TestFileStorage extends Tester\TestCase
         Assert::exception(function() use ($storage) {
             $storage->storeContents('barbar', 'z/z.zip#bar/bar'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
+    }
+
+    public function testLocalFileStorageStoreStream()
+    {
+        $storage = $this->prepareLocalStorage([
+            'a.txt' => 'AAA',
+            'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR']
+        ]);
+
+        // regular files
+        $tmpB = $this->createTmpFile('BBB');
+        $fpB = fopen($tmpB, "rb");
+        $storage->storeStream($fpB, 'b.txt');
+        Assert::true(fclose($fpB));
+        $this->checkFileContents($storage, 'b.txt', 'BBB');
+
+        $tmpA = $this->createTmpFile('A-OVERWRITE');
+        $fpA = fopen($tmpA, "rb");
+        $storage->storeStream($fpA, 'a.txt', true); // overwrite
+        Assert::equal(0, fseek($fpA, 0));
+        $this->checkFileContents($storage, 'a.txt', 'A-OVERWRITE');
+
+        Assert::exception(function() use ($storage, $fpA) {
+            $storage->storeStream($fpA, 'z/z.zip'); // no overwrite
+        }, FileStorageException::class, "File already exists.");
+        Assert::equal(0, fseek($fpA, 0));
+
+        // archived files within ZIPs
+        $storage->storeStream($fpA, 'z/z.zip#a.new');
+        Assert::equal(0, fseek($fpA, 0));
+        $this->checkFileContents($storage, 'z/z.zip#a.new', 'A-OVERWRITE');
+
+        $storage->storeStream($fpA, 'z/z.zip#foo.md', true); // overwrite
+        Assert::equal(0, fseek($fpA, 0));
+        $this->checkFileContents($storage, 'z/z.zip#foo.md', 'A-OVERWRITE');
+
+        Assert::exception(function() use ($storage, $fpA) {
+            $storage->storeStream($fpA, 'z/z.zip#bar/bar'); // no overwrite
+        }, FileStorageException::class, "Target entry already exists.");
+        Assert::true(fclose($fpA));
     }
 
     public function testLocalFileStorageStoreCopy()

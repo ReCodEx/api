@@ -10,6 +10,13 @@ parameters:
   jobConfig:
     storageDir: %appDir%/../job_config
 
+  fileStorage: # where the local files are being stored
+    local:
+      root: %appDir%/../storage/local
+    hash:
+      root: %appDir%/../storage/hash
+      prefixLength: 2 # splitting hash files into 256 subdirectories by prefix should be enough
+
   api:
     address: https://recodex.mff.cuni.cz:4000
     name: "ReCodEx API"
@@ -49,6 +56,12 @@ parameters:
 
   monitor:  # connection to monitor
     address: wss://recodex.mff.cuni.cz:4443/ws  # URI of monitor
+
+  workerFiles:  # configuration for worker-files endpoint (direct access from worker to the core to upload/download files)
+    enabled: true
+    auth:  # username and password that must workers use in base HTTP auth
+      username: "re"
+      password: "codex"
 
   localRegistration:
     enabled: false  # for security reasons, simple registration is disabled by default
@@ -326,6 +339,7 @@ services:
   - App\Helpers\ApiConfig(%api%)
   - App\Helpers\AssignmentRestrictionsConfig(%assignmentRestrictions%)
   - App\Helpers\BrokerConfig(%broker%)
+  - App\Helpers\WorkerFilesConfig(%workerFiles%)
   - App\Helpers\EmailsConfig(%emails%)
   - App\Helpers\ExercisesConfig(%exercises%)
   - App\Helpers\MonitorConfig(%monitor%)
@@ -378,6 +392,9 @@ services:
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
   - App\Helpers\AnonymizationHelper(@App\Model\Repository\Users, @App\Model\Repository\Logins, @App\Model\Repository\ExternalLogins, %anonymization%)
   - App\Helpers\GeneralStatsHelper(%removeInactiveUsers.threshold%)
+  - App\Helpers\FileStorage\LocalFileStorage(%fileStorage.local%)
+  - App\Helpers\FileStorage\LocalHashFileStorage(%fileStorage.hash%)
+  - App\Helpers\FileStorageManager(@App\Helpers\FileStorage\LocalFileStorage, @App\Helpers\FileStorage\LocalHashFileStorage)
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper
