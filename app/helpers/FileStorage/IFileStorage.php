@@ -36,8 +36,8 @@ interface IFileStorage
      * @param string $localPath valid local path to an existing file
      * @param string $storagePath relative path within storage (allowing zip archive dereference)
      * @param bool $move the local file will moved instead of copied (more efficient on local filesystem)
-     * @param bool $overwrite flag indicating whether existing file may be overriden
-     *                            (if false, existing file will cause an error)
+     * @param bool $overwrite flag indicating whether existing file may be overwritten
+     *                        (if false, existing file will cause an error)
      * @throws FileStorageException if the file cannot be stored (for any reason)
      */
     public function storeFile(string $localPath, string $storagePath, bool $move = true, bool $overwrite = false): void;
@@ -46,8 +46,8 @@ interface IFileStorage
      * Stores data as a file into the storage.
      * @param mixed $contents data to be stored as a new file (string or string-convertible entity)
      * @param string $storagePath relative path within storage (allowing zip archive dereference)
-     * @param bool $overwrite flag indicating whether existing file may be overriden
-     *                            (if false, existing file will cause an error)
+     * @param bool $overwrite flag indicating whether existing file may be overwritten
+     *                        (if false, existing file will cause an error)
      * @throws FileStorageException if the file cannot be stored (for any reason)
      */
     public function storeContents($contents, string $storagePath, bool $overwrite = false): void;
@@ -56,8 +56,8 @@ interface IFileStorage
      * Stores data from an open stream into a storage file.
      * @param resource $stream
      * @param string $storagePath relative path within storage (allowing zip archive dereference)
-     * @param bool $overwrite flag indicating whether existing file may be overriden
-     *                            (if false, existing file will cause an error)
+     * @param bool $overwrite flag indicating whether existing file may be overwritten
+     *                        (if false, existing file will cause an error)
      * @throws FileStorageException if the file cannot be stored (for any reason)
      */
     public function storeStream($stream, string $storagePath, bool $overwrite = false): void;
@@ -66,8 +66,8 @@ interface IFileStorage
      * Copy a file within the storage.
      * @param string $src path to the source file (allowing zip archive dereference)
      * @param string $dst path to the target file (allowing zip archive dereference)
-     * @param bool $overwrite flag indicating whether existing dst file may be overriden
-     *                            (if false, existing dst will cause an error)
+     * @param bool $overwrite flag indicating whether existing dst file may be overwritten
+     *                        (if false, existing dst will cause an error)
      * @throws FileStorageException if the file cannot be stored (for any reason)
      */
     public function copy(string $src, string $dst, bool $overwrite = false): void;
@@ -76,11 +76,22 @@ interface IFileStorage
      * Move (possibly rename) a file within the storage.
      * @param string $src path to the source file (allowing zip archive dereference)
      * @param string $dst path to the target file (allowing zip archive dereference)
-     * @param bool $overwrite flag indicating whether existing dst file may be overriden
+     * @param bool $overwrite flag indicating whether existing dst file may be overwritten
      *                            (if false, existing dst will cause an error)
      * @throws FileStorageException if the file cannot be stored (for any reason)
      */
     public function move(string $src, string $dst, bool $overwrite = false): void;
+
+    /**
+     * Move given file from the storage to external local file.
+     * It is equivalent to calling saveAs on a file and then delete on the storage.
+     * @param string $storagePath relative path within storage (allowing zip archive dereference)
+     * @param string $localPath actual real path on local filesystem
+     * @param bool $overwrite flag indicating whether existing localPath file may be overwritten
+     *                        (if false, existing localPath will cause an error)
+     * @throws FileStorageException if the file cannot be stored (for any reason)
+     */
+    public function extract(string $storagePath, string $localPath, bool $overwrite = false): void;
 
     /**
      * Remove given file from the storage.

@@ -81,7 +81,7 @@ class LocalHashFileStorage implements IHashFileStorage
         return $file;
     }
 
-    public function storeFile(string $path): string
+    public function storeFile(string $path, bool $move = true): string
     {
         if (!file_exists($path) || !is_file($path)) {
             throw new FileStorageException("Given local file not found.", $path);
@@ -93,13 +93,23 @@ class LocalHashFileStorage implements IHashFileStorage
 
         $hash = sha1_file($path);
         $newPath = $this->getRealPath($hash);
-        if (!@mkdir(dirname($newPath), 0775, true)) { // true = recursive
+        $dirPath = dirname($newPath);
+        if (!@mkdir($dirPath, 0775, true) && !is_dir($dirPath)) { // true = recursive
             throw new FileStorageException("Unable to create organizational sub-directories in hash store.", $newPath);
         }
-        if (!@copy($path, $newPath)) {
-            throw new FileStorageException("File copying failed.", $path);
+
+        if (!file_exists($newPath)) {
+            if (!$move || !@rename($path, $newPath)) { // rename fails -> fallback to copying
+                if (!@copy($path, $newPath)) {
+                    throw new FileStorageException("File copying failed.", $path);
+                }
+            }
         }
         
+        if ($move && file_exists($path)) {
+            @unlink($path); // the file was copied or already exists, lets simulate move
+        }
+
         return $hash;
     }
 
