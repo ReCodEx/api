@@ -171,10 +171,24 @@ class TestFileStorage extends Tester\TestCase
     public function testHashStoreAddFile()
     {
         $contents = "Lorem ipsum et sepsum!";
+        $contents2 = "And some more psum!";
         $hash = sha1($contents);
+        $hash2 = sha1($contents2);
         $hashStorage = $this->prepareHashStorage();
         $tmpfile = $this->createTmpFile($contents);
+        $tmpfile2 = $this->createTmpFile($contents2);
+        $tmpfile3 = $this->createTmpFile($contents2);
+
+        Assert::equal($hash, $hashStorage->storeFile($tmpfile, false));
+        Assert::true(file_exists($tmpfile));
         Assert::equal($hash, $hashStorage->storeFile($tmpfile));
+        Assert::false(file_exists($tmpfile));
+
+        Assert::equal($hash2, $hashStorage->storeFile($tmpfile2));
+        Assert::false(file_exists($tmpfile2));
+        Assert::equal($hash2, $hashStorage->storeFile($tmpfile3, false));
+        Assert::true(file_exists($tmpfile3));
+
         $file = $hashStorage->fetch($hash);
         Assert::type(IImmutableFile::class, $file);
         Assert::equal($hash, $file->getStoragePath());
@@ -256,9 +270,9 @@ class TestFileStorage extends Tester\TestCase
         Assert::false(file_exists($tmpX)); // has been moved
         Assert::true(file_exists($tmpY)); // has been copied
 
-        Assert::equal('XXX', $storage->extract('x.txt'));
+        Assert::equal('XXX', $storage->extractToString('x.txt'));
         $tmpfile = $this->createTmpFile();
-        $storage->extractToFile('a.txt', $tmpfile);
+        $storage->extract('a.txt', $tmpfile, true);
         Assert::equal('YYY', file_get_contents($tmpfile));
         
         Assert::exception(function() use ($storage, $tmpfile) {
@@ -275,9 +289,9 @@ class TestFileStorage extends Tester\TestCase
         $storage->storeContents('YYY', 'a.txt', true);
         $storage->flush();
 
-        Assert::equal('XXX', $storage->extract('x.txt'));
+        Assert::equal('XXX', $storage->extractToString('x.txt'));
         $tmpfile = $this->createTmpFile();
-        $storage->extractToFile('a.txt', $tmpfile);
+        $storage->extract('a.txt', $tmpfile, true);
         Assert::equal('YYY', file_get_contents($tmpfile));
         
         Assert::exception(function() use ($storage) {
@@ -302,9 +316,9 @@ class TestFileStorage extends Tester\TestCase
         Assert::true(fclose($fpY));
         $storage->flush();
 
-        Assert::equal('XXX', $storage->extract('x.txt'));
+        Assert::equal('XXX', $storage->extractToString('x.txt'));
         $tmpfile = $this->createTmpFile();
-        $storage->extractToFile('a.txt', $tmpfile);
+        $storage->extract('a.txt', $tmpfile, true);
         Assert::equal('YYY', file_get_contents($tmpfile));
         
         $fpX = fopen($tmpX, "rb");
@@ -323,9 +337,9 @@ class TestFileStorage extends Tester\TestCase
         $storage->copy('b.txt', 'a.txt', true);
         $storage->flush();
 
-        Assert::equal('BBBB', $storage->extract('a.txt'));
-        Assert::equal('BBBB', $storage->extract('b.txt'));
-        Assert::equal('AAAAA', $storage->extract('c.txt'));
+        Assert::equal('BBBB', $storage->extractToString('a.txt'));
+        Assert::equal('BBBB', $storage->extractToString('b.txt'));
+        Assert::equal('AAAAA', $storage->extractToString('c.txt'));
         
         Assert::exception(function() use ($storage) {
             $storage->copy('a.txt', 'b.txt');
@@ -341,8 +355,8 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('b.txt', 'a.txt');
         $storage->flush();
 
-        Assert::equal('BBBB', $storage->extract('a.txt'));
-        Assert::equal('AAAAA', $storage->extract('c.txt'));
+        Assert::equal('BBBB', $storage->extractToString('a.txt'));
+        Assert::equal('AAAAA', $storage->extractToString('c.txt'));
 
         Assert::exception(function() use ($storage) {
             $storage->move('c.txt', 'a.txt');
@@ -351,7 +365,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('c.txt', 'a.txt', true);
         $storage->flush();
 
-        Assert::equal('AAAAA', $storage->extract('a.txt'));
+        Assert::equal('AAAAA', $storage->extractToString('a.txt'));
         Assert::null($storage->fetch('b.txt'));
         Assert::null($storage->fetch('c.txt'));
     }
@@ -654,6 +668,53 @@ class TestFileStorage extends Tester\TestCase
         Assert::exception(function() use ($storage) {
             $storage->move('z', 'new.zip#unicorn'); // no overwrite
         }, FileStorageException::class, "Given path refers to a directory.");
+    }
+
+    public function testLocalFileStorageStoreExtract()
+    {
+        $storage = $this->prepareLocalStorage([
+            'foo/bar/a.txt' => 'AAA',
+            'foo/bar/b.txt' => 'BBB',
+            'zip' => [ 'foo' => 'FOO', 'bar' => 'BAR' ],
+        ]);
+        $root = $storage->getRootDirectory();
+
+        $tmp = $this->createTmpFile('TMP');
+        $storage->extract('foo/bar/a.txt', $tmp, true); // overwrite
+        Assert::false(file_exists("$root/foo/bar/a.txt"));
+        Assert::true(is_dir("$root/foo/bar"));
+        Assert::equal('AAA', file_get_contents($tmp));
+        unlink($tmp);
+
+        $storage->extract('foo/bar/b.txt', $tmp);
+        Assert::false(file_exists("$root/foo/bar/b.txt"));
+        Assert::false(is_dir("$root/foo/bar"));
+        Assert::false(is_dir("$root/foo"));
+        Assert::equal('BBB', file_get_contents($tmp));
+
+        $storage->extract('zip#foo', $tmp, true); // overwrite
+        Assert::null($storage->fetch('zip#foo'));
+        Assert::equal('FOO', file_get_contents($tmp));
+        unlink($tmp);
+
+        $storage->extract('zip#bar', $tmp);
+        Assert::null($storage->fetch('zip#bar'));
+        Assert::equal('BAR', file_get_contents($tmp));
+        Assert::true(file_exists("$root/zip"));
+
+        Assert::exception(function() use ($storage, $tmp) {
+            $storage->extract('zip#unicorn', $tmp, true);
+        }, FileStorageException::class, "The ZIP archive is unable to open stream for entry 'unicorn'");
+
+        Assert::exception(function() use ($storage, $tmp) {
+            $storage->extract('x.txt', $tmp, true);
+        }, FileStorageException::class, "File not found within the storage.");
+
+        Assert::exception(function() use ($storage, $tmp) {
+            $storage->extract('zip', $tmp); // no overwrite
+        }, FileStorageException::class, "Target file exists.");
+
+        Assert::true(is_dir($root));
     }
 
     public function testLocalFileStorageStoreDelete()

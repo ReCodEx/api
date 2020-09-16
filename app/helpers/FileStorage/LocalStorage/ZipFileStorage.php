@@ -172,7 +172,7 @@ class ZipFileStorage implements IFileStorage
      * @param string $entry zip file entry to be extracted
      * @return string file contents
      */
-    public function extract(string $entry): string
+    public function extractToString(string $entry): string
     {
         if (!$this->zip) {
             throw new FileStorageException("The ZIP archive has already been closed.", $this->archivePath);
@@ -322,7 +322,7 @@ class ZipFileStorage implements IFileStorage
 
         if (self::getZipEntrySize($this->zip, $this->archivePath, $src) < 4096 * 1024) {
             // load data in memory to make a copy
-            $contents = $this->extract($src);
+            $contents = $this->extractToString($src);
             $this->storeContents($contents, $dst, $overwrite);
         } else {
             // fallback to copy via file system
@@ -353,6 +353,20 @@ class ZipFileStorage implements IFileStorage
                 $this->archivePath
             );
         }
+    }
+
+    public function extract(string $storagePath, string $localPath, bool $overwrite = false): void
+    {
+        if (!$this->zip) {
+            throw new FileStorageException("The ZIP archive has already been closed.", $this->archivePath);
+        }
+
+        if (!$overwrite && file_exists($localPath)) {
+            throw new FileStorageException("Target file exists.", $localPath);
+        }
+
+        self::extractZipEntryToFile($this->zip, $this->archivePath, $storagePath, $localPath);
+        $this->delete($storagePath);
     }
 
     public function delete(string $path): bool

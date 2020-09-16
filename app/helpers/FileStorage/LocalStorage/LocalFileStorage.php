@@ -98,10 +98,8 @@ class LocalFileStorage implements IFileStorage
 
         if ($mkdir) {
             $dir = dirname($realPath);
-            if (!is_dir($dir)) {
-                if (!mkdir($dir, 0775, true)) {
-                    throw new FileStorageException("Unable to create a directory path.", $dir);
-                }
+            if (!@mkdir($dir, 0775, true) && !is_dir($dir)) {
+                throw new FileStorageException("Unable to create a directory path.", $dir);
             }
         }
 
@@ -135,7 +133,7 @@ class LocalFileStorage implements IFileStorage
             }
 
             // It is empty, let's proceed!
-            if (rmdir($realPath) && Strings::contains($path, '/')) {
+            if (@rmdir($realPath) && Strings::contains($path, '/')) {
                 $this->removeEmptyDirectory(dirname($path));
             }
         }
@@ -191,18 +189,18 @@ class LocalFileStorage implements IFileStorage
         if (!$zipEntry) {
             // saving an actual local file
             if (file_exists($realPath) && $overwrite) {
-                unlink($realPath);
+                @unlink($realPath);
             }
 
-            if (!$move || !rename($localPath, $realPath)) { // rename fails -> fallback to copying
-                if (!copy($localPath, $realPath)) {
+            if (!$move || !@rename($localPath, $realPath)) { // rename fails -> fallback to copying
+                if (!@copy($localPath, $realPath)) {
                     throw new FileStorageException(
                         "Unable to add given file into file storage as '$storagePath'.",
                         $localPath
                     );
                 }
                 if ($move) {
-                    unlink($localPath); // copy used to simulated move -> delete original
+                    @unlink($localPath); // copy used to simulated move -> delete original
                 }
             }
         } else {
@@ -245,7 +243,7 @@ class LocalFileStorage implements IFileStorage
         );
 
         if (!$zipEntry) {
-            $fp = fopen($realPath, "wb");
+            $fp = @fopen($realPath, "wb");
             if (!$fp) {
                 throw new FileStorageException(
                     "Unable to open target file in the storage for writing.",
@@ -253,7 +251,7 @@ class LocalFileStorage implements IFileStorage
                 );
             }
 
-            if (stream_copy_to_stream($stream, $fp) === false || !fclose($fp)) {
+            if (stream_copy_to_stream($stream, $fp) === false || !@fclose($fp)) {
                 throw new FileStorageException(
                     "Copying stream data into target file failed.",
                     $storagePath
@@ -310,17 +308,17 @@ class LocalFileStorage implements IFileStorage
                     $srcFile->saveAs($tmpFile);
                     $this->storeFile($tmpFile, $dst, $overwrite);
                 } finally {
-                    unlink($tmpFile);
+                    @unlink($tmpFile);
                 }
             }
         } else {
             // copy regular file within the storage (using internal copy() function)
             if (file_exists($dstReal) && $overwrite) { // file exists and not overwrite is handled in decodePath
-                if (!unlink($dstReal)) {
+                if (!@unlink($dstReal)) {
                     throw new FileStorageException("Unable to overwrite target file.", $dst);
                 }
             }
-            if (!copy($srcReal, $dstReal)) {
+            if (!@copy($srcReal, $dstReal)) {
                 throw new FileStorageException("Copying failed.", $src);
             }
         }
@@ -358,14 +356,39 @@ class LocalFileStorage implements IFileStorage
                 throw new FileStorageException("Unable to remove source file after copy-moving procedure.", $src);
             }
         } else {
-            // move regular file within the storage (using internal rename() with fallback to copy function)
+            // move regular file within the storage
             if (file_exists($dstReal) && $overwrite) { // file exists and not overwrite is handled in decodePath
-                if (!unlink($dstReal)) {
+                if (!@unlink($dstReal)) {
                     throw new FileStorageException("Unable to overwrite target file.", $dst);
                 }
             }
-            if (!rename($srcReal, $dstReal)) {
+            if (!@rename($srcReal, $dstReal)) {
                 throw new FileStorageException("Moving failed.", $src);
+            }
+        }
+    }
+
+    public function extract(string $storagePath, string $localPath, bool $overwrite = false): void
+    {
+        if (!$overwrite && file_exists($localPath)) {
+            throw new FileStorageException("Target file exists.", $localPath);
+        }
+
+        [$srcReal, $srcZip] = $this->decodePath($storagePath, true); // true = check exists
+        if ($srcZip) {
+            $zip = new ZipFileStorage($srcReal, null, false);
+            $zip->extract($srcZip, $localPath, $overwrite);
+            $zip->close();
+        } else {
+            if (!@rename($srcReal, $localPath) && !@copy($srcReal, $localPath)) {
+                throw new FileStorageException("Extraction failed, unable to move nor copy the file.", $storagePath);
+            }
+            if (file_exists($srcReal) && !@unlink($srcReal)) {
+                throw new FileStorageException("Unable to delete file in the storage.", $storagePath);
+            }
+            if (Strings::contains($storagePath, '/')) {
+                // removing unnecessary empty directories
+                $this->removeEmptyDirectory(dirname($storagePath));
             }
         }
     }
@@ -379,8 +402,8 @@ class LocalFileStorage implements IFileStorage
             if (!file_exists($realPath)) {
                 return false;
             }
-            if (!unlink($realPath)) {
-                throw new FileStorageException("Unable to delete file in storage.", $path);
+            if (!@unlink($realPath)) {
+                throw new FileStorageException("Unable to delete file in the storage.", $path);
             }
             if (Strings::contains($path, '/')) {
                 // removing unnecessary empty directories

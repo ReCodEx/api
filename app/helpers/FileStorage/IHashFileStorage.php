@@ -27,9 +27,10 @@ interface IHashFileStorage
     /**
      * Stores a regular file from local file system into the storage.
      * @param string $path Valid local path to an existing file.
+     * @param bool $move whether the file should be moved (if false, the file is copied)
      * @return string Hash, which can be later used to retrieve the file.
      */
-    public function storeFile(string $path): string;
+    public function storeFile(string $path, bool $move = true): string;
 
     /**
      * Stores data as a file into the storage.
