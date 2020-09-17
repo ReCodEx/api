@@ -2,6 +2,7 @@
 
 namespace App\Helpers\FileStorage;
 
+use App\Helpers\TmpFilesHelper;
 use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
 use Nette\SmartObject;
@@ -22,6 +23,11 @@ class LocalFileStorage implements IFileStorage
 {
     use SmartObject;
 
+    /**
+     * @var TmpFilesHelper
+     */
+    protected $tmpFilesHelper;
+
     protected $rootDirectory;
 
     public function getRootDirectory(): string
@@ -33,8 +39,9 @@ class LocalFileStorage implements IFileStorage
      * Constructor
      * @param array $params initial configuration
      */
-    public function __construct(array $params = [])
+    public function __construct(TmpFilesHelper $tmpFilesHelper, array $params = [])
     {
+        $this->tmpFilesHelper = $tmpFilesHelper;
         $this->rootDirectory = Arrays::get($params, "root", null);
         if (!$this->rootDirectory || !is_dir($this->rootDirectory)) {
             throw new FileStorageException(
@@ -205,7 +212,7 @@ class LocalFileStorage implements IFileStorage
             }
         } else {
             // saving a ZIP entry
-            $zip = new ZipFileStorage($realPath, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $realPath, null, false);
             $zip->storeFile($localPath, $zipEntry, $move, $overwrite);
             $zip->close();
         }
@@ -228,7 +235,7 @@ class LocalFileStorage implements IFileStorage
             }
         } else {
             // saving a ZIP entry
-            $zip = new ZipFileStorage($realPath, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $realPath, null, false);
             $zip->storeContents($contents, $zipEntry, $overwrite);
             $zip->close();
         }
@@ -259,7 +266,7 @@ class LocalFileStorage implements IFileStorage
             }
         } else {
             // saving a ZIP entry
-            $zip = new ZipFileStorage($realPath, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $realPath, null, false);
             $zip->storeStream($stream, $zipEntry, $overwrite);
             $zip->close();
         }
@@ -287,7 +294,7 @@ class LocalFileStorage implements IFileStorage
         
         if ($srcZip && $dstZip && $srcReal === $dstReal) {
             // copy witin one archive -> use ZipFileStorage implementation
-            $zip = new ZipFileStorage($srcReal, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $srcReal, null, false);
             $zip->copy($srcZip, $dstZip, $overwrite);
             $zip->close();
         } elseif ($srcZip || $dstZip) {
@@ -303,7 +310,7 @@ class LocalFileStorage implements IFileStorage
                 $this->storeContents($contents, $dst, $overwrite);
             } else {
                 // fallback to tmp file
-                $tmpFile = tempnam(sys_get_temp_dir(), "recodex");
+                $tmpFile = $this->tmpFilesHelper->createTmpFile("rexlfs");
                 try {
                     $srcFile->saveAs($tmpFile);
                     $this->storeFile($tmpFile, $dst, $overwrite);
@@ -346,7 +353,7 @@ class LocalFileStorage implements IFileStorage
 
         if ($srcZip && $dstZip && $srcReal === $dstReal) {
             // move witin one archive
-            $zip = new ZipFileStorage($srcReal, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $srcReal, null, false);
             $zip->move($srcZip, $dstZip, $overwrite);
             $zip->close();
         } elseif ($srcZip || $dstZip) {
@@ -376,7 +383,7 @@ class LocalFileStorage implements IFileStorage
 
         [$srcReal, $srcZip] = $this->decodePath($storagePath, true); // true = check exists
         if ($srcZip) {
-            $zip = new ZipFileStorage($srcReal, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $srcReal, null, false);
             $zip->extract($srcZip, $localPath, $overwrite);
             $zip->close();
         } else {
@@ -412,7 +419,7 @@ class LocalFileStorage implements IFileStorage
             return true;
         } else {
             // removing a ZIP entry
-            $zip = new ZipFileStorage($realPath, null, false);
+            $zip = new ZipFileStorage($this->tmpFilesHelper, $realPath, null, false);
             $res = $zip->delete($zipEntry);
             $zip->close();
             return $res;

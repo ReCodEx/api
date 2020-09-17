@@ -367,7 +367,6 @@ services:
       @App\Helpers\Evaluation\WeightedScoreCalculator,
       @App\Helpers\Evaluation\UniversalScoreCalculator
   ])
-  - App\Helpers\ExerciseFileStorage
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer
   - App\Helpers\ExerciseConfig\Compiler
@@ -392,9 +391,10 @@ services:
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
   - App\Helpers\AnonymizationHelper(@App\Model\Repository\Users, @App\Model\Repository\Logins, @App\Model\Repository\ExternalLogins, %anonymization%)
   - App\Helpers\GeneralStatsHelper(%removeInactiveUsers.threshold%)
-  - App\Helpers\FileStorage\LocalFileStorage(%fileStorage.local%)
+  - App\Helpers\TmpFilesHelper(%tempDir%)
+  - App\Helpers\FileStorage\LocalFileStorage(@App\Helpers\TmpFilesHelper, %fileStorage.local%)
   - App\Helpers\FileStorage\LocalHashFileStorage(%fileStorage.hash%)
-  - App\Helpers\FileStorageManager(@App\Helpers\FileStorage\LocalFileStorage, @App\Helpers\FileStorage\LocalHashFileStorage)
+  - App\Helpers\FileStorageManager(@App\Helpers\FileStorage\LocalFileStorage, @App\Helpers\FileStorage\LocalHashFileStorage, @App\Helpers\TmpFilesHelper)
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper

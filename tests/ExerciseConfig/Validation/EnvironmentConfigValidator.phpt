@@ -106,7 +106,6 @@ class TestEnvironmentConfigValidator extends Tester\TestCase
             $uploadedFile,
             $exercise,
             "input.hash",
-            "fileserver.path"
         );
 
         return $exercise;

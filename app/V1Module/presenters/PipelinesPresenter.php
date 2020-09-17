@@ -10,8 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseFileStorage;
-use App\Helpers\UploadedFileStorage;
+use App\Helpers\FileStorageManager;
 use App\Model\Entity\PipelineConfig;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -88,22 +87,16 @@ class PipelinesPresenter extends BasePresenter
     public $supplementaryFiles;
 
     /**
-     * @var ExerciseFileStorage
-     * @inject
-     */
-    public $supplementaryFileStorage;
-
-    /**
-     * @var UploadedFileStorage
-     * @inject
-     */
-    public $uploadedFileStorage;
-
-    /**
      * @var PipelineViewFactory
      * @inject
      */
     public $pipelineViewFactory;
+
+    /**
+     * @var FileStorageManager
+     * @inject
+     */
+    public $fileStorage;
 
 
     public function checkGetDefaultBoxes()
@@ -383,7 +376,6 @@ class PipelinesPresenter extends BasePresenter
         $pipeline = $this->pipelines->findOrThrow($id);
         $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
         $supplementaryFiles = [];
-        $deletedFiles = [];
         $currentSupplementaryFiles = [];
 
         /** @var SupplementaryExerciseFile $file */
@@ -403,26 +395,17 @@ class PipelinesPresenter extends BasePresenter
                 $pipeline->getSupplementaryEvaluationFiles()->removeElement($currentFile);
             }
 
-            $supplementaryFiles[] = $pipelineFile = $this->supplementaryFileStorage->storePipelineFile(
-                $file,
-                $pipeline
-            );
+            $hash = $this->fileStorage->storeUploadedSupplementaryFile($file);
+            $pipelineFile = SupplementaryExerciseFile::fromUploadedFileAndPipeline($file, $pipeline, $hash);
+            $supplementaryFiles[] = $pipelineFile;
+
             $this->uploadedFiles->persist($pipelineFile, false);
             $this->uploadedFiles->remove($file, false);
-            $deletedFiles[] = $file;
         }
 
         $pipeline->updatedNow();
         $this->pipelines->flush();
         $this->uploadedFiles->flush();
-
-        /** @var UploadedFile $file */
-        foreach ($deletedFiles as $file) {
-            try {
-                $this->uploadedFileStorage->delete($file);
-            } catch (Exception $e) {
-            }
-        }
 
         $this->sendSuccessResponse($supplementaryFiles);
     }

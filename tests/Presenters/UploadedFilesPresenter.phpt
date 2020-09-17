@@ -407,10 +407,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
-        $file = new \App\Model\Entity\SupplementaryExerciseFile(
-            "hefty name",
-            new DateTime(), 1, "hash", "fileserverPath", $user
-        );
+        $file = new \App\Model\Entity\SupplementaryExerciseFile("hefty name", new DateTime(), 1, "hash", $user);
         $this->presenter->supplementaryFiles->persist($file);
         $this->presenter->supplementaryFiles->flush();
 

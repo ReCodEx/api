@@ -2,6 +2,7 @@
 
 namespace App\Helpers\FileStorage;
 
+use App\Helpers\TmpFilesHelper;
 use Nette\Utils\Arrays;
 use Nette\SmartObject;
 use ZipArchive;
@@ -14,6 +15,11 @@ use Exception;
 class ZipFileStorage implements IFileStorage
 {
     use SmartObject;
+
+    /**
+     * @var TmpFilesHelper
+     */
+    protected $tmpFilesHelper;
 
     /**
      * @var string
@@ -64,8 +70,9 @@ class ZipFileStorage implements IFileStorage
      * @param string $archiveStoragePath path to ZIP file within external storage (null if standalone)
      * @param bool $overwrite whether the OVERWRITE flag should be set when opening the archive
      */
-    public function __construct(string $archivePath, string $archiveStoragePath = null, bool $overwrite = false)
+    public function __construct(TmpFilesHelper $tmpFilesHelper, string $archivePath, string $archiveStoragePath = null, bool $overwrite = false)
     {
+        $this->tmpFilesHelper = $tmpFilesHelper;
         $this->archivePath = $archivePath;
         $this->archiveStoragePath = $archiveStoragePath;
         $this->zip = new ZipArchive();
@@ -277,7 +284,7 @@ class ZipFileStorage implements IFileStorage
      */
     public function storeStream($stream, string $storagePath, bool $overwrite = false): void
     {
-        $tmpPath = tempnam(sys_get_temp_dir(), "rexzip");
+        $tmpPath = $this->tmpFilesHelper->createTmpFile("rexzip");
         $fp = fopen($tmpPath, "wb");
         if (!$fp) {
             throw new FileStorageException("Unable to open tmp file for writing.", $tmpPath);
@@ -326,7 +333,7 @@ class ZipFileStorage implements IFileStorage
             $this->storeContents($contents, $dst, $overwrite);
         } else {
             // fallback to copy via file system
-            $tmpFile = tempnam(sys_get_temp_dir(), "recodex");
+            $tmpFile = $this->tmpFilesHelper->createTmpFile("rexzip");
             try {
                 $this->extractToFile($src, $tmpFile);
                 $this->storeFile($tmpFile, $dst, $overwrite);

@@ -102,7 +102,7 @@ class TestFileStorage extends Tester\TestCase
             self::rmdirRecursive($rootDir);
         }
         @mkdir($rootDir);
-        $storage = new LocalFileStorage([ 'root' => $rootDir ]);
+        $storage = new LocalFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), [ 'root' => $rootDir ]);
 
         foreach ($files as $file => $contents) {
             if (Strings::contains($file, '/')) {
@@ -236,7 +236,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageFetch()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
         $fileA = $storage->fetch('a.txt');
         Assert::equal('AAAAA', $fileA->getContents());
         $fileB = $storage->fetchOrThrow('b.txt');
@@ -246,7 +246,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageFetchNonexist()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
         $fileC = $storage->fetch('c.txt');
         Assert::null($fileC);
         $fileB = $storage->fetchOrThrow('b.txt');
@@ -258,7 +258,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreFile()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
 
         $tmpX = $this->createTmpFile('XXX');
         $tmpY = $this->createTmpFile('YYY');
@@ -283,7 +283,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreContents()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->storeContents('XXX', 'x.txt', false);
         $storage->storeContents('YYY', 'a.txt', true);
@@ -302,7 +302,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreStream()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
 
         $tmpX = $this->createTmpFile('XXX');
         $tmpY = $this->createTmpFile('YYY');
@@ -331,7 +331,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreCopy()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->copy('a.txt', 'c.txt');
         $storage->copy('b.txt', 'a.txt', true);
@@ -349,7 +349,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreMove()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->move('a.txt', 'c.txt');
         $storage->move('b.txt', 'a.txt');
@@ -374,7 +374,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $files = [ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ];
         $zip = $this->createZipFile($files);
-        $storage = new ZipFileStorage($zip);
+        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
 
         foreach (array_keys($files) as $file) {
             Assert::true($storage->delete($file));
