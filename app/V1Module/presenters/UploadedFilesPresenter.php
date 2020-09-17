@@ -9,22 +9,26 @@ use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
-use App\Helpers\UploadedFileStorage;
+use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Entity\UploadedFile;
 use App\Responses\GuzzleResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use ForceUTF8\Encoding;
 use Nette\Application\Responses\FileResponse;
 use Nette\Utils\Strings;
+use DateTime;
+use Exception;
 
 /**
  * Endpoints for management of uploaded files
  */
 class UploadedFilesPresenter extends BasePresenter
 {
+    public const FILENAME_PATTERN = '#^[a-z0-9\- _\.()\[\]!]+$#i';
 
     /**
      * @var UploadedFiles
@@ -33,7 +37,7 @@ class UploadedFilesPresenter extends BasePresenter
     public $uploadedFiles;
 
     /**
-     * @var UploadedFileStorage
+     * @var FileStorageManager
      * @inject
      */
     public $fileStorage;
@@ -174,7 +178,17 @@ class UploadedFilesPresenter extends BasePresenter
             throw new CannotReceiveUploadedFileException($file->getName(), $file->getError());
         }
 
-        $uploadedFile = $this->fileStorage->store($file, $user);
+        if (!Strings::match($file->getName(), self::FILENAME_PATTERN)) {
+            throw new CannotReceiveUploadedFileException($file->getName(), "File name contains invalid characters");
+        }
+
+        try {
+            $uploadedFile = new UploadedFile($file->getName(), new DateTime(), $file->getSize(), $user);
+            $this->fileStorage->storeUploadedFile($uploadedFile, $file);
+        } catch (Exception $e) {
+            throw new InternalServerException("Cannot move uploaded file to internal server storage");
+        }
+
         $this->uploadedFiles->persist($uploadedFile);
         $this->uploadedFiles->flush();
         $this->sendSuccessResponse($uploadedFile);

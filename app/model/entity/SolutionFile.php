@@ -21,9 +21,9 @@ class SolutionFile extends UploadedFile implements JsonSerializable
      */
     protected $solution;
 
-    public function __construct($name, DateTime $uploadedAt, $fileSize, ?User $user, $filePath, Solution $solution)
+    public function __construct($name, DateTime $uploadedAt, $fileSize, ?User $user, Solution $solution)
     {
-        parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath);
+        parent::__construct($name, $uploadedAt, $fileSize, $user);
         $this->solution = $solution;
         $solution->addFile($this);
     }
@@ -35,7 +35,6 @@ class SolutionFile extends UploadedFile implements JsonSerializable
             $file->getUploadedAt(),
             $file->getFileSize(),
             $file->getUser(),
-            $file->getLocalFilePath(),
             $solution
         );
     }

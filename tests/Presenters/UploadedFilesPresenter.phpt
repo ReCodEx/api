@@ -7,7 +7,10 @@ use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Logins;
 use App\Exceptions\ForbiddenRequestException;
-use App\Helpers\UploadedFileStorage;
+use App\Helpers\FileStorageManager;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use Doctrine\ORM\EntityManager;
 use Nette\Utils\Json;
 use Tester\Assert;
@@ -53,6 +56,15 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->logins = $container->getByType(Logins::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            new TmpFilesHelper()
+        ));
     }
 
     protected function setUp()
@@ -131,11 +143,11 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $filename = "file.ext";
         $content = "ContentOfContentedFile";
         $vfs = vfsStream::setup("root", null, [$filename => $content]);
-        $vfsFile = $vfs->getChild($filename);
+        //$vfsFile = $vfs->getChild($filename);
 
         // create new file upload
         $user = $this->logins->getUser($this->userLogin, $this->userPassword);
-        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user, $vfsFile->url());
+        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
@@ -158,11 +170,11 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $filename = "file.ext";
         $content = "ContentOfContentedFile";
         $vfs = vfsStream::setup("root", null, [$filename => $content]);
-        $vfsFile = $vfs->getChild($filename);
+        //$vfsFile = $vfs->getChild($filename);
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user, $vfsFile->url());
+        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
@@ -188,11 +200,11 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $filename = "file.ext";
         $content = iconv("UTF-8", "Windows-1250", "Žluťoučké kobylky");
         $vfs = vfsStream::setup("root", null, [$filename => $content]);
-        $vfsFile = $vfs->getChild($filename);
+        //$vfsFile = $vfs->getChild($filename);
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user, $vfsFile->url());
+        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
@@ -220,8 +232,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $path = __DIR__ . "/uploads/weird.zip";
-        $uploadedFile = new UploadedFile("weird.zip", new DateTime(), filesize($path), $user, $path);
+        $uploadedFile = new UploadedFile("weird.zip", new DateTime(), filesize($path), $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
@@ -251,15 +262,16 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $filename = "file.ext";
         $content = chr(0xef) . chr(0xbb) . chr(0xbf) . "Hello";
         $vfs = vfsStream::setup("root", null, [$filename => ""]);
+        /*
         $vfsFile = $vfs->getChild($filename);
-
         $f = fopen($vfsFile->url(), "wb");
         fwrite($f, $content);
         fclose($f);
+        */
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user, $vfsFile->url());
+        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
@@ -302,13 +314,10 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $user = current($this->presenter->users->findAll());
         $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname', 'error' => 0];
         $fileUpload = new Nette\Http\FileUpload($file);
-        $uploadedFile = new UploadedFile('name', new DateTime(), 1, $user, 'filepath');
 
         // mock file storage
-        $mockFileStorage = Mockery::mock(UploadedFileStorage::class);
-        $mockFileStorage->shouldReceive("store")->withArgs([$fileUpload, Mockery::any()])->andReturn(
-            $uploadedFile
-        )->once();
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("storeUploadedFile")->withArgs([Mockery::any(), $fileUpload])->once();
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(

@@ -2,8 +2,6 @@
 
 namespace App\Helpers;
 
-use Nette;
-use Nette\Utils\Arrays;
 use App\Helpers\FileStorage\IFileStorage;
 use App\Helpers\FileStorage\IHashFileStorage;
 use App\Helpers\FileStorage\IImmutableFile;
@@ -14,6 +12,10 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
 use App\Helpers\TmpFilesHelper;
+use App\Exceptions\InvalidArgumentException;
+use Nette\Utils\Arrays;
+use Nette\Http\FileUpload;
+use Nette;
 
 /**
  * File storage manager provides access to underlying file storages.
@@ -61,28 +63,35 @@ class FileStorageManager
         return $base;
     }
 
-
-    /**
-     * Retrieve a supplementary file by its hash and return an immutable file object.
-     * @param string $hash hash identification of the file
-     * @return IImmutableFile|null a file object or null if no such file exists
-     */
-    public function getSupplementaryFileByHash(string $hash): ?IImmutableFile
-    {
-        return $this->hashStorage->fetch($hash);
-    }
-
     /**
      * Get path to temporary uploaded file.
+     * @param UploadedFile $file uploaded file DB entity with file metadata
      */
-    private function getUploadedFilePath(UploadedFile $uploadedFile): string
+    private function getUploadedFilePath(UploadedFile $file): string
     {
         $dir = self::UPLOADS;
-        $id = $uploadedFile->getId();
-        $name = $uploadedFile->getName();
+        $id = $file->getId();
+        $name = $file->getName();
         return "$dir/${id}_$name";
     }
-    
+
+    /**
+     * Store uploaded file data for associated UploadedFile db record.
+     * @param UploadedFile $fileRecord database entity that corresponds to the uploaded file
+     * @param FileUpload $fileData wrapper of the actual uploaded file to be saved
+     * @throws InvalidArgumentException
+     * @throws FileStorageException
+     */
+    public function storeUploadedFile(UploadedFile $fileRecord, FileUpload $fileData)
+    {
+        $path = $this->getUploadedFilePath($fileRecord);
+        if (!$fileData->isOk()) {
+            throw new InvalidArgumentException("fileData", "File was not uploaded successfully");
+        }
+
+        $this->fileStorage->storeFile($fileData->getTemporaryFile(), $path); // move, no overwrite
+    }
+
     /**
      * Move uploaded file to persistent hash storage for supplementary files.
      * @param UploadedFile $uploadedFile to be moved from tmp upload storage to hash storage
@@ -93,6 +102,16 @@ class FileStorageManager
         $tmp = $this->tmpFilesHelper->createTmpFile('rexfsm');
         $this->fileStorage->extract($this->getUploadedFilePath($uploadedFile), $tmp);
         return $this->hashStorage->storeFile($tmp);
+    }
+
+    /**
+     * Retrieve a supplementary file by its hash and return an immutable file object.
+     * @param string $hash hash identification of the file
+     * @return IImmutableFile|null a file object or null if no such file exists
+     */
+    public function getSupplementaryFileByHash(string $hash): ?IImmutableFile
+    {
+        return $this->hashStorage->fetch($hash);
     }
 
     /**

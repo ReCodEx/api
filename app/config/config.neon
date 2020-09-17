@@ -5,7 +5,6 @@
 parameters:
   php:
     mbstring.substitute_character: ?
-  uploadDir: %appDir%/../uploaded_data
 
   jobConfig:
     storageDir: %appDir%/../job_config
@@ -353,7 +352,6 @@ services:
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\BackendSubmitHelper
   - App\Helpers\SubmissionHelper
-  - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\EvaluationPointsLoader
   - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%)
