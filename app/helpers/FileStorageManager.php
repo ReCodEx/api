@@ -12,6 +12,8 @@ use App\Model\Entity\Submission;
 use App\Model\Entity\Solution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
+use App\Model\Entity\UploadedFile;
+use App\Helpers\TmpFilesHelper;
 
 /**
  * File storage manager provides access to underlying file storages.
@@ -38,13 +40,17 @@ class FileStorageManager
     /** @var IHashFileStorage */
     private $hashStorage;
 
+    /** @var TmpFilesHelper */
+    private $tmpFilesHelper;
+
     /**
      * @param array $params Injected configuration parameters.
      */
-    public function __construct(IFileStorage $fileStorage, IHashFileStorage $hashStorage)
+    public function __construct(IFileStorage $fileStorage, IHashFileStorage $hashStorage, TmpFilesHelper $tmp)
     {
         $this->fileStorage = $fileStorage;
         $this->hashStorage = $hashStorage;
+        $this->tmpFilesHelper = $tmp;
     }
 
     private static function augmentDir(string $base, $entity): string
@@ -64,6 +70,29 @@ class FileStorageManager
     public function getSupplementaryFileByHash(string $hash): ?IImmutableFile
     {
         return $this->hashStorage->fetch($hash);
+    }
+
+    /**
+     * Get path to temporary uploaded file.
+     */
+    private function getUploadedFilePath(UploadedFile $uploadedFile): string
+    {
+        $dir = self::UPLOADS;
+        $id = $uploadedFile->getId();
+        $name = $uploadedFile->getName();
+        return "$dir/${id}_$name";
+    }
+    
+    /**
+     * Move uploaded file to persistent hash storage for supplementary files.
+     * @param UploadedFile $uploadedFile to be moved from tmp upload storage to hash storage
+     * @return string hash identifying stored supplementary file
+     */
+    public function storeUploadedSupplementaryFile(UploadedFile $uploadedFile): string
+    {
+        $tmp = $this->tmpFilesHelper->createTmpFile('rexfsm');
+        $this->fileStorage->extract($this->getUploadedFilePath($uploadedFile), $tmp);
+        return $this->hashStorage->storeFile($tmp);
     }
 
     /**

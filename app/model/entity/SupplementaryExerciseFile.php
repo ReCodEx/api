@@ -73,7 +73,6 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
      * @param DateTime $uploadedAt
      * @param int $fileSize
      * @param string $hashName
-     * @param string $fileServerPath
      * @param User|null $user
      * @param Exercise|null $exercise
      * @param Pipeline|null $pipeline
@@ -83,14 +82,12 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
         DateTime $uploadedAt,
         int $fileSize,
         string $hashName,
-        string $fileServerPath,
         ?User $user,
         Exercise $exercise = null,
         Pipeline $pipeline = null
     ) {
         parent::__construct($name, $uploadedAt, $fileSize, $user);
         $this->hashName = $hashName;
-        $this->fileServerPath = $fileServerPath;
 
         $this->exercises = new ArrayCollection();
         $this->assignments = new ArrayCollection();
@@ -107,36 +104,26 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
         }
     }
 
-    public static function fromUploadedFileAndExercise(
-        UploadedFile $file,
-        Exercise $exercise,
-        string $hashName,
-        string $fileServerPath
-    ) {
+    public static function fromUploadedFileAndExercise(UploadedFile $file, Exercise $exercise, string $hashName)
+    {
         return new self(
             $file->getName(),
             $file->getUploadedAt(),
             $file->getFileSize(),
             $hashName,
-            $fileServerPath,
             $file->getUser(),
             $exercise,
             null
         );
     }
 
-    public static function fromUploadedFileAndPipeline(
-        UploadedFile $file,
-        Pipeline $pipeline,
-        string $hashName,
-        string $fileServerPath
-    ) {
+    public static function fromUploadedFileAndPipeline(UploadedFile $file, Pipeline $pipeline, string $hashName)
+    {
         return new self(
             $file->getName(),
             $file->getUploadedAt(),
             $file->getFileSize(),
             $hashName,
-            $fileServerPath,
             $file->getUser(),
             null,
             $pipeline

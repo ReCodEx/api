@@ -3,9 +3,12 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
-use App\Helpers\ExerciseFileStorage;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\FileServerProxy;
+use App\Helpers\TmpFilesHelper;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExerciseFilesPresenter;
@@ -52,6 +55,15 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
         $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
         $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            new TmpFilesHelper()
+        ));
     }
 
     protected function setUp()
@@ -91,25 +103,11 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->persist($file2);
         $this->presenter->uploadedFiles->flush();
 
-        /** @var FileServerProxy|Mockery\Mock $fileServerMock */
-        $fileServerMock = Mockery::mock(FileServerProxy::class);
-        $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file1])->andReturn(
-            $fileServerResponse1
-        )->between(0, 1);
-        $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file2])->andReturn(
-            $fileServerResponse2
-        )->between(0, 1);
-        $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file1, $file2])->andReturn(
-            $fileServerResponseMerged
-        )->between(0, 1);
-        $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
-
-        // mock file storage
-        $mockFileStorage = Mockery::mock(\App\Helpers\UploadedFileStorage::class);
-        $mockFileStorage->shouldDeferMissing();
-        $mockFileStorage->shouldReceive("delete")->with($file1)->once();
-        $mockFileStorage->shouldReceive("delete")->with($file2)->once();
-        $this->presenter->uploadedFileStorage = $mockFileStorage;
+        $fileStorage = Mockery::mock(FileStorageManager::class);
+        $fileStorage->shouldDeferMissing();
+        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file1)->once();
+        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file2)->once();
+        $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -158,17 +156,10 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             $this->presenter->uploadedFiles->persist($file);
         }
 
-
-        /** @var FileServerProxy|Mockery\Mock $fileServerMock */
-        $fileServerMock = Mockery::mock(FileServerProxy::class);
-        $fileServerMock->shouldNotReceive("sendSupplementaryFiles");
-        $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
-
-        // mock file storage
-        $mockFileStorage = Mockery::mock(\App\Helpers\UploadedFileStorage::class);
-        $mockFileStorage->shouldDeferMissing();
-        $mockFileStorage->shouldNotReceive("delete");
-        $this->presenter->uploadedFileStorage = $mockFileStorage;
+        $fileStorage = Mockery::mock(FileStorageManager::class);
+        $fileStorage->shouldDeferMissing();
+        $fileStorage->shouldNotReceive("storeUploadedSupplementaryFile");
+        $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -218,17 +209,10 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             $this->presenter->uploadedFiles->persist($file);
         }
 
-
-        /** @var FileServerProxy|Mockery\Mock $fileServerMock */
-        $fileServerMock = Mockery::mock(FileServerProxy::class);
-        $fileServerMock->shouldNotReceive("sendSupplementaryFiles");
-        $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
-
-        // mock file storage
-        $mockFileStorage = Mockery::mock(\App\Helpers\UploadedFileStorage::class);
-        $mockFileStorage->shouldDeferMissing();
-        $mockFileStorage->shouldNotReceive("delete");
-        $this->presenter->uploadedFileStorage = $mockFileStorage;
+        $fileStorage = Mockery::mock(FileStorageManager::class);
+        $fileStorage->shouldDeferMissing();
+        $fileStorage->shouldNotReceive("storeUploadedSupplementaryFile");
+        $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -271,7 +255,6 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             new DateTime(),
             1,
             "hashName1",
-            "fileServerPath1",
             $user,
             $exercise
         );
@@ -280,7 +263,6 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             new DateTime(),
             2,
             "hashName2",
-            "fileServerPath2",
             $user,
             $exercise
         );
@@ -317,7 +299,6 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             new DateTime(),
             1,
             "hashName1",
-            "fileServerPath1",
             $user,
             $exercise
         );

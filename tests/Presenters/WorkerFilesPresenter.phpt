@@ -7,6 +7,7 @@ use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Helpers\WorkerFilesConfig;
+use App\Helpers\TmpFilesHelper;
 use App\V1Module\Presenters\WorkerFilesPresenter;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
@@ -51,7 +52,11 @@ class TestWorkerFilesPresenter extends Tester\TestCase
         // patch container, since we cannot create actual file storage manarer
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
-        $this->container->addService($fsName, new FileStorageManager(Mockery::mock(LocalFileStorage::class), Mockery::mock(LocalHashFileStorage::class)));
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class), 
+            Mockery::mock(LocalHashFileStorage::class),
+            new TmpFilesHelper()
+        ));
 
         // Rig HTTP authentication credentials
         $configName = current($this->container->findByType(WorkerFilesConfig::class));

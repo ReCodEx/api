@@ -18,6 +18,7 @@ use ZipArchive;
 /**
  * Helper class for communication with dedicated fileserver. The fileserver uses HTTP Basic Auth,
  * so proper credentials must be set in configuration of the API.
+ * DEPRECATED
  */
 class FileServerProxy
 {

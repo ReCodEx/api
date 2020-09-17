@@ -10,13 +10,13 @@ use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
+use App\Helpers\FileStorageManager;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Repository\AttachmentFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Helpers\ExerciseFileStorage;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Responses\ZipFilesResponse;
@@ -56,16 +56,10 @@ class ExerciseFilesPresenter extends BasePresenter
     public $attachmentFiles;
 
     /**
-     * @var ExerciseFileStorage
+     * @var FileStorageManager
      * @inject
      */
-    public $supplementaryFileStorage;
-
-    /**
-     * @var UploadedFileStorage
-     * @inject
-     */
-    public $uploadedFileStorage;
+    public $fileStorage;
 
     /**
      * @var IExercisePermissions
@@ -113,7 +107,6 @@ class ExerciseFilesPresenter extends BasePresenter
         $exercise = $this->exercises->findOrThrow($id);
 
         $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-        $deletedFiles = [];
         $currentSupplementaryFiles = [];
         $totalFileSize = 0;
 
@@ -161,24 +154,15 @@ class ExerciseFilesPresenter extends BasePresenter
 
         /** @var UploadedFile $file */
         foreach ($files as $file) {
-            $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
+            $hash = $this->fileStorage->storeUploadedSupplementaryFile($file);
+            $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndExercise($file, $exercise, $hash);
             $this->uploadedFiles->persist($exerciseFile, false);
             $this->uploadedFiles->remove($file, false);
-            $deletedFiles[] = $file;
         }
 
         $exercise->updatedNow();
         $this->exercises->flush();
         $this->uploadedFiles->flush();
-
-        /** @var UploadedFile $file */
-        foreach ($deletedFiles as $file) {
-            try {
-                $this->uploadedFileStorage->delete($file);
-            } catch (Exception $e) {
-                $this->logger->log($e->getMessage(), ILogger::EXCEPTION);
-            }
-        }
 
         $this->configChecker->check($exercise);
         $this->exercises->flush();

@@ -4,8 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
-use App\Helpers\ExerciseFileStorage;
-use App\Helpers\FileServerProxy;
+use App\Helpers\FileStorageManager;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -369,25 +368,11 @@ class TestPipelinesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->persist($file2);
         $this->presenter->uploadedFiles->flush();
 
-        /** @var FileServerProxy|Mockery\Mock $fileServerMock */
-        $fileServerMock = Mockery::mock(FileServerProxy::class);
-        $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file1])->andReturn(
-            $fileServerResponse1
-        )->between(0, 1);
-        $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file2])->andReturn(
-            $fileServerResponse2
-        )->between(0, 1);
-        $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file1, $file2])->andReturn(
-            $fileServerResponseMerged
-        )->between(0, 1);
-        $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
-
-        // mock file storage
-        $mockFileStorage = Mockery::mock($this->presenter->uploadedFileStorage);
-        $mockFileStorage->shouldDeferMissing();
-        $mockFileStorage->shouldReceive("delete")->with($file1)->once();
-        $mockFileStorage->shouldReceive("delete")->with($file2)->once();
-        $this->presenter->uploadedFileStorage = $mockFileStorage;
+        $fileStorage = Mockery::mock(FileStorageManager::class);
+        $fileStorage->shouldDeferMissing();
+        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file1)->once();
+        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file2)->once();
+        $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -429,7 +414,6 @@ class TestPipelinesPresenter extends Tester\TestCase
             new DateTime(),
             1,
             "hashName1",
-            "fileServerPath1",
             $user,
             null,
             $pipeline
@@ -439,7 +423,6 @@ class TestPipelinesPresenter extends Tester\TestCase
             new DateTime(),
             2,
             "hashName2",
-            "fileServerPath2",
             $user,
             null,
             $pipeline
