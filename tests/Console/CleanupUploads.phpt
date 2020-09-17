@@ -60,12 +60,12 @@ class TestCleanupUploads extends Tester\TestCase
 
         // Insert our own uploaded files
         for ($i = 0; $i < 5; $i++) {
-            $uploadedFile = new UploadedFile("filenameRecent", new DateTime(), 1, $user, "url");
+            $uploadedFile = new UploadedFile("filenameRecent", new DateTime(), 1, $user);
             $this->uploadedFiles->persist($uploadedFile, false);
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $uploadedFile = new UploadedFile("filenameOld", (new DateTime())->modify("-1 year"), 1, $user, "url");
+            $uploadedFile = new UploadedFile("filenameOld", (new DateTime())->modify("-1 year"), 1, $user);
             $this->uploadedFiles->persist($uploadedFile, false);
         }
 

@@ -97,8 +97,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-        $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user, $filename1);
-        $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user, $filename2);
+        $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user);
+        $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user);
         $this->presenter->uploadedFiles->persist($file1);
         $this->presenter->uploadedFiles->persist($file2);
         $this->presenter->uploadedFiles->flush();
@@ -152,7 +152,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
         $files = [];
         for ($i = 0; $i < $fileLimit * 2; $i++) {
-            $files[] = $file = new UploadedFile("...", new \DateTime(), 0, $user, "...");
+            $files[] = $file = new UploadedFile("...", new \DateTime(), 0, $user);
             $this->presenter->uploadedFiles->persist($file);
         }
 
@@ -205,7 +205,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
         $files = [];
         for ($i = 0; $i < 10; $i++) {
-            $files[] = $file = new UploadedFile("...", new \DateTime(), 1024, $user, "...");
+            $files[] = $file = new UploadedFile("...", new \DateTime(), 1024, $user);
             $this->presenter->uploadedFiles->persist($file);
         }
 
@@ -350,8 +350,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         // prepare files into exercise
         $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
         $exercise = $this->presenter->exercises->searchByName("An exercise")[0];
-        $expectedFile1 = new AttachmentFile("name1", new DateTime(), 1, "hashName1", $user, $exercise);
-        $expectedFile2 = new AttachmentFile("name2", new DateTime(), 2, "hashName2", $user, $exercise);
+        $expectedFile1 = new AttachmentFile("name1", new DateTime(), 1, $user, $exercise);
+        $expectedFile2 = new AttachmentFile("name2", new DateTime(), 2, $user, $exercise);
         $this->attachmentFiles->persist($expectedFile1, false);
         $this->attachmentFiles->persist($expectedFile2, false);
         $this->attachmentFiles->flush();
@@ -388,7 +388,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $exercise = current($this->presenter->exercises->findAll());
         $filesCount = $exercise->getAttachmentFiles()->count();
-        $file = new AttachmentFile("name", new DateTime(), 1, "localPath", $user, $exercise);
+        $file = new AttachmentFile("name", new DateTime(), 1, $user, $exercise);
         $this->attachmentFiles->persist($file);
         Assert::count($filesCount + 1, $exercise->getAttachmentFiles());
 

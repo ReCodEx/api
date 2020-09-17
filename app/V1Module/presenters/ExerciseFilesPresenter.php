@@ -9,7 +9,6 @@ use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\FileServerProxy;
-use App\Helpers\UploadedFileStorage;
 use App\Helpers\FileStorageManager;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;

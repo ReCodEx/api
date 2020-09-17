@@ -5,6 +5,9 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileStorageManager;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -36,6 +39,15 @@ class TestPipelinesPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            new TmpFilesHelper()
+        ));
     }
 
     protected function setUp()
@@ -362,8 +374,8 @@ class TestPipelinesPresenter extends Tester\TestCase
 
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-        $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user, $filename1);
-        $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user, $filename2);
+        $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user);
+        $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user);
         $this->presenter->uploadedFiles->persist($file1);
         $this->presenter->uploadedFiles->persist($file2);
         $this->presenter->uploadedFiles->flush();
