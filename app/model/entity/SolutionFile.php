@@ -2,9 +2,11 @@
 
 namespace App\Model\Entity;
 
-use JsonSerializable;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\IImmutableFile;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 use DateTime;
 
 /**
@@ -37,5 +39,10 @@ class SolutionFile extends UploadedFile implements JsonSerializable
             $file->getUser(),
             $solution
         );
+    }
+
+    public function getFile(FileStorageManager $manager): ?IImmutableFile
+    {
+        return $manager->getSolutionFile($this->getSolution(), $this->getName());
     }
 }

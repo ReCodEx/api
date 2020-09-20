@@ -21,10 +21,11 @@ interface IImmutableFile
     public function getSize(): int;
 
     /**
-     * Retrive the entire file contents as a binary-safe string.
+     * Retrive the entire file contents as a (binary) string.
+     * @param int $sizeLimit maximal length of the result, zero means no limit
      * @return string
      */
-    public function getContents(): string;
+    public function getContents(int $sizeLimit = 0): string;
 
     /**
      * Retrive the entire file and save it to local path.

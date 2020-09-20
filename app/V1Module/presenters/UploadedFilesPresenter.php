@@ -8,14 +8,13 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
-use App\Helpers\FileServerProxy;
 use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Entity\UploadedFile;
-use App\Responses\GuzzleResponse;
+use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use ForceUTF8\Encoding;
 use Nette\Application\Responses\FileResponse;
@@ -61,12 +60,6 @@ class UploadedFilesPresenter extends BasePresenter
     public $supplementaryFiles;
 
     /**
-     * @var FileServerProxy
-     * @inject
-     */
-    public $fileServerProxy;
-
-    /**
      * @var UploadsConfig
      * @inject
      */
@@ -109,8 +102,12 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionDownload(string $id)
     {
-        $file = $this->uploadedFiles->findOrThrow($id);
-        $this->sendResponse(new FileResponse($file->getLocalFilePath(), $file->getName()));
+        $fileEntity = $this->uploadedFiles->findOrThrow($id);
+        $file = $fileEntity->getFile($this->fileStorage);
+        if (!$file) {
+            throw new NotFoundException("File not found in the storage");
+        }
+        $this->sendResponse(new StorageFileResponse($file, $fileEntity->getName()));
     }
 
     public function checkContent(string $id)
@@ -128,21 +125,26 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionContent(string $id)
     {
-        $file = $this->uploadedFiles->findOrThrow($id);
-        $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
-        $content = $file->getContent($sizeLimit);
+        $fileEntity = $this->uploadedFiles->findOrThrow($id);
+        $file = $fileEntity->getFile($this->fileStorage);
+        if (!$file) {
+            throw new NotFoundException("File not found in the storage");
+        }
 
+        $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
+        $contents = $file->getContents($sizeLimit);
+        
         // Remove UTF BOM prefix...
         $utf8bom = "\xef\xbb\xbf";
-        $content = Strings::replace($content, "~^$utf8bom~");
+        $contents = Strings::replace($contents, "~^$utf8bom~");
 
-        $fixedContent = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
+        $fixedContents = @mb_convert_encoding($contents, 'UTF-8', 'UTF-8');
 
         $this->sendSuccessResponse(
             [
-                "content" => $fixedContent,
-                "malformedCharacters" => $fixedContent !== $content,
-                "tooLarge" => $file->getFileSize() > $sizeLimit,
+                "content" => $fixedContents,
+                "malformedCharacters" => $fixedContents !== $contents,
+                "tooLarge" => $fileEntity->getFileSize() > $sizeLimit,
             ]
         );
     }
@@ -212,13 +214,11 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionDownloadSupplementaryFile(string $id)
     {
-        $file = $this->supplementaryFiles->findOrThrow($id);
-
-        $stream = $this->fileServerProxy->getFileserverFileStream($file->getFileServerPath());
-        if ($stream === null) {
-            throw new NotFoundException("Supplementary file '$id' not found on remote fileserver");
+        $fileEntity = $this->supplementaryFiles->findOrThrow($id);
+        $file = $fileEntity->getFile($this->fileStorage);
+        if (!$file) {
+            throw new NotFoundException("Supplementary file not found in the storage");
         }
-
-        $this->sendResponse(new GuzzleResponse($stream, $file->getName()));
+        $this->sendResponse(new StorageFileResponse($file, $fileEntity->getName()));
     }
 }

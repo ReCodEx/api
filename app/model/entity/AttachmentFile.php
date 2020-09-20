@@ -2,11 +2,13 @@
 
 namespace App\Model\Entity;
 
-use DateTime;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\IImmutableFile;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Doctrine\Common\Collections\ArrayCollection;
+use JsonSerializable;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -81,5 +83,10 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
     {
         $result = parent::jsonSerialize();
         return $result;
+    }
+   
+    public function getFile(FileStorageManager $manager): ?IImmutableFile
+    {
+        return $manager->getAttachmentFile($this);
     }
 }
