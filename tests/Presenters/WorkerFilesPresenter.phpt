@@ -55,7 +55,7 @@ class TestWorkerFilesPresenter extends Tester\TestCase
         $this->container->addService($fsName, new FileStorageManager(
             Mockery::mock(LocalFileStorage::class), 
             Mockery::mock(LocalHashFileStorage::class),
-            new TmpFilesHelper()
+            Mockery::mock(TmpFilesHelper::class)
         ));
 
         // Rig HTTP authentication credentials

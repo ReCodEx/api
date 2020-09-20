@@ -69,10 +69,12 @@ class LocalImmutableFile implements IImmutableFile
         return $this->fileSize;
     }
     
-    public function getContents(): string
+    public function getContents(int $sizeLimit = 0): string
     {
         $this->checkExistence();
-        return @file_get_contents($this->realPath);
+        return $sizeLimit
+            ? @file_get_contents($this->realPath, false, null, 0, $sizeLimit)
+            : @file_get_contents($this->realPath);
     }
 
     public function saveAs(string $path): void

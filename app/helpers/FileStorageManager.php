@@ -11,6 +11,7 @@ use App\Model\Entity\Solution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\AttachmentFile;
 use App\Helpers\TmpFilesHelper;
 use App\Exceptions\InvalidArgumentException;
 use Nette\Utils\Arrays;
@@ -66,6 +67,7 @@ class FileStorageManager
     /**
      * Get path to temporary uploaded file.
      * @param UploadedFile $file uploaded file DB entity with file metadata
+     * @return string path
      */
     private function getUploadedFilePath(UploadedFile $file): string
     {
@@ -93,6 +95,17 @@ class FileStorageManager
     }
 
     /**
+     * Retrieve an plain uploaded file (in tmp storage).
+     * @param UploadedFile $file corresponding database entity
+     * @return IImmutableFile|null
+     */
+    public function getUploadedFile(UploadedFile $file): ?IImmutableFile
+    {
+        $path = $this->getUploadedFilePath($file);
+        return $this->fileStorage->fetch($path);
+    }
+
+    /**
      * Move uploaded file to persistent hash storage for supplementary files.
      * @param UploadedFile $uploadedFile to be moved from tmp upload storage to hash storage
      * @return string hash identifying stored supplementary file
@@ -112,6 +125,31 @@ class FileStorageManager
     public function getSupplementaryFileByHash(string $hash): ?IImmutableFile
     {
         return $this->hashStorage->fetch($hash);
+    }
+
+    /**
+     * Get path to attachment file within the file storage.
+     * @param AttachmentFile $file
+     * @return string path
+     */
+    private function getAttachmentFilePath(AttachmentFile $file): string
+    {
+        $dir = self::ATTACHMENTS;
+        $user = $file->getUserIdEvenIfDeleted();
+        $id = $file->getId();
+        $name = $file->getName();
+        return "$dir/user_$user/${id}_${name}";
+    }
+
+    /**
+     * Retrieve an atttachment file (file attached to specification of an exercise/assignment).
+     * @param AttachmentFile $file
+     * @return IImmutableFile|null a file object or null if no such file exists
+     */
+    public function getAttachmentFile(AttachmentFile $file): ?IImmutableFile
+    {
+        $path = $this->getAttachmentFilePath($file);
+        return $this->fileStorage->fetch($path);
     }
 
     /**

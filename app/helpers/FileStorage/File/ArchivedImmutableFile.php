@@ -84,10 +84,10 @@ class ArchivedImmutableFile implements IImmutableFile
         return $this->fileSize;
     }
     
-    public function getContents(): string
+    public function getContents(int $sizeLimit = 0): string
     {
         $zip = $this->openZip();
-        $contents = $zip->getFromName($this->entry);
+        $contents = $zip->getFromName($this->entry, $sizeLimit);
         $zip->close();
 
         if ($contents === false) {

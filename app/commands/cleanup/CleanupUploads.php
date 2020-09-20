@@ -49,9 +49,10 @@ class CleanupUploads extends Command
 
         foreach ($unused as $file) {
             $this->uploadedFiles->remove($file);
-            if (!$file->isLocal()) {
-                continue;
-            }
+            // FIXME
+            //if (!$file->isLocal()) {
+            //    continue;
+            //}
 
             try {
                 FileSystem::delete($file->getLocalFilePath());

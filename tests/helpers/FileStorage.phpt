@@ -16,6 +16,9 @@ require __DIR__ . "/../bootstrap.php";
 
 /**
  * @testCase
+ * 
+ * !!! we are using actual filesystem (tmp directory) !!!
+ * the reason is that vfs is not supported by ZipArchive
  */
 class TestFileStorage extends Tester\TestCase
 {
@@ -25,16 +28,30 @@ class TestFileStorage extends Tester\TestCase
 
     private static function createTmpDir()
     {
-        $path = tempnam(sys_get_temp_dir(), "recodex");
-        if (file_exists($path) && is_file($path)) {
-            @unlink($path);
-            @mkdir($path, 0777, true);
+        static $counter = 0;
+
+        $root = sys_get_temp_dir();
+        if (!$root || !is_dir($root)) {
+            throw new \Exception("No tmp base dir.");
         }
-        return is_dir($path) ? $path : null;
+
+        do {
+            $ts = time();
+            ++$counter;
+            $path = "$root/recodex-$ts-$counter";
+        } while (file_exists($path) || !@mkdir($path));
+
+        if (!is_dir($path) || !Strings::startsWith($path, sys_get_temp_dir())) {
+            throw new \Exception("Unable to create tmp dir $path");
+        }
+        return $path;
     }
 
     private static function rmdirRecursive($path)
     {
+        if (!Strings::startsWith($path, sys_get_temp_dir())) {
+            throw new \Exception("Must not rmdir something oustise temp dir $path");
+        }   
         if (Strings::endsWith($path, '/.') || Strings::endsWith($path, '/..')) return;
         if (is_dir($path)) {
             $entries = new DirectoryIterator($path);
@@ -127,13 +144,16 @@ class TestFileStorage extends Tester\TestCase
 
     protected function setUp()
     {
+        if ($this->tmpDir && is_dir($this->tmpDir)) {
+            self::rmdirRecursive($this->tmpDir);
+        }
         $this->tmpDir = self::createTmpDir();
     }
 
     public function __destruct()
     {
         if ($this->tmpDir && is_dir($this->tmpDir)) {
-            //self::rmdirRecursive($this->tmpDir);
+            self::rmdirRecursive($this->tmpDir);
         }
     }
 
@@ -146,6 +166,9 @@ class TestFileStorage extends Tester\TestCase
         Assert::type(IImmutableFile::class, $file);
         Assert::equal($hash, $file->getStoragePath());
         Assert::equal($contents, $file->getContents());
+        Assert::equal($contents, $file->getContents(strlen($contents)));
+        Assert::equal($contents, $file->getContents(1024));
+        Assert::equal(substr($contents, 0, 5), $file->getContents(5));
     }
 
     public function testHashStoreFetchNonexist()
@@ -241,6 +264,9 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal('AAAAA', $fileA->getContents());
         $fileB = $storage->fetchOrThrow('b.txt');
         Assert::equal('BBBB', $fileB->getContents());
+        Assert::equal('BBBB', $fileB->getContents(4));
+        Assert::equal('BBBB', $fileB->getContents(42));
+        Assert::equal('BB', $fileB->getContents(2));
     }
 
     public function testZipFileStorageFetchNonexist()
@@ -387,13 +413,16 @@ class TestFileStorage extends Tester\TestCase
     public function testLocalFileStorageFetch()
     {
         $storage = $this->prepareLocalStorage([
-            'a.txt' => 'AAA',
+            'a.txt' => 'AAAAA',
             'b.txt' => 'BBB',
             'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR']
         ]);
 
         $fileA = $storage->fetch('a.txt');
-        Assert::equal('AAA', $fileA->getContents());
+        Assert::equal('AAAAA', $fileA->getContents());
+        Assert::equal('AAAAA', $fileA->getContents(5));
+        Assert::equal('AAAAA', $fileA->getContents(42));
+        Assert::equal('AAA', $fileA->getContents(3));
         $fileB = $storage->fetch('b.txt');
         $tmp1 = $this->createTmpFile();
         $fileB->saveAs($tmp1);

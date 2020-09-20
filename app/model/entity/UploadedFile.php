@@ -2,9 +2,11 @@
 
 namespace App\Model\Entity;
 
-use DateTime;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\IImmutableFile;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -42,6 +44,7 @@ class UploadedFile implements JsonSerializable
      */
     protected $localFilePath;
 
+    // DEPRECATED
     public function getContent($sizeLimit = null)
     {
         if ($this->localFilePath === null) {
@@ -87,6 +90,10 @@ class UploadedFile implements JsonSerializable
         return $this->user->isDeleted() ? null : $this->user;
     }
 
+    public function getUserIdEvenIfDeleted(): string
+    {
+        return $this->user->getId();
+    }
 
     /**
      * @param string $name Name of the file
@@ -127,12 +134,12 @@ class UploadedFile implements JsonSerializable
     }
 
     /**
-     * Determines if file is stored on local filesystem
-     * DEPRECATED
-     * @return bool
+     * Retrieve a corresponding file object from file storage.
+     * @param FileStorageManager $manager the storage that retrieves the file
+     * @return IImmutableFile|null file object wrapper, null if the file is missing (e.g., was deleted)
      */
-    public function isLocal(): bool
+    public function getFile(FileStorageManager $manager): ?IImmutableFile
     {
-        return $this->localFilePath !== null;
+        return $manager->getUploadedFile($this);
     }
 }

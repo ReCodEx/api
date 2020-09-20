@@ -5,9 +5,12 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Model\Entity\AttachmentFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\SolutionFile;
 use App\Model\Repository\Logins;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
@@ -63,7 +66,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->container->addService($fsName, new FileStorageManager(
             Mockery::mock(LocalFileStorage::class),
             Mockery::mock(LocalHashFileStorage::class),
-            new TmpFilesHelper()
+            Mockery::mock(TmpFilesHelper::class)
         ));
     }
 
@@ -121,17 +124,24 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
-        $file = current($this->presenter->uploadedFiles->findAll());
+        $user = $this->logins->getUser($this->userLogin, $this->userPassword);
+        $uploadedFile = new UploadedFile("nonexistfile", new DateTime(), 1, $user);
+        $this->presenter->uploadedFiles->persist($uploadedFile);
+        $this->presenter->uploadedFiles->flush();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn(null)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET',
-            ['action' => 'download', 'id' => $file->getId()]
+            ['action' => 'download', 'id' => $uploadedFile->getId()]
         );
         Assert::exception(
             function () use ($request) {
                 $this->presenter->run($request);
             },
-            \Nette\Application\BadRequestException::class
+            NotFoundException::class
         );
     }
 
@@ -139,11 +149,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        // create virtual filesystem setup
         $filename = "file.ext";
-        $content = "ContentOfContentedFile";
-        $vfs = vfsStream::setup("root", null, [$filename => $content]);
-        //$vfsFile = $vfs->getChild($filename);
 
         // create new file upload
         $user = $this->logins->getUser($this->userLogin, $this->userPassword);
@@ -151,14 +157,18 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
+        // mock file storage
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+        
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET',
             ['action' => 'download', 'id' => $uploadedFile->getId()]
         );
         $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\FileResponse::class, $response);
-
-        Assert::equal($vfsFile->url(), $response->getFile());
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal($filename, $response->getName());
     }
 
@@ -166,18 +176,22 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        // create virtual filesystem setup
-        $filename = "file.ext";
-        $content = "ContentOfContentedFile";
-        $vfs = vfsStream::setup("root", null, [$filename => $content]);
-        //$vfsFile = $vfs->getChild($filename);
+        $contents = "ContentOfContentedFile";
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
+        $uploadedFile = new UploadedFile("file.ext", new DateTime(), strlen($contents), $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
+        // mock file storage
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFile->shouldReceive("getContents")->andReturn($contents)->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+        
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
@@ -187,7 +201,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
-        Assert::equal($content, $result['payload']['content']);
+        Assert::equal($contents, $result['payload']['content']);
         Assert::false($result['payload']['malformedCharacters']);
         Assert::false($result['payload']['tooLarge']);
     }
@@ -196,18 +210,22 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        // create virtual filesystem setup
-        $filename = "file.ext";
-        $content = iconv("UTF-8", "Windows-1250", "Žluťoučké kobylky");
-        $vfs = vfsStream::setup("root", null, [$filename => $content]);
-        //$vfsFile = $vfs->getChild($filename);
+        $contents = iconv("UTF-8", "Windows-1250", "Žluťoučké kobylky");
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
+        $uploadedFile = new UploadedFile("file.ext", new DateTime(), strlen($contents), $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
+        // mock file storage
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFile->shouldReceive("getContents")->andReturn($contents)->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+        
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
@@ -226,16 +244,27 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         );
     }
 
-    public function testContentEvenWeirderChars()
+    public function testContentWeirdTooManyChars()
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
+    
+        $size = 1024*1024;
+        $contents = random_bytes($size);
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-        $uploadedFile = new UploadedFile("weird.zip", new DateTime(), filesize($path), $user);
+        $uploadedFile = new UploadedFile("weird.bin", new DateTime(), $size, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
 
+        // mock file storage
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFile->shouldReceive("getContents")->andReturn($contents)->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+        
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
@@ -260,20 +289,21 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
         // create virtual filesystem setup
         $filename = "file.ext";
-        $content = chr(0xef) . chr(0xbb) . chr(0xbf) . "Hello";
-        $vfs = vfsStream::setup("root", null, [$filename => ""]);
-        /*
-        $vfsFile = $vfs->getChild($filename);
-        $f = fopen($vfsFile->url(), "wb");
-        fwrite($f, $content);
-        fclose($f);
-        */
+        $contents = chr(0xef) . chr(0xbb) . chr(0xbf) . "Hello";
 
         // create new file upload
         $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
         $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
+
+        // mock file storage
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFile->shouldReceive("getContents")->andReturn($contents)->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET',
@@ -336,13 +366,14 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->supervisorLogin);
 
-        $filename = "file.ext";
-        $content = "ContentOfContentedFile";
-        $vfs = vfsStream::setup("root", null, [$filename => $content]);
+        $em = $this->container->getByType(EntityManager::class);
+        $file = current($em->getRepository(SolutionFile::class)->findAll());
+        Assert::truthy($file);
 
-        $file = current($this->presenter->uploadedFiles->findAll());
-        $file->localFilePath = $vfs->getChild($filename)->url();
-        $this->em->flush();
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getSolutionFile")->withArgs([$file->getSolution(), $file->getName()])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET', [
@@ -351,24 +382,22 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         ]
         );
         $response = $this->presenter->run($request);
-
-        Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($file->getName(), $response->getName());
     }
 
     public function testGroupMemberCanAccessAttachmentFiles()
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        $filename = "file.ext";
-        $content = "ContentOfContentedFile";
-        $vfs = vfsStream::setup("root", null, [$filename => $content]);
-
         /** @var EntityManager $em */
         $em = $this->container->getByType(EntityManager::class);
-
         $file = current($em->getRepository(AttachmentFile::class)->findAll());
-        $file->localFilePath = $vfs->getChild($filename)->url();
-        $this->em->flush();
+
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getAttachmentFile")->withArgs([$file])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET', [
@@ -377,22 +406,21 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         ]
         );
         $response = $this->presenter->run($request);
-
-        Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($file->getName(), $response->getName());
     }
 
     public function testOutsiderCannotAccessAttachmentFiles()
     {
         $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
 
-        $filename = "file.ext";
-        $content = "ContentOfContentedFile";
-        $vfs = vfsStream::setup("root", null, [$filename => $content]);
-
         /** @var EntityManager $em */
         $em = $this->container->getByType(EntityManager::class);
-
         $file = current($em->getRepository(AttachmentFile::class)->findAll());
+
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getAttachmentFile")->withArgs([$file])->andReturn(null)->once();
+        $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
             $this->presenterPath, 'GET', [
@@ -401,15 +429,9 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         ]
         );
 
-        // an exception being thrown is success in this case - it means that the FileResponse
-        // tries to access the file, but the file does not exist on this machine
-        Assert::throws(
-            function () use ($request) {
+        Assert::exception(function () use ($request) {
                 $this->presenter->run($request);
-            },
-            \Nette\Application\BadRequestException::class,
-            "File '/some/path' doesn't exist."
-        );
+        }, NotFoundException::class, "Not Found - File not found in the storage");
     }
 
     public function testDownloadResultArchive()
@@ -421,13 +443,10 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->supplementaryFiles->flush();
 
         // mock everything you can
-        $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
-        $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
-        $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
-
-        $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-        $mockProxy->shouldReceive("getFileserverFileStream")->withAnyArgs()->andReturn($mockGuzzleStream);
-        $this->presenter->fileServerProxy = $mockProxy;
+        $fileMock = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getSupplementaryFileByHash")->withArgs([ "hash" ])->andReturn($fileMock)->once();
+        $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
             'V1:UploadedFiles',
@@ -435,9 +454,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             ['action' => 'downloadSupplementaryFile', 'id' => $file->id]
         );
         $response = $this->presenter->run($request);
-        Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
-
-        // Check invariants
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal($file->getName(), $response->getName());
     }
 
