@@ -8,6 +8,8 @@ use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\FileStorage\FileStorageException;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Solution;
+use App\Model\Entity\ReferenceExerciseSolution;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
@@ -153,29 +155,71 @@ class FileStorageManager
     }
 
     /**
+     * Get path to job configuration Yaml file.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return string path
+     */
+    private function getJobConfigPath(Submission $submission): string
+    {
+        $dir = self::augmentDir(self::JOB_CONFIGS, $submission);
+        $type = $submission::JOB_TYPE;
+        $id = $submission->getId();
+        return "$dir/${type}_${id}.yml";
+    }
+
+    /**
      * Retrieve a job config file for given submission.
      * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
      * @return IImmutableFile|null a file object or null if no such file exists
      */
     public function getJobConfig(Submission $submission): ?IImmutableFile
     {
-        $dir = self::augmentDir(self::JOB_CONFIGS, $submission);
-        $type = $submission::JOB_TYPE;
-        $id = $submission->getId();
-        return $this->fileStorage->fetch("$dir/${type}_${id}.yml");
+        $path = $this->getJobConfigPath($submission);
+        return $this->fileStorage->fetch($path);
+    }
+
+    /**
+     * Remove job config Yaml file for given submission.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     */
+    public function deleteJobConfig(Submission $submission): void
+    {
+        $path = $this->getJobConfigPath($submission);
+        $this->fileStorage->delete($path);
+    }
+
+    /**
+     * Get path to a solution archive with source code files.
+     * @param AssignmentSolution|ReferenceExerciseSolution $solution
+     * @return string path
+     */
+    private function getSolutionArchivePath($solution): string
+    {
+        $dir = self::augmentDir(self::SOLUTIONS, $solution->getSolution());
+        $id = $solution->getId();
+        return "$dir/${id}.zip";
     }
 
     /**
      * Retrieve a solution file or the entire archive.
-     * @param Solution $solution
+     * @param AssignmentSolution|ReferenceExerciseSolution $solution
      * @param string|null $file name of the file to be retrieved; entire archive is retrievd if null
      */
-    public function getSolutionFile(Solution $solution, string $file = null): ?IImmutableFile
+    public function getSolutionFile($solution, string $file = null): ?IImmutableFile
     {
-        $dir = self::augmentDir(self::SOLUTIONS, $solution);
-        $id = $solution->getId();
-        $file = $file ? "#$file" : '';
-        return $this->fileStorage->fetch("$dir/${id}.zip$file");
+        $path = $this->getSolutionArchivePath($solution);
+        $path = $file ? "$path#$file" : $path;
+        return $this->fileStorage->fetch($path);
+    }
+
+    /**
+     * Remove the archive with solution source files.
+     * @param AssignmentSolution|ReferenceExerciseSolution $solution
+     */
+    public function deleteSolutionArchive($solution): void
+    {
+        $path = $this->getSolutionArchivePath($solution);
+        $this->fileStorage->delete($path);
     }
 
     /**
@@ -197,7 +241,8 @@ class FileStorageManager
      */
     public function getWorkerSubmissionArchive(string $type, string $id): ?IImmutableFile
     {
-        return $this->fileStorage->fetch($this->getWorkerSubmissionArchivePath($type, $id));
+        $path = $this->getWorkerSubmissionArchivePath($type, $id);
+        return $this->fileStorage->fetch($path);
     }
 
     /**
@@ -253,5 +298,41 @@ class FileStorageManager
         } finally {
             fclose($fp);
         }
+    }
+
+    /**
+     * Get path to persistent location of results archive.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return string path
+     */
+    private function getResultsArchivePath(Submission $submission): string
+    {
+        $dir = self::augmentDir(self::RESULTS, $submission);
+        $type = $submission::JOB_TYPE;
+        $id = $submission->getId();
+        return "$dir/${type}_$id.zip";
+    }
+
+    // FIXME -- function that moves results archive from upload tmp dir to its persistent location
+
+    /**
+     * Retrieve results archive for particular submission (works both for assignment and reference submissions).
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return IImmutableFile|null the zip file or null, if the file does not exist
+     */
+    public function getResultsArchive(Submission $submission): ?IImmutableFile
+    {
+        $path = $this->getResultsArchivePath($submission);
+        return $this->fileStorage->fetch($path);
+    }
+
+    /**
+     * Remove a results file of a particular submission.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     */
+    public function deleteResultsArchive(Submission $submission): void
+    {
+        $path = $this->getResultsArchivePath($submission);
+        $this->fileStorage->delete($path);
     }
 }
