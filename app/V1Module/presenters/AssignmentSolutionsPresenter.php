@@ -9,7 +9,7 @@ use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
-use App\Helpers\FileServerProxy;
+use App\Helpers\FileStorageManager;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -21,7 +21,7 @@ use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
-use App\Responses\ZipFilesResponse;
+use App\Responses\StorageFileResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 
 /**
@@ -30,6 +30,11 @@ use App\Security\ACL\IAssignmentSolutionPermissions;
  */
 class AssignmentSolutionsPresenter extends BasePresenter
 {
+    /**
+     * @var FileStorageManager
+     * @inject
+     */
+    public $fileStorage;
 
     /**
      * @var AssignmentSolutions
@@ -48,12 +53,6 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $users;
-
-    /**
-     * @var FileServerProxy
-     * @inject
-     */
-    public $fileServerProxy;
 
     /**
      * @var IAssignmentSolutionPermissions
@@ -165,9 +164,21 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public function actionDeleteSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
+
+        // delete files of submissions that will be deleted in cascade
+        $submissions = $solution->getSubmissions()->getValues();
+        foreach ($submissions as $submission) {
+            $this->fileStorage->deleteResultsArchive($submission);
+            $this->fileStorage->deleteJobConfig($submission);
+        }
+
+        // delete source codes
+        $this->fileStorage->deleteSolutionArchive($solution);
+
         $solution->setLastSubmission(null); // break cyclic dependency, so submissions may be deleted on cascade
         $this->assignmentSolutions->flush();
         $this->assignmentSolutions->remove($solution);
+
         $this->sendSuccessResponse("OK");
     }
 
@@ -256,6 +267,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $solution->setLastSubmission($this->assignmentSolutionSubmissions->getLastSubmission($solution, $submission));
         $this->assignmentSolutionSubmissions->remove($submission);
         $this->assignmentSolutionSubmissions->flush();
+        $this->fileStorage->deleteResultsArchive($submission);
+        $this->fileStorage->deleteJobConfig($submission);
         $this->sendSuccessResponse("OK");
     }
 
@@ -498,12 +511,11 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public function actionDownloadSolutionArchive(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
-
-        $files = [];
-        foreach ($solution->getSolution()->getFiles() as $file) {
-            $files[$file->getLocalFilePath()] = $file->getName();
+        $zipFile = $this->fileStorage->getSolutionFile($solution);
+        if (!$zipFile) {
+            throw new NotFoundException("Solution archive not found.");
         }
-        $this->sendResponse(new ZipFilesResponse($files, "solution-{$id}.zip"));
+        $this->sendResponse(new StorageFileResponse($zipFile, "solution-{$id}.zip", "application/zip"));
     }
 
     public function checkDownloadResultArchive(string $submissionId)
@@ -531,12 +543,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
             throw new NotReadyException("Submission is not evaluated yet");
         }
 
-        $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
-        if ($stream === null) {
-            throw new NotFoundException("Archive for submission '$submissionId' not found on remote fileserver");
+        $file = $this->fileStorage->getResultsArchive($submission);
+        if (!$file) {
+            throw new NotFoundException("Archive for submission '$submissionId' not found in file storage");
         }
 
-        $this->sendResponse(new GuzzleResponse($stream, "results-{$submissionId}.zip", "application/zip"));
+        $this->sendResponse(new StorageFileResponse($file, "results-{$submissionId}.zip", "application/zip"));
     }
 
     public function checkEvaluationScoreConfig(string $submissionId)

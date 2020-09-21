@@ -15,6 +15,7 @@ use App\Helpers\YamlException;
  * Storage of job configuration which is designed to load them from
  * given files, parse configuration and of course save it. MemoryCache is used
  * for smart caching of loaded configurations.
+ * DEPRECATED
  */
 class Storage
 {

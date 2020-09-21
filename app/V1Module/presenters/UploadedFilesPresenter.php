@@ -17,7 +17,6 @@ use App\Model\Entity\UploadedFile;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use ForceUTF8\Encoding;
-use Nette\Application\Responses\FileResponse;
 use Nette\Utils\Strings;
 use DateTime;
 use Exception;

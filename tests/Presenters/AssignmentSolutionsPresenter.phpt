@@ -8,6 +8,11 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\AssignmentSolutionsPresenter;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalImmutableFile;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use Tester\Assert;
 
 
@@ -34,6 +39,15 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class)
+        ));
     }
 
     protected function setUp()
@@ -154,6 +168,11 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
         $submission = reset($allSubmissions);
         $submissionsCount = count($allSubmissions);
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("deleteResultsArchive")->withArgs([$submission])->once();
+        $mockFileStorage->shouldReceive("deleteJobConfig")->withArgs([$submission])->once();
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -381,15 +400,18 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $solution = current($this->presenter->assignmentSolutions->findAll());
 
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getSolutionFile")->with($solution)->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'GET',
             ['action' => 'downloadSolutionArchive', 'id' => $solution->id]
         );
         $response = $this->presenter->run($request);
-        Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
-
-        // Check invariants
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal("solution-" . $solution->getId() . '.zip', $response->getName());
     }
 
@@ -398,14 +420,10 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $submission = current($this->presenter->assignmentSolutionSubmissions->findAll());
 
-        // mock everything you can
-        $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
-        $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
-        $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
-
-        $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-        $mockProxy->shouldReceive("getFileserverFileStream")->withAnyArgs()->andReturn($mockGuzzleStream);
-        $this->presenter->fileServerProxy = $mockProxy;
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getResultsArchive")->with($submission)->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
@@ -413,9 +431,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             ['action' => 'downloadResultArchive', 'submissionId' => $submission->id]
         );
         $response = $this->presenter->run($request);
-        Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
-
-        // Check invariants
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal("results-" . $submission->getId() . '.zip', $response->getName());
     }
 
@@ -426,6 +442,15 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         /** @var AssignmentSolution $solution */
         $solution = current($this->presenter->assignmentSolutions->findAll());
         $solutionId = $solution->getId();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $submissions = $solution->getSubmissions()->getValues();
+        foreach ($submissions as $submission) {
+            $mockFileStorage->shouldReceive("deleteResultsArchive")->with($submission)->once();
+            $mockFileStorage->shouldReceive("deleteJobConfig")->with($submission)->once();    
+        }
+        $mockFileStorage->shouldReceive("deleteSolutionArchive")->with($solution)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions', 'DELETE', [
