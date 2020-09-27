@@ -46,7 +46,8 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $this->container->addService($fsName, new FileStorageManager(
             Mockery::mock(LocalFileStorage::class),
             Mockery::mock(LocalHashFileStorage::class),
-            Mockery::mock(TmpFilesHelper::class)
+            Mockery::mock(TmpFilesHelper::class),
+            ""
         ));
     }
 
@@ -402,7 +403,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
         $mockFile = Mockery::mock(LocalImmutableFile::class);
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
-        $mockFileStorage->shouldReceive("getSolutionFile")->with($solution)->andReturn($mockFile)->once();
+        $mockFileStorage->shouldReceive("getSolutionFile")->with($solution->getSolution())->andReturn($mockFile)->once();
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
@@ -449,7 +450,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             $mockFileStorage->shouldReceive("deleteResultsArchive")->with($submission)->once();
             $mockFileStorage->shouldReceive("deleteJobConfig")->with($submission)->once();    
         }
-        $mockFileStorage->shouldReceive("deleteSolutionArchive")->with($solution)->once();
+        $mockFileStorage->shouldReceive("deleteSolutionArchive")->with($solution->getSolution())->once();
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(

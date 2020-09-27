@@ -14,7 +14,6 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidMembershipException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\JobConfigLoadingException;
-use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\LdapConnectException;
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\NoAccessTokenException;
@@ -198,21 +197,6 @@ class TestExceptions extends Tester\TestCase
                 }
             },
             JobConfigLoadingException::CLASS
-        );
-    }
-
-    public function testJobConfigStorageException()
-    {
-        Assert::exception(
-            function () {
-                try {
-                    throw new JobConfigStorageException("message");
-                } catch (Exception $e) {
-                    Assert::true(strlen($e->getMessage()) > 0);
-                    throw $e;
-                }
-            },
-            JobConfigStorageException::CLASS
         );
     }
 

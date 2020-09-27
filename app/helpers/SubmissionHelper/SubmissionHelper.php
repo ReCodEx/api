@@ -5,7 +5,6 @@ namespace App\Helpers;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\JobConfig\Storage;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
 use ZMQSocketException;
@@ -16,7 +15,6 @@ use ZMQSocketException;
  */
 class SubmissionHelper
 {
-
     /** @var BackendSubmitHelper */
     private $backendSubmitHelper;
 
@@ -45,37 +43,24 @@ class SubmissionHelper
         string $jobId,
         string $jobType,
         string $environment,
-        array $files,
         JobConfig $jobConfig,
         ?string $hwgroup = null
-    ): string {
-        // Fill in the job configuration header
-        $jobConfig->getSubmissionHeader()->setId($jobId)->setType($jobType);
-
-        // Send the submission to the broker
-        $resultsUrl = null;
-
-        $resultsUrl = $this->backendSubmitHelper->initiateEvaluation(
+    ): void {
+        $res = $this->backendSubmitHelper->initiateEvaluation(
             $jobConfig,
-            $files,
             ['env' => $environment],
             $hwgroup
         );
-
-        if ($resultsUrl === null) {
+        if (!$res) {
             throw new SubmissionFailedException("The broker rejected our request");
         }
-
-        return $resultsUrl;
     }
 
     /**
-     *
-     * @param string $jobId
+     * Submit regular (student) job.
+     * @param string $jobId (aka submission ID)
      * @param string $environment
-     * @param array $files
      * @param JobConfig $jobConfig
-     * @return string fileserver results URL
      * @throws InvalidStateException
      * @throws SubmissionFailedException
      * @throws ZMQSocketException
@@ -83,20 +68,17 @@ class SubmissionHelper
     public function submit(
         string $jobId,
         string $environment,
-        array $files,
         JobConfig $jobConfig
-    ): string {
-        return $this->internalSubmit($jobId, AssignmentSolution::JOB_TYPE, $environment, $files, $jobConfig);
+    ): void {
+        $this->internalSubmit($jobId, AssignmentSolution::JOB_TYPE, $environment, $jobConfig);
     }
 
     /**
-     *
-     * @param string $jobId
+     * Submit reference job.
+     * @param string $jobId (aka submission ID)
      * @param string $environment
      * @param null|string $hwgroup
-     * @param array $files
      * @param JobConfig $jobConfig
-     * @return string fileserver results URL
      * @throws InvalidStateException
      * @throws SubmissionFailedException
      * @throws ZMQSocketException
@@ -105,14 +87,12 @@ class SubmissionHelper
         string $jobId,
         string $environment,
         ?string $hwgroup,
-        array $files,
         JobConfig $jobConfig
-    ): string {
-        return $this->internalSubmit(
+    ): void {
+        $this->internalSubmit(
             $jobId,
             ReferenceSolutionSubmission::JOB_TYPE,
             $environment,
-            $files,
             $jobConfig,
             $hwgroup
         );

@@ -3,7 +3,7 @@ parameters:
     address: "https://your.recodex.domain/api"
 
   webapp:
-    address: "https://your.recodex.domain/"
+    address: "https://your.recodex.domain"
 
   fileStorage: # where the local files are being stored
     local:
@@ -12,16 +12,10 @@ parameters:
       root: %appDir%/../storage/hash # this should be replaced with path to existing directory
 
   accessManager:
-    issuer: "%webapp.address"
-    audience: "%webapp.address"
+    issuer: "%webapp.address%"
+    audience: "%webapp.address%"
     expiration: 604800  # 7 days in seconds
     verificationKey: "recodex-123"	# this should be a really secret string
-
-  fileServer:
-    address: "http://127.0.0.1:9999"
-    auth:
-      username: "user"  # these credentials must match HTTP auth credentials
-      password: "pass"  # stored in /etc/httpd/recodex_htpasswd
 
   broker:
     address: "tcp://127.0.0.1:9658"
@@ -31,6 +25,12 @@ parameters:
 
   monitor:
     address: "wss://your.recodex.domain:443/ws"
+
+  workerFiles:  # configuration for worker-files endpoint (direct access from worker to the core to upload/download files)
+    enabled: true
+    auth:  # username and password that must workers use in base HTTP auth
+      username: "re"
+      password: "codex"
 
   localRegistration:
     enabled: false  # set to true if you want to permit simple local registration

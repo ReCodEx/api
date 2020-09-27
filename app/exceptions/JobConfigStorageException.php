@@ -7,6 +7,7 @@ use Nette\Http\IResponse;
 /**
  * Job configuration Storage helper uses this exception to express
  * tiny major errors.
+ * DEPREACTED
  */
 class JobConfigStorageException extends ApiException
 {

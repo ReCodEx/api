@@ -5,35 +5,32 @@ include '../bootstrap.php';
 use App\Helpers\EvaluationResults\TestResult;
 use Tester\Assert;
 
-use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\EvaluationResults\Loader;
+use App\Helpers\JobConfig\Loader as JobConfigLoader;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\SkippedTestResult;
+use App\Helpers\Yaml;
 use App\Exceptions\SubmissionEvaluationFailedException;
 
 class TestEvaluationResultsLoader extends Tester\TestCase
 {
-    /**
-     * @var JobConfigStorage
-     */
-    private $jobConfigStorage;
+    private $jobConfig;
 
     protected function setUp()
     {
-        $this->jobConfigStorage = new JobConfigStorage(sys_get_temp_dir());
+        $loader = new JobConfigLoader();
+        $this->jobConfig = $loader->loadJobConfig(Yaml::parse(self::$jobConfigContents));
     }
 
     public function testCanLoadSuccessResult()
     {
-        $jobConfig = $this->jobConfigStorage->parse(self::$jobConfig);
-        $results = Loader::parseResults(self::$successResult, $jobConfig);
+        $results = Loader::parseResults(self::$successResult, $this->jobConfig);
         Assert::type(EvaluationResults::CLASS, $results);
     }
 
     public function testCanLoadInitFailedResult()
     {
-        $jobConfig = $this->jobConfigStorage->parse(self::$jobConfig);
-        $results = Loader::parseResults(self::$initFailedResult, $jobConfig);
+        $results = Loader::parseResults(self::$initFailedResult, $this->jobConfig);
         Assert::type(EvaluationResults::CLASS, $results);
         Assert::false($results->initOK());
         Assert::equal(6, count($results->getTestsResults()));
@@ -44,23 +41,21 @@ class TestEvaluationResultsLoader extends Tester\TestCase
 
     public function testCanLoadFailedResult()
     {
-        $jobConfig = $this->jobConfigStorage->parse(self::$jobConfig);
-        $results = Loader::parseResults(self::$failedResult, $jobConfig);
+        $results = Loader::parseResults(self::$failedResult, $this->jobConfig);
         Assert::type(EvaluationResults::CLASS, $results);
     }
 
     public function testRejectsInvalidYaml()
     {
-        $jobConfig = $this->jobConfigStorage->parse(self::$jobConfig);
         Assert::exception(
-            function () use ($jobConfig) {
+            function() {
                 Loader::parseResults(
                     '
 a:
 b:
     - c
       ',
-                    $jobConfig
+                    $this->jobConfig
                 );
             },
             SubmissionEvaluationFailedException::CLASS
@@ -69,16 +64,14 @@ b:
 
     public function testCorrectInterpretation()
     {
-        $jobConfig = $this->jobConfigStorage->parse(self::$jobConfig);
-        $results = Loader::parseResults(self::$successResult, $jobConfig);
+        $results = Loader::parseResults(self::$successResult, $this->jobConfig);
         Assert::true($results->initOK());
         Assert::equal(6, count($results->getTestsResults()));
     }
 
     public function testCorrectInterpretationOfFailedSubmission()
     {
-        $jobConfig = $this->jobConfigStorage->parse(self::$jobConfig);
-        $results = Loader::parseResults(self::$failedResult, $jobConfig);
+        $results = Loader::parseResults(self::$failedResult, $this->jobConfig);
         Assert::true($results->initOK());
         Assert::equal(6, count($results->getTestsResults()));
         foreach ($results->getTestsResults() as $result) {
@@ -86,7 +79,7 @@ b:
         }
     }
 
-    static $jobConfig = <<<'EOS'
+    static $jobConfigContents = <<<'EOS'
 # Hippoes config file
 # prerequisites: judge binary in /usr/bin/recodex-judge-normal
 #                reachable input and output files - in /tmp/tmpxxxxxx/tasks for our testing file_server.py

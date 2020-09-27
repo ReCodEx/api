@@ -20,7 +20,7 @@ class EvaluationStatus
      */
     public static function getStatus(IEvaluable $evaluable): string
     {
-        if (!$evaluable->canBeEvaluated() || $evaluable->isFailed()) {
+        if ($evaluable->isFailed()) {
             return self::EVALUATION_STATUS_EVALUATION_FAILED;
         }
 

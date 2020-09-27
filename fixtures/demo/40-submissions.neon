@@ -62,28 +62,24 @@ App\Model\Entity\AssignmentSolutionSubmission:
     "submission{1..2}":
         __construct:
             - "@solution1"
-            - "jobConfigPath"
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
     "submission{3..4}":
         __construct:
             - "@solution2"
-            - "jobConfigPath"
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
     "submission5":
         __construct:
             - "@solution1"
-            - "jobConfigPath"
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         failure: "@resolvedSubmissionFailure"
     "submission6":
         __construct:
             - "@solution1"
-            - "jobConfigPath"
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         failure: "@unresolvedSubmissionFailure"

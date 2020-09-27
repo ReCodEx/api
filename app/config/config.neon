@@ -35,14 +35,6 @@ parameters:
       - HS256
     verificationKey: "recodex-123"
 
-  fileServer:  # connection to fileserver
-    address: http://195.113.17.8:10009  # URI of fileserver
-    auth:  # username and password for HTTP basic authentication
-      username: "re"
-      password: "codex"
-    timeouts:
-      connection: 500  # connection timeout for establishing new connection and request timeout for completing one request
-
   broker:  # connection to broker
     address: tcp://195.113.17.8:9668  # URI of broker
     auth:  # username and password for broker callback authentication back to API
@@ -349,12 +341,10 @@ services:
   - App\Helpers\EvaluationLoadingHelper
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
-  - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\BackendSubmitHelper
   - App\Helpers\SubmissionHelper
   - App\Helpers\EvaluationLoader
   - App\Helpers\EvaluationPointsLoader
-  - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%)
   - App\Helpers\JobConfig\Loader
   - App\Helpers\JobConfig\Generator
   - App\Helpers\Evaluation\UniformScoreCalculator
@@ -392,7 +382,7 @@ services:
   - App\Helpers\TmpFilesHelper(%tempDir%)
   - App\Helpers\FileStorage\LocalFileStorage(@App\Helpers\TmpFilesHelper, %fileStorage.local%)
   - App\Helpers\FileStorage\LocalHashFileStorage(%fileStorage.hash%)
-  - App\Helpers\FileStorageManager(@App\Helpers\FileStorage\LocalFileStorage, @App\Helpers\FileStorage\LocalHashFileStorage, @App\Helpers\TmpFilesHelper)
+  - App\Helpers\FileStorageManager(@App\Helpers\FileStorage\LocalFileStorage, @App\Helpers\FileStorage\LocalHashFileStorage, @App\Helpers\TmpFilesHelper, %api.address%)
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper

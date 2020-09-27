@@ -2,14 +2,16 @@
 
 namespace App\Helpers;
 
-use App\Exceptions\MalformedJobConfigException;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\SolutionEvaluation;
 use App\Model\Entity\ReferenceSolutionSubmission;
-use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
+use App\Helpers\JobConfig\Loader as JobConfigLoader;
+use App\Helpers\FileStorageManager;
+use App\Helpers\Yaml;
+use App\Helpers\YamlException;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ResultsLoadingException;
 use App\Exceptions\SubmissionEvaluationFailedException;
@@ -22,30 +24,25 @@ use Mockery\Exception;
  */
 class EvaluationLoader
 {
-
-    /** @var FileServerProxy Authorized instance providing operations with file server */
-    private $fileServer;
-
-    /** @var JobConfigStorage */
-    private $jobConfigStorage;
+    /** @var FileStorageManager */
+    private $fileStorage;
 
     /** @var EvaluationPointsLoader */
     private $pointsLoader;
 
+    /** @var JobConfigLoader */
+    private $jobConfigLoader;
+
     /**
      * Constructor
-     * @param FileServerProxy $fsp Configured class instance providing access to remote file server
-     * @param JobConfigStorage $storage
+     * @param FileStorageManager $fileStorage
      * @param EvaluationPointsLoader $pointsLoader
      */
-    public function __construct(
-        FileServerProxy $fsp,
-        JobConfigStorage $storage,
-        EvaluationPointsLoader $pointsLoader
-    ) {
-        $this->fileServer = $fsp;
-        $this->jobConfigStorage = $storage;
+    public function __construct(FileStorageManager $fileStorage, EvaluationPointsLoader $pointsLoader)
+    {
+        $this->fileStorage = $fileStorage;
         $this->pointsLoader = $pointsLoader;
+        $this->jobConfigLoader = new JobConfigLoader();
     }
 
     /**
@@ -81,19 +78,25 @@ class EvaluationLoader
      */
     private function getResults(Submission $submission)
     {
-        if (!$submission->getResultsUrl()) {
-            throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
+        $jobConfigFile = $this->fileStorage->getJobConfig($submission);
+        if ($jobConfigFile === null) {
+            throw new SubmissionEvaluationFailedException("Job config of the submission not found.");
         }
 
-        $jobConfigPath = $submission->getJobConfigPath();
+        $resultsYamlFile = $this->fileStorage->getResultsYamlFile($submission);
+        if ($resultsYamlFile === null) {
+            throw new SubmissionEvaluationFailedException("Job results file is missing.");
+        }
+
         try {
-            $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
+            $jobConfigYaml = Yaml::parse($jobConfigFile->getContents());
+            $jobConfig = $this->jobConfigLoader->loadJobConfig($jobConfigYaml);
             $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType($submission->getJobType());
-            $resultsYml = $this->fileServer->downloadResults($submission->getResultsUrl());
-            return $resultsYml === null
-                ? null
-                : EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
-        } catch (JobConfigLoadingException | MalformedJobConfigException $e) {
+            $resultsYml = $resultsYamlFile->getContents();
+            return EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
+        } catch (YamlException $e) {
+            throw new SubmissionEvaluationFailedException("Job config is malformed - {$e->getMessage()}");
+        } catch (JobConfigLoadingException $e) {
             throw new SubmissionEvaluationFailedException("Cannot load or parse job config - {$e->getMessage()}");
         } catch (Exception $e) {
             throw new SubmissionEvaluationFailedException("Cannot load results - " . $e->getMessage());

@@ -2,6 +2,8 @@
 
 namespace App\Helpers\FileStorage;
 
+use ZipArchive;
+
 /**
  * Abstraction that represents one immutable (read-only) file.
  */
@@ -32,6 +34,13 @@ interface IImmutableFile
      * @param string $path
      */
     public function saveAs(string $path): void;
+
+    /**
+     * Save the file into a ZIP archive.
+     * @param ZipArchive $zip zip archive that is already open for writing
+     * @param string $entryName under which name the file should be stored in zip
+     */
+    public function addToZip(ZipArchive $zip, string $entryName): void;
 
     /**
      * Retrieve the entire file and pass it through to HTTP response as a file for download.

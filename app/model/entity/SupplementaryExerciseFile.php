@@ -14,7 +14,6 @@ use DateTime;
  * @ORM\Entity
  *
  * @method string getHashName()
- * @method string getFileServerPath()
  */
 class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 {

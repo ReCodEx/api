@@ -7,6 +7,7 @@ use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\SolutionFile;
 use App\Model\Repository\Logins;
+use App\Model\Repository\AssignmentSolutions;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileStorageManager;
@@ -46,6 +47,9 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     /** @var Logins */
     protected $logins;
 
+    /** @var AssignmentSolutions */
+    protected $asignmentSolutions;
+
     /** @var Nette\Security\User */
     private $user;
 
@@ -59,6 +63,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->logins = $container->getByType(Logins::class);
+        $this->asignmentSolutions = $container->getByType(AssignmentSolutions::class);
 
         // patch container, since we cannot create actual file storage manarer
         $fsName = current($this->container->findByType(FileStorageManager::class));
@@ -66,7 +71,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->container->addService($fsName, new FileStorageManager(
             Mockery::mock(LocalFileStorage::class),
             Mockery::mock(LocalHashFileStorage::class),
-            Mockery::mock(TmpFilesHelper::class)
+            Mockery::mock(TmpFilesHelper::class),
+            ""
         ));
     }
 
@@ -366,13 +372,17 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->supervisorLogin);
 
-        $em = $this->container->getByType(EntityManager::class);
-        $file = current($em->getRepository(SolutionFile::class)->findAll());
+        $solution = current(array_filter($this->asignmentSolutions->findAll(), function ($solution) {
+            return $solution->getSolution()->getFiles()->count() > 0;
+        }));
+        Assert::truthy($solution);
+
+        $file = current($solution->getSolution()->getFiles()->toArray());
         Assert::truthy($file);
 
         $mockFile = Mockery::mock(LocalImmutableFile::class);
         $mockStorage = Mockery::mock(FileStorageManager::class);
-        $mockStorage->shouldReceive("getSolutionFile")->withArgs([$file->getSolution(), $file->getName()])->andReturn($mockFile)->once();
+        $mockStorage->shouldReceive("getSolutionFile")->withArgs([$solution->getSolution(), $file->getName()])->andReturn($mockFile)->once();
         $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(

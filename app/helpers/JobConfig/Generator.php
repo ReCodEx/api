@@ -4,46 +4,15 @@ namespace App\Helpers\JobConfig;
 
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
-use App\Exceptions\JobConfigStorageException;
+use App\Helpers\FileStorage\FileStorageException;
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compiler;
+use App\Helpers\FileStorageManager;
 use App\Model\Entity\RuntimeEnvironment;
-use App\Model\Entity\User;
-
-/**
- * Holder structure for results from generation of job configuration.
- */
-class GeneratorResult
-{
-
-    /** @var string */
-    private $jobConfigPath;
-    /** @var JobConfig */
-    private $jobConfig;
-
-    public function __construct(string $jobConfigPath, JobConfig $jobConfig)
-    {
-        $this->jobConfigPath = $jobConfigPath;
-        $this->jobConfig = $jobConfig;
-    }
-
-    /**
-     * @return string
-     */
-    public function getJobConfigPath(): string
-    {
-        return $this->jobConfigPath;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getJobConfig()
-    {
-        return $this->jobConfig;
-    }
-}
+use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\ReferenceSolutionSubmission;
 
 /**
  * Wrapper around compiler of exercise configuration to job configuration
@@ -51,11 +20,10 @@ class GeneratorResult
  */
 class Generator
 {
-
     /**
-     * @var Storage
+     * @var FileStorageManager
      */
-    private $storage;
+    private $fileStorage;
 
     /**
      * @var Compiler
@@ -65,35 +33,36 @@ class Generator
 
     /**
      * Generator constructor.
-     * @param Storage $storage
+     * @param FileStorageManager $storage
      * @param Compiler $compiler
      */
-    public function __construct(Storage $storage, Compiler $compiler)
+    public function __construct(FileStorageManager $fileStorage, Compiler $compiler)
     {
-        $this->storage = $storage;
+        $this->fileStorage = $fileStorage;
         $this->compiler = $compiler;
     }
 
     /**
-     * Generate job configuration from exercise configuration and save it in the
-     * job configuration storage.
-     * @param User $user
+     * Generate job configuration from exercise configuration and save it in the file storage.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
      * @param IExercise $exerciseAssignment
      * @param RuntimeEnvironment $runtimeEnvironment
      * @param CompilationParams $params
-     * @return GeneratorResult
+     * @return JobConfig
      * @throws ExerciseConfigException
-     * @throws JobConfigStorageException
      * @throws ExerciseCompilationException
+     * @throws FileStorageException
      */
     public function generateJobConfig(
-        User $user,
+        Submission $submission,
         IExercise $exerciseAssignment,
         RuntimeEnvironment $runtimeEnvironment,
         CompilationParams $params
-    ): GeneratorResult {
+    ): JobConfig {
         $jobConfig = $this->compiler->compile($exerciseAssignment, $runtimeEnvironment, $params);
-        $jobConfigPath = $this->storage->save($jobConfig, $user);
-        return new GeneratorResult($jobConfigPath, $jobConfig);
+        $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType($submission::JOB_TYPE);
+        $jobConfig->setFileCollector($this->fileStorage->getWorkerSupplementaryFilesExternalUrlPrefix());
+        $this->fileStorage->storeJobConfig($submission, (string)$jobConfig);
+        return $jobConfig;
     }
 }

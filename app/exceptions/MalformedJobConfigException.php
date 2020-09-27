@@ -8,6 +8,7 @@ use App\Helpers\YamlException;
 /**
  * Used when configuration cannot be loaded from file, or given text is
  * not a valid YAML document.
+ * DEPRECATED
  */
 class MalformedJobConfigException extends ApiException
 {

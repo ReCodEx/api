@@ -213,7 +213,8 @@ class ZipFileStorage implements IFileStorage
         if (!$this->zip->statName($path)) {
             return null;
         }
-        return new ArchivedImmutableFile($this->archivePath, $path, ($this->archiveStoragePath ?? '') . '#' . $path);
+        $storagePath = ($this->archiveStoragePath ?? '') . '#' . $path;
+        return new ArchivedImmutableFile($this->archivePath, $path, $storagePath, $this->tmpFilesHelper);
     }
 
     public function fetchOrThrow(string $path): IImmutableFile

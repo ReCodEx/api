@@ -26,9 +26,8 @@ use App\Model\Repository\ReferenceSolutionSubmissions;
  */
 class BrokerReportsPresenter extends BasePresenter
 {
-
-    const STATUS_OK = "OK";
-    const STATUS_FAILED = "FAILED";
+    public const STATUS_OK = "OK";
+    public const STATUS_FAILED = "FAILED";
 
     /**
      * @var FailureHelper

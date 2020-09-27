@@ -54,7 +54,7 @@ class EvaluationLoadingHelper
             return true;
         }
 
-        if (!$submission->canBeEvaluated() || $submission->isFailed()) {
+        if ($submission->isFailed()) {
             return false;
         }
 

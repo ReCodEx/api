@@ -15,6 +15,11 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\AssignmentViewFactory;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalImmutableFile;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Nette\Utils\Json;
 use Tester\Assert;
@@ -68,6 +73,16 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);
         $this->hardwareGroups = $container->getByType(HardwareGroups::class);
         $this->assignmentSolutionViewFactory = $container->getByType(AssignmentSolutionViewFactory::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()
@@ -607,6 +622,11 @@ class TestAssignmentsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $assignment = current($this->presenter->assignments->findAll());
+
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getSolutionFile")->andReturn($mockFile)->atLeast(1);
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             'V1:Assignments', 'GET',

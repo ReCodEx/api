@@ -1,6 +1,11 @@
 <?php
 
 use App\Helpers\BrokerConfig;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalImmutableFile;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
 use App\V1Module\Presenters\BrokerReportsPresenter;
@@ -59,6 +64,16 @@ class TestBrokerReportsPresenter extends Tester\TestCase
         $this->httpRequestName = current($this->container->findByType(Nette\Http\Request::class));
         $this->originalHttpRequest = $this->container->getService($this->httpRequestName);
         $this->container->removeService($this->httpRequestName);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()

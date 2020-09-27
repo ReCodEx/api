@@ -10,13 +10,13 @@ use App\Helpers\Yaml;
 class SubmissionHeader
 {
     /** Job identification key */
-    const JOB_ID_KEY = "job-id";
+    public const JOB_ID_KEY = "job-id";
     /** File collector key */
-    const FILE_COLLECTOR_KEY = "file-collector";
+    public const FILE_COLLECTOR_KEY = "file-collector";
     /** Language key */
-    const HARDWARE_GROUPS_KEY = "hw-groups";
+    public const HARDWARE_GROUPS_KEY = "hw-groups";
     /** Log bit key */
-    const LOG_KEY = "log";
+    public const LOG_KEY = "log";
 
     /** @var array Additional data */
     private $data = [];

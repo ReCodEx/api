@@ -14,9 +14,9 @@ use App\Helpers\JobConfig\Tasks\Task;
 class JobConfig
 {
     /** Submission header key */
-    const SUBMISSION_KEY = "submission";
+    public const SUBMISSION_KEY = "submission";
     /** Tasks config key */
-    const TASKS_KEY = "tasks";
+    public const TASKS_KEY = "tasks";
 
     /** @var array Additional top level data */
     private $data = [];
@@ -60,6 +60,24 @@ class JobConfig
     public function getJobId(): string
     {
         return $this->submissionHeader->getJobId();
+    }
+
+    /**
+     * Get the identificator of this job without the type
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->submissionHeader->getId();
+    }
+
+    /**
+     * Get the type of the job (student/reference)
+     * @return string
+     */
+    public function getJobType(): string
+    {
+        return $this->submissionHeader->getType();
     }
 
     /**
