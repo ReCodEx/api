@@ -6,11 +6,12 @@ use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\ParseException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\FileStorage\FileStorageException;
+use App\Helpers\FileStorageManager;
 use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
@@ -45,6 +46,11 @@ use Nette\Http\IResponse;
  */
 class SubmitPresenter extends BasePresenter
 {
+    /**
+     * @var FileStorageManager
+     * @inject
+     */
+    public $fileStorage;
 
     /**
      * @var Assignments
@@ -261,7 +267,10 @@ class SubmitPresenter extends BasePresenter
         $solution = new Solution($user, $runtimeEnvironment);
         $solution->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
 
-        $submittedFiles = [];
+        // create and fill assignment solution
+        $note = $req->getPost("note");
+        $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution);
+        
         foreach ($uploadedFiles as $file) {
             if ($file instanceof SolutionFile) {
                 throw new ForbiddenRequestException(
@@ -269,15 +278,11 @@ class SubmitPresenter extends BasePresenter
                 );
             }
 
-            $submittedFiles[] = $file->getName();
+            $this->fileStorage->storeUploadedSolutionFile($assignmentSolution->getSolution(), $file);
             $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
             $this->files->persist($solutionFile, false);
             $this->files->remove($file, false);
         }
-
-        // create and fill assignment solution
-        $note = $req->getPost("note");
-        $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution);
 
         // persist all changes and send response
         $this->assignmentSolutions->persist($assignmentSolution);
@@ -344,20 +349,24 @@ class SubmitPresenter extends BasePresenter
             $solution->getSolution()->getSolutionParams()
         );
 
-        try {
-            $generatorResult =
-                $this->jobConfigGenerator->generateJobConfig(
-                    $this->getCurrentUser(),
-                    $solution->getAssignment(),
-                    $solution->getSolution()->getRuntimeEnvironment(),
-                    $compilationParams
-                );
-        } catch (ExerciseConfigException | ExerciseCompilationException | JobConfigStorageException $e) {
-            $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
-            $this->assignmentSubmissions->persist($submission, false);
-            $solution->setLastSubmission($submission);
-            $this->assignmentSolutions->persist($solution);
+        // create submission entity
+        $submission = new AssignmentSolutionSubmission(
+            $solution,
+            $this->getCurrentUser(),
+            $isDebug
+        );
+        $this->assignmentSubmissions->persist($submission);
+        $solution->setLastSubmission($submission);
+        $this->assignmentSolutions->persist($solution);
 
+        try {
+            $jobConfig = $this->jobConfigGenerator->generateJobConfig(
+                $submission,
+                $solution->getAssignment(),
+                $solution->getSolution()->getRuntimeEnvironment(),
+                $compilationParams
+            );
+        } catch (ExerciseConfigException | ExerciseCompilationException | FileStorageException $e) {
             $failureType = $e instanceof ExerciseCompilationSoftException ?
                 SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
             $sendEmail = $e instanceof ExerciseCompilationSoftException ? false : true;
@@ -368,32 +377,18 @@ class SubmitPresenter extends BasePresenter
             return [];
         }
 
-        // create submission entity
-        $submission = new AssignmentSolutionSubmission(
-            $solution,
-            $generatorResult->getJobConfigPath(),
-            $this->getCurrentUser(),
-            $isDebug
-        );
-        $this->assignmentSubmissions->persist($submission);
-        $solution->setLastSubmission($submission);
-        $this->assignmentSolutions->persist($solution);
-
         // initiate submission
-        $resultsUrl = null;
         try {
-            $resultsUrl = $this->submissionHelper->submit(
+            $this->submissionHelper->submit(
                 $submission->getId(),
                 $solution->getSolution()->getRuntimeEnvironment()->getId(),
-                $solution->getSolution()->getFiles()->getValues(),
-                $generatorResult->getJobConfig()
+                $jobConfig
             );
         } catch (Exception $e) {
             $this->submissionFailed($submission, $e);
         }
 
         // If the submission was accepted we now have the URL where to look for the results later -> persist it
-        $submission->setResultsUrl($resultsUrl);
         $this->assignmentSubmissions->persist($submission);
 
         // The solution needs to reload submissions (it is tedious and error prone to update them manually)
@@ -403,9 +398,9 @@ class SubmitPresenter extends BasePresenter
             "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
             "submission" => $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission),
             "webSocketChannel" => [
-                "id" => $generatorResult->getJobConfig()->getJobId(),
+                "id" => $jobConfig->getJobId(),
                 "monitorUrl" => $this->monitorConfig->getAddress(),
-                "expectedTasksCount" => $generatorResult->getJobConfig()->getTasksCount()
+                "expectedTasksCount" => $jobConfig->getTasksCount()
             ]
         ];
     }

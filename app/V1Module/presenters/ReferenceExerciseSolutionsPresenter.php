@@ -8,7 +8,6 @@ use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotReadyException;
 use App\Exceptions\ParseException;
 use App\Exceptions\SubmissionFailedException;
@@ -20,10 +19,11 @@ use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FailureHelper;
-use App\Helpers\FileServerProxy;
 use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\FileStorageException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\SolutionFile;
@@ -39,8 +39,7 @@ use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\ReferenceExerciseSolutionViewFactory;
-use App\Responses\GuzzleResponse;
-use App\Responses\ZipFilesResponse;
+use App\Responses\StorageFileResponse;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IReferenceExerciseSolutionPermissions;
 use Exception;
@@ -51,6 +50,11 @@ use Tracy\ILogger;
  */
 class ReferenceExerciseSolutionsPresenter extends BasePresenter
 {
+    /**
+     * @var FileStorageManager
+     * @inject
+     */
+    public $fileStorage;
 
     /**
      * @var Exercises
@@ -87,12 +91,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $hardwareGroups;
-
-    /**
-     * @var FileServerProxy
-     * @inject
-     */
-    public $fileServerProxy;
 
     /**
      * @var RuntimeEnvironments
@@ -214,6 +212,17 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function actionDeleteReferenceSolution(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
+
+        // delete files of submissions that will be deleted in cascade
+        $submissions = $solution->getSubmissions()->getValues();
+        foreach ($submissions as $submission) {
+            $this->fileStorage->deleteResultsArchive($submission);
+            $this->fileStorage->deleteJobConfig($submission);
+        }
+
+        // delete source codes
+        $this->fileStorage->deleteSolutionArchive($solution->getSolution());
+
         $this->referenceSolutions->remove($solution);
         $this->referenceSolutions->flush();
         $this->sendSuccessResponse("OK");
@@ -291,6 +300,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $this->referenceSubmissions->remove($submission);
         $this->referenceSubmissions->flush();
+        $this->fileStorage->deleteResultsArchive($submission);
+        $this->fileStorage->deleteJobConfig($submission);
         $this->sendSuccessResponse("OK");
     }
 
@@ -399,6 +410,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
                 );
             }
 
+            $this->fileStorage->storeUploadedSolutionFile($referenceSolution->getSolution(), $file);
             $solutionFile = SolutionFile::fromUploadedFile($file, $referenceSolution->getSolution());
             $this->files->persist($solutionFile, false);
             $this->files->remove($file, false);
@@ -517,63 +529,53 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             $referenceSolution->getSolution()->getSolutionParams()
         );
 
-        try {
-            $generatorResult = $this->jobConfigGenerator
-                ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
-        } catch (ExerciseConfigException | ExerciseCompilationException | JobConfigStorageException $e) {
-            $submission = new ReferenceSolutionSubmission(
-                $referenceSolution,
-                null,
-                "",
-                $this->getCurrentUser(),
-                $isDebug
-            );
-            $this->referenceSubmissions->persist($submission, false);
-
-            $failureType = $e instanceof ExerciseCompilationSoftException ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
-            $sendEmail = $e instanceof ExerciseCompilationSoftException ? false : true;
-
-            $failure = SubmissionFailure::create($failureType, $e->getMessage());
-            $submission->setFailure($failure);
-            $this->submissionFailures->persist($failure);
-            $this->referenceSubmissions->persist($submission);
-
-            if ($sendEmail) {
-                $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
-                $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
-            }
-
-            throw $e; // rethrow
-        }
-
         foreach ($hwGroups->getValues() as $hwGroup) {
             // create the entity and generate the ID
             $submission = new ReferenceSolutionSubmission(
                 $referenceSolution,
                 $hwGroup,
-                $generatorResult->getJobConfigPath(),
                 $this->getCurrentUser(),
                 $isDebug
             );
             $this->referenceSubmissions->persist($submission);
 
             try {
-                $resultsUrl = $this->submissionHelper->submitReference(
-                    $submission->getId(),
-                    $runtimeEnvironment->getId(),
-                    $hwGroup->getId(),
-                    $referenceSolution->getFiles()->getValues(),
-                    $generatorResult->getJobConfig()
-                );
+                $jobConfig = $this->jobConfigGenerator
+                    ->generateJobConfig($submission, $exercise, $runtimeEnvironment, $compilationParams);
+            } catch (ExerciseConfigException | ExerciseCompilationException | FileStorageException $e) {
+                $failureType = $e instanceof ExerciseCompilationSoftException
+                    ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR
+                    : SubmissionFailure::TYPE_CONFIG_ERROR;
+                $sendEmail = $e instanceof ExerciseCompilationSoftException ? false : true;
 
-                $submission->setResultsUrl($resultsUrl);
+                $failure = SubmissionFailure::create($failureType, $e->getMessage());
+                $submission->setFailure($failure);
+                $this->submissionFailures->persist($failure);
+                $this->referenceSubmissions->persist($submission);
+
+                if ($sendEmail) {
+                    $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
+                    $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
+                }
+
+                throw $e; // rethrow
+            }
+
+            $this->submissionHelper->submitReference(
+                $submission->getId(),
+                $runtimeEnvironment->getId(),
+                $hwGroup->getId(),
+                $jobConfig
+            );
+
+            try {
                 $this->referenceSubmissions->flush();
                 $submissions[] = [
                     "submission" => $submission,
                     "webSocketChannel" => [
-                        "id" => $generatorResult->getJobConfig()->getJobId(),
+                        "id" => $jobConfig->getJobId(),
                         "monitorUrl" => $this->monitorConfig->getAddress(),
-                        "expectedTasksCount" => $generatorResult->getJobConfig()->getTasksCount()
+                        "expectedTasksCount" => $jobConfig->getTasksCount()
                     ]
                 ];
             } catch (Exception $e) {
@@ -619,11 +621,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function actionDownloadSolutionArchive(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        $files = [];
-        foreach ($solution->getSolution()->getFiles() as $file) {
-            $files[$file->getLocalFilePath()] = $file->getName();
+        $zipFile = $this->fileStorage->getSolutionFile($solution->getSolution());
+        if (!$zipFile) {
+            throw new NotFoundException("Reference solution archive not found.");
         }
-        $this->sendResponse(new ZipFilesResponse($files, "reference-solution-{$solutionId}.zip"));
+        $this->sendResponse(new StorageFileResponse($zipFile, "reference-solution-{$solutionId}.zip", "application/zip"));
     }
 
     public function checkDownloadResultArchive(string $submissionId)
@@ -656,14 +658,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             throw new NotReadyException("Submission is not evaluated yet");
         }
 
-        $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
-        if ($stream === null) {
-            throw new NotFoundException(
-                "Evaluation archive for solution submission '$submissionId' not found on remote fileserver"
-            );
+        $file = $this->fileStorage->getResultsArchive($submission);
+        if (!$file) {
+            throw new NotFoundException("Archive for reference submission '$submissionId' not found in file storage");
         }
 
-        $this->sendResponse(new GuzzleResponse($stream, "results-{$submissionId}.zip", "application/zip"));
+        $this->sendResponse(new StorageFileResponse($file, "results-{$submissionId}.zip", "application/zip"));
     }
 
     public function checkEvaluationScoreConfig(string $submissionId)

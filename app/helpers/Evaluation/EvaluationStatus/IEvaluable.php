@@ -23,12 +23,6 @@ interface IEvaluable
     public function getEvaluation(): ?SolutionEvaluation;
 
     /**
-     * Query if evaluation is possible (it might not be possible e.g. if the backend rejected the request)
-     * @return boolean The result
-     */
-    public function canBeEvaluated(): bool;
-
-    /**
      * Return true if the evaluation failed
      * @return bool
      */

@@ -20,7 +20,6 @@ use App\Model\Repository\Users;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Exceptions\ForbiddenRequestException;
-use App\Responses\GuzzleResponse;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 
@@ -173,7 +172,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
         }
 
         // delete source codes
-        $this->fileStorage->deleteSolutionArchive($solution);
+        $this->fileStorage->deleteSolutionArchive($solution->getSolution());
 
         $solution->setLastSubmission(null); // break cyclic dependency, so submissions may be deleted on cascade
         $this->assignmentSolutions->flush();
@@ -511,7 +510,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public function actionDownloadSolutionArchive(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
-        $zipFile = $this->fileStorage->getSolutionFile($solution);
+        $zipFile = $this->fileStorage->getSolutionFile($solution->getSolution());
         if (!$zipFile) {
             throw new NotFoundException("Solution archive not found.");
         }

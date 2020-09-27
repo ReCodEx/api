@@ -3,6 +3,7 @@
 namespace App\Helpers\FileStorage;
 
 use Nette\SmartObject;
+use ZipArchive;
 
 /**
  * Abstraction that represents one immutable (read-only) file.
@@ -64,7 +65,7 @@ class LocalImmutableFile implements IImmutableFile
     {
         $this->checkExistence();
         if ($this->fileSize === null) {
-            $this->fileSize = filesize($this->realPath);
+            $this->fileSize = @filesize($this->realPath);
         }
         return $this->fileSize;
     }
@@ -80,14 +81,22 @@ class LocalImmutableFile implements IImmutableFile
     public function saveAs(string $path): void
     {
         $this->checkExistence();
-        if (!copy($this->realPath, $path)) {
+        if (!@copy($this->realPath, $path)) {
             throw new FileStorageException("Unable to save the file as '$path'.", $this->realPath);
+        }
+    }
+
+    public function addToZip(ZipArchive $zip, string $entryName): void
+    {
+        $this->checkExistence();
+        if (!$zip->addFile($this->realPath, $entryName)) {
+            throw new FileStorageException("Error while adding immutable file to ZIP archive.", $this->realPath);
         }
     }
 
     public function passthru(): void
     {
         $this->checkExistence();
-        readfile($this->realPath);
+        @readfile($this->realPath);
     }
 }

@@ -5,11 +5,14 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\BrokerProxy;
-use App\Helpers\FileServerProxy;
-use App\Helpers\JobConfig\GeneratorResult;
 use App\Helpers\MonitorConfig;
 use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalImmutableFile;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
@@ -47,6 +50,16 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()
@@ -116,42 +129,33 @@ class TestSubmitPresenter extends Tester\TestCase
         $evaluationStarted = true;
         $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-        /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
-        $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
-        $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn(
-            $mockSubmissionHeader
-        )->once()
-            ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn(
-                $mockSubmissionHeader
-            )->once();
-
-        /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
         $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-        $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
-            ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
-            ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->once()
-            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
-            ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
+        $mockJobConfig->shouldReceive("getId")->andReturn($jobId)->atLeast(1)
+            ->shouldReceive("getJobId")->andReturn($jobId)->atLeast(1)
+            ->shouldReceive("getJobType")->andReturn("student")->atLeast(1)
+            ->shouldReceive("getTasksCount")->andReturn($tasksCount)->once()
+            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1);
 
-        /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
         $mockGenerator = Mockery::mock(JobConfig\Generator::class);
-        $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-            ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->once();
+        $mockGenerator->shouldReceive("generateJobConfig")->andReturn($mockJobConfig)->once();
         $this->presenter->jobConfigGenerator = $mockGenerator;
 
         // mock fileserver and broker proxies
-        $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-        $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->once()
-            ->shouldReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
-            ->andReturn([$archiveUrl, $resultsUrl])->once();
         $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
         $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs(
             [$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl]
-        )
-            ->andReturn($evaluationStarted)->once();
+        )->andReturn($evaluationStarted)->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->once()
+            ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->once()
+            ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
+            ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
+    
         $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy)
+            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
         );
+        $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
         $monitorConfig = new MonitorConfig(
@@ -218,42 +222,35 @@ class TestSubmitPresenter extends Tester\TestCase
         $tasksCount = 5;
         $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-        /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
-        $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
-        $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn(
-            $mockSubmissionHeader
-        )->once()
-            ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn(
-                $mockSubmissionHeader
-            )->once();
-
-        /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
         $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-        $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
-            ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
+        $mockJobConfig->shouldReceive("getId")->andReturn($jobId)->atLeast(1)
+            ->shouldReceive("getJobId")->andReturn($jobId)->atLeast(1)
+            ->shouldReceive("getJobType")->andReturn("student")->atLeast(1)
             ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->zeroOrMoreTimes()
-            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
-            ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
+            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1);
 
-        /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
         $mockGenerator = Mockery::mock(JobConfig\Generator::class);
         $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-            ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->once();
+            ->andReturn($mockJobConfig)->once();
         $this->presenter->jobConfigGenerator = $mockGenerator;
 
-        // mock fileserver and broker proxies
-        $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-        $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->once()
-            ->shouldReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
-            ->andReturn([$archiveUrl, $resultsUrl])->once();
+        // mock file storage and broker proxies
         $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
         $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs(
             [$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl]
         )
             ->andThrow(SubmissionFailedException::class)->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->once()
+            ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->once()
+            ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
+            ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
+
         $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy)
+            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
         );
+        $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
         $monitorConfig = new MonitorConfig(
@@ -317,14 +314,17 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->jobConfigGenerator = $mockGenerator;
 
         // mock fileserver and broker proxies
-        $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-        $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)
-            ->shouldReceive("sendFiles")->withArgs([Mockery::any(), Mockery::any(), Mockery::any()])->never();
         $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
         $mockBrokerProxy->shouldReceive("startEvaluation")->never();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
+            ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
+
         $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy)
+            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
         );
+        $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
         $monitorConfig = new MonitorConfig(
@@ -376,44 +376,31 @@ class TestSubmitPresenter extends Tester\TestCase
         $tasksCount = 5;
         $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-        /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
-        $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
-        $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn(
-            $mockSubmissionHeader
-        )->once()
-            ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn(
-                $mockSubmissionHeader
-            )->once();
-
-        /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
         $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-        $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
-            ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
-            ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->zeroOrMoreTimes()
-            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
-            ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
+        $mockJobConfig->shouldReceive("getId")->andReturn($jobId)->atLeast(1)
+            ->shouldReceive("getJobId")->andReturn($jobId)->atLeast(1)
+            ->shouldReceive("getJobType")->andReturn("student")->atLeast(1)
+            ->shouldReceive("getTasksCount")->andReturn($tasksCount)->zeroOrMoreTimes()
+            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1);
 
-        /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
         $mockGenerator = Mockery::mock(JobConfig\Generator::class);
-        $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-            ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->once();
+        $mockGenerator->shouldReceive("generateJobConfig")->andReturn($mockJobConfig)->once();
         $this->presenter->jobConfigGenerator = $mockGenerator;
 
-        // mock fileserver and broker proxies
-        /** @var Mockery\Mock | FileServerProxy $mockFileserverProxy */
-        $mockFileserverProxy = Mockery::mock(FileServerProxy::class);
-        $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->once()
-            ->shouldReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
-            ->andReturn([$archiveUrl, $resultsUrl])->once();
-        /** @var Mockery\Mock | BrokerProxy $mockBrokerProxy */
+        // mock file storage and broker proxies
         $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
         $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs(
             [$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl]
-        )
-            ->andReturn($evaluationStarted = true)->once();
+        )->andReturn($evaluationStarted = true)->once();
+        
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->once()
+            ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->once();
+
         $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy)
+            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
         );
+        $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
         $monitorConfig = new MonitorConfig(
@@ -470,46 +457,33 @@ class TestSubmitPresenter extends Tester\TestCase
         $tasksCount = 5;
         $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-        /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
-        $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
-        $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn(
-            $mockSubmissionHeader
-        )->times($solutionCount)
-            ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn(
-                $mockSubmissionHeader
-            )->times($solutionCount);
-
-        /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
         $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-        $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast($solutionCount)
-            ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->times(
-                $solutionCount
-            )
-            ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->atLeast($solutionCount)
-            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast($solutionCount)
-            ->shouldReceive("setFileCollector")->with($fileserverUrl)->times($solutionCount);
+        $mockJobConfig->shouldReceive("getId")->andReturn($jobId)->atLeast($solutionCount)
+            ->shouldReceive("getJobId")->andReturn($jobId)->atLeast($solutionCount)
+            ->shouldReceive("getJobType")->andReturn("student")->atLeast(1)
+            ->shouldReceive("getTasksCount")->andReturn($tasksCount)->atLeast($solutionCount)
+            ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast($solutionCount);
 
-        /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
         $mockGenerator = Mockery::mock(JobConfig\Generator::class);
         $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-            ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->times($solutionCount);
+            ->andReturn($mockJobConfig)->times($solutionCount);
         $this->presenter->jobConfigGenerator = $mockGenerator;
 
-        // mock fileserver and broker proxies
-        /** @var Mockery\Mock | FileServerProxy $mockFileserverProxy */
-        $mockFileserverProxy = Mockery::mock(FileServerProxy::class);
-        $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->times($solutionCount)
-            ->shouldReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
-            ->andReturn([$archiveUrl, $resultsUrl])->times($solutionCount);
-        /** @var Mockery\Mock | BrokerProxy $mockBrokerProxy */
+        // mock file storage and broker proxies
         $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
         $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs(
             [$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl]
-        )
-            ->andReturn($evaluationStarted = true)->times($solutionCount);
+        )->andReturn($evaluationStarted = true)->times($solutionCount);
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->atLeast(1)
+            ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->atLeast(1);
+
         $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy)
+            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
         );
+        $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
         $monitorConfig = new MonitorConfig(

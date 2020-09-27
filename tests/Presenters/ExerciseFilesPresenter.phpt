@@ -6,8 +6,8 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
+use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\ExercisesConfig;
-use App\Helpers\FileServerProxy;
 use App\Helpers\TmpFilesHelper;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
@@ -62,7 +62,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->container->addService($fsName, new FileStorageManager(
             Mockery::mock(LocalFileStorage::class),
             Mockery::mock(LocalHashFileStorage::class),
-            Mockery::mock(TmpFilesHelper::class)
+            Mockery::mock(TmpFilesHelper::class),
+            ""
         ));
     }
 
@@ -84,19 +85,11 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
     public function testSupplementaryFilesUpload()
     {
+        $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
         // Mock file server setup
         $filename1 = "task1.txt";
         $filename2 = "task2.txt";
-        $fileServerResponse1 = [
-            $filename1 => "https://fs/tasks/hash1",
-        ];
-        $fileServerResponse2 = [
-            $filename2 => "https://fs/tasks/hash2"
-        ];
-        $fileServerResponseMerged = array_merge($fileServerResponse1, $fileServerResponse2);
-
-        $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
-
         $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user);
         $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user);
         $this->presenter->uploadedFiles->persist($file1);
@@ -104,7 +97,6 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->flush();
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
-        $fileStorage->shouldDeferMissing();
         $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file1)->once();
         $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file2)->once();
         $this->presenter->fileStorage = $fileStorage;
@@ -112,7 +104,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         // Finally, the test itself
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
-        $exercise = current($this->presenter->exercises->findAll());
+        $exercise = current(array_filter(
+            $this->presenter->exercises->findAll(),
+            function ($exercise) {
+                return $exercise->getSupplementaryEvaluationFiles()->count() === 0;
+            }
+        ));
+        Assert::truthy($exercise);
+
         $files = [$file1->getId(), $file2->getId()];
 
         /** @var Nette\Application\Responses\JsonResponse $response */
@@ -249,7 +248,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
         // prepare files into exercise
         $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
-        $exercise = current($this->presenter->exercises->findAll());
+        $exercise = current(array_filter(
+            $this->presenter->exercises->findAll(),
+            function ($exercise) {
+                return $exercise->getSupplementaryEvaluationFiles()->count() === 0;
+            }
+        ));
+        Assert::truthy($exercise);
+
         $expectedFile1 = new SupplementaryExerciseFile(
             "name1",
             new DateTime(),
@@ -325,11 +331,20 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     public function testDownloadSupplementaryFilesArchive()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-        $exercise = current($this->presenter->exercises->findAll());
+        $exercise = current(array_filter(
+            $this->presenter->exercises->findAll(),
+            function ($exercise) {
+                return $exercise->getSupplementaryEvaluationFiles()->count() > 0;
+            }
+        ));
+        Assert::truthy($exercise);
 
-        $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-        $mockFileserverProxy->shouldReceive("downloadFile")->andReturn()->zeroOrMoreTimes();
-        $this->presenter->fileServerProxy = $mockFileserverProxy;
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
+            $mockFile = Mockery::mock(LocalImmutableFile::class);
+            $mockFileStorage->shouldReceive("getSupplementaryFileByHash")->with($file->getHashName())->andReturn($mockFile)->once();
+        }
+        $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             "V1:ExerciseFiles",
@@ -337,9 +352,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             ['action' => 'downloadSupplementaryFilesArchive', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
-        Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
-
-        // Check invariants
+        Assert::type(App\Responses\ZipFilesResponse::class, $response);
         Assert::equal("exercise-supplementary-" . $exercise->getId() . '.zip', $response->getName());
     }
 
@@ -392,6 +405,10 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->attachmentFiles->persist($file);
         Assert::count($filesCount + 1, $exercise->getAttachmentFiles());
 
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("deleteAttachmentFile")->with($file)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+
         $request = new Nette\Application\Request(
             "V1:ExerciseFiles", 'DELETE',
             [
@@ -414,18 +431,71 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercise = current($this->presenter->exercises->findAll());
 
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        foreach ($exercise->getAttachmentFiles() as $file) {
+            $mockFile = Mockery::mock(LocalImmutableFile::class);
+            $mockFileStorage->shouldReceive("getAttachmentFile")->with($file)->andReturn($mockFile)->once();
+        }
+        $this->presenter->fileStorage = $mockFileStorage;
+
         $request = new Nette\Application\Request(
             "V1:ExerciseFiles",
             'GET',
             ['action' => 'downloadAttachmentFilesArchive', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
-        Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
-
-        // Check invariants
+        Assert::type(App\Responses\ZipFilesResponse::class, $response);
         Assert::equal("exercise-attachment-" . $exercise->getId() . '.zip', $response->getName());
     }
 
+    public function testAttachmentFilesUpload()
+    {
+        $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+        $exercise = current(array_filter(
+            $this->presenter->exercises->findAll(),
+            function ($exercise) {
+                return $exercise->getAttachmentFiles()->count() === 0;
+            }
+        ));
+        Assert::truthy($exercise);
+
+        // Mock file server setup
+        $filename1 = "task1.txt";
+        $filename2 = "task2.txt";
+        $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user);
+        $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user);
+        $this->presenter->uploadedFiles->persist($file1);
+        $this->presenter->uploadedFiles->persist($file2);
+        $this->presenter->uploadedFiles->flush();
+        $files = [$file1->getId(), $file2->getId()];
+
+        $fileStorage = Mockery::mock(FileStorageManager::class);
+        $fileStorage->shouldReceive("storeUploadedAttachmentFile")->once();
+        $fileStorage->shouldReceive("storeUploadedAttachmentFile")->once();
+        $this->presenter->fileStorage = $fileStorage;
+
+        // Finally, the test itself
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        /** @var Nette\Application\Responses\JsonResponse $response */
+        $response = $this->presenter->run(
+            new Nette\Application\Request(
+                "V1:ExerciseFiles", "POST", [
+                "action" => 'uploadAttachmentFiles',
+                'id' => $exercise->id
+            ], [ 'files' => $files ]
+        ));
+
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $payload = $response->getPayload()['payload'];
+        Assert::count(2, $payload);
+
+        foreach ($payload as $item) {
+            Assert::type(App\Model\Entity\AttachmentFile::class, $item);
+        }
+    }
 }
 
 (new TestExerciseFilesPresenter())->run();

@@ -38,6 +38,7 @@ class FileStorageManager
     private const WORKER_DOWNLOADS = 'worker_downloads';
     private const WORKER_UPLOADS = 'worker_uploads';
     private const JOB_CONFIG_FILENAME = 'job-config.yml';
+    private const JOB_RESULT_FILENAME = 'result/result.yml';
 
     /** @var IFileStorage */
     private $fileStorage;
@@ -48,14 +49,26 @@ class FileStorageManager
     /** @var TmpFilesHelper */
     private $tmpFilesHelper;
 
+    /** @var string */
+    private $apiUrl;
+
     /**
-     * @param array $params Injected configuration parameters.
+     * Initialize the manager by injecting dependencies and configuration
+     * @param IFileStorage $fileStorage
+     * @param IHashFileStorage $hashStorage
+     * @param TmpFilesHelper $tmp
+     * @param string $apiUrl injected configuration containing external URL to API (prefix for generated external URLs)
      */
-    public function __construct(IFileStorage $fileStorage, IHashFileStorage $hashStorage, TmpFilesHelper $tmp)
-    {
+    public function __construct(
+        IFileStorage $fileStorage,
+        IHashFileStorage $hashStorage,
+        TmpFilesHelper $tmp,
+        string $apiUrl
+    ) {
         $this->fileStorage = $fileStorage;
         $this->hashStorage = $hashStorage;
         $this->tmpFilesHelper = $tmp;
+        $this->apiUrl = $apiUrl;
     }
 
     private static function augmentDir(string $base, $entity): string
@@ -108,6 +121,16 @@ class FileStorageManager
     }
 
     /**
+     * Remove uploaded file.
+     * @param UploadedFile $file corresponding database entity
+     */
+    public function deleteUploadedFile(UploadedFile $file): void
+    {
+        $path = $this->getUploadedFilePath($file);
+        $this->fileStorage->delete($path);
+    }
+
+    /**
      * Move uploaded file to persistent hash storage for supplementary files.
      * @param UploadedFile $uploadedFile to be moved from tmp upload storage to hash storage
      * @return string hash identifying stored supplementary file
@@ -144,6 +167,17 @@ class FileStorageManager
     }
 
     /**
+     * Move uploaded file to persistent hash storage for supplementary files.
+     * @param AttachmentFile $file newly created attachment file (from uploaded file) entity
+     */
+    public function storeUploadedAttachmentFile(AttachmentFile $file): void
+    {
+        $oldPath = $this->getUploadedFilePath($file);
+        $newPath = $this->getAttachmentFilePath($file);
+        $this->fileStorage->move($oldPath, $newPath);
+    }
+
+    /**
      * Retrieve an atttachment file (file attached to specification of an exercise/assignment).
      * @param AttachmentFile $file
      * @return IImmutableFile|null a file object or null if no such file exists
@@ -152,6 +186,16 @@ class FileStorageManager
     {
         $path = $this->getAttachmentFilePath($file);
         return $this->fileStorage->fetch($path);
+    }
+
+    /**
+     * Remove an atttachment file (file attached to specification of an exercise/assignment).
+     * @param AttachmentFile $file
+     */
+    public function deleteAttachmentFile(AttachmentFile $file): void
+    {
+        $path = $this->getAttachmentFilePath($file);
+        $this->fileStorage->delete($path);
     }
 
     /**
@@ -164,7 +208,17 @@ class FileStorageManager
         $dir = self::augmentDir(self::JOB_CONFIGS, $submission);
         $type = $submission::JOB_TYPE;
         $id = $submission->getId();
-        return "$dir/${type}_${id}.yml";
+        return "$dir/${id}_${type}.yml";
+    }
+
+    /**
+     * Retrieve a job config file for given submission.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     */
+    public function storeJobConfig(Submission $submission, string $config): void
+    {
+        $path = $this->getJobConfigPath($submission);
+        $this->fileStorage->storeContents($config, $path, true); // true = allow overwrite
     }
 
     /**
@@ -190,22 +244,34 @@ class FileStorageManager
 
     /**
      * Get path to a solution archive with source code files.
-     * @param AssignmentSolution|ReferenceExerciseSolution $solution
+     * @param Solution $solution
      * @return string path
      */
-    private function getSolutionArchivePath($solution): string
+    private function getSolutionArchivePath(Solution $solution): string
     {
-        $dir = self::augmentDir(self::SOLUTIONS, $solution->getSolution());
+        $dir = self::augmentDir(self::SOLUTIONS, $solution);
         $id = $solution->getId();
         return "$dir/${id}.zip";
     }
 
     /**
+     * Move uploaded file to persistent storage of given solutions' files.
+     * @param Solution $solution
+     * @param UploadedFile $file
+     */
+    public function storeUploadedSolutionFile(Solution $solution, UploadedFile $file): void
+    {
+        $oldPath = $this->getUploadedFilePath($file);
+        $newPath = $this->getSolutionArchivePath($solution) . '#' . $file->getName();
+        $this->fileStorage->move($oldPath, $newPath);
+    }
+
+    /**
      * Retrieve a solution file or the entire archive.
-     * @param AssignmentSolution|ReferenceExerciseSolution $solution
+     * @param Solution $solution
      * @param string|null $file name of the file to be retrieved; entire archive is retrievd if null
      */
-    public function getSolutionFile($solution, string $file = null): ?IImmutableFile
+    public function getSolutionFile(Solution $solution, string $file = null): ?IImmutableFile
     {
         $path = $this->getSolutionArchivePath($solution);
         $path = $file ? "$path#$file" : $path;
@@ -214,9 +280,9 @@ class FileStorageManager
 
     /**
      * Remove the archive with solution source files.
-     * @param AssignmentSolution|ReferenceExerciseSolution $solution
+     * @param Solution $solution
      */
-    public function deleteSolutionArchive($solution): void
+    public function deleteSolutionArchive(Solution $solution): void
     {
         $path = $this->getSolutionArchivePath($solution);
         $this->fileStorage->delete($path);
@@ -230,7 +296,7 @@ class FileStorageManager
      */
     private function getWorkerSubmissionArchivePath(string $type, string $id): string
     {
-        return self::WORKER_DOWNLOADS . "/${type}_${id}.zip";
+        return self::WORKER_DOWNLOADS . "/${id}_${type}.zip";
     }
 
     /**
@@ -277,7 +343,7 @@ class FileStorageManager
      */
     private function getWorkerUploadResultsArchivePath(string $type, string $submissionId): string
     {
-        return self::WORKER_UPLOADS . "/${type}_${submissionId}.zip";
+        return self::WORKER_UPLOADS . "/${submissionId}_${type}.zip";
     }
 
     /**
@@ -310,19 +376,53 @@ class FileStorageManager
         $dir = self::augmentDir(self::RESULTS, $submission);
         $type = $submission::JOB_TYPE;
         $id = $submission->getId();
-        return "$dir/${type}_$id.zip";
+        return "$dir/${id}_${type}.zip";
     }
 
-    // FIXME -- function that moves results archive from upload tmp dir to its persistent location
+    /**
+     * Internal function that makes sure the results archive is moved from uploads.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return IImmutableFile|null if the file is found, return its wrapper (after moving)
+     */
+    private function findAndMoveResultsArchiveIfNecessary(Submission $submission): ?IImmutableFile
+    {
+        $path = $this->getResultsArchivePath($submission);
+        $file = $this->fileStorage->fetch($path);
+        if ($file === null) {
+            // if missing, try to find it in (and move it from) worker upload directory
+            $uploadPath = $this->getWorkerUploadResultsArchivePath($submission::JOB_TYPE, $submission->getId());
+            if ($this->fileStorage->fetch($uploadPath) !== null) {
+                $this->fileStorage->move($uploadPath, $path);
+            }
+            $file = $this->fileStorage->fetch($path);
+        }
+        return $file;
+    }
 
     /**
      * Retrieve results archive for particular submission (works both for assignment and reference submissions).
+     * If the results are missing, an attempt to fetch it from upload directory is performed.
      * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
      * @return IImmutableFile|null the zip file or null, if the file does not exist
      */
     public function getResultsArchive(Submission $submission): ?IImmutableFile
     {
-        $path = $this->getResultsArchivePath($submission);
+        return $this->findAndMoveResultsArchiveIfNecessary($submission);
+    }
+
+    /**
+     * Retrieve results Yaml config file from the archive.
+     * If the results are missing, an attempt to fetch it from upload directory is performed.
+     * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return IImmutableFile|null the yaml file or null, if the file does not exist
+     */
+    public function getResultsYamlFile(Submission $submission): ?IImmutableFile
+    {
+        if ($this->findAndMoveResultsArchiveIfNecessary($submission) === null) {
+            return null; // archive not found (not even in uploads)
+        }
+
+        $path = $this->getResultsArchivePath($submission) . '#' . self::JOB_RESULT_FILENAME;
         return $this->fileStorage->fetch($path);
     }
 
@@ -334,5 +434,39 @@ class FileStorageManager
     {
         $path = $this->getResultsArchivePath($submission);
         $this->fileStorage->delete($path);
+    }
+
+    /**
+     * Generator for external URL passed to worker where the submission archive is located.
+     * If the files are managed internally by core, this must match router configuration.
+     * @param string $type job type (reference/student)
+     * @param string $id submission/job identifier
+     * @return string full URL
+     */
+    public function getWorkerSubmissionExternalUrl(string $type, string $id): string
+    {
+        return "$this->apiUrl/v1/worker-files/submission-archive/$type/$id";
+    }
+
+    /**
+     * Generator for external URL passed to worker where the results should be uploaded.
+     * If the files are managed internally by core, this must match router configuration.
+     * @param string $type job type (reference/student)
+     * @param string $id submission/job identifier
+     * @return string full URL
+     */
+    public function getWorkerResultExternalUrl(string $type, string $id): string
+    {
+        return "$this->apiUrl/v1/worker-files/result/$type/$id";
+    }
+
+    /**
+     * Generator for external URL prefixes for downloading supplementary files.
+     * The worker only appends /<hash> to the URL prefix.
+     * @return string URL prefix
+     */
+    public function getWorkerSupplementaryFilesExternalUrlPrefix(): string
+    {
+        return "$this->apiUrl/v1/worker-files/supplementary-file";
     }
 }

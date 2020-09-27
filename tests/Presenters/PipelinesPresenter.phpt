@@ -46,7 +46,8 @@ class TestPipelinesPresenter extends Tester\TestCase
         $this->container->addService($fsName, new FileStorageManager(
             Mockery::mock(LocalFileStorage::class),
             Mockery::mock(LocalHashFileStorage::class),
-            Mockery::mock(TmpFilesHelper::class)
+            Mockery::mock(TmpFilesHelper::class),
+            ""
         ));
     }
 

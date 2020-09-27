@@ -3,6 +3,8 @@
 namespace App\Responses;
 
 use App\Exceptions\ApiException;
+use App\Helpers\FileStorage\IImmutableFile;
+use App\Helpers\FileStorage\FileStorageException;
 use Nette;
 use Nette\Application\Responses\FileResponse;
 use Nette\Utils\FileSystem;
@@ -15,7 +17,6 @@ use ZipArchive;
  */
 class ZipFilesResponse extends FileResponse
 {
-
     /**
      * Indexed by local path, containing original filename.
      * @var string[]
@@ -23,24 +24,18 @@ class ZipFilesResponse extends FileResponse
     private $files;
 
     /**
-     * @var bool
-     */
-    private $deleteFiles;
-
-    /**
      * ZipFilesResponse constructor.
-     * @param string[] $files indexed by local path, containing original filename
+     * @param array $files indexed by orignal name (becomes zip entry) where values are local paths (strings)
+     *                        or possibly IImmutableFile objects
      * @param null $name
-     * @param bool $deleteFiles if true given files will be deleted after send
      * @param bool $forceDownload
      * @throws Nette\Application\BadRequestException
      */
-    public function __construct(array $files, $name = null, bool $deleteFiles = false, bool $forceDownload = true)
+    public function __construct(array $files, $name = null, bool $forceDownload = true)
     {
         $zipFile = tempnam(sys_get_temp_dir(), "ReC");
         parent::__construct($zipFile, $name, "application/zip", $forceDownload);
         $this->files = $files;
-        $this->deleteFiles = $deleteFiles;
     }
 
     /**
@@ -54,9 +49,18 @@ class ZipFilesResponse extends FileResponse
             throw new ApiException("Archive could not be created");
         }
 
-        foreach ($this->files as $localPath => $name) {
-            if ($zip->addFile($localPath, $name) !== true) {
-                throw new ApiException("Error while adding file to archive");
+        foreach ($this->files as $name => $file) {
+            if ($file instanceof IImmutableFile) {
+                try {
+                    $file->addToZip($zip, $name);
+                } catch (FileStorageException $e) {
+                    throw new ApiException("Error while adding file to archive");
+                }
+            } else {
+                // file is actually a local path to the file (BC)
+                if ($zip->addFile($file, $name) !== true) {
+                    throw new ApiException("Error while adding file to archive");
+                }
             }
         }
 
@@ -99,17 +103,6 @@ class ZipFilesResponse extends FileResponse
             FileSystem::delete($this->getFile());
         } catch (Nette\IOException $e) {
             // silent
-        }
-
-        // given files was asked to be deleted after send
-        if ($this->deleteFiles) {
-            foreach ($this->files as $file) {
-                try {
-                    FileSystem::delete($file);
-                } catch (Nette\IOException $e) {
-                    // silent
-                }
-            }
         }
     }
 }

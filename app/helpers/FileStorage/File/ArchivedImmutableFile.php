@@ -2,6 +2,7 @@
 
 namespace App\Helpers\FileStorage;
 
+use App\Helpers\TmpFilesHelper;
 use Nette\SmartObject;
 use ZipArchive;
 
@@ -37,17 +38,28 @@ class ArchivedImmutableFile implements IImmutableFile
     private $fileSize = null;
 
     /**
+     * @var TmpFilesHelper|null
+     * Injected helper for handling tmp files.
+     */
+    private $tmpFilesHelper = null;
+
+    /**
      * Initialize the object
      * @param string $archivePath path to an actual ZIP file
      * @param string $entry path within the ZIP file
      * @param string|null $storagePath presented virtual path within specific storage
      *                                 (if null, it is constructed as archivePath#entry)
      */
-    public function __construct(string $archivePath, string $entry, string $storagePath = null)
-    {
+    public function __construct(
+        string $archivePath,
+        string $entry,
+        string $storagePath = null,
+        TmpFilesHelper $tmpFilesHelper = null
+    ) {
         $this->archivePath = $archivePath;
         $this->entry = $entry;
         $this->storagePath = $storagePath ?? "$archivePath#$entry";
+        $this->tmpFilesHelper = $tmpFilesHelper;
     }
     
     /**
@@ -104,6 +116,17 @@ class ArchivedImmutableFile implements IImmutableFile
     {
         $zip = $this->openZip();
         ZipFileStorage::extractZipEntryToFile($zip, $this->archivePath, $this->entry, $path);
+    }
+
+    public function addToZip(ZipArchive $zip, string $entryName): void
+    {
+        $sourceZip = $this->openZip();
+        $path = $this->tmpFilesHelper->createTmpFile('aif');
+        ZipFileStorage::extractZipEntryToFile($sourceZip, $this->archivePath, $this->entry, $path);
+        if (!$zip->addFile($path, $entryName)) {
+            $src = $this->archivePath . '#' . $this->entry;
+            throw new FileStorageException("Error while adding immutable file to ZIP archive.", $src);
+        }
     }
 
     public function passthru(): void

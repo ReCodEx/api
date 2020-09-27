@@ -12,12 +12,13 @@ use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Validators;
 use App\Helpers\AssignmentRestrictionsConfig;
+use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
+use App\Helpers\Evaluation\ScoreCalculatorAccessor;
+use App\Helpers\FileStorageManager;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\LocalizedExercise;
-use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
-use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
@@ -40,6 +41,11 @@ use Nette\Utils\Strings;
  */
 class AssignmentsPresenter extends BasePresenter
 {
+    /**
+     * @var FileStorageManager
+     * @inject
+     */
+    public $fileStorage;
 
     /**
      * @var Exercises
@@ -698,7 +704,7 @@ class AssignmentsPresenter extends BasePresenter
 
             $studentDir = Strings::webalize("{$student->getLastName()}_{$student->getFirstName()}_{$student->getId()}");
             foreach ($solution->getSolution()->getFiles() as $file) {
-                $files[$file->getLocalFilePath()] = $studentDir . "/" . $file->getName();
+                $files[$studentDir . "/" . $file->getName()] = $file->getFile($this->fileStorage);
             }
         }
 

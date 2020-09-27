@@ -162,7 +162,7 @@ class LocalFileStorage implements IFileStorage
                 $zip->close();
                 return null;
             }
-            return new ArchivedImmutableFile($realPath, $zipEntry, $path);
+            return new ArchivedImmutableFile($realPath, $zipEntry, $path, $this->tmpFilesHelper);
         }
         return new LocalImmutableFile($realPath, $path);
     }

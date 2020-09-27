@@ -2,7 +2,6 @@
 
 namespace App\Helpers\JobConfig;
 
-use App\Exceptions\MalformedJobConfigException;
 use Nette\Utils\Arrays;
 use App\Helpers\Yaml;
 

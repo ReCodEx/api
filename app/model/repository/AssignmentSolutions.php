@@ -73,7 +73,7 @@ class AssignmentSolutions extends BaseRepository
                 $solutions,
                 function (AssignmentSolution $solution) {
                     $submission = $solution->getLastSubmission();
-                    if ($submission === null || $submission->isFailed() || $submission->getResultsUrl() === null) {
+                    if ($submission === null || $submission->isFailed()) {
                         return false;
                     }
 

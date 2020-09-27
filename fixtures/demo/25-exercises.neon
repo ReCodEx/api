@@ -167,7 +167,6 @@ App\Model\Entity\ReferenceSolutionSubmission:
         __construct:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
-            - "jobConfigPath"
             - @demoAdmin
         evaluation: "@demoReferenceExerciseSolutionEvaluationEvaluation<current()>"
         resultsUrl: "chacha cheche chichi chocho"
@@ -178,6 +177,16 @@ App\Model\Entity\AttachmentFile:
             - Our additional file
             - "<dateTimeBetween('-3 years', '-1 years')>"
             - 42
+            - @demoAdmin
+            - @demoExercise
+
+App\Model\Entity\SupplementaryExerciseFile:
+    demoSupplementaryExerciseFile:
+        __construct:
+            - "input.txt"
+            - "<dateTimeBetween('-3 years', '-1 years')>"
+            - 5
+            - "shahash"
             - @demoAdmin
             - @demoExercise
 

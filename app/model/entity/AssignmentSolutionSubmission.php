@@ -37,11 +37,10 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 
     public function __construct(
         AssignmentSolution $assignmentSolution,
-        string $jobConfigPath,
         User $submittedBy,
         bool $isDebug = false
     ) {
-        parent::__construct($submittedBy, $jobConfigPath, $isDebug);
+        parent::__construct($submittedBy, $isDebug);
         $this->assignmentSolution = $assignmentSolution;
     }
 

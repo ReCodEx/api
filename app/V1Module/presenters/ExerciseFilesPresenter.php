@@ -8,7 +8,6 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExercisesConfig;
-use App\Helpers\FileServerProxy;
 use App\Helpers\FileStorageManager;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -77,12 +76,6 @@ class ExerciseFilesPresenter extends BasePresenter
      * @inject
      */
     public $configChecker;
-
-    /**
-     * @var FileServerProxy
-     * @inject
-     */
-    public $fileServerProxy;
 
     public function checkUploadSupplementaryFiles(string $id)
     {
@@ -241,8 +234,7 @@ class ExerciseFilesPresenter extends BasePresenter
 
         $files = [];
         foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
-            $localPath = $this->fileServerProxy->downloadFile($file->getFileServerPath());
-            $files[$localPath] = $file->getName();
+            $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
 
         $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true));
@@ -286,8 +278,9 @@ class ExerciseFilesPresenter extends BasePresenter
                 $exercise->getAttachmentFiles()->removeElement($currentFile);
             }
 
-            $exerciseFile = AttachmentFile::fromUploadedFile($file, $exercise);
-            $this->uploadedFiles->persist($exerciseFile, false);
+            $attachmentFile = AttachmentFile::fromUploadedFile($file, $exercise);
+            $this->fileStorage->storeUploadedAttachmentFile($attachmentFile);
+            $this->uploadedFiles->persist($attachmentFile, false);
             $this->uploadedFiles->remove($file, false);
         }
 
@@ -344,6 +337,9 @@ class ExerciseFilesPresenter extends BasePresenter
         $exercise->updatedNow();
         $exercise->removeAttachmentFile($file);
         $this->exercises->flush();
+
+        $this->fileStorage->deleteAttachmentFile($file);
+
         $this->sendSuccessResponse("OK");
     }
 
@@ -369,7 +365,7 @@ class ExerciseFilesPresenter extends BasePresenter
 
         $files = [];
         foreach ($exercise->getAttachmentFiles() as $file) {
-            $files[$file->getLocalFilePath()] = $file->getName();
+            $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
         $this->sendResponse(new ZipFilesResponse($files, "exercise-attachment-{$id}.zip"));
     }

@@ -12,7 +12,6 @@ use App\Helpers\JobConfig\Tasks\Task;
  */
 class Loader
 {
-
     /**
      * Build and check submission header from given structured data.
      * @param array $data

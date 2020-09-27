@@ -12,9 +12,6 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @ORM\MappedSuperclass
  *
  * @method string getId()
- * @method string getResultsUrl()
- * @method string setResultsUrl(string $url)
- * @method string getJobConfigPath()
  * @method DateTime getSubmittedAt()
  */
 abstract class Submission implements IEvaluable
@@ -74,18 +71,13 @@ abstract class Submission implements IEvaluable
     protected $subdir;
 
 
-    public function __construct(User $submittedBy, string $jobConfigPath, bool $isDebug = false)
+    public function __construct(User $submittedBy, bool $isDebug = false)
     {
         $this->submittedAt = new DateTime();
         $this->submittedBy = $submittedBy;
-        $this->jobConfigPath = $jobConfigPath;
+        $this->jobConfigPath = ''; //$jobConfigPath; DEPRECATED
         $this->isDebug = $isDebug;
         $this->subdir = $this->submittedAt->format('Y-m');
-    }
-
-    public function canBeEvaluated(): bool
-    {
-        return $this->resultsUrl !== null;
     }
 
     public function hasEvaluation(): bool
