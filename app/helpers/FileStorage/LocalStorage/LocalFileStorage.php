@@ -136,8 +136,10 @@ class LocalFileStorage implements IFileStorage
                 if ($file === '.' || $file === '..') {
                     continue;
                 }
+                closedir($dh);
                 return; // we found at least one valid entry -> cannot delete
             }
+            closedir($dh);
 
             // It is empty, let's proceed!
             if (@rmdir($realPath) && Strings::contains($path, '/')) {
@@ -424,6 +426,39 @@ class LocalFileStorage implements IFileStorage
             $zip->close();
             return $res;
         }
+    }
+
+    public function deleteOldFiles(string $glob, int $threshold): int
+    {
+        $glob = $this->rootDirectory . '/' . $glob;
+        $rootDirLen = strlen($this->rootDirectory);
+        
+        $deleted = 0;
+        $affectedDirectories = [];
+
+        foreach (glob($glob) as $file) {
+            if (!is_file($file)) {
+                continue;
+            }
+
+            $ts = @filectime($file);
+            if ($ts !== false && $ts < $threshold) {
+                // file is too old, remove it!
+                if (substr($file, 0, $rootDirLen) === $this->rootDirectory) {
+                    $dir = dirname(substr($file, $this->rootDirectory + 1));
+                    $affectedDirectories[$dir] = true;  // save the directory for the final cleanup
+                }
+
+                @unlink($file);
+            }
+        }
+
+        // try to remove all affected directories (if they are empty)
+        foreach (array_keys($affectedDirectories) as $dir) {
+            $this->removeEmptyDirectory($dir);
+        }
+
+        return $deleted;
     }
 
     public function flush(): void

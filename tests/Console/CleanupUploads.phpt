@@ -6,6 +6,11 @@ use App\Console\CleanupUploads;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Users;
 use App\Model\Entity\UploadedFile;
+use App\Helpers\FileStorageManager;
+use App\Helpers\FileStorage\LocalImmutableFile;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use Tester\Assert;
 
 
@@ -36,6 +41,19 @@ class TestCleanupUploads extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->users = $container->getByType(Users::class);
         $this->uploadedFiles = $container->getByType(UploadedFiles::class);
+
+        $lfs = Mockery::mock(LocalFileStorage::class);
+        $lfs->shouldReceive("delete")->with(Mockery::any())->andReturn(true)->times(5);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            $lfs,
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()

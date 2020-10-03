@@ -19,6 +19,7 @@ use App\Exceptions\InvalidArgumentException;
 use Nette\Utils\Arrays;
 use Nette\Http\FileUpload;
 use Nette;
+use DateTime;
 
 /**
  * File storage manager provides access to underlying file storages.
@@ -123,11 +124,12 @@ class FileStorageManager
     /**
      * Remove uploaded file.
      * @param UploadedFile $file corresponding database entity
+     * @return bool whether the file has been actually deleted (false = it does not exist)
      */
-    public function deleteUploadedFile(UploadedFile $file): void
+    public function deleteUploadedFile(UploadedFile $file): bool
     {
         $path = $this->getUploadedFilePath($file);
-        $this->fileStorage->delete($path);
+        return $this->fileStorage->delete($path);
     }
 
     /**
@@ -191,11 +193,12 @@ class FileStorageManager
     /**
      * Remove an atttachment file (file attached to specification of an exercise/assignment).
      * @param AttachmentFile $file
+     * @return bool whether the file has been actually deleted (false = it does not exist)
      */
-    public function deleteAttachmentFile(AttachmentFile $file): void
+    public function deleteAttachmentFile(AttachmentFile $file): bool
     {
         $path = $this->getAttachmentFilePath($file);
-        $this->fileStorage->delete($path);
+        return $this->fileStorage->delete($path);
     }
 
     /**
@@ -235,11 +238,12 @@ class FileStorageManager
     /**
      * Remove job config Yaml file for given submission.
      * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return bool whether the file has been actually deleted (false = it does not exist)
      */
-    public function deleteJobConfig(Submission $submission): void
+    public function deleteJobConfig(Submission $submission): bool
     {
         $path = $this->getJobConfigPath($submission);
-        $this->fileStorage->delete($path);
+        return $this->fileStorage->delete($path);
     }
 
     /**
@@ -281,11 +285,12 @@ class FileStorageManager
     /**
      * Remove the archive with solution source files.
      * @param Solution $solution
+     * @return bool whether the file has been actually deleted (false = it does not exist)
      */
-    public function deleteSolutionArchive(Solution $solution): void
+    public function deleteSolutionArchive(Solution $solution): bool
     {
         $path = $this->getSolutionArchivePath($solution);
-        $this->fileStorage->delete($path);
+        return $this->fileStorage->delete($path);
     }
 
     /**
@@ -367,6 +372,17 @@ class FileStorageManager
     }
 
     /**
+     * Perform a cleanup on all worker files. Remove files which are older than given threshold.
+     * @param DateTime $threshold files older than this point in time will be removed
+     * @return int total number of files deleted
+     */
+    public function workerFilesCleanup(DateTime $threshold): int
+    {
+        return $this->fileStorage->deleteOldFiles(self::WORKER_DOWNLOADS . '/*', $threshold->getTimestamp())
+            + $this->fileStorage->deleteOldFiles(self::WORKER_UPLOADS . '/*', $threshold->getTimestamp());
+    }
+
+    /**
      * Get path to persistent location of results archive.
      * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
      * @return string path
@@ -429,11 +445,12 @@ class FileStorageManager
     /**
      * Remove a results file of a particular submission.
      * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+     * @return bool whether the file has been actually deleted (false = it does not exist)
      */
-    public function deleteResultsArchive(Submission $submission): void
+    public function deleteResultsArchive(Submission $submission): bool
     {
         $path = $this->getResultsArchivePath($submission);
-        $this->fileStorage->delete($path);
+        return $this->fileStorage->delete($path);
     }
 
     /**
