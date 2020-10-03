@@ -16,7 +16,6 @@ use DateTime;
  *
  * @method string getId()
  * @method string getName()
- * @method string getLocalFilePath()
  * @method DateTime getUploadedAt()
  * @method int getFileSize()
  */
@@ -43,18 +42,6 @@ class UploadedFile implements JsonSerializable
      * DEPRECATED -- will be removed in the next migration
      */
     protected $localFilePath;
-
-    // DEPRECATED
-    public function getContent($sizeLimit = null)
-    {
-        if ($this->localFilePath === null) {
-            return null;
-        }
-
-        return ($sizeLimit === null)
-            ? file_get_contents($this->localFilePath)
-            : file_get_contents($this->localFilePath, false, null, 0, $sizeLimit);
-    }
 
     /**
      * Extract extension from this file and return it.

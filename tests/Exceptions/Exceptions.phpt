@@ -15,7 +15,6 @@ use App\Exceptions\InvalidMembershipException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\LdapConnectException;
-use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\NoAccessTokenException;
 use App\Exceptions\NotImplementedException;
 use App\Exceptions\NotReadyException;
@@ -212,21 +211,6 @@ class TestExceptions extends Tester\TestCase
                 }
             },
             LdapConnectException::CLASS
-        );
-    }
-
-    public function testMalformedJobConfigException()
-    {
-        Assert::exception(
-            function () {
-                try {
-                    throw new MalformedJobConfigException("message");
-                } catch (Exception $e) {
-                    Assert::true(strlen($e->getMessage()) > 0);
-                    throw $e;
-                }
-            },
-            MalformedJobConfigException::CLASS
         );
     }
 

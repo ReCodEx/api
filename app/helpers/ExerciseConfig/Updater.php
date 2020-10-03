@@ -231,7 +231,7 @@ class Updater
     }
 
     /**
-     * Hardware groups for the exercise were changes, we need to delete the deprecated ones.
+     * Hardware groups for the exercise were changed, we need to delete the deprecated ones.
      * @param Exercise $exercise
      * @param User $user
      */
