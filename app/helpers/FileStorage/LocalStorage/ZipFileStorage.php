@@ -385,6 +385,11 @@ class ZipFileStorage implements IFileStorage
         return $this->zip->deleteName($path);
     }
 
+    public function deleteOldFiles(string $glob, int $threshold): int
+    {
+        return 0;   // nop
+    }
+
     public function flush(): void
     {
         $this->closeZipArchive();

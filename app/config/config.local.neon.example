@@ -31,6 +31,7 @@ parameters:
     auth:  # username and password that must workers use in base HTTP auth
       username: "re"
       password: "codex"
+    removalThreshold: "1 day"  # threshold for GC
 
   localRegistration:
     enabled: false  # set to true if you want to permit simple local registration

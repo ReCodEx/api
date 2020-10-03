@@ -101,6 +101,15 @@ interface IFileStorage
     public function delete(string $path): bool;
 
     /**
+     * Garbage collector implemented over filesystem. Helps to manage tmp storages.
+     * Note: it is valid if the implementation performs no deletions, if GC is handled by other means.
+     * @param string $glob wildcard pattern (relative storage paths) targetting files for deletion (not inside ZIPs!)
+     * @param int $threshold unix timestamp with the threshold time (older files are removed)
+     * @return int number of files removed
+     */
+    public function deleteOldFiles(string $glob, int $threshold): int;
+
+    /**
      * Make sure all modifications are written and all caches invalidated.
      */
     public function flush(): void;

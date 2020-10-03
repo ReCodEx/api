@@ -53,6 +53,7 @@ parameters:
     auth:  # username and password that must workers use in base HTTP auth
       username: "re"
       password: "codex"
+    removalThreshold: "1 day"
 
   localRegistration:
     enabled: false  # for security reasons, simple registration is disabled by default
@@ -282,6 +283,7 @@ services:
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
+  - App\Console\CleanupWorkerTmpFiles
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
