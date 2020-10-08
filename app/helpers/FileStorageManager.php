@@ -364,10 +364,14 @@ class FileStorageManager
             throw new FileStorageException("Unable to read request body.", 'php://input');
         }
 
+        $path = $this->getWorkerUploadResultsArchivePath($type, $submissionId);
+        $tmpPath = "$path.tmpupload";
         try {
-            $this->fileStorage->storeStream($fp, $this->getWorkerUploadResultsArchivePath($type, $submissionId), true);
+            $this->fileStorage->storeStream($fp, $tmpPath, true);
+            $this->fileStorage->move($tmpPath, $path, true);
         } finally {
             fclose($fp);
+            $this->fileStorage->delete($tmpPath);
         }
     }
 
