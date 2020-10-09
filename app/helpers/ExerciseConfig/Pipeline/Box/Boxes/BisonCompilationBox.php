@@ -20,10 +20,10 @@ class BisonCompilationBox extends CompilationBox
 {
     /** Type key */
     public static $BOX_TYPE = "bison";
-    public static $BISON_BINARY = "/usr/bin/bison";
     public static $BISON_EXT = ".y";
     public static $DEFAULT_NAME = "Bison Compilation";
     public static $OUTPUT_FILES_PORT_KEY = "output";
+    public static $BISON_EXEC_PORT_KEY = "bison-exec";
 
     private static $initialized = false;
     private static $defaultOutputPorts;
@@ -37,6 +37,9 @@ class BisonCompilationBox extends CompilationBox
         if (!self::$initialized) {
             self::$initialized = true;
             self::$defaultInputPorts = [
+                new Port(
+                    (new PortMeta())->setName(self::$BISON_EXEC_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)
+                ),
                 new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
                 new Port((new PortMeta())->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
             ];
@@ -104,7 +107,7 @@ class BisonCompilationBox extends CompilationBox
     public function compile(CompilationParams $params): array
     {
         $task = $this->compileBaseTask($params);
-        $task->setCommandBinary(self::$BISON_BINARY);
+        $task->setCommandBinary($this->getInputPortValue(self::$BISON_EXEC_PORT_KEY)->getValue());
 
         $inputFile = $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
         $inputBaseName = basename($inputFile, self::$BISON_EXT);
@@ -114,13 +117,15 @@ class BisonCompilationBox extends CompilationBox
         if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
             $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
         }
-        $args[] = "-o${inputBaseName}.cpp";
+        $args[] = "--defines=${inputBaseName}.hpp";
+        $args[] = "-o";
+        $args[] = "${inputBaseName}.cpp";
         $args[] = $inputFile;
         $task->setCommandArguments($args);
 
         // Set output names correctly and create task that will check their existence
         $output = $this->getOutputPortValue(self::$OUTPUT_FILES_PORT_KEY);
-        $output->setValue(["${inputBaseName}.cpp", "${inputBaseName}.hpp", "stack.hh"]);
+        $output->setValue(["${inputBaseName}.cpp", "${inputBaseName}.hpp"]);
         $exists = $this->compileExistsTask($output->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
 
         return [$task, $exists];
