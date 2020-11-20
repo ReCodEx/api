@@ -105,7 +105,7 @@ class TestEnvironmentConfigValidator extends Tester\TestCase
         SupplementaryExerciseFile::fromUploadedFileAndExercise(
             $uploadedFile,
             $exercise,
-            "input.hash",
+            "input.hash"
         );
 
         return $exercise;
