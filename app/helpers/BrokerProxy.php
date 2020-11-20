@@ -73,7 +73,7 @@ class BrokerProxy
         string $archiveRemotePath,
         string $resultRemotePath
     ) {
-        $queue = $this->brokerConnect($jobId);
+        $queue = $this->brokerConnect();
 
         $hwGroup = implode('|', $hardwareGroups);
         $message = [];
