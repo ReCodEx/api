@@ -1,9 +1,9 @@
 %define name recodex-core
 %define short_name api
 %define install_dir /opt/%{name}
-%define version 1.22.0
-%define unmangled_version 2867f319d30216ab10ab732a3f44cd169ebcb8c0
-%define release 18
+%define version 1.23.0
+%define unmangled_version 21b0b323674cfd5b1da19edad50e87603637c96e
+%define release 1
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -122,4 +122,5 @@ fi
 %config(noreplace) %attr(0660,apache,recodex) %{install_dir}/app/config/config.local.neon
 
 %changelog
+
 
