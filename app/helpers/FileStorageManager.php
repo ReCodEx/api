@@ -140,7 +140,7 @@ class FileStorageManager
     public function storeUploadedSupplementaryFile(UploadedFile $uploadedFile): string
     {
         $tmp = $this->tmpFilesHelper->createTmpFile('rexfsm');
-        $this->fileStorage->extract($this->getUploadedFilePath($uploadedFile), $tmp);
+        $this->fileStorage->extract($this->getUploadedFilePath($uploadedFile), $tmp, true);
         return $this->hashStorage->storeFile($tmp);
     }
 
@@ -172,10 +172,10 @@ class FileStorageManager
      * Move uploaded file to persistent hash storage for supplementary files.
      * @param AttachmentFile $file newly created attachment file (from uploaded file) entity
      */
-    public function storeUploadedAttachmentFile(AttachmentFile $file): void
+    public function storeUploadedAttachmentFile(UploadedFile $uploadedFile, AttachmentFile $attachmentFile): void
     {
-        $oldPath = $this->getUploadedFilePath($file);
-        $newPath = $this->getAttachmentFilePath($file);
+        $oldPath = $this->getUploadedFilePath($uploadedFile);
+        $newPath = $this->getAttachmentFilePath($attachmentFile);
         $this->fileStorage->move($oldPath, $newPath);
     }
 

@@ -269,7 +269,7 @@ class ExerciseFilesPresenter extends BasePresenter
 
         /** @var UploadedFile $file */
         foreach ($files as $file) {
-            if (get_class($file) !== UploadedFile::class) {
+            if (!($file instanceof UploadedFile)) {
                 throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
             }
 
@@ -279,8 +279,13 @@ class ExerciseFilesPresenter extends BasePresenter
             }
 
             $attachmentFile = AttachmentFile::fromUploadedFile($file, $exercise);
-            $this->fileStorage->storeUploadedAttachmentFile($attachmentFile);
-            $this->uploadedFiles->persist($attachmentFile, false);
+            $this->uploadedFiles->persist($attachmentFile);
+            try {
+                $this->fileStorage->storeUploadedAttachmentFile($file, $attachmentFile);
+            } catch (Exception $e) {
+                $this->uploadedFiles->remove($attachmentFile);
+                throw $e;
+            }
             $this->uploadedFiles->remove($file, false);
         }
 
