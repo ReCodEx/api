@@ -1,6 +1,6 @@
-name: PHP
+name: CI
 
-on: push
+on: [push, pull_request]
 
 jobs:
   tests:
@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.3','7.4','8.0','8.1']
+        php: ['7.3','7.4']
     steps:
     - uses: actions/checkout@v2
     - name: Setup PHP with pecl and yaml extension
@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.3','7.4','8.0','8.1']
+        php: ['7.3','7.4']
     steps:
     - uses: actions/checkout@v2
     - name: Setup PHP with pecl and yaml extension
