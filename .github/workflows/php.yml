@@ -1,0 +1,53 @@
+name: PHP
+
+on: push
+
+jobs:
+  tests:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.3','7.4','8.0','8.1']
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup PHP with pecl and yaml extension
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        tools: pecl,composer:v2
+        coverage: xdebug
+        extensions: yaml,tokenizer,ldap,pdo,pdo_sqlite,zip,json,mbstring,iconv
+        ini-values: memory_limit=1G,opcache.enable_cli=0
+    - run: php --version
+        
+    # install
+    - run: composer install --no-interaction --prefer-dist
+    - run: wget -O /tmp/coveralls.phar https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
+    
+    # script
+    - run: php ./vendor/nette/tester/src/tester.php -j 4 -C tests --coverage ./coverage.xml --coverage-src ./app
+    - run: php /tmp/coveralls.phar --verbose --config tests/.coveralls.yml || true
+    
+  phpstan:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.3','7.4','8.0','8.1']
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup PHP with pecl and yaml extension
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        tools: pecl,composer:v2
+        extensions: yaml,tokenizer,ldap,pdo,pdo_sqlite,zip,json,mbstring,iconv
+        ini-values: memory_limit=1G,opcache.enable_cli=0
+    - run: php --version
+    
+    # install
+    - run: composer install --no-interaction --prefer-dist
+    
+    # script
+    - run: ./phpstan/run.php analyse -l 4 -c phpstan/phpstan.neon app

@@ -1,6 +1,6 @@
 # ReCodEx Core and REST API
 
-[![Build Status](https://travis-ci.org/ReCodEx/api.svg?branch=master)](https://travis-ci.org/ReCodEx/api)
+[![Build Status](https://github.com/ReCodEx/api/workflows/PHP/badge.svg)](https://github.com/ReCodEx/api/actions)
 [![API documentation](https://img.shields.io/badge/docs-OpenAPI-orange.svg)](https://recodex.github.io/api/)
 [![Test coverage](https://img.shields.io/coveralls/ReCodEx/api.svg)](https://coveralls.io/github/ReCodEx/api)
 [![GitHub release](https://img.shields.io/github/release/recodex/api.svg)](https://github.com/ReCodEx/wiki/wiki/Changelog)
