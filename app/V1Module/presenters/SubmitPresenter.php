@@ -252,6 +252,17 @@ class SubmitPresenter extends BasePresenter
         if (count($uploadedFiles) === 0) {
             throw new InvalidArgumentException("files", "No files were uploaded");
         }
+
+        // preform basic checks on uploaded files
+        foreach ($uploadedFiles as $file) {
+            if ($file instanceof SolutionFile) {
+                throw new ForbiddenRequestException(
+                    "File {$file->getId()} was already used in a different submission."
+                );
+            }
+        }
+
+        // perform size/count limits checks on submitted files
         if ($assignment->getSolutionFilesLimit() !== null && count($uploadedFiles) > $assignment->getSolutionFilesLimit()) {
             throw new InvalidArgumentException("files", "Number of uploaded files exceeds assignment limits");
         }
@@ -270,23 +281,15 @@ class SubmitPresenter extends BasePresenter
         // create and fill assignment solution
         $note = $req->getPost("note");
         $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution);
+        $this->assignmentSolutions->persist($assignmentSolution);
         
         foreach ($uploadedFiles as $file) {
-            if ($file instanceof SolutionFile) {
-                throw new ForbiddenRequestException(
-                    "File {$file->getId()} was already used in a different submission."
-                );
-            }
-
             $this->fileStorage->storeUploadedSolutionFile($assignmentSolution->getSolution(), $file);
             $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
             $this->files->persist($solutionFile, false);
             $this->files->remove($file, false);
         }
 
-        // persist all changes and send response
-        $this->assignmentSolutions->persist($assignmentSolution);
-        $this->solutions->persist($solution);
         $this->sendSuccessResponse($this->finishSubmission($assignmentSolution));
     }
 

@@ -183,14 +183,19 @@ class UploadedFilesPresenter extends BasePresenter
             throw new CannotReceiveUploadedFileException($file->getName(), "File name contains invalid characters");
         }
 
+        // In theory, this may create race condition (DB record is commited before file is moved).
+        // But we need the ID from the database so we can save the file.
+        $uploadedFile = new UploadedFile($file->getName(), new DateTime(), $file->getSize(), $user);
+        $this->uploadedFiles->persist($uploadedFile);
+
         try {
-            $uploadedFile = new UploadedFile($file->getName(), new DateTime(), $file->getSize(), $user);
             $this->fileStorage->storeUploadedFile($uploadedFile, $file);
         } catch (Exception $e) {
+            $this->uploadedFiles->remove($uploadedFile);
+            $this->uploadedFiles->flush();
             throw new InternalServerException("Cannot move uploaded file to internal server storage");
         }
 
-        $this->uploadedFiles->persist($uploadedFile);
         $this->uploadedFiles->flush();
         $this->sendSuccessResponse($uploadedFile);
     }
