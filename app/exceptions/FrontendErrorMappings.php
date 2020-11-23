@@ -111,6 +111,8 @@ class FrontendErrorMappings
     const E500_001__CANNOT_RECEIVE_FILE = "500-001";
     /** General LDAP connection exception */
     const E500_002__LDAP_CONNECTION = "500-002";
+    /** Uploaded file name contains invalid characters */
+    const E500_003__UPLOADED_FILE_INVALID_CHARACTERS = "500-003";
     /** General job config error */
     const E500_100__JOB_CONFIG = "500-100";
     /** General exercise config error */
