@@ -1,6 +1,4 @@
 parameters:
-  autoload_directories:
+  level: 4
+  scanDirectories:
     - %rootDir%/../../../app
-  excludes_analyse:
-    - %rootDir%/../../../app/helpers/BrokerProxy.php
-services: []
