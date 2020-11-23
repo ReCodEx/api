@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
@@ -180,7 +181,12 @@ class UploadedFilesPresenter extends BasePresenter
         }
 
         if (!Strings::match($file->getName(), self::FILENAME_PATTERN)) {
-            throw new CannotReceiveUploadedFileException($file->getName(), "File name contains invalid characters");
+            throw new CannotReceiveUploadedFileException(
+                $file->getName(),
+                0,
+                FrontendErrorMappings::E500_003__UPLOADED_FILE_INVALID_CHARACTERS,
+                "File name '%s' contains invalid characters"
+            );
         }
 
         // In theory, this may create race condition (DB record is commited before file is moved).
