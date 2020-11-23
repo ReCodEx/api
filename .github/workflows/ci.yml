@@ -23,11 +23,10 @@ jobs:
         
     # install
     - run: composer install --no-interaction --prefer-dist
-    - run: wget -O /tmp/coveralls.phar https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
     
     # script
     - run: php ./vendor/nette/tester/src/tester.php -j 4 -C tests --coverage ./coverage.xml --coverage-src ./app
-    - run: php /tmp/coveralls.phar --verbose --config tests/.coveralls.yml || true
+    - uses: codecov/codecov-action@v1
     
   phpstan:
     runs-on: ubuntu-20.04
