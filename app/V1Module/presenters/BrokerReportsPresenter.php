@@ -94,6 +94,77 @@ class BrokerReportsPresenter extends BasePresenter
     }
 
     /**
+     * Retrieves actual submission repository based on given job type.
+     * @return AssignmentSolutionSubmissions|ReferenceSolutionSubmissions|null
+     */
+    private function getSubmissionRepositoryByType($type)
+    {
+        $submissionsRepositories = [
+            ReferenceSolutionSubmission::JOB_TYPE => $this->referenceSolutionSubmissions,
+            AssignmentSolution::JOB_TYPE => $this->submissions,
+        ];
+        return array_key_exists($type, $submissionsRepositories) ? $submissionsRepositories[$type] : null;
+    }
+
+    /**
+     * Create a failure report and save it.
+     * @param JobId $job
+     * @param string $message
+     */
+    private function reportFailure(JobId $job, string $message)
+    {
+        $type = $job->getType();
+        $submissionRepository = $this->getSubmissionRepositoryByType($type);
+        if (!$submissionRepository) {
+            return;
+        }
+        
+        $failureReport = SubmissionFailure::create(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message);
+
+        $submission = $submissionRepository->findOrThrow($job->getId());
+        $submission->setFailure($failureReport);
+        $this->submissionFailures->persist($failureReport);
+        $submissionRepository->persist($submission);
+        $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_BACKEND_ERROR);
+    }
+
+    /**
+     * Broker reported successful completion of a job, lets store the results.
+     * @param JobId $job
+     */
+    private function processJobCompletion(JobId $job)
+    {
+        $type = $job->getType();
+        $submissionRepository = $this->getSubmissionRepositoryByType($type);
+        if (!$submissionRepository) {
+            return;
+        }
+
+        $submission = $submissionRepository->findOrThrow($job->getId());
+        if (!$this->evaluationLoadingHelper->loadEvaluation($submission)) {
+            $reportMessage = "Broker reports job {$job->getId()} (type: '{$job->getType()}') completion, but job results file is missing.";
+            $this->reportFailure($job, $reportMessage);
+            return;
+        }
+
+        if ($type === AssignmentSolution::JOB_TYPE) {
+            // in case of student jobs, send notification to the user about evaluation of the solution
+            $this->submissionEmailsSender->submissionEvaluated($submission);
+        }
+    }
+
+    /**
+     * Broker reported job failure, let's save the message.
+     * @param JobId $job
+     */
+    private function processJobFailure(JobId $job)
+    {
+        $message = $this->getRequest()->getPost("message") ?: "";
+        $reportMessage = "Broker reports job {$job->getId()} (type: '{$job->getType()}') processing failure: $message";
+        $this->reportFailure($job, $message);
+    }
+
+    /**
      * Update the status of a job (meant to be called by the backend)
      * @POST
      * @Param(name="status", type="post", description="The new status of the job")
@@ -106,51 +177,17 @@ class BrokerReportsPresenter extends BasePresenter
     public function actionJobStatus($jobId)
     {
         $status = $this->getRequest()->getPost("status");
-        $job = new JobId($jobId);
 
-        switch ($status) {
-            case self::STATUS_OK:
-                switch ($job->getType()) {
-                    case ReferenceSolutionSubmission::JOB_TYPE:
-                        // load the evaluation of the reference solution now
-                        $referenceSolutionEvaluation = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
-                        $this->evaluationLoadingHelper->loadEvaluation($referenceSolutionEvaluation);
-                        break;
-                    case AssignmentSolution::JOB_TYPE:
-                        $submission = $this->submissions->findOrThrow($job->getId());
-                        // load the evaluation of the student submission (or a resubmission of a student submission)
-                        $result = $this->evaluationLoadingHelper->loadEvaluation($submission);
+        // maps states to methods that process them
+        $statusProcessors = [
+            self::STATUS_OK => 'processJobCompletion',
+            self::STATUS_FAILED => 'processJobFailure',
+        ];
 
-                        if ($result) {
-                            // optionally send notification to the user about evaluation of the solution
-                            $this->submissionEmailsSender->submissionEvaluated($submission);
-                        }
-                        break;
-                }
-                break;
-            case self::STATUS_FAILED:
-                $message = $this->getRequest()->getPost("message") ?: "";
-                $reportMessage = "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message";
-                $failureReport = SubmissionFailure::create(SubmissionFailure::TYPE_EVALUATION_FAILURE, $reportMessage);
-
-                switch ($job->getType()) {
-                    case AssignmentSolution::JOB_TYPE:
-                        $submission = $this->submissions->findOrThrow($job->getId());
-                        $submission->setFailure($failureReport);
-                        $this->submissionFailures->persist($failureReport);
-                        $this->submissions->persist($submission);
-                        $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_BACKEND_ERROR);
-                        break;
-                    case ReferenceSolutionSubmission::JOB_TYPE:
-                        $submission = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
-                        $submission->setFailure($failureReport);
-                        $this->submissionFailures->persist($failureReport);
-                        $this->referenceSolutionSubmissions->persist($submission);
-                        $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_BACKEND_ERROR);
-                        break;
-                }
-
-                break;
+        if (array_key_exists($status, $statusProcessors)) {
+            $processor = $statusProcessors[$status];
+            $job = new JobId($jobId);
+            $this->$processor($job);
         }
 
         $this->sendSuccessResponse("OK");

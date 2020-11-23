@@ -45,27 +45,25 @@ class EvaluationLoadingHelper
      * save results into database.
      *
      * @param Submission $submission
-     * @return bool
+     * @return bool result of the loading process
+     *              (true = loaded or failure duly reported, false = silent failure, results are not available yet)
      * @throws InternalServerException
      */
     public function loadEvaluation(Submission $submission): bool
     {
-        if ($submission->hasEvaluation()) {
+        if ($submission->hasEvaluation() || $submission->isFailed()) {
             return true;
-        }
-
-        if ($submission->isFailed()) {
-            return false;
         }
 
         try {
             try {
                 $evaluation = $this->evaluationLoader->load($submission);
-
-                if ($evaluation !== null) { // If null is returned and no exception was thrown, the evaluation is not ready yet
-                    $this->entityManager->persist($evaluation);
-                    $this->entityManager->flush($submission);
+                if (!$evaluation) {
+                    return false; // the evaluation is not ready yet (soft failure)
                 }
+
+                $this->entityManager->persist($evaluation);
+                $this->entityManager->flush($submission);
             } catch (SubmissionEvaluationFailedException $e) {
                 // the result cannot be loaded even though the result MUST be ready at this point
                 $message = "Loading evaluation results failed with exception '{$e->getMessage()}'";
@@ -82,11 +80,10 @@ class EvaluationLoadingHelper
                 $this->entityManager->flush($failure);
 
                 $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_API_ERROR);
-                return false;
             }
         } catch (OptimisticLockException $e) {
         }
 
-        return true;
+        return true; // either results are available, or we correctly saved failure
     }
 }

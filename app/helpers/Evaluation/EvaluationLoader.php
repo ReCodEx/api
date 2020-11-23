@@ -51,7 +51,7 @@ class EvaluationLoader
      * @return SolutionEvaluation|null  Evaluated results for given submission
      * @throws SubmissionEvaluationFailedException
      */
-    public function load(Submission $submission)
+    public function load(Submission $submission): ?SolutionEvaluation
     {
         $results = $this->getResults($submission);
         if (!$results) {
@@ -73,10 +73,10 @@ class EvaluationLoader
     /**
      * Downloads and parses the results report from the server.
      * @param Submission $submission The submission
-     * @return EvaluationResults Parsed submission results
+     * @return EvaluationResults|null Parsed submission results
      * @throws SubmissionEvaluationFailedException
      */
-    private function getResults(Submission $submission)
+    private function getResults(Submission $submission): ?EvaluationResults
     {
         $jobConfigFile = $this->fileStorage->getJobConfig($submission);
         if ($jobConfigFile === null) {
@@ -85,7 +85,7 @@ class EvaluationLoader
 
         $resultsYamlFile = $this->fileStorage->getResultsYamlFile($submission);
         if ($resultsYamlFile === null) {
-            throw new SubmissionEvaluationFailedException("Job results file is missing.");
+            return null;
         }
 
         try {
