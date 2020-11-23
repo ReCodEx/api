@@ -66,16 +66,6 @@ class AssignmentSolution
     }
 
     /**
-     * Get actual points treshold in points.
-     * @return int minimal points which submission has to gain
-     */
-    public function getPointsThreshold(): int
-    {
-        $threshold = $this->assignment->getPointsPercentualThreshold();
-        return floor($this->getMaxPoints() * $threshold);
-    }
-
-    /**
      * @var Solution
      * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
      */

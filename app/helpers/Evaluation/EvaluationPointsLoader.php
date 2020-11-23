@@ -59,24 +59,23 @@ class EvaluationPointsLoader
      */
     public function setStudentPoints(?AssignmentSolutionSubmission $submission)
     {
-        if ($submission === null || !$submission->hasEvaluation()) {
+        if (
+            $submission === null
+            || !$submission->hasEvaluation()
+            || !$submission->getAssignmentSolution()
+            || !$submission->getAssignmentSolution()->getAssignment()
+        ) {
             return;
         }
 
         // setup
         $evaluation = $submission->getEvaluation();
         $maxPoints = $submission->getAssignmentSolution()->getMaxPoints();
+        $threshold = $submission->getAssignmentSolution()->getAssignment()->getPointsPercentualThreshold();
+        $score = $evaluation->getScore();
 
         // calculate points from the score
-        $points = floor($evaluation->getScore() * $maxPoints);
-
-        // if the submission does not meet point threshold, it does not deserve any points
-        if ($submission !== null) {
-            $threshold = $submission->getAssignmentSolution()->getPointsThreshold();
-            if ($points < $threshold) {
-                $points = 0;
-            }
-        }
+        $points = ($score >= $threshold) ? floor($score * $maxPoints) : 0;
 
         // ... and set results
         $evaluation->setPoints($points);
