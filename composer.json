@@ -65,7 +65,9 @@
     "mockery/mockery": "@stable",
     "mikey179/vfsstream": "@stable",
     "phpstan/phpstan": "@stable",
-    "nette/tester": "^2.3"
+    "nette/tester": "^2.3",
+    "phpstan/extension-installer": "^1.0",
+    "phpstan/phpstan-nette": "^0.12.10"
   },
   "minimum-stability": "stable"
 }

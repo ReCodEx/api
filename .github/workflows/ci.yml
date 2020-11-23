@@ -11,13 +11,13 @@ jobs:
         php: ['7.3','7.4']
     steps:
     - uses: actions/checkout@v2
-    - name: Setup PHP with pecl and yaml extension
+    - name: Setup PHP with pecl and extensions
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
         tools: pecl,composer:v2
         coverage: xdebug
-        extensions: yaml,tokenizer,ldap,pdo,pdo_sqlite,zip,json,mbstring,iconv
+        extensions: yaml,tokenizer,ldap,pdo,pdo_sqlite,zip,json,mbstring,iconv,zmq
         ini-values: memory_limit=1G,opcache.enable_cli=0
     - run: php --version
         
@@ -37,12 +37,12 @@ jobs:
         php: ['7.3','7.4']
     steps:
     - uses: actions/checkout@v2
-    - name: Setup PHP with pecl and yaml extension
+    - name: Setup PHP with pecl and extensions
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
         tools: pecl,composer:v2
-        extensions: yaml,tokenizer,ldap,pdo,pdo_sqlite,zip,json,mbstring,iconv
+        extensions: yaml,tokenizer,ldap,pdo,pdo_sqlite,zip,json,mbstring,iconv,zmq
         ini-values: memory_limit=1G,opcache.enable_cli=0
     - run: php --version
     
@@ -50,4 +50,4 @@ jobs:
     - run: composer install --no-interaction --prefer-dist
     
     # script
-    - run: ./phpstan/run.php analyse -l 4 -c phpstan/phpstan.neon app
+    - run: vendor/bin/phpstan analyse -c phpstan/phpstan.neon app
