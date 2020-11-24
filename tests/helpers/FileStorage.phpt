@@ -722,14 +722,16 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal('BBB', file_get_contents($tmp));
 
         $storage->extract('zip#foo', $tmp, true); // overwrite
+        $storage->flush();
         Assert::null($storage->fetch('zip#foo'));
         Assert::equal('FOO', file_get_contents($tmp));
         unlink($tmp);
 
         $storage->extract('zip#bar', $tmp);
+        $storage->flush();
+        Assert::true(file_exists("$root/zip"));
         Assert::null($storage->fetch('zip#bar'));
         Assert::equal('BAR', file_get_contents($tmp));
-        Assert::true(file_exists("$root/zip"));
 
         Assert::exception(function() use ($storage, $tmp) {
             $storage->extract('zip#unicorn', $tmp, true);
