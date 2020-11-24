@@ -704,7 +704,7 @@ class TestFileStorage extends Tester\TestCase
         $storage = $this->prepareLocalStorage([
             'foo/bar/a.txt' => 'AAA',
             'foo/bar/b.txt' => 'BBB',
-            'zip' => [ 'foo' => 'FOO', 'bar' => 'BAR' ],
+            'zip' => [ 'foo' => 'FOO', 'bar' => 'BAR', 'keeper' => 'placeholder' ],
         ]);
         $root = $storage->getRootDirectory();
 
@@ -728,10 +728,9 @@ class TestFileStorage extends Tester\TestCase
         unlink($tmp);
 
         $storage->extract('zip#bar', $tmp);
-        $storage->flush();
-        Assert::true(file_exists("$root/zip"));
         Assert::null($storage->fetch('zip#bar'));
         Assert::equal('BAR', file_get_contents($tmp));
+        Assert::true(file_exists("$root/zip"));
 
         Assert::exception(function() use ($storage, $tmp) {
             $storage->extract('zip#unicorn', $tmp, true);
