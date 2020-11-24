@@ -1,8 +1,8 @@
 # ReCodEx Core and REST API
 
 [![Build Status](https://github.com/ReCodEx/api/workflows/CI/badge.svg)](https://github.com/ReCodEx/api/actions)
+[![API documentation](https://img.shields.io/badge/docs-OpenAPI-orange.svg)](https://recodex.github.io/api/)
 [![codecov](https://codecov.io/gh/ReCodEx/api/branch/master/graph/badge.svg?token=LSWVLRLMH6)](https://codecov.io/gh/ReCodEx/api)
-[![Test coverage](https://img.shields.io/coveralls/ReCodEx/api.svg)](https://coveralls.io/github/ReCodEx/api)
 [![GitHub release](https://img.shields.io/github/release/recodex/api.svg)](https://github.com/ReCodEx/wiki/wiki/Changelog)
 
 Business logic core of the application and a REST API that provides access to other modules.
