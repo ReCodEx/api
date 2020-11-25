@@ -84,7 +84,7 @@ class PortNode
     /**
      * Node constructor.
      * @param Box $box
-     * @param string $pipelineId
+     * @param ?string $pipelineId
      * @param string|null $testId
      */
     public function __construct(Box $box, string $pipelineId = null, string $testId = null)

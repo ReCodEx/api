@@ -10,7 +10,7 @@ class LDAPHelper
 
     /**
      * Get scalar value of given attribute.
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
     public static function getScalar($value)
@@ -23,7 +23,7 @@ class LDAPHelper
 
     /**
      * Get array value of given attribute.
-     * @param $value
+     * @param mixed $value
      * @return array
      */
     public static function getArray($value): array

@@ -97,8 +97,7 @@ class Exercises extends BaseSoftDeleteRepository
     /**
      * Augment given query builder and add filter that handles runtime environments.
      * @param QueryBuilder $qb
-     * @param mixed $groupsIds Value of the filter
-     * @param Groups $groups Doctrine groups repository
+     * @param mixed $envs
      */
     private function getPreparedForPaginationEnvsFilter(QueryBuilder $qb, $envs)
     {

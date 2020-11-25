@@ -47,7 +47,7 @@ class FailureResolutionEmailsSender
         $submission = $failure->getSubmission();
         $locale = $submission->getAuthor()->getSettings()->getDefaultLanguage();
 
-        /** @var LocalizedExercise $text */
+        /** @var ?LocalizedExercise $text */
         $text = EmailLocalizationHelper::getLocalization($locale, $submission->getExercise()->getLocalizedTexts());
         $title = $text !== null ? $text->getName() : "UNKNOWN";
         $result = $this->createFailureResolved($failure, $title, $locale);

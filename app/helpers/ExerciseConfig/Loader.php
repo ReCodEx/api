@@ -33,7 +33,7 @@ class Loader
 
     /**
      * Builds and checks variable configuration from given structured data.
-     * @param $data
+     * @param array $data
      * @return Variable
      * @throws ExerciseConfigException
      */
@@ -62,7 +62,7 @@ class Loader
 
     /**
      * Builds and checks variables table configuration from given structured data.
-     * @param $data
+     * @param array $data
      * @return VariablesTable
      * @throws ExerciseConfigException
      */
@@ -83,7 +83,7 @@ class Loader
 
     /**
      * Builds and checks pipeline variables configuration from given structured data.
-     * @param $data
+     * @param array $data
      * @return PipelineVars
      * @throws ExerciseConfigException
      */
@@ -109,7 +109,7 @@ class Loader
 
     /**
      * Builds and checks environment configuration from given structured data.
-     * @param $data
+     * @param array $data
      * @return Environment
      * @throws ExerciseConfigException
      */
@@ -132,7 +132,7 @@ class Loader
 
     /**
      * Builds and checks test configuration from given structured data.
-     * @param $data
+     * @param array $data
      * @param string $testId
      * @return Test
      * @throws ExerciseConfigException
@@ -157,7 +157,7 @@ class Loader
 
     /**
      * Builds and checks exercise configuration from given structured data.
-     * @param $data
+     * @param array $data
      * @return ExerciseConfig
      * @throws ExerciseConfigException
      */
@@ -229,7 +229,7 @@ class Loader
 
     /**
      * Builds and checks limits wrapper from given data.
-     * @param $data
+     * @param array $data
      * @return ExerciseLimits
      * @throws ExerciseConfigException
      */
@@ -251,7 +251,7 @@ class Loader
     /**
      * Builds and checks port configuration from given structured data.
      * @param string $name
-     * @param $data
+     * @param array $data
      * @return Port
      * @throws ExerciseConfigException
      */
@@ -278,7 +278,7 @@ class Loader
 
     /**
      * Builds and checks box structure from given data.
-     * @param $data
+     * @param array $data
      * @return Box
      * @throws ExerciseConfigException
      */
@@ -321,7 +321,7 @@ class Loader
 
     /**
      * Builds and checks pipeline wrapper from given data.
-     * @param $data
+     * @param array $data
      * @return Pipeline
      * @throws ExerciseConfigException
      */

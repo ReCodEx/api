@@ -134,12 +134,12 @@ class GroupsPresenter extends BasePresenter
      * Get a list of all non-archived groups a user can see. The return set is filtered by parameters.
      * @GET
      * @param string|null $instanceId Only groups of this instance are returned.
-     * @param bool|null $ancestors If true, returns an ancestral closure of the initial result set.
+     * @param bool $ancestors If true, returns an ancestral closure of the initial result set.
      *  Included ancestral groups do not respect other filters (archived, search, ...).
      * @param string|null $search Search string. Only groups containing this string as
      *  a substring of their names are returned.
-     * @param bool|null $archived Include also archived groups in the result.
-     * @param bool|null $onlyArchived Automatically implies $archived flag and returns only archived groups.
+     * @param bool $archived Include also archived groups in the result.
+     * @param bool $onlyArchived Automatically implies $archived flag and returns only archived groups.
      * @param int|null $archivedAgeLimit Only works in combination with archived;
      *  restricts maximal age (how long the groups have been in archive) in days.
      */
@@ -956,8 +956,8 @@ class GroupsPresenter extends BasePresenter
     }
 
     /**
-     * @param $req
-     * @param $group
+     * @param Request $req
+     * @param Group $group
      * @throws InvalidArgumentException
      */
     private function updateLocalizations(Request $req, Group $group): void

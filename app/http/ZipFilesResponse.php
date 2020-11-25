@@ -18,16 +18,16 @@ use ZipArchive;
 class ZipFilesResponse extends FileResponse
 {
     /**
-     * Indexed by local path, containing original filename.
-     * @var string[]
+     * Indexed by local path, containing original filename or possibly IImmutableFile objects.
+     * @var array
      */
     private $files;
 
     /**
      * ZipFilesResponse constructor.
-     * @param array $files indexed by orignal name (becomes zip entry) where values are local paths (strings)
+     * @param array $files indexed by original name (becomes zip entry) where values are local paths (strings)
      *                        or possibly IImmutableFile objects
-     * @param null $name
+     * @param string|null $name
      * @param bool $forceDownload
      * @throws Nette\Application\BadRequestException
      */

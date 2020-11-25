@@ -50,7 +50,7 @@ class ApiException extends Exception
 
     /**
      * Custom defined, far more fine-grained numeric exception code.
-     * @return int
+     * @return string
      */
     public function getFrontendErrorCode(): string
     {

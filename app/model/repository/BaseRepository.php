@@ -3,9 +3,9 @@
 namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Kdyby\Doctrine\EntityManager;
+use Kdyby\Doctrine\EntityRepository;
 use Nette;
 use DateTime;
 
@@ -13,7 +13,13 @@ class BaseRepository
 {
     use Nette\SmartObject;
 
+    /**
+     * @var EntityManager
+     */
     protected $em;
+    /**
+     * @var EntityRepository
+     */
     protected $repository;
 
     public function __construct(EntityManager $em, $entityType)
@@ -54,7 +60,7 @@ class BaseRepository
 
     /**
      * Find an entity by id and throw an exception if no such entity exists
-     * @param $id
+     * @param mixed $id
      * @return mixed
      * @throws NotFoundException
      */

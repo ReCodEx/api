@@ -11,7 +11,7 @@ use Nette\Utils\Arrays;
 
 /**
  * @method AssignmentSolution findOrThrow($id)
- * @method AssignmentSolution get($id)
+ * @method AssignmentSolution|null get($id)
  */
 class AssignmentSolutions extends BaseRepository
 {
@@ -146,8 +146,8 @@ class AssignmentSolutions extends BaseRepository
     /**
      * Find best solutions of given assignments (for all users).
      * @param Assignment[] $assignments
-     * @return AssignmentSolution[] A nested associative array indexed by author id and by assignment id (nested level)
-     *                              with values of a solution entity (the best one for the author-assignment)
+     * @return array A nested associative array indexed by author id and by assignment id (nested level)
+     *               with values of a solution entity (the best one for the author-assignment)
      */
     public function findBestSolutionsForAssignments(array $assignments): array
     {

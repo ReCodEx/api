@@ -48,7 +48,7 @@ class UserActions
             throw new \RuntimeException("Logging directory '" . Debugger::$logDirectory . "' not found");
         }
 
-        /** @var Identity $identity */
+        /** @var ?Identity $identity */
         $identity = $this->user->getIdentity();
         if ($identity === null || !($identity instanceof Identity)) {
             return false;

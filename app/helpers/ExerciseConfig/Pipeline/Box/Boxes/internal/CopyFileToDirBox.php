@@ -132,11 +132,9 @@ class CopyFileToDirBox extends Box
      */
     public function compile(CompilationParams $params): array
     {
-        /**
-         * @var Variable $inputVariable
-         * @var Variable $outputVariable
-         */
+        /** @var Variable $inputVariable */
         $inputVariable = current($this->getInputPorts())->getVariableValue();
+        /** @var Variable $outputVariable */
         $outputVariable = current($this->getOutputPorts())->getVariableValue();
 
         // check for emptiness or same values, in those cases nothing has to be done

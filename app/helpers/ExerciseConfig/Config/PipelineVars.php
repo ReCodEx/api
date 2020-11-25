@@ -38,7 +38,7 @@ class PipelineVars implements JsonSerializable
 
     /**
      * Get identification of pipeline.
-     * @return string
+     * @return ?string
      */
     public function getId(): ?string
     {

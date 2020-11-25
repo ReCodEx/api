@@ -63,8 +63,9 @@ class Comments extends BaseRepository
 
     /**
      * Get the number of all visible comments for given user.
-     * @param $threadId Id of the comments thread.
-     * @param $userId Id of the viewer or null (if nobody is logged in).
+     * @param CommentThread $thread
+     * @param User $user
+     * @return int
      */
     public function getThreadCommentsCount(CommentThread $thread, User $user)
     {
@@ -73,8 +74,9 @@ class Comments extends BaseRepository
 
     /**
      * Get the number of comments made directly by given user.
-     * @param $threadId Id of the comments thread.
-     * @param $userId Id of the viewer or null (if nobody is logged in).
+     * @param CommentThread $thread
+     * @param User $user
+     * @return int
      */
     public function getAuthoredCommentsCount(CommentThread $thread, User $user)
     {
@@ -85,8 +87,9 @@ class Comments extends BaseRepository
      * Get the number of visible comments for given user
      * The method requires the user entity, since it does not use ACL mechanism and compares
      * the authorship of comments directly as a performance optimization (we need only the last entity, not all entities).
-     * @param $threadId Id of the comments thread.
-     * @param $userId Id of the viewer or null (if nobody is logged in).
+     * @param CommentThread $thread
+     * @param User $user
+     * @return mixed
      */
     public function getThreadLastComment(CommentThread $thread, User $user)
     {

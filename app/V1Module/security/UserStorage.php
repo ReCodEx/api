@@ -35,12 +35,13 @@ class UserStorage implements IUserStorage
     }
 
     /**
-     * @param bool
-     * @return void
+     * @param bool $state
+     * @return self
      */
     function setAuthenticated($state)
     {
         $this->authenticated = $state;
+        return $this;
     }
 
     /**
@@ -54,7 +55,8 @@ class UserStorage implements IUserStorage
 
     /**
      * Set user identity (after login or for testing purposes)
-     * @param IIdentity $identity
+     * @param IIdentity|null $identity
+     * @return self
      * @throws InvalidArgumentException
      */
     function setIdentity(IIdentity $identity = null)
@@ -64,11 +66,12 @@ class UserStorage implements IUserStorage
         }
 
         $this->cachedIdentity = $identity;
+        return $this;
     }
 
     /**
      * Returns current user identity, if any.
-     * @return Identity
+     * @return IIdentity|null
      */
     function getIdentity()
     {
@@ -113,7 +116,7 @@ class UserStorage implements IUserStorage
     function getUserData()
     {
         $identity = $this->getIdentity();
-        if ($identity && $identity instanceof Identity) {
+        if ($identity instanceof Identity) {
             return $identity->getUserData();
         } else {
             return null;

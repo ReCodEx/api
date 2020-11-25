@@ -14,8 +14,8 @@ class Wildcards
 
     /**
      * Check if given string matches a shell-like wildcard expression
-     * @param $wildcard string the expression
-     * @param $string string the string to check
+     * @param string $wildcard the expression
+     * @param string $string the string to check
      * @return bool
      */
     public static function match(string $wildcard, string $string): bool
@@ -31,7 +31,7 @@ class Wildcards
 
     /**
      * Expand a wildcard expression containing curly braces into a sequence of strings
-     * @param $pattern
+     * @param string $pattern
      * @return Generator
      */
     public static function expandPattern($pattern)
@@ -85,7 +85,7 @@ class Wildcards
 
     /**
      * Split a comma-separated pattern into top-level parts (i.e. split only on commas that are not inside curly brackets)
-     * @param $pattern string the pattern to split (not enclosed in curly braces)
+     * @param string $pattern the pattern to split (not enclosed in curly braces)
      * @return Generator
      */
     public static function splitPattern($pattern)

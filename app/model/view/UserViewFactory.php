@@ -25,7 +25,7 @@ class UserViewFactory
      */
     public $logins;
 
-    /** @var User */
+    /** @var User|null */
     private $loggedInUser = null;
 
     public function __construct(IUserPermissions $userAcl, Logins $logins, \Nette\Security\User $user)

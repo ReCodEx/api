@@ -22,9 +22,9 @@ class SisHelper
     private $client;
 
     /**
-     * @param $apiBase
-     * @param $faculty
-     * @param $secret
+     * @param string $apiBase
+     * @param string $faculty
+     * @param string $secret
      * @param GuzzleHttp\HandlerStack|null $handler An optional HTTP handler (mainly for unit testing purposes)
      */
     public function __construct($apiBase, $faculty, $secret, GuzzleHttp\HandlerStack $handler = null)
@@ -49,8 +49,8 @@ class SisHelper
     }
 
     /**
-     * @param $sisUserId
-     * @param $year
+     * @param string $sisUserId
+     * @param int|null $year
      * @param int $term
      * @return SisCourseRecord[]|Generator
      * @throws InvalidArgumentException

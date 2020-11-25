@@ -29,8 +29,8 @@ class SisGroupBinding
 
     /**
      * SisGroupBinding constructor.
-     * @param $group
-     * @param $code
+     * @param Group $group
+     * @param string $code
      */
     public function __construct($group, $code)
     {

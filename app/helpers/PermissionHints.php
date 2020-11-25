@@ -5,6 +5,7 @@ namespace App\Helpers;
 use Generator;
 use Nette\Reflection\ClassType;
 use Nette\Reflection\Method;
+use Nette\Reflection\Parameter;
 use Nette\StaticClassException;
 use Nette\Utils\Strings;
 
@@ -19,8 +20,8 @@ class PermissionHints
 
     /**
      * Get a generator of a permission hints array for an ACL module and a resource object
-     * @param $aclModule object An ACL module
-     * @param $subject object The resource checked for permissions
+     * @param object $aclModule An ACL module
+     * @param object $subject The resource checked for permissions
      * @return Generator
      */
     public static function generate($aclModule, $subject)
@@ -36,8 +37,8 @@ class PermissionHints
 
     /**
      * Get an array of permission hints for an ACL module and a resource object
-     * @param $aclModule object An ACL module
-     * @param $subject object The resource checked for permissions
+     * @param object $aclModule An ACL module
+     * @param object $subject The resource checked for permissions
      * @return bool[] an associative array where keys are action names and values are boolean flags
      */
     public static function get($aclModule, $subject)
@@ -48,7 +49,7 @@ class PermissionHints
     /**
      * Find single-parameter ACL check methods on an ACL module - i.e. public methods whose name starts with "can" and
      * that do not have more than one required parameter.
-     * @param $aclModule
+     * @param object $aclModule
      * @return Generator
      */
     protected static function generateAclMethods($aclModule)
@@ -69,7 +70,7 @@ class PermissionHints
 
     /**
      * Get an array of ACL method reflections for an ACL module. The results are cached for better performance.
-     * @param $aclModule
+     * @param object $aclModule
      * @return Method[]
      */
     protected static function getAclMethods($aclModule)

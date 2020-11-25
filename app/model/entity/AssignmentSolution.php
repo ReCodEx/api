@@ -10,15 +10,15 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 /**
  * @ORM\Entity
  *
- * @method string getId()
+ * @method string|null getId()
  * @method Solution getSolution()
  * @method bool getAccepted()
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
- * @method int getOverriddenPoints()
+ * @method int|null getOverriddenPoints()
  * @method setOverriddenPoints(?int $points)
  * @method Collection getSubmissions()
- * @method AssignmentSolutionSubmission getLastSubmission()
+ * @method ?AssignmentSolutionSubmission getLastSubmission()
  * @method setLastSubmission(?AssignmentSolutionSubmission $submission)
  */
 class AssignmentSolution

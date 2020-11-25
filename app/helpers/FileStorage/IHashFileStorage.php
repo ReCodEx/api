@@ -19,7 +19,7 @@ interface IHashFileStorage
     /**
      * Retrieve given file, throw an exception if the file is missing.
      * @param string $hash file identification
-     * @return IImmutableFile|null an object representing the file
+     * @return IImmutableFile an object representing the file
      * @throws FileStorageException if the hash is not found in the storage
      */
     public function fetchOrThrow(string $hash): IImmutableFile;

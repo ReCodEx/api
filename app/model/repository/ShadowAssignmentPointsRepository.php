@@ -35,9 +35,9 @@ class ShadowAssignmentPointsRepository extends BaseRepository
             ]
         );
 
-        /** @var ShadowAssignmentPoints $points */
         $result = [];
         foreach ($pointsList as $points) {
+            /** @var ShadowAssignmentPoints $points */
             if ($points->getShadowAssignment() === null) {
                 continue;
             }

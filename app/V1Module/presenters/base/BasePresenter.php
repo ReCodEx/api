@@ -104,7 +104,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     protected function getCurrentUser(): User
     {
-        /** @var Identity $identity */
+        /** @var ?Identity $identity */
         $identity = $this->getUser()->getIdentity();
 
         if ($identity === null || $identity->getUserData() === null) {
@@ -119,7 +119,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     protected function getAccessToken(): AccessToken
     {
-        /** @var Identity $identity */
+        /** @var ?Identity $identity */
         $identity = $this->getUser()->getIdentity();
 
         if ($identity === null || $identity->getToken() === null) {
@@ -144,7 +144,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     protected function isInScope(string $scope): bool
     {
-        /** @var Identity $identity */
+        /** @var ?Identity $identity */
         $identity = $this->getUser()->getIdentity();
 
         if (!$identity) {

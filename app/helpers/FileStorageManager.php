@@ -170,7 +170,8 @@ class FileStorageManager
 
     /**
      * Move uploaded file to persistent hash storage for supplementary files.
-     * @param AttachmentFile $file newly created attachment file (from uploaded file) entity
+     * @param UploadedFile $uploadedFile previously uploaded file
+     * @param AttachmentFile $attachmentFile newly created attachment file (from uploaded file) entity
      */
     public function storeUploadedAttachmentFile(UploadedFile $uploadedFile, AttachmentFile $attachmentFile): void
     {

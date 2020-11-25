@@ -40,7 +40,7 @@ class SisBoundGroupPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        /** @var ExternalLogin $login */
+        /** @var ?ExternalLogin $login */
         $login = $this->externalLogins->findOneBy(
             [
                 'user' => $user,

@@ -11,11 +11,11 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @method Group getGroup()
- * @method DateTime getRejectedAt()
- * @method DateTime getJoinedAt()
- * @method DateTime getRequestedAt()
- * @method DateTime getStudentSince()
- * @method DateTime getSupervisorSince()
+ * @method ?DateTime getRejectedAt()
+ * @method ?DateTime getJoinedAt()
+ * @method ?DateTime getRequestedAt()
+ * @method ?DateTime getStudentSince()
+ * @method ?DateTime getSupervisorSince()
  * @method User getUser()
  */
 class GroupMembership implements JsonSerializable

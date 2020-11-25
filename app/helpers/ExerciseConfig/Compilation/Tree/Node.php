@@ -16,13 +16,13 @@ class Node
 
     /**
      * PortNode from which was this node created.
-     * @var PortNode
+     * @var ?PortNode
      */
     private $portNode;
 
     /**
      * Box connected to this node.
-     * @var Box
+     * @var ?Box
      */
     private $box;
 
@@ -65,7 +65,7 @@ class Node
 
     /**
      * Node constructor.
-     * @param PortNode $node
+     * @param ?PortNode $node
      */
     public function __construct(PortNode $node = null)
     {
@@ -92,9 +92,9 @@ class Node
 
     /**
      * Get box associated with this node.
-     * @return Box
+     * @return ?Box
      */
-    public function getBox(): Box
+    public function getBox(): ?Box
     {
         return $this->box;
     }

@@ -133,10 +133,7 @@ class ExerciseConfigValidator
         // find expected variables for each pipeline
         $expectedVariables = $this->helper->getVariablesForExercise($pipelinesIds, $environmentVariables);
 
-        /**
-         * @var string $pipelineId
-         * @var PipelineVars $pipelineVars
-         */
+        /** @var PipelineVars $pipelineVars */
         foreach ($pipelines as $i => $pipelineVars) {
             $pipelineId = $pipelineVars->getId();
             $expected = $expectedVariables[$i]["variables"];

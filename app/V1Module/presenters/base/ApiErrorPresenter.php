@@ -30,7 +30,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter
     public $userActions;
 
     /**
-     * @param Exception
+     * @param Exception $exception
      * @return void
      * @throws \Nette\Application\AbortException
      */

@@ -73,7 +73,7 @@ class AccessToken
 
     /**
      * Access any claim of the payload.
-     * @param $key
+     * @param string $key
      * @return mixed
      * @throws InvalidArgumentException
      */
@@ -88,8 +88,8 @@ class AccessToken
 
     /**
      * Access any claim of the payload. If the claim is not present, return a default value.
-     * @param $key
-     * @param $default
+     * @param string $key
+     * @param mixed $default
      * @return mixed
      */
     public function getPayloadOrDefault($key, $default)

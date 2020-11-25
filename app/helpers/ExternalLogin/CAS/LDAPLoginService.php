@@ -147,8 +147,8 @@ class LDAPLoginService implements IExternalLoginService
 
     /**
      * Convert the LDAP data to the UserData container
-     * @param $ukco
-     * @param $data
+     * @param string $ukco
+     * @param Node $data
      * @return UserData
      */
     public function getUserData($ukco, Node $data, bool $onlyAuthenticate = false): UserData
@@ -180,7 +180,7 @@ class LDAPLoginService implements IExternalLoginService
      */
     private function getValue(NodeAttribute $attribute)
     {
-        if ($attribute === null || $attribute->count() === 0) {
+        if ($attribute->count() === 0) {
             throw new CASMissingInfoException();
         }
 

@@ -122,7 +122,7 @@ class GenerateSwagger extends Command
 
         if (!$apiRoutes) {
             $output->writeln("<error>No suitable routes found</error>");
-            return;
+            return 1;
         }
 
         $source = $input->getArgument("source");
@@ -130,7 +130,7 @@ class GenerateSwagger extends Command
 
         if ($save && $source === null) {
             $output->writeln("<error>--save cannot be used without a source file</error>");
-            return;
+            return 1;
         }
 
         $document = $source ? Yaml::parse(file_get_contents($source)) : [];
@@ -205,6 +205,8 @@ class GenerateSwagger extends Command
         if ($save) {
             file_put_contents($source, $yaml);
         }
+
+        return 0;
     }
 
     private function fillPathEntry(
@@ -348,11 +350,11 @@ class GenerateSwagger extends Command
 
     /**
      * @param array $entry
-     * @param $name
-     * @param $in
-     * @param $required
-     * @param $validation
-     * @param $description
+     * @param string $name
+     * @param string $in
+     * @param bool $required
+     * @param string $validation
+     * @param string $description
      */
     private function fillParamEntry(array &$entry, $name, $in, $required, $validation, $description)
     {

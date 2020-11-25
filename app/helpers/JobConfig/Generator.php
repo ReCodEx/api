@@ -33,7 +33,7 @@ class Generator
 
     /**
      * Generator constructor.
-     * @param FileStorageManager $storage
+     * @param FileStorageManager $fileStorage
      * @param Compiler $compiler
      */
     public function __construct(FileStorageManager $fileStorage, Compiler $compiler)

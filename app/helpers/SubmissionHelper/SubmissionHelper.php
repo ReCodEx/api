@@ -31,10 +31,8 @@ class SubmissionHelper
      * @param string $jobId
      * @param string $jobType
      * @param string $environment
-     * @param array $files
      * @param JobConfig $jobConfig
      * @param null|string $hwgroup
-     * @return string fileserver results URL
      * @throws SubmissionFailedException
      * @throws InvalidStateException
      * @throws ZMQSocketException

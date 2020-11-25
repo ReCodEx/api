@@ -142,6 +142,7 @@ class LdapUserUtils
             "(&(objectClass=person)({$mailField}={$mail}))"
         );
 
+        /** @var string|null $dn */
         $dn = $results->key();
 
         // the ID can be extracted only if there is exactly one result

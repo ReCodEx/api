@@ -222,11 +222,10 @@ class DirectoriesResolver
     {
         $stack = array_reverse($tree->getRootNodes());
         while (!empty($stack)) {
+            /** @var Node $current */
             $current = array_pop($stack);
-            /** @var $current Node */
 
             $box = $current->getBox();
-            /** @var $box Box */
             if ($box) {
                 foreach ($box->getInputPorts() as $port) {
                     if (

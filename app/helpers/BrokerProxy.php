@@ -108,7 +108,7 @@ class BrokerProxy
         if ($ack[0] !== self::EXPECTED_ACK) {
             $queue->disconnect($this->brokerAddress);
             throw new SubmissionFailedException(
-                "Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead."
+                "Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack[0]' instead."
             );
         }
 

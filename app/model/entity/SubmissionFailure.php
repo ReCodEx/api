@@ -13,7 +13,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
  * @method string getDescription()
  * @method DateTime getCreatedAt()
- * @method string getResolutionNote()
+ * @method string|null getResolutionNote()
  * @method string getType()
  */
 class SubmissionFailure implements JsonSerializable
@@ -79,7 +79,7 @@ class SubmissionFailure implements JsonSerializable
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @var DateTime
+     * @var ?DateTime
      */
     protected $resolvedAt;
 
@@ -103,7 +103,7 @@ class SubmissionFailure implements JsonSerializable
 
     public static function create(string $type, string $description, DateTime $createdAt = null)
     {
-        return new static($type, $description, $createdAt);
+        return new SubmissionFailure($type, $description, $createdAt);
     }
 
     public function resolve(string $note, DateTime $resolvedAt = null)

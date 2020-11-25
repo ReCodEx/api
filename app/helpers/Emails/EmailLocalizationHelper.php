@@ -25,7 +25,7 @@ class EmailLocalizationHelper
      * locale or conforming to the default locale.
      * @param string $locale
      * @param Collection $collection
-     * @return mixed
+     * @return mixed|null
      */
     public static function getLocalization(string $locale, Collection $collection)
     {

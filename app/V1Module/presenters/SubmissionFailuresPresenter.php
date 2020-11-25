@@ -84,7 +84,7 @@ class SubmissionFailuresPresenter extends BasePresenter
     /**
      * Get details of a failure
      * @GET
-     * @param $id string An identifier of the failure
+     * @param string $id An identifier of the failure
      */
     public function actionDetail(string $id)
     {
@@ -103,7 +103,7 @@ class SubmissionFailuresPresenter extends BasePresenter
     /**
      * Mark a submission failure as resolved
      * @POST
-     * @param $id string An identifier of the failure
+     * @param string $id An identifier of the failure
      * @Param(name="note", type="post", validation="string:0..255", required=false,
      *   description="Brief description of how the failure was resolved")
      * @Param(name="sendEmail", type="post", validation="bool", description="True if email should be sent to the author of submission")

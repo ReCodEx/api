@@ -136,9 +136,6 @@ class GeneralStatsHelper
     /** @var SubmissionFailures */
     public $submissionFailures;
 
-    /**
-     * @param array $params Injected configuration parameters.
-     */
     public function __construct(
         ?string $inactivityThreshold,
         Users $users,

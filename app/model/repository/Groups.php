@@ -168,7 +168,7 @@ class Groups extends BaseSoftDeleteRepository
      * Filter list of groups so that only groups affiliated to given user
      * (by direct membership or by admin rights) and public groups remain in the result.
      * @param User $user User whos affiliation is considered.
-     * @param Group[] List of groups to be filtered.
+     * @param Group[] $groups List of groups to be filtered.
      * @return Group[]
      */
     private function filterGroupsByUser(User $user, array $groups)
@@ -242,8 +242,8 @@ class Groups extends BaseSoftDeleteRepository
      *  are returned. Otherwise, all groups are returned.
      * @param string|null $instanceId ID of an instance to which the groups belongs to.
      * @param string|null $search Search query.
-     * @param bool|null $archived Whether to include archived groups.
-     * @param bool|null $onlyArchived Automatically implies $archived flag and returns only archived groups.
+     * @param bool $archived Whether to include archived groups.
+     * @param bool $onlyArchived Automatically implies $archived flag and returns only archived groups.
      * @param int|null $archivedAgeLimit Restricting included archived groups by how long they have been archived.
      *  Groups archived before $archivedAgeLimit days (or more) are not included in the result.
      */

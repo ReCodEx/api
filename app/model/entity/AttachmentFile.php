@@ -52,9 +52,9 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
 
     /**
      * AttachmentFile constructor.
-     * @param $name
+     * @param string $name
      * @param DateTime $uploadedAt
-     * @param $fileSize
+     * @param int $fileSize
      * @param User|null $user
      * @param Exercise $exercise
      */
