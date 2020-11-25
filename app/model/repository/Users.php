@@ -28,7 +28,7 @@ class Users extends BaseSoftDeleteRepository
     /**
      * Fetch users for pagination endpoint (filtered and sorted).
      * @param Pagination $pagination The object holding pagination metadata.
-     * @param $totalCount Referenced variable, into which the total amount of items is returned.
+     * @param int $totalCount Referenced variable, into which the total amount of items is returned.
      */
     public function getPaginated(Pagination $pagination, &$totalCount)
     {

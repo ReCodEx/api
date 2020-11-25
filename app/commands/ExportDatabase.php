@@ -86,7 +86,7 @@ class ExportDatabase extends Command
 
     /**
      * Helper function which will encode array like input to neon formatted string.
-     * @param $content
+     * @param mixed $content
      * @return string
      */
     private function encodeResult($content): string

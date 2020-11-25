@@ -456,8 +456,8 @@ class SubmitPresenter extends BasePresenter
     {
         $assignment = $this->assignments->findOrThrow($id);
 
-        /** @var AssignmentSolution $solution */
         $result = [];
+        /** @var AssignmentSolution $solution */
         foreach ($assignment->getAssignmentSolutions() as $solution) {
             $result[] = $this->finishSubmission($solution, false);
         }

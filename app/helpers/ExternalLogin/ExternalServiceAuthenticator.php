@@ -45,7 +45,7 @@ class ExternalServiceAuthenticator
      * @param ExternalLogins $externalLogins
      * @param Users $users
      * @param Logins $logins
-     * @param array $services
+     * @param IExternalLoginService ...$services
      */
     public function __construct(ExternalLogins $externalLogins, Users $users, Logins $logins, ...$services)
     {

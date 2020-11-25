@@ -25,9 +25,9 @@ class ACLModuleBuilder
     }
 
     /**
-     * @param $interfaceName
-     * @param $name
-     * @param $uniqueId
+     * @param string $interfaceName
+     * @param string $name
+     * @param string $uniqueId
      * @return ClassType the newly created class
      */
     public function build($interfaceName, $name, $uniqueId): ClassType

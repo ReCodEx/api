@@ -33,7 +33,7 @@ class Limits implements JsonSerializable
 
     public static function create(float $wallTime, float $cpuTime, int $memory, int $parallel): Limits
     {
-        $result = new static();
+        $result = new Limits();
         $result->setWallTime($wallTime);
         $result->setCpuTime($cpuTime);
         $result->setMemoryLimit($memory);

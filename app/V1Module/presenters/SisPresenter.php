@@ -173,7 +173,7 @@ class SisPresenter extends BasePresenter
      * @Param(name="beginning", type="post", validation="timestamp")
      * @Param(name="end", type="post", validation="timestamp")
      * @Param(name="advertiseUntil", type="post", validation="timestamp")
-     * @param $id
+     * @param string $id
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
@@ -219,7 +219,7 @@ class SisPresenter extends BasePresenter
     /**
      * Delete a term
      * @DELETE
-     * @param $id
+     * @param string $id
      * @throws NotFoundException
      */
     public function actionDeleteTerm(string $id)
@@ -244,9 +244,9 @@ class SisPresenter extends BasePresenter
      * Get ReCodEx groups bound to SIS groups of which the user is a student.
      * Organizational and archived groups are filtered out from the result.
      * @GET
-     * @param $userId
-     * @param $year
-     * @param $term
+     * @param string $userId
+     * @param int $year
+     * @param int $term
      * @throws InvalidArgumentException
      * @throws BadRequestException
      */
@@ -294,9 +294,9 @@ class SisPresenter extends BasePresenter
     /**
      * Get SIS groups of which the user is a supervisor (regardless of them being bound to a local group)
      * @GET
-     * @param $userId
-     * @param $year
-     * @param $term
+     * @param string $userId
+     * @param int $year
+     * @param int $term
      * @throws InvalidArgumentException
      * @throws NotFoundException
      * @throws BadRequestException
@@ -340,7 +340,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * @param array $captions List of captions [ lang => caption ].
-     * @param string Suffix expected to be appended to captions of all languages.
+     * @param string $suffix Suffix expected to be appended to captions of all languages.
      * @param Group $parentGroup The uniqueness is ensured only amongst the siblings.
      * @return bool True if at least one caption is in conflict.
      */
@@ -355,6 +355,7 @@ class SisPresenter extends BasePresenter
                 return true;
             }
         }
+        return false;
     }
 
     /**
@@ -381,7 +382,7 @@ class SisPresenter extends BasePresenter
     /**
      * Create a new group based on a SIS group
      * @POST
-     * @param $courseId
+     * @param string $courseId
      * @throws BadRequestException
      * @Param(name="parentGroupId", type="post")
      * @throws ForbiddenRequestException
@@ -453,7 +454,7 @@ class SisPresenter extends BasePresenter
     /**
      * Bind an existing local group to a SIS group
      * @POST
-     * @param $courseId
+     * @param string $courseId
      * @throws ApiException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
@@ -516,7 +517,7 @@ class SisPresenter extends BasePresenter
     /**
      * Find groups that can be chosen as parents of a group created from given SIS group by current user
      * @GET
-     * @param $courseId
+     * @param string $courseId
      * @throws ApiException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
@@ -555,8 +556,8 @@ class SisPresenter extends BasePresenter
     }
 
     /**
-     * @param $remoteGroupId
-     * @param $sisUserId
+     * @param string $remoteGroupId
+     * @param string $sisUserId
      * @return SisCourseRecord|mixed
      * @throws BadRequestException
      * @throws InvalidArgumentException

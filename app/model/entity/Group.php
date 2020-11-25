@@ -19,9 +19,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method addShadowAssignment(ShadowAssignment $assignment)
  * @method addChildGroup(Group $group)
  * @method removeChildGroup(Group $group)
- * @method string getExternalId()
+ * @method ?string getExternalId()
  * @method string getDescription()
- * @method float getThreshold()
+ * @method float|null getThreshold()
  * @method setExternalId(string $id)
  * @method bool getPublicStats()
  * @method setPublicStats(bool $areStatsPublic)
@@ -61,7 +61,7 @@ class Group
         }
 
         // If no parent group is given, the group is connected right under the root group
-        if ($parentGroup === null && $instance) {
+        if ($parentGroup === null) {
             $parentGroup = $instance->getRootGroup();
         }
 

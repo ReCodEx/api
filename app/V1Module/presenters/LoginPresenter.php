@@ -151,7 +151,7 @@ class LoginPresenter extends BasePresenter
      * Takeover user account with specified user identification.
      * @POST
      * @LoggedIn
-     * @param $userId
+     * @param string $userId
      * @throws AuthenticationException
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException

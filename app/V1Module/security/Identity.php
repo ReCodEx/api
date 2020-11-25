@@ -9,10 +9,10 @@ class Identity implements Nette\Security\IIdentity
 {
     use Nette\SmartObject;
 
-    /** @var User */
+    /** @var ?User */
     private $user;
 
-    /** @var AccessToken */
+    /** @var ?AccessToken */
     private $token;
 
     public const UNAUTHENTICATED_ROLE = "unauthenticated";

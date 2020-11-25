@@ -22,7 +22,7 @@ abstract class DataInBox extends Box
 
     /**
      * If data for this box is remote, fill this with the right variable reference.
-     * @var Variable
+     * @var ?Variable
      */
     protected $inputVariable = null;
 

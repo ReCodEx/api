@@ -218,8 +218,8 @@ class Exercise implements IExercise
 
     /**
      * Constructor
-     * @param $version
-     * @param $difficulty
+     * @param int $version
+     * @param string $difficulty
      * @param Collection $localizedTexts
      * @param Collection $runtimeEnvironments
      * @param Collection $hardwareGroups

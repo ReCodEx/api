@@ -20,7 +20,7 @@ class ExerciseViewFactory
 
     public function getExercise(Exercise $exercise)
     {
-        /** @var LocalizedExercise $primaryLocalization */
+        /** @var LocalizedExercise|null $primaryLocalization */
         $primaryLocalization = Localizations::getPrimaryLocalization($exercise->getLocalizedTexts());
         $forkedFrom = $exercise->getForkedFrom();
 

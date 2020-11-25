@@ -15,7 +15,7 @@ class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
     }
 
     /**
-     * @param $code
+     * @param ?string $code
      * @return SisGroupBinding[]
      */
     public function findByCode($code)
@@ -29,8 +29,8 @@ class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
     }
 
     /**
-     * @param $group
-     * @param $code
+     * @param Group $group
+     * @param ?string $code
      * @return SisGroupBinding|null
      */
     public function findByGroupAndCode(Group $group, $code)

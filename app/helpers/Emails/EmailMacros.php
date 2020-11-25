@@ -26,7 +26,7 @@ class EmailMacros extends MacroSet
 
     public static function install(Latte\Compiler $compiler): MacroSet
     {
-        $set = new static($compiler);
+        $set = new EmailMacros($compiler);
         $set->addMacro('emailSubject', [$set, 'macroEmailSubject'], [$set, 'macroEndEmailSubject']);
         return $set;
     }

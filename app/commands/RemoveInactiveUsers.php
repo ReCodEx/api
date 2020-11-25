@@ -46,7 +46,7 @@ class RemoveInactiveUsers extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if (!$this->inactivityThreshold) {
-            return;
+            return 0;
         }
 
         $silent = $input->getOption('silent');
@@ -63,7 +63,7 @@ class RemoveInactiveUsers extends Command
             if (!$silent) {
                 $output->writeln("No inactive users found.");
             }
-            return;
+            return 0;
         }
 
         // confirm the deletion (when in interactive mode)
@@ -75,7 +75,7 @@ class RemoveInactiveUsers extends Command
             );
             if (!$helper->ask($input, $output, $question)) {
                 $output->writeln("Aborted.");
-                return;
+                return 0;
             }
         }
 
@@ -89,5 +89,7 @@ class RemoveInactiveUsers extends Command
         if (!$silent) {
             $output->writeln("All $count users have been removed.");
         }
+
+        return 0;
     }
 }

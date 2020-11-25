@@ -40,7 +40,7 @@ class EvaluationPointsLoader
 
     /**
      * Set score to evaluation of student submission.
-     * @param SolutionEvaluation|null $evaluation
+     * @param ?AssignmentSolutionSubmission $submission
      * @throws SubmissionEvaluationFailedException
      */
     private function setStudentScore(?AssignmentSolutionSubmission $submission)
@@ -56,6 +56,7 @@ class EvaluationPointsLoader
     /**
      * Set points to evaluation of student submission.
      * @note Score has to be calculated before call of this function.
+     * @param AssignmentSolutionSubmission|null $submission
      */
     public function setStudentPoints(?AssignmentSolutionSubmission $submission)
     {

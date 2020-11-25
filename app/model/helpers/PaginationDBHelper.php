@@ -97,7 +97,7 @@ class PaginationDbHelper
     /**
      * Apply only the search filter on a query builder.
      * @param QueryBuilder $qb Query builder being augmented.
-     * @param strring $search Search query string.
+     * @param string $search Search query string.
      * @param string|null $alias Alias of the main table use in the query builder. If null, alias is auto-detected.
      */
     public function applySearchFilter(QueryBuilder $qb, string $search, string $alias = null)

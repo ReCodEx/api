@@ -39,12 +39,12 @@ class PortMeta implements JsonSerializable
      * Create instance of PortMeta with given values.
      * @param string $name
      * @param string $type
-     * @param null|string $variable
+     * @param string $variable
      * @return PortMeta
      */
     public static function create(string $name, string $type, string $variable = ""): PortMeta
     {
-        $result = new static();
+        $result = new PortMeta();
         $result->setName($name);
         $result->setType($type);
         $result->setVariable($variable);

@@ -346,7 +346,7 @@ class AssignmentsPresenter extends BasePresenter
             $now = new DateTime();
             if (
                 $wasPublic === false && $isPublic === true &&
-                ($visibleFromTimestamp === null || $visibleFrom <= $now)
+                ($visibleFrom === null || $visibleFrom <= $now)
             ) {
                 // assignment is moving from non-public to public, send notification to students
                 $this->assignmentEmailsSender->assignmentCreated($assignment);

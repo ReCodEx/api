@@ -62,7 +62,7 @@ class AccessManager
     /**
      * Parse and validate a JWT token and extract the payload.
      * @param string $token The potential JWT token
-     * @return AccessToken|object The decoded payload
+     * @return AccessToken The decoded payload
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      */
@@ -72,13 +72,9 @@ class AccessManager
             $decodedToken = JWT::decode($token, $this->verificationKey, $this->allowedAlgorithms);
         } catch (DomainException $e) {
             throw new InvalidAccessTokenException($token);
-        } catch (UnexpectedValueException $e) {
-            throw new InvalidAccessTokenException($token);
-        } catch (ExpiredException $e) {
-            throw new InvalidAccessTokenException($token);
         } catch (SignatureInvalidException $e) {
             throw new ForbiddenRequestException();
-        } catch (BeforeValidException $e) {
+        } catch (UnexpectedValueException $e) {
             throw new InvalidAccessTokenException($token);
         }
 
@@ -96,7 +92,7 @@ class AccessManager
      */
     public function getUser(AccessToken $token): User
     {
-        /** @var User $user */
+        /** @var ?User $user */
         $user = $this->users->get($token->getUserId());
         if (!$user) {
             throw new ForbiddenRequestException(

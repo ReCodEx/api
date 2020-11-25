@@ -28,7 +28,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
- * @method DateTime getVisibleFrom()
+ * @method DateTime|null getVisibleFrom()
  * @method bool getCanViewJudgeOutputs()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)

@@ -70,7 +70,7 @@ interface IExercise
 
     /**
      * Get score configuration entity which holds the calculator type and its configuration.
-     * @return string
+     * @return ExerciseScoreConfig
      */
     public function getScoreConfig(): ExerciseScoreConfig;
 

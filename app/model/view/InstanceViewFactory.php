@@ -29,7 +29,7 @@ class InstanceViewFactory
      */
     public function getInstance(Instance $instance): array
     {
-        /** @var LocalizedGroup $localizedRootGroup */
+        /** @var LocalizedGroup|null $localizedRootGroup */
         $localizedRootGroup = Localizations::getPrimaryLocalization($instance->getRootGroup()->getLocalizedTexts());
 
         return [

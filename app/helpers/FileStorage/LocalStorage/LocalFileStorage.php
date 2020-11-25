@@ -445,7 +445,7 @@ class LocalFileStorage implements IFileStorage
             if ($ts !== false && $ts < $threshold) {
                 // file is too old, remove it!
                 if (substr($file, 0, $rootDirLen) === $this->rootDirectory) {
-                    $dir = dirname(substr($file, $this->rootDirectory + 1));
+                    $dir = dirname(substr($file, $rootDirLen + 1));
                     $affectedDirectories[$dir] = true;  // save the directory for the final cleanup
                 }
 

@@ -19,7 +19,7 @@ use App\Exceptions\ApiException;
  * @method string getId()
  * @method string getEmail()
  * @method string getRole()
- * @method string getAvatarUrl()
+ * @method string|null getAvatarUrl()
  * @method ArrayCollection getInstances()
  * @method Collection getExercises()
  * @method UserSettings getSettings()
@@ -33,7 +33,7 @@ use App\Exceptions\ApiException;
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
  * @method setIsAllowed(bool $isAllowed)
- * @method Login getLogin()
+ * @method Login|null getLogin()
  * @method setLogin(Login $login)
  * @method Collection getExternalLogins()
  * @method setTokenValidityThreshold(DateTime $threshold)
@@ -367,7 +367,7 @@ class User
      * Return an associative array [ service => externalId ] for the user.
      * If there are multiple IDs for the same service, they are concatenated in an array.
      * If a filter is provided, only services specified on the filter list are yielded.
-     * @param array|null A list of services to be included in the result. Null = all services.
+     * @param array|null $filter A list of services to be included in the result. Null = all services.
      * @return array
      */
     public function getConsolidatedExternalLogins(?array $filter = null)
@@ -446,7 +446,7 @@ class User
     }
 
     /**
-     * @param UserUiData|null
+     * @param UserUiData|null $uiData
      */
     public function setUiData(?UserUiData $uiData)
     {

@@ -104,7 +104,8 @@ class ExerciseConfig implements JsonSerializable
 
     /**
      * Remove test according to given test identification.
-     * @param string $id
+     * @param string $oldId
+     * @param string $newId
      * @return $this
      */
     public function changeTestId(string $oldId, string $newId): ExerciseConfig

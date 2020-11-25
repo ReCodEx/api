@@ -1,3 +1,3 @@
 php vendor/nette/tester/src/tester.php $*
 echo ""
-php vendor/bin/phpstan analyse -c phpstan/phpstan.neon app
+vendor/bin/phpstan analyse --memory-limit 1G -c phpstan/phpstan.neon app

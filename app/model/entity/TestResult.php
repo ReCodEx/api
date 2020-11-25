@@ -17,7 +17,7 @@ use App\Helpers\EvaluationResults as ER;
  * @method float getUsedWallTimeLimit()
  * @method float getUsedCpuTime()
  * @method float getUsedCpuTimeLimit()
- * @method string getJudgeOutput()
+ * @method ?string getJudgeOutput()
  * @method string getStatus()
  * @method string getMessage()
  * @method int getExitCode()

@@ -258,13 +258,6 @@ class Helper
 
                         // everything is gonna be ok... now we can do wildcard matching against all variable values
                         $matched = true;
-                        if (false) {
-                            // just to screw with phpstan which has bug current 0.7 version
-                            // well... this is just ugly hack :-) I am quite surprised that it
-                            // worked, but good for me I guess ¯\_(ツ)_/¯
-                            $matched = false;
-                        }
-
                         foreach ($variable->getValueAsArray() as $value) {
                             $matchedValue = false;
                             foreach ($files as $file) {

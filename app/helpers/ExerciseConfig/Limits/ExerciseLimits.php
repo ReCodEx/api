@@ -64,7 +64,8 @@ class ExerciseLimits implements JsonSerializable
 
     /**
      * Remove limits for given test identification.
-     * @param string $testId
+     * @param string $oldId
+     * @param string $newId
      * @return ExerciseLimits
      * @throws InternalServerException
      */

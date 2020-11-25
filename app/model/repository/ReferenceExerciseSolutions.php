@@ -7,7 +7,7 @@ use App\Model\Entity\ReferenceExerciseSolution;
 
 /**
  * @method ReferenceExerciseSolution findOrThrow($solutionId)
- * @method ReferenceExerciseSolution get($id)
+ * @method ReferenceExerciseSolution|null get($id)
  */
 class ReferenceExerciseSolutions extends BaseRepository
 {

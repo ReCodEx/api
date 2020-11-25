@@ -28,7 +28,7 @@ class WeightedScoreCalculator implements IScoreCalculator
 
     /**
      * Internal function that safely retrieves score config weights.
-     * @param array $scoreConfig
+     * @param array $config
      * @return array|null Null if the config is invalid, name => weight array otherwise.
      */
     private function getTestWeights(array $config): ?array

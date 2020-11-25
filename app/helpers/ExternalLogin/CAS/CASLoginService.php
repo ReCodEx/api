@@ -204,8 +204,8 @@ class CASLoginService implements IExternalLoginService
 
     /**
      * Create correct URL for validation of the token.
-     * @param $ticket
-     * @param $clientUrl
+     * @param string $ticket
+     * @param string $clientUrl
      * @return string The URL for validation of the ticket.
      */
     private function getValidationUrl($ticket, $clientUrl)
@@ -217,8 +217,8 @@ class CASLoginService implements IExternalLoginService
 
     /**
      * Convert the data from the JSON response to the UserData container.
-     * @param $ticket
-     * @param $data
+     * @param string $ticket
+     * @param array $data
      * @param bool $onlyAuthenticate
      * @return UserData
      * @throws CASMissingInfoException

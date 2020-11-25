@@ -53,7 +53,7 @@ class CommentPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        /** @var AssignmentSolution $solution */
+        /** @var ?AssignmentSolution $solution */
         $solution = $this->assignmentSolutions->get($comment->getCommentThread()->getId());
         if (
             $solution === null ||
@@ -74,7 +74,7 @@ class CommentPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        /** @var Assignment $assignment */
+        /** @var ?Assignment $assignment */
         $assignment = $this->assignments->get($comment->getCommentThread()->getId());
         if ($assignment === null) {
             return false;
