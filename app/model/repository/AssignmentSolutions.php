@@ -98,11 +98,17 @@ class AssignmentSolutions extends BaseRepository
      */
     private function findValidSolutionsForAssignments(array $assignments, ?User $user = null)
     {
-        $findBy = ["assignment" => $assignments];
+        $assignmentIds = array_map(function ($assignment) { return $assignment->getId(); }, $assignments);
+
+        $qb = $this->createQueryBuilder("asol");
+        $qb->andWhere($qb->expr()->in("asol.assignment", $assignmentIds));
         if ($user !== null) {
-            $findBy["solution.author"] = $user;
+            $qb->leftJoin("asol.solution", "sol");
+            $qb->andWhere("sol.author = :author");
+            $qb->setParameter('author', $user->getId());
         }
-        $solutions = $this->findBy($findBy);
+
+        $solutions = $qb->getQuery()->getResult();
         return self::filterValidSolutions($solutions);
     }
 
