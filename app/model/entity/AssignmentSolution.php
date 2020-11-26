@@ -18,7 +18,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method int|null getOverriddenPoints()
  * @method setOverriddenPoints(?int $points)
  * @method Collection getSubmissions()
- * @method ?AssignmentSolutionSubmission getLastSubmission()
+ * @method AssignmentSolutionSubmission|null getLastSubmission()
  * @method setLastSubmission(?AssignmentSolutionSubmission $submission)
  */
 class AssignmentSolution
@@ -41,8 +41,8 @@ class AssignmentSolution
     protected $note;
 
     /**
-     * @var Assignment
-     * @ORM\ManyToOne(targetEntity="Assignment")
+     * @var ?Assignment
+     * @ORM\ManyToOne(targetEntity="Assignment", inversedBy="assignmentSolutions")
      */
     protected $assignment;
 

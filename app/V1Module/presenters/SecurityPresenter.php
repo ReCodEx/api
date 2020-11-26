@@ -30,6 +30,7 @@ class SecurityPresenter extends BasePresenter
      */
     public function actionCheck()
     {
+        // TODO: RESOLVE THIS, return type of match function is different
         $appRequest = $this->router->match(
             new Http\Request(
                 new Http\UrlScript("https://foo.tld/" . ltrim($this->getRequest()->getPost("url"), "/"), "/"),

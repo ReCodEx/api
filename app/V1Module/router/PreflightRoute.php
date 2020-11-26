@@ -48,6 +48,7 @@ class PreflightRoute implements Nette\Routing\Router
             return null;
         }
 
+        // TODO: RESOLVE THIS, return type of match function is different
         return new Request(
             $this->presenter,
             'OPTIONS',
