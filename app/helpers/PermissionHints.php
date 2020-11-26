@@ -5,18 +5,14 @@ namespace App\Helpers;
 use Generator;
 use Nette\Reflection\ClassType;
 use Nette\Reflection\Method;
-use Nette\Reflection\Parameter;
-use Nette\StaticClassException;
+use Nette\StaticClass;
 use Nette\Utils\Strings;
 
 class PermissionHints
 {
-    protected static $methodCache = [];
+    use StaticClass;
 
-    public function __construct()
-    {
-        throw new StaticClassException();
-    }
+    protected static $methodCache = [];
 
     /**
      * Get a generator of a permission hints array for an ACL module and a resource object

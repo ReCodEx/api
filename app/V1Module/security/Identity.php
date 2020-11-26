@@ -36,7 +36,7 @@ class Identity implements Nette\Security\IIdentity
      * Returns a list of roles that the user is a member of.
      * @return array
      */
-    function getRoles()
+    function getRoles(): array
     {
         return $this->user ? [$this->user->getRole()] : [self::UNAUTHENTICATED_ROLE];
     }

@@ -48,7 +48,7 @@ class UserStorage implements IUserStorage
      * Is this user authenticated?
      * @return bool
      */
-    function isAuthenticated()
+    function isAuthenticated(): bool
     {
         return $this->httpRequest->getHeader(self::AUTH_HEADER) !== null || $this->authenticated;
     }
@@ -73,7 +73,7 @@ class UserStorage implements IUserStorage
      * Returns current user identity, if any.
      * @return IIdentity|null
      */
-    function getIdentity()
+    function getIdentity(): ?IIdentity
     {
         if ($this->cachedIdentity === null) {
             $token = $this->accessManager->getGivenAccessToken($this->httpRequest);
@@ -136,9 +136,9 @@ class UserStorage implements IUserStorage
 
     /**
      * Why was user logged out? Who cares anyway...
-     * @return int
+     * @return ?int
      */
-    function getLogoutReason()
+    function getLogoutReason(): ?int
     {
         return 0;
     }

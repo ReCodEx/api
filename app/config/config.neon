@@ -260,7 +260,6 @@ acl:
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
-  events: Kdyby\Events\DI\EventsExtension
   annotations: Kdyby\Annotations\DI\AnnotationsExtension
   doctrine: Kdyby\Doctrine\DI\OrmExtension
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
@@ -311,7 +310,7 @@ services:
       - setMigrationsNamespace(%migrations.namespace%)
 
   # soft deletable filter
-  - class: Gedmo\SoftDeleteable\SoftDeleteableListener()
+  - factory: Gedmo\SoftDeleteable\SoftDeleteableListener()
     tags: [kdyby.subscriber]
 
   # security

@@ -47,13 +47,21 @@ class Login
     ];
 
     /**
+     * TODO: This has to be done better! Move it somewhere else!
+     */
+    private static function createPasswordUtils(): Passwords {
+        return new Passwords(PASSWORD_DEFAULT, self::HASHING_OPTIONS);
+    }
+
+    /**
+     * TODO: This has to be done better! Move it somewhere else!
      * Hash the password accordingly.
      * @param string $password Plaintext password
      * @return string Password hash
      */
     public static function hashPassword($password)
     {
-        return Passwords::hash($password, self::HASHING_OPTIONS);
+        return self::createPasswordUtils()->hash($password);
     }
 
     /**
@@ -106,12 +114,14 @@ class Login
      */
     public function passwordsMatch($password)
     {
-        if (empty($this->passwordHash)) {
+        if (empty($this->passwordHash) || empty($password)) {
             return false;
         }
 
-        if (Passwords::verify($password, $this->passwordHash)) {
-            if (Passwords::needsRehash($this->passwordHash, self::HASHING_OPTIONS)) {
+        // TODO: This has to be done better! Move it somewhere else!
+        $passwordUtils = self::createPasswordUtils();
+        if ($passwordUtils->verify($password, $this->passwordHash)) {
+            if ($passwordUtils->needsRehash($this->passwordHash)) {
                 $this->passwordHash = self::hashPassword($password);
             }
 

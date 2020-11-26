@@ -3,16 +3,18 @@
 namespace App\Helpers\GroupBindings;
 
 use Nette;
+use Nette\DI\CompilerExtension;
+use Nette\DI\Definitions\Statement;
 
 /**
  * Looks up all IGroupBindingProvider implementations and registers them in a GroupBindingAccessor
  */
-class GroupBindingsExtension extends Nette\DI\CompilerExtension
+class GroupBindingsExtension extends CompilerExtension
 {
     public function loadConfiguration()
     {
         $accessor = $this->getContainerBuilder()->addDefinition($this->prefix("groupBindingsAccessor"));
-        $accessor->factory = new Nette\DI\Statement(GroupBindingAccessor::class);
+        $accessor->factory = new Statement(GroupBindingAccessor::class);
     }
 
     public function beforeCompile()

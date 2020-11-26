@@ -26,8 +26,8 @@
   "require": {
     "php": ">=7.3",
     "ext-yaml": ">=2.0",
-    "ext-json": "^1.7",
-    "ext-zip": "^1.15",
+    "ext-json": ">=1.7",
+    "ext-zip": ">=1.15",
     "nette/application": "^3.0",
     "nette/bootstrap": "^3.0",
     "nette/caching": "^3.0",

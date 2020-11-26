@@ -225,7 +225,7 @@ class GenerateSwagger extends Command
             $warning("Multiple tags");
         }
 
-        $presenterName = $module . $metadata[Route::PRESENTER_KEY]["value"];
+        $presenterName = $module . $metadata["presenter"]["value"];
         $action = $metadata["action"]["value"] ?: "default";
 
         /** @var Presenter $presenter */
@@ -582,7 +582,7 @@ class GenerateSwagger extends Command
 
     private function makePresenterTag($metadata, $module, array &$tags, array &$entry)
     {
-        $presenterName = $metadata[Route::PRESENTER_KEY]["value"];
+        $presenterName = $metadata["presenter"]["value"];
         $fullPresenterName = $module . $presenterName;
 
         /** @var Presenter $presenter */

@@ -5,19 +5,13 @@ namespace App\Helpers;
 use App\Model\Entity\LocalizedEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Nette\StaticClassException;
-use Nette;
+use Nette\StaticClass;
 
 class Localizations
 {
-    use Nette\SmartObject;
+    use StaticClass;
 
     public const PRIMARY_LOCALE = "cs";
-
-    public function __construct()
-    {
-        throw new StaticClassException();
-    }
 
     /**
      * Update a collection of localized entities with new versions if necessary

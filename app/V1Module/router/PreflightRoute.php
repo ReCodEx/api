@@ -4,16 +4,15 @@ namespace App\V1Module\Router;
 
 use Nette;
 use Nette\Http\IRequest;
-use Nette\Http\Url;
 use Nette\Application;
-use Nette\Application\IRouter;
 use Nette\Application\Request;
+use Nette\Http\UrlScript;
 use Nette\Utils\Strings;
 
 /**
  * HTTP Options request route aka. preflight requests.
  */
-class PreflightRoute implements IRouter
+class PreflightRoute implements Nette\Routing\Router
 {
 
     /** @var string */
@@ -39,9 +38,9 @@ class PreflightRoute implements IRouter
 
     /**
      * Maps HTTP request to a Request object.
-     * @return Request|null
+     * @return array|null
      */
-    public function match(IRequest $httpRequest)
+    public function match(IRequest $httpRequest): ?array
     {
         $isOptions = $httpRequest->isMethod("OPTIONS");
         $path = $httpRequest->getUrl()->getPath();
@@ -63,7 +62,7 @@ class PreflightRoute implements IRouter
      * Constructs absolute URL from Request object.
      * @return string|null
      */
-    public function constructUrl(Request $appRequest, Url $refUrl)
+    public function constructUrl(array $params, UrlScript $refUrl): ?string
     {
         return null;
     }
