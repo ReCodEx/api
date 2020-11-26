@@ -5,7 +5,7 @@ namespace App\Helpers;
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
-use Nette\Mail\IMailer;
+use Nette\Mail\Mailer;
 use Nette\Mail\Message;
 use Nette\Mail\SendException;
 use Nette\Utils\Arrays;
@@ -18,7 +18,7 @@ use Exception;
 class EmailHelper
 {
 
-    /** @var IMailer Nette mailer component */
+    /** @var Mailer Nette mailer component */
     private $mailer;
 
     /** @var string Url of api instance */
@@ -47,10 +47,10 @@ class EmailHelper
 
     /**
      * Constructor
-     * @param IMailer $mailer Created and configured (TLS verification, etc.) mailer object
+     * @param Mailer $mailer Created and configured (TLS verification, etc.) mailer object
      * @param array $params Array of params used to fill information into predefined mail template
      */
-    public function __construct(IMailer $mailer, array $params)
+    public function __construct(Mailer $mailer, array $params)
     {
         $this->mailer = $mailer;
         $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.mff.cuni.cz:4000");

@@ -3,20 +3,21 @@
 namespace App;
 
 use Nette;
+use Nette\Http\Request;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use App\Exceptions\BadRequestException;
 
 /**
  * Main router factory which is used to create all possible routes.
- * @return Nette\Http\Request
+ * @return Request
  */
 class RequestFactory extends Nette\Http\RequestFactory
 {
     /**
      * Overriding existing factory function to properly process JSON bodies instead of POST multipart.
      */
-    public function createHttpRequest()
+    public function fromGlobals(): Request
     {
         /*
          * A patch which will take JSON bodies passed in POST requests and patch them in
@@ -43,10 +44,9 @@ class RequestFactory extends Nette\Http\RequestFactory
 
         // If JSON body is present, replace the result of original HTTP request factory with new post data.
         if (!empty($json)) {
-            $request = parent::createHttpRequest();
-            return new Nette\Http\Request(
+            $request = parent::fromGlobals();
+            return new Request(
                 $request->getUrl(),
-                null,
                 $json,
                 $request->getFiles(),
                 $request->getCookies(),
@@ -59,7 +59,7 @@ class RequestFactory extends Nette\Http\RequestFactory
                 }
             );
         } else {
-            return parent::createHttpRequest();
+            return parent::fromGlobals();
         }
     }
 }

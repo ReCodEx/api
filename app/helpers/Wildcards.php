@@ -3,14 +3,11 @@
 namespace App\Helpers;
 
 use Generator;
-use Nette\StaticClassException;
+use Nette\StaticClass;
 
 class Wildcards
 {
-    public function __construct()
-    {
-        throw new StaticClassException();
-    }
+    use StaticClass;
 
     /**
      * Check if given string matches a shell-like wildcard expression

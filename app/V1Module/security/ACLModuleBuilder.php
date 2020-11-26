@@ -42,7 +42,7 @@ class ACLModuleBuilder
 
         foreach ($interface->getMethods(Method::IS_ABSTRACT) as $method) {
             $isNameCorrect = Strings::startsWith($method->getName(), "can");
-            $isBoolean = (string)$method->getReturnType() === "bool";
+            $isBoolean = $method->getReturnType() !== null ? $method->getReturnType()->getName() === "bool" : false;
 
             if (!($isNameCorrect && $isBoolean)) {
                 throw new \LogicException(sprintf('Method %s cannot be implemented automatically', $method->getName()));
@@ -55,8 +55,8 @@ class ACLModuleBuilder
 
             foreach ($method->getParameters() as $parameter) {
                 $contextStrings[] = sprintf('"%s" => $%s', $parameter->getName(), $parameter->getName());
-                $newParameter = $methodImpl->addParameter($parameter->getName())->setTypeHint(
-                    (string)$parameter->getType()
+                $newParameter = $methodImpl->addParameter($parameter->getName())->setType(
+                    $parameter->getType() !== null ? $parameter->getType()->getName() : null
                 );
                 if ($parameter->allowsNull()) {
                     $newParameter->setNullable();

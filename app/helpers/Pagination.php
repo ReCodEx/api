@@ -71,7 +71,7 @@ class Pagination
         $this->limit = $limit < 0 ? null : $limit;
         $this->originalOrderBy = $orderBy;
         $this->locale = $locale;
-        $this->order = !Strings::startsWith($orderBy, "!");
+        $this->order = $orderBy !== null ? !Strings::startsWith($orderBy, "!") : true;
         $this->orderBy = $this->order ? $orderBy : Strings::substring($orderBy, 1);
 
         if ($knownFilters !== null) {

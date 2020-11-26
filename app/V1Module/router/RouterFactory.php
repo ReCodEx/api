@@ -3,7 +3,7 @@
 namespace App\V1Module;
 
 use Nette;
-use Nette\Application\IRouter;
+use Nette\Routing\Router;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
 use App\V1Module\Router\GetRoute;
@@ -21,7 +21,7 @@ class RouterFactory
 
     /**
      * Create router with all routes for V1 module.
-     * @return IRouter
+     * @return Router
      */
     public static function createRouter()
     {

@@ -182,7 +182,7 @@ class AccessManager
         }
 
         // if the token is not in the URL, try to find the "Authorization" header with the bearer token
-        $authorizationHeader = $request->getHeader("Authorization", null);
+        $authorizationHeader = $request->getHeader("Authorization");
 
         if ($authorizationHeader === null) {
             return null;

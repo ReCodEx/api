@@ -5,7 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\InvalidArgumentException;
 use Exception;
 use Nette\Application\IPresenterFactory;
-use Nette\Application\IRouter;
+use Nette\Routing\Router;
 use Nette\Application\UI\Presenter;
 use Nette\Http;
 
@@ -18,7 +18,7 @@ class SecurityPresenter extends BasePresenter
     public $presenterFactory;
 
     /**
-     * @var IRouter
+     * @var Router
      * @inject
      */
     public $router;

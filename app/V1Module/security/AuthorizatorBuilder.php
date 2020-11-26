@@ -29,9 +29,9 @@ class AuthorizatorBuilder
 
         $check = $class->addMethod("checkPermissions");
         $check->setReturnType("bool");
-        $check->addParameter("role")->setTypeHint("string");
-        $check->addParameter("resource")->setTypeHint("string");
-        $check->addParameter("privilege")->setTypeHint("string");
+        $check->addParameter("role")->setType("string");
+        $check->addParameter("resource")->setType("string");
+        $check->addParameter("privilege")->setType("string");
 
         foreach ($permissions as $i => $rule) {
             $all = new PhpLiteral(sprintf("%s::ALL", Permission::class));

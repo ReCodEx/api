@@ -16,7 +16,7 @@ class Validators extends Utils\Validators
      */
     public static function init()
     {
-        static::$validators['timestamp'] = [__CLASS__, 'isTimestamp'];
+        static::$validators['timestamp'] = [self::class, 'isTimestamp'];
     }
 
     public static function isTimestamp(string $value)
@@ -43,7 +43,7 @@ class Validators extends Utils\Validators
         return $value;
     }
 
-    public static function is($value, $expected)
+    public static function is($value, $expected): bool
     {
         return parent::is($value, $expected);
     }

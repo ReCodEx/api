@@ -3,16 +3,16 @@
 namespace App\V1Module\Router;
 
 use Nette\Http\IRequest;
-use Nette\Http\Url;
-use Nette\Application\IRouter;
 use Nette\Application\Request;
 use Nette\Application\Routers\Route;
+use Nette\Http\UrlScript;
+use Nette\Routing\Router;
 
 /**
  * Base class of all module routes which construct URLs. And also does all
  * checkings of HTTP request method against the one given during construction.
  */
-class MethodRoute implements IRouter
+class MethodRoute implements Router
 {
 
     /** @var string */
@@ -35,9 +35,9 @@ class MethodRoute implements IRouter
 
     /**
      * Maps HTTP request to a Request object.
-     * @return Request|null
+     * @return array|null
      */
-    public function match(IRequest $httpRequest)
+    public function match(IRequest $httpRequest): ?array
     {
         if (!$httpRequest->isMethod($this->method)) {
             return null;
@@ -50,8 +50,8 @@ class MethodRoute implements IRouter
      * Constructs absolute URL from Request object.
      * @return string|null
      */
-    public function constructUrl(Request $appRequest, Url $refUrl)
+    public function constructUrl(array $params, UrlScript $refUrl): ?string
     {
-        return $this->route->constructUrl($appRequest, $refUrl);
+        return $this->route->constructUrl($params, $refUrl);
     }
 }

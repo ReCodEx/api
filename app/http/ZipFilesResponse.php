@@ -86,7 +86,7 @@ class ZipFilesResponse extends FileResponse
      * @param Nette\Http\IResponse $httpResponse
      * @throws ApiException
      */
-    public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
+    public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse): void
     {
         // first compress all given files into zip
         $this->compress();

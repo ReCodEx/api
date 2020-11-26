@@ -22,18 +22,18 @@ class SecurityExtension extends Nette\DI\CompilerExtension
         $builder = $this->getContainerBuilder();
 
         $policyRegistry = $builder->addDefinition($this->prefix("policyRegistry"));
-        $policyRegistry->setClass(PolicyRegistry::class);
+        $policyRegistry->setType(PolicyRegistry::class);
 
         foreach ($policies as $name => $policy) {
             $serviceName = $this->prefix("policy_" . $name);
             $service = $builder->addDefinition($serviceName);
-            $service->setClass($policy);
+            $service->setType($policy);
 
             $policyRegistry->addSetup("addPolicy", [$service]);
         }
 
         $loader = $builder->addDefinition($this->prefix("loader"));
-        $loader->setClass(Loader::class, [$this->tempDirectory . "/security", $configFilePath, $acl]);
+        $loader->setFactory(Loader::class, [$this->tempDirectory . "/security", $configFilePath, $acl]);
 
         $roles = $builder->addDefinition($this->prefix("roles"));
         $roles->setFactory(sprintf("@%s::loadRoles", Loader::class));
@@ -44,7 +44,7 @@ class SecurityExtension extends Nette\DI\CompilerExtension
 
         foreach ($acl as $name => $interface) {
             $module = $builder->addDefinition($this->prefix("aclModule_" . $name));
-            $module->setClass($interface);
+            $module->setType($interface);
             $module->setFactory(sprintf('@%s::loadAclModule', Loader::class), [$interface]);
         }
     }
