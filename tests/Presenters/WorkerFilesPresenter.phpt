@@ -85,11 +85,11 @@ class TestWorkerFilesPresenter extends Tester\TestCase
     protected function setUp()
     {
         $this->mockHttpRequest = Mockery::mock($this->originalHttpRequest);
-        $this->mockHttpRequest->makePartial()->shouldDeferMissing();
+        $this->mockHttpRequest->makePartial();
         $this->container->addService($this->httpRequestName, $this->mockHttpRequest);
         $this->mockHttpRequest->shouldReceive("getHeader")
             ->zeroOrMoreTimes()
-            ->with("Authorization", Mockery::any())
+            ->with("Authorization")
             ->andReturn("Basic " . base64_encode("user:pass"));
 
         PresenterTestHelper::fillDatabase($this->container);

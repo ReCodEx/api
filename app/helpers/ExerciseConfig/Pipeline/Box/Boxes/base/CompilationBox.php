@@ -90,7 +90,7 @@ abstract class CompilationBox extends Box
      * Get value of given port (assuming file[] type) and return its value filtered.
      * @param string $portName The port identifier.
      * @param string $baseDir Base directory (file prefix).
-     * @param string|callable $filter (regular expression) or callable (filtering function).
+     * @param string|callable|mixed $filter (regular expression) or callable (filtering function).
      * @return mixed List of files (paths).
      */
     protected function getInputPortFilesFiltered(string $portName, string $baseDir, $filter)
