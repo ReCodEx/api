@@ -43,7 +43,7 @@ class TestUserStorage extends Tester\TestCase
         $verificationKey = $this->container->parameters["accessManager"]["verificationKey"];
         $usedAlgorithm = $this->container->parameters["accessManager"]["usedAlgorithm"];
         $httpRequest = new Http\Request(
-            new Http\UrlScript("/hello"), null, null, null, null,
+            new Http\UrlScript("/hello"), null, null, null,
             ["Authorization" => sprintf("Bearer %s", $token->encode($verificationKey, $usedAlgorithm))]
         );
 

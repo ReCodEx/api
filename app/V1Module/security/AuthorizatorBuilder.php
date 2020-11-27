@@ -122,12 +122,10 @@ class AuthorizatorBuilder
 
         if ($type === "and") {
             return Helpers::format("(?)", new PhpLiteral(join(" && ", $children)));
+        } elseif ($type === "or") {
+            return Helpers::format("(?)", new PhpLiteral(join(" || ", $children)));
         } else {
-            if ($type === "or") {
-                return Helpers::format("(?)", new PhpLiteral(join(" || ", $children)));
-            } else {
-                return new PhpLiteral("true");
-            }
+            return new PhpLiteral("true");
         }
     }
 

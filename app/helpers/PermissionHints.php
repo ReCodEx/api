@@ -24,7 +24,9 @@ class PermissionHints
     {
         foreach (static::getAclMethods($aclModule) as $method) {
             $parameter = $method->getParameters()[0];
-            $className = $parameter->getClass() ? $parameter->getClass()->getName() : null;
+            /** @var ?ClassType $classObj */
+            $classObj = $parameter->getClass();
+            $className = $classObj ? $classObj->getName() : null;
             if ($className !== null && $subject instanceof $className) {
                 yield lcfirst(substr($method->getName(), 3)) => $method->invoke($aclModule, $subject);
             }

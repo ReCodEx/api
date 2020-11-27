@@ -262,7 +262,7 @@ class BrokerProxy
      * Wait until given socket can be read from
      * @param ZMQSocket $queue The socket for which we want to wait
      * @param int $timeout Time limit in milliseconds
-     * @return array|null
+     * @return array|null|mixed
      * @throws ZMQSocketException
      */
     private function pollReadWorkaround(ZMQSocket $queue, int $timeout)
@@ -284,6 +284,7 @@ class BrokerProxy
             }
         } while (microtime(true) <= $limit);
 
+        // @phpstan-ignore-next-line
         return null;
     }
 }

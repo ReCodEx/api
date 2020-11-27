@@ -56,11 +56,15 @@ class Login
     /**
      * TODO: This has to be done better! Move it somewhere else!
      * Hash the password accordingly.
-     * @param string $password Plaintext password
-     * @return string Password hash
+     * @param string|null $password Plaintext password
+     * @return string|null Password hash
      */
     public static function hashPassword($password)
     {
+        if ($password === null) {
+            return "";
+        }
+
         return self::createPasswordUtils()->hash($password);
     }
 

@@ -11,6 +11,7 @@ use Nette\Application\Routers\Route;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\UI\Presenter;
 use Nette\Reflection\ClassType;
+use Nette\Reflection\IAnnotation;
 use Nette\Reflection\Method;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Arrays;
@@ -308,8 +309,9 @@ class GenerateSwagger extends Command
 
         $this->setArrayDefault($entry["responses"], "200", []);
 
-        $isLoginNeeded = $presenter->getReflection()->getAnnotation("LoggedIn")
-            || $method->getAnnotation("LoggedIn");
+        /** @var ?IAnnotation $loggedInAnnotation */
+        $loggedInAnnotation = $method->getAnnotation("LoggedIn");
+        $isLoginNeeded = $presenter->getReflection()->getAnnotation("LoggedIn") || $loggedInAnnotation;
 
         if ($isLoginNeeded) {
             $this->setArrayDefault($entry["responses"], "401", []);
@@ -317,32 +319,32 @@ class GenerateSwagger extends Command
             if ($defaultSecurity !== null) {
                 $this->setArrayDefault($entry, 'security', [[$defaultSecurity => []]]);
             }
-        } else {
-            if (array_key_exists($entry["responses"], "401")) {
-                $warning(
-                    sprintf(
-                        "Method %s is not annotated with @LoggedIn, but corresponding endpoint has 401 in its response list",
-                        $method->name
-                    )
-                );
-            }
+        } elseif (array_key_exists("401", $entry["responses"])) {
+            $warning(
+                sprintf(
+                    "Method %s is not annotated with @LoggedIn, but corresponding endpoint has 401 in its response list",
+                    $method->name
+                )
+            );
         }
 
-        $isAuthFailurePossible = $method->getAnnotation("UserIsAllowed")
+        /** @var ?IAnnotation $userIsAllowedAnnotation */
+        $userIsAllowedAnnotation = $method->getAnnotation("UserIsAllowed");
+        /** @var ?IAnnotation $roleAnnotation */
+        $roleAnnotation = $method->getAnnotation("Role");
+        $isAuthFailurePossible = $userIsAllowedAnnotation
             || $presenter->getReflection()->getAnnotation("Role")
-            || $method->getAnnotation("Role");
+            || $roleAnnotation;
 
         if ($isAuthFailurePossible) {
             $this->setArrayDefault($entry["responses"], "403", []);
-        } else {
-            if (array_key_exists($entry["responses"], "403")) {
-                $warning(
-                    sprintf(
-                        "Method %s is not annotated with @UserIsAllowed, but corresponding endpoint has 403 in its response list",
-                        $method->name
-                    )
-                );
-            }
+        } elseif (array_key_exists("403", $entry["responses"])) {
+            $warning(
+                sprintf(
+                    "Method %s is not annotated with @UserIsAllowed, but corresponding endpoint has 403 in its response list",
+                    $method->name
+                )
+            );
         }
 
         return $entry;

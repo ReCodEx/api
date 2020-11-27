@@ -22,7 +22,7 @@ class BasicAuthHelper
     {
         $auth = $req->getHeader("Authorization");
         if ($auth === null || Strings::startsWith($auth, "Basic ") === false) {
-            throw new HttpBasicAuthException("The request from broker must contain HTTP Basic authentication.");
+            throw new HttpBasicAuthException("The request from backend-service must contain HTTP Basic authentication.");
         }
 
         $encodedCredentials = Strings::substring($auth, strlen("Basic "));
