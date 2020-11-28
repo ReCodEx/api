@@ -14,6 +14,8 @@ class FrontendErrorMappings
     const E400_001__BAD_REQUEST_EXT_MULTIPLE_USERS_FOUND = "400-001";
     /** Cannot issue token with effective role '$effectiveRole' higher than the actual one '$role' */
     const E400_002__BAD_REQUEST_FORBIDDEN_EFFECTIVE_ROLE = "400-002";
+    /** Uploaded file name contains invalid characters */
+    const E400_003__UPLOADED_FILE_INVALID_CHARACTERS = "400-003";
 
     /** Invalid credentials */
     const E400_100__WRONG_CREDENTIALS = "400-100";
@@ -111,8 +113,6 @@ class FrontendErrorMappings
     const E500_001__CANNOT_RECEIVE_FILE = "500-001";
     /** General LDAP connection exception */
     const E500_002__LDAP_CONNECTION = "500-002";
-    /** Uploaded file name contains invalid characters */
-    const E500_003__UPLOADED_FILE_INVALID_CHARACTERS = "500-003";
     /** General job config error */
     const E500_100__JOB_CONFIG = "500-100";
     /** General exercise config error */
