@@ -107,7 +107,7 @@ class FileStorageManager
             throw new InvalidArgumentException("fileData", "File was not uploaded successfully");
         }
 
-        $this->fileStorage->storeFile($fileData->getTemporaryFile(), $path); // move, no overwrite
+        $this->fileStorage->storeFile($fileData->getTemporaryFile(), $path, false); // copy (moving may not be safe), no overwrite
     }
 
     /**
