@@ -2,7 +2,8 @@
 <h3>Your submission of the assignment '{$assignment}' was evaluated</h3>
 <p>
     Your submission of the assignment '{$assignment}' submitted on {$date|localizedDate:'en'}
-    in the group '{$group}' was evaluated.
+    in the group '{$group}' was evaluated{if $isResubmit} again{/if}.
+    {if $isResubmit}The re-evaluation was initiated by {$submittedBy}.{/if}
     The solution has status {$status} and was awarded {$points} of {$maxPoints} points.
 </p>
 <p>

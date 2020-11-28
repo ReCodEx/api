@@ -1,7 +1,8 @@
 {emailSubject}Řešení vyhodnoceno - {$assignment}{/emailSubject}
 <h3>Vaše řešení úlohy '{$assignment}' bylo vyhodnoceno</h3>
 <p>
-    Vaše řešení k úloze '{$assignment}' odevzdané v {$date|localizedDate:'cs'} ve skupině '{$group}' bylo vyhodnoceno.
+    Vaše řešení k úloze '{$assignment}' odevzdané v {$date|localizedDate:'cs'} ve skupině '{$group}' bylo {if $isResubmit}znovu {/if}vyhodnoceno.
+    {if $isResubmit}Opětovné vyhodnocení bylo iniciováno uživatelem {$submittedBy}.{/if}
     Řešení má status {$status} a získalo {$points} bodů z {$maxPoints}.
 </p>
 <p>
