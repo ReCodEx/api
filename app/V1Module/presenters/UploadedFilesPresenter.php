@@ -19,6 +19,7 @@ use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use ForceUTF8\Encoding;
 use Nette\Utils\Strings;
+use Nette\Http\IResponse;
 use DateTime;
 use Exception;
 
@@ -177,15 +178,20 @@ class UploadedFilesPresenter extends BasePresenter
 
         $file = array_pop($files);
         if (!$file->isOk()) {
-            throw new CannotReceiveUploadedFileException($file->getName(), $file->getError());
+            throw new CannotReceiveUploadedFileException(
+                sprintf("Cannot receive uploaded file '%s' due to '%d'", $file->getName(), $file->getError()),
+                IResponse::S500_INTERNAL_SERVER_ERROR,
+                FrontendErrorMappings::E500_001__CANNOT_RECEIVE_FILE,
+                ["filename" => $file->getName(), "errorCode" => $file->getError()]
+            );
         }
 
         if (!Strings::match($file->getName(), self::FILENAME_PATTERN)) {
             throw new CannotReceiveUploadedFileException(
-                $file->getName(),
-                0,
-                FrontendErrorMappings::E500_003__UPLOADED_FILE_INVALID_CHARACTERS,
-                "File name '%s' contains invalid characters"
+                sprintf("File name '%s' contains invalid characters", $file->getName()),
+                IResponse::S400_BAD_REQUEST,
+                FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
+                ["filename" => $file->getName(), "pattern" => self::FILENAME_PATTERN]
             );
         }
 
