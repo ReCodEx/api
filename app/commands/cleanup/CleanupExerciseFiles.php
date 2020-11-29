@@ -75,7 +75,7 @@ class CleanupExercisesFiles extends Command
                 if (!$this->fileStorage->deleteAttachmentFile($file)) {
                     $id = $file->getId();
                     $name = $file->getName();
-                    $this->logger->log("Uploaded file '$name' ($id) has been already deleted.", ILogger::WARNING);
+                    $this->logger->log("Attachment file '$name' ($id) has been already deleted.", ILogger::WARNING);
                     ++$missing;
                 } else {
                     ++$deleted;
