@@ -12,13 +12,12 @@ use App\Helpers\JobConfig\TestConfig;
  */
 class TestResult
 {
+    public const STATUS_OK = "OK";
+    public const STATUS_FAILED = "FAILED";
+    public const STATUS_SKIPPED = "SKIPPED";
 
-    const STATUS_OK = "OK";
-    const STATUS_FAILED = "FAILED";
-    const STATUS_SKIPPED = "SKIPPED";
-
-    const SCORE_MIN = 0.0;
-    const SCORE_MAX = 1.0;
+    public const SCORE_MIN = 0.0;
+    public const SCORE_MAX = 1.0;
 
     /** @var TestConfig Test configuration */
     private $config;
@@ -76,7 +75,8 @@ class TestResult
 
 
     /**
-     * Determines the status of the test based on the previously reduced status of the test and the status of the next processed task result status.
+     * Determines the status of the test based on the previously reduced status of the test
+     * and the status of the next processed task result status.
      * @param string $curStatus Current status
      * @param string $newTaskStatus Next status
      * @return  string Status of the reduced test tasks statuses
@@ -267,6 +267,20 @@ class TestResult
     }
 
     /**
+     * Get the termination signal number or null, if no executed task was terminated.
+     * @return int|null
+     */
+    public function getExitSignal(): ?int
+    {
+        foreach ($this->sandboxResultsList as $results) {
+            if ($results->getExitSignal() !== null) {
+                return $results->getExitSignal();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get maximum memory limit of all execution tasks.
      * @return int in kilobytes
      */
@@ -374,11 +388,20 @@ class TestResult
     }
 
     /**
-     * Get judge output.
+     * Get judge stdout.
      * @return string Standard output of judge binary (evaluation task)
      */
-    public function getJudgeOutput(): string
+    public function getJudgeStdout(): string
     {
-        return $this->evaluationResult->getOutput();
+        return $this->evaluationResult->getStdout();
+    }
+
+    /**
+     * Get judge stderr.
+     * @return string Error output of judge binary (evaluation task)
+     */
+    public function getJudgeStderr(): string
+    {
+        return $this->evaluationResult->getStderr();
     }
 }

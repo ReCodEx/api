@@ -39,6 +39,12 @@ interface ISandboxResults
     public function getExitCode(): int;
 
     /**
+     * Get exit signal that examined program
+     * @return int|null The signal number or null if the program exitted normally
+     */
+    public function getExitSignal(): ?int;
+
+    /**
      * Get human readable description of error or empty string
      * @return string The message from the evaluation system sandbox
      */

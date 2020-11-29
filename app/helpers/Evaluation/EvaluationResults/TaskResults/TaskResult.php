@@ -9,18 +9,18 @@ use App\Exceptions\ResultsLoadingException;
  */
 class TaskResult
 {
-    const STATUS_OK = "OK";
-    const STATUS_FAILED = "FAILED";
-    const STATUS_SKIPPED = "SKIPPED";
+    public const STATUS_OK = "OK";
+    public const STATUS_FAILED = "FAILED";
+    public const STATUS_SKIPPED = "SKIPPED";
 
-    const MAX_SCORE = 1.0;
-    const MIN_SCORE = 0.0;
+    public const MAX_SCORE = 1.0;
+    public const MIN_SCORE = 0.0;
 
-    const TASK_ID_KEY = "task-id";
-    const STATUS_KEY = "status";
-    const OUTPUT_KEY = "output";
-    const OUTPUT_STDOUT_KEY = "stdout";
-    const OUTPUT_STDERR_KEY = "stderr";
+    private const TASK_ID_KEY = "task-id";
+    private const STATUS_KEY = "status";
+    private const OUTPUT_KEY = "output";
+    private const OUTPUT_STDOUT_KEY = "stdout";
+    private const OUTPUT_STDERR_KEY = "stderr";
 
     /** @var array Raw data */
     protected $data;
@@ -31,8 +31,11 @@ class TaskResult
     /** @var string Status of the task */
     private $status;
 
-    /** @var string Output of the task */
-    protected $output = "";
+    /** @var string Output of the task to the stdout */
+    protected $stdout = "";
+
+    /** @var string Output of the task to the stderr */
+    protected $stderr = "";
 
     /**
      * Constructor
@@ -59,13 +62,10 @@ class TaskResult
 
         if (isset($data[self::OUTPUT_KEY])) {
             if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY])) {
-                $this->output .= $data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY];
-            }
-            if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY]) && isset($data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY])) {
-                $this->output .= "\n";
+                $this->stdout .= $data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY];
             }
             if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY])) {
-                $this->output .= $data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY];
+                $this->stderr .= $data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY];
             }
         }
     }
@@ -100,11 +100,34 @@ class TaskResult
     /**
      * Get standard and error output of the program (if enabled).
      * May be truncated by worker.
-     * @return string The standard output
+     * @return string concatenated stdout + stderr separated by a newline
      */
     public function getOutput(): string
     {
-        return $this->output;
+        $output = $this->stdout;
+        if ($output && $this->stderr) {
+            $output .= "\n";
+        }
+        $output .= $this->stderr;
+        return $output;
+    }
+
+    /**
+     * Return only the output made to stdout.
+     * @return string
+     */
+    public function getStdout(): string
+    {
+        return $this->stdout;
+    }
+
+    /**
+     * Return only the output made to stderr.
+     * @return string
+     */
+    public function getStderr(): string
+    {
+        return $this->stderr;
     }
 
     /**

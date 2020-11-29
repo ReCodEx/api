@@ -17,10 +17,10 @@ use App\Helpers\EvaluationResults as ER;
  * @method float getUsedWallTimeLimit()
  * @method float getUsedCpuTime()
  * @method float getUsedCpuTimeLimit()
- * @method ?string getJudgeOutput()
  * @method string getStatus()
  * @method string getMessage()
  * @method int getExitCode()
+ * @method ?int getExitSignal()
  * @method bool getCpuTimeExceeded()
  * @method bool getWallTimeExceeded()
  * @method bool getMemoryExceeded()
@@ -39,6 +39,7 @@ class TestResult
         $this->status = $result->getStatus();
         $this->score = $result->getScore();
         $this->exitCode = $result->getExitCode();
+        $this->exitSignal = $result->getExitSignal();
         $this->usedMemory = $result->getUsedMemory();
         $this->usedMemoryLimit = $result->getUsedMemoryLimit();
         $this->memoryExceeded = !$result->isMemoryOK();
@@ -49,11 +50,10 @@ class TestResult
         $this->usedCpuTimeLimit = $result->getUsedCpuTimeLimit();
         $this->cpuTimeExceeded = !$result->isCpuTimeOK();
         $this->message = substr($result->getMessage(), 0, 255);  // maximal size of varchar
-        $this->judgeOutput = substr(
-            $result->getJudgeOutput(),
-            0,
-            65536
-        ); // the size corresponds to the length of the column
+        
+        // log sizes are limited by the size of the text column
+        $this->judgeStdout = substr($result->getJudgeStdout(), 0, 65536);
+        $this->judgeStderr = substr($result->getJudgeStderr(), 0, 65536);
     }
 
     /**
@@ -134,6 +134,11 @@ class TestResult
     protected $exitCode;
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    protected $exitSignal;
+
+    /**
      * @ORM\Column(type="string")
      */
     protected $message;
@@ -141,7 +146,12 @@ class TestResult
     /**
      * @ORM\Column(type="text", length=65535, nullable=true)
      */
-    protected $judgeOutput;
+    protected $judgeStdout;
+
+    /**
+     * @ORM\Column(type="text", length=65535, nullable=true)
+     */
+    protected $judgeStderr;
 
     public function getData(bool $canViewLimits, bool $canViewValues, bool $canViewJudgeOutput)
     {
@@ -174,7 +184,8 @@ class TestResult
             $memory = $this->usedMemory;
         }
         if ($canViewJudgeOutput) {
-            list($score, $judgeLog) = ER\EvaluationTaskResult::parseJudgeOutput($this->judgeOutput);
+            // FIXME
+            $judgeLog = $this->judgeStdout;
         }
 
         return [
@@ -187,6 +198,7 @@ class TestResult
             "wallTimeExceeded" => $this->wallTimeExceeded,
             "cpuTimeExceeded" => $this->cpuTimeExceeded,
             "exitCode" => $this->exitCode,
+            "exitSignal" => $this->exitSignal,
             "message" => $this->message,
             "wallTimeRatio" => $wallTimeRatio,
             "cpuTimeRatio" => $cpuTimeRatio,
