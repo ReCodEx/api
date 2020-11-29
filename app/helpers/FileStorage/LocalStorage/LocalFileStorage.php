@@ -441,7 +441,7 @@ class LocalFileStorage implements IFileStorage
                 continue;
             }
 
-            $ts = @filectime($file);
+            $ts = @filemtime($file);
             if ($ts !== false && $ts < $threshold) {
                 // file is too old, remove it!
                 if (substr($file, 0, $rootDirLen) === $this->rootDirectory) {
@@ -449,7 +449,10 @@ class LocalFileStorage implements IFileStorage
                     $affectedDirectories[$dir] = true;  // save the directory for the final cleanup
                 }
 
-                @unlink($file);
+                if (!@unlink($file)) {
+                    throw new FileStorageException("Unable to delete file in the storage.", $file);
+                }
+                ++$deleted;
             }
         }
 
