@@ -106,7 +106,7 @@ class TestFailedTestResult extends Tester\TestCase
         Assert::same(0.037, $res->getUsedCpuTime());
         Assert::same(0.0, $res->getUsedCpuTimeLimit());
         Assert::same("This is a random message", $res->getMessage());
-        Assert::same("", $res->getJudgeOutput());
+        Assert::same("", $res->getJudgeStdout());
     }
 
 }

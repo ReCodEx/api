@@ -10,13 +10,14 @@ use Nette\Utils\Json;
  */
 class SandboxResults implements ISandboxResults
 {
-    const EXITCODE_KEY = "exitcode";
-    const MEMORY_KEY = "memory";
-    const CPU_TIME_KEY = "time";
-    const WALL_TIME_KEY = "wall-time";
-    const MESSAGE_KEY = "message";
-    const KILLED_KEY = "killed";
-    const STATUS_KEY = "status";
+    private const EXITCODE_KEY = "exitcode";
+    private const EXITSIGNAL_KEY = "exitsig";
+    private const MEMORY_KEY = "memory";
+    private const CPU_TIME_KEY = "time";
+    private const WALL_TIME_KEY = "wall-time";
+    private const MESSAGE_KEY = "message";
+    private const KILLED_KEY = "killed";
+    private const STATUS_KEY = "status";
 
 
     /** @var array Raw data of the stats */
@@ -33,6 +34,9 @@ class SandboxResults implements ISandboxResults
 
     /** @var int Exit code returned by the executed solution */
     private $exitcode;
+
+    /** @var int Exit signal number or null if terminated regularly */
+    private $exitsignal;
 
     /** @var string Message from the evaluation worker */
     private $message;
@@ -56,6 +60,8 @@ class SandboxResults implements ISandboxResults
             throw new ResultsLoadingException("Sandbox results do not include the '" . self::EXITCODE_KEY . "' field.");
         }
         $this->exitcode = $data[self::EXITCODE_KEY];
+
+        $this->exitsignal = $data[self::EXITSIGNAL_KEY] ?? null;
 
         if (!isset($data[self::MEMORY_KEY])) {
             throw new ResultsLoadingException("Sandbox results do not include the '" . self::MEMORY_KEY . "' field.");
@@ -128,6 +134,15 @@ class SandboxResults implements ISandboxResults
         }
 
         return $this->exitcode;
+    }
+
+    /**
+     * Get the signal number that terminated the task.
+     * @return int|null signal number or null if no signal was captured
+     */
+    public function getExitSignal(): ?int
+    {
+        return $this->exitsignal;
     }
 
     /**

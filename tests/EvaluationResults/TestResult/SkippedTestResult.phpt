@@ -96,7 +96,7 @@ class TestSkippedTestResult extends Tester\TestCase
         Assert::same(0.0, $res->getUsedCpuTime());
         Assert::same(1.0, $res->getUsedCpuTimeLimit());
         Assert::same("", $res->getMessage());
-        Assert::same("", $res->getJudgeOutput());
+        Assert::same("", $res->getJudgeStdout());
     }
 
 }

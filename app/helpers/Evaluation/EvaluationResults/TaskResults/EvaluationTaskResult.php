@@ -22,7 +22,7 @@ class EvaluationTaskResult extends TaskResult
     public function __construct(array $data)
     {
         parent::__construct($data);
-        list($this->score, $log) = self::parseJudgeOutput($this->output);
+        list($this->score, $this->stdout) = self::parseJudgeOutput($this->stdout);
     }
 
     /**
@@ -40,16 +40,16 @@ class EvaluationTaskResult extends TaskResult
 
     /**
      * Parse given output from judge into score and following log.
-     * @param null|string $judgeOutput
+     * @param null|string $judgeStdout
      * @return array pair of score (?float) and remaining log from judge (?string)
      */
-    public static function parseJudgeOutput(?string $judgeOutput): array
+    public static function parseJudgeOutput(?string $judgeStdout): array
     {
         $score = null;
-        $judgeLog = $judgeOutput;
+        $judgeLog = $judgeStdout;
 
-        if (!empty($judgeOutput)) {
-            $splitted = preg_split('/\s+/', $judgeOutput, 2);
+        if (!empty($judgeStdout)) {
+            $splitted = preg_split('/\s+/', $judgeStdout, 2);
             if (Validators::isNumeric($splitted[0]) === true) {
                 $score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($splitted[0])));
                 $judgeLog = empty($splitted[1]) ? '' : trim($splitted[1]);

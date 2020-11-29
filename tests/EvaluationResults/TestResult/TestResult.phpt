@@ -172,7 +172,7 @@ class TestTestResult extends Tester\TestCase
         Assert::same(2.0, $res->getUsedCpuTimeLimit());
         Assert::same(0.037, $res->getUsedCpuTime());
         Assert::same("This is a random message", $res->getMessage());
-        Assert::equal("0.123", $res->getJudgeOutput());
+        Assert::equal("0.123", $res->getJudgeStdout());
     }
 
     public function testFailedTestBecauseOfLimits()
@@ -212,7 +212,7 @@ class TestTestResult extends Tester\TestCase
         Assert::same(0.02, $res->getUsedCpuTimeLimit());
         Assert::same(0.037, $res->getUsedCpuTime());
         Assert::same("This is a random message", $res->getMessage());
-        Assert::equal("0.123", $res->getJudgeOutput());
+        Assert::equal("0.123", $res->getJudgeStdout());
     }
 
     public function testFailedTestBecauseOfFailedExecution()
