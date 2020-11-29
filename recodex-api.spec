@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.23.1
-%define unmangled_version a90a22cf592d4e31476dfbdb56aee7758db08168
-%define release 1
+%define unmangled_version d978317173e2fcd8286eb047a0ff0d9a36de54eb
+%define release 2
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -38,8 +38,6 @@ curl "https://getcomposer.org/composer-stable.phar" -o composer-stable.phar
 mkdir -p %{buildroot}%{install_dir}
 mkdir -p %{buildroot}/var/log/recodex/core-api
 ln -sf /var/log/recodex/core-api %{buildroot}%{install_dir}/log
-mkdir -p %{buildroot}%{install_dir}/job_config
-mkdir -p %{buildroot}%{install_dir}/uploaded_data
 mkdir -p %{buildroot}%{install_dir}/temp
 cp -r www %{buildroot}%{install_dir}/www
 cp -r app %{buildroot}%{install_dir}/app
@@ -57,10 +55,6 @@ ln -sf %{install_dir}/app/config/config.local.neon %{buildroot}/%{_sysconfdir}/r
 %post
 setfacl -Rd -m u:apache:rwX %{install_dir}/temp
 setfacl -Rd -m u:recodex:rwX %{install_dir}/temp
-setfacl -Rd -m u:apache:rwX %{install_dir}/job_config
-setfacl -Rd -m u:recodex:rwX %{install_dir}/job_config
-setfacl -Rd -m u:apache:rwX %{install_dir}/uploaded_data
-setfacl -Rd -m u:recodex:rwX %{install_dir}/uploaded_data
 setfacl -Rd -m u:apache:rwX /var/log/recodex/core-api
 setfacl -Rd -m u:recodex:rwX /var/log/recodex/core-api
 
@@ -92,8 +86,6 @@ fi
 %dir %attr(-,recodex,recodex) %{_sysconfdir}/recodex/core-api
 %dir %attr(0775,apache,recodex) /var/log/recodex/core-api
 %attr(0775,apache,recodex) %{install_dir}/log
-%dir %attr(0775,apache,recodex) %{install_dir}/job_config
-%dir %attr(0775,apache,recodex) %{install_dir}/uploaded_data
 %dir %attr(0775,apache,recodex) %{install_dir}/temp
 %dir %{install_dir}/app
 
