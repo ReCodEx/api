@@ -36,19 +36,12 @@ class UploadedFiles extends BaseRepository
             return null;
         }
 
-        $query = $this->em->createQuery(
-            "
-      SELECT sub
-      FROM App\Model\Entity\AssignmentSolution sub
-      WHERE IDENTITY(sub.solution) = :solutionId
-    "
-        );
-
-        $query->setParameters(
-            [
-                'solutionId' => $file->getSolution()->getId()
-            ]
-        );
+        $query = $this->em->createQuery("
+            SELECT sub
+            FROM App\Model\Entity\AssignmentSolution sub
+            WHERE IDENTITY(sub.solution) = :solutionId
+        ");
+        $query->setParameters([ 'solutionId' => $file->getSolution()->getId() ]);
 
         $result = $query->getResult();
         if (count($result) === 0) {
@@ -69,19 +62,12 @@ class UploadedFiles extends BaseRepository
             return [];
         }
 
-        $query = $this->em->createQuery(
-            "
-      SELECT ref
-      FROM App\Model\Entity\ReferenceExerciseSolution ref
-      WHERE IDENTITY(ref.solution) = :solutionId
-    "
-        );
-
-        $query->setParameters(
-            [
-                'solutionId' => $file->getSolution()->getId()
-            ]
-        );
+        $query = $this->em->createQuery("
+            SELECT ref
+            FROM App\Model\Entity\ReferenceExerciseSolution ref
+            WHERE IDENTITY(ref.solution) = :solutionId
+        ");
+        $query->setParameters([ 'solutionId' => $file->getSolution()->getId() ]);
 
         $result = $query->getResult();
         if (count($result) === 0) {
@@ -98,60 +84,21 @@ class UploadedFiles extends BaseRepository
      *                          (in a form acceptable by DateTime::modify after prefixing with a "-" sign)
      * @return UploadedFile[]
      */
-    public function findUnused(DateTime $now, $threshold)
+    public function findUnused(DateTime $now, string $threshold)
     {
         $thresholdDate = clone $now;
         $thresholdDate->modify("-" . $threshold);
 
-        $plainFilesQuery = $this->em->createQuery(
-            "
-      SELECT f
-      FROM App\Model\Entity\UploadedFile f
-      WHERE f INSTANCE OF App\Model\Entity\UploadedFile
-      AND f.uploadedAt < :threshold
-    "
-        );
+        // Note that we must use custom TYPE() function here to get the value of discriminator column.
+        // Using INSTANCE OF operator does not work as it matches derived classes as well (not only uploaded files).
+        $query = $this->em->createQuery("
+            SELECT f
+            FROM App\Model\Entity\UploadedFile f
+            WHERE TYPE(f) = 'uploadedfile'
+            AND f.uploadedAt < :threshold
+        ");
+        $query->setParameters([ "threshold" => $thresholdDate ]);
 
-        $plainFilesQuery->setParameters(
-            [
-                "threshold" => $thresholdDate
-            ]
-        );
-
-        $supplementaryFilesQuery = $this->em->createQuery(
-            "
-      SELECT f
-      FROM App\Model\Entity\SupplementaryExerciseFile f
-      WHERE f.exercises IS EMPTY
-      AND f.assignments IS EMPTY
-      AND f.pipelines IS EMPTY
-      AND f.uploadedAt < :threshold
-    "
-        );
-
-        $supplementaryFilesQuery->setParameters(
-            [
-                "threshold" => $thresholdDate
-            ]
-        );
-
-        $attachmentFilesQuery = $this->em->createQuery(
-            "
-      SELECT f
-      FROM App\Model\Entity\AttachmentFile f
-      WHERE f.exercises IS EMPTY
-      AND f.assignments IS EMPTY
-      AND f.uploadedAt < :threshold
-    "
-        );
-
-        $attachmentFilesQuery->setParameters(
-            [
-                "threshold" => $thresholdDate
-            ]
-        );
-
-        return $plainFilesQuery->getResult() + $supplementaryFilesQuery->getResult() + $attachmentFilesQuery->getResult(
-        );
+        return $query->getResult();
     }
 }

@@ -283,6 +283,7 @@ services:
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
+  - App\Console\CleanupExercisesFiles
   - App\Console\CleanupWorkerTmpFiles
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
   - App\Console\GeneralStatsNotification
@@ -461,6 +462,7 @@ doctrine:
   dql:
     string:
       coalesce_sub: DoctrineExtensions\Query\Functions\CoalesceSubselectsFunction
+      type: DoctrineExtensions\Query\Functions\TypeFunction
 
 fixtures:
   locale: "en_US"

@@ -2,27 +2,26 @@
 
 namespace App\Console;
 
-use App\Helpers\UploadsConfig;
 use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\FileStorageException;
-use App\Model\Repository\UploadedFiles;
-use DateTime;
+use App\Model\Repository\SupplementaryExerciseFiles;
+use App\Model\Repository\AttachmentFiles;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tracy\ILogger;
 
-class CleanupUploads extends Command
+class CleanupExercisesFiles extends Command
 {
     /**
-     * @var UploadsConfig
+     * @var SupplementaryExerciseFiles
      */
-    private $uploadsConfig;
+    private $supplementaryFiles;
 
     /**
-     * @var UploadedFiles
+     * @var AttachmentFiles
      */
-    private $uploadedFiles;
+    private $attachmentFiles;
 
     /**
      * @var ILogger
@@ -36,36 +35,44 @@ class CleanupUploads extends Command
 
 
     public function __construct(
-        UploadsConfig $config,
-        UploadedFiles $uploadedFiles,
+        SupplementaryExerciseFiles $supplementaryFiles,
+        AttachmentFiles $attachmentFiles,
         ILogger $logger,
         FileStorageManager $fileStorage
     ) {
         parent::__construct();
-        $this->uploadsConfig = $config;
-        $this->uploadedFiles = $uploadedFiles;
+        $this->supplementaryFiles = $supplementaryFiles;
+        $this->attachmentFiles = $attachmentFiles;
         $this->logger = $logger;
         $this->fileStorage = $fileStorage;
     }
 
     protected function configure()
     {
-        $this->setName('db:cleanup:uploads')
-            ->setDescription('Remove unused uploaded files and corresponding DB records.');
+        $this->setName('db:cleanup:exercise-files')
+            ->setDescription('Remove unused supplementary and attachment files (only DB records are removed in case of supplementary files).');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    private function removeUnusedSupplementaryFiles(OutputInterface $output)
     {
-        $now = new DateTime();
-        $threshold = $this->uploadsConfig->getRemovalThreshold();
-        $unused = $this->uploadedFiles->findUnused($now, $threshold);
+        $unused = $this->supplementaryFiles->findUnused();
+        foreach ($unused as $file) {
+            $this->supplementaryFiles->remove($file);
+        }
+
+        $output->writeln(sprintf("Removed %d unused supplementary file records.", count($unused)));
+    }
+
+    private function removeUnusedAttachmentFiles(OutputInterface $output)
+    {
+        $unused = $this->attachmentFiles->findUnused();
         $deleted = 0;
         $missing = 0;
         $errors = 0;
 
         foreach ($unused as $file) {
             try {
-                if (!$this->fileStorage->deleteUploadedFile($file)) {
+                if (!$this->fileStorage->deleteAttachmentFile($file)) {
                     $id = $file->getId();
                     $name = $file->getName();
                     $this->logger->log("Uploaded file '$name' ($id) has been already deleted.", ILogger::WARNING);
@@ -77,21 +84,26 @@ class CleanupUploads extends Command
                 $this->logger->log($e->getMessage(), ILogger::EXCEPTION);
                 ++$errors;
             }
-            $this->uploadedFiles->remove($file);
+            $this->attachmentFiles->remove($file);
         }
 
         $output->writeln(sprintf(
-            "Removed %d unused file records, %d actual files deleted from the storage.",
+            "Removed %d unused attachment file records, %d actual files deleted from the storage.",
             count($unused),
             $deleted
         ));
-
         if ($missing) {
             $output->writeln("Total $missing files were missing (only DB records have been deleted).");
         }
         if ($errors) {
             $output->writeln("Total $errors errors encountered and duly logged.");
         }
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $this->removeUnusedSupplementaryFiles($output);
+        $this->removeUnusedAttachmentFiles($output);
         return 0;
     }
 }
