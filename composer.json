@@ -50,7 +50,7 @@
     "kdyby/console": "master@dev",
     "gedmo/doctrine-extensions": "@stable",
     "doctrine/orm": "^2.7",
-    "doctrine/dbal": "^2.12",
+    "doctrine/dbal": "~2.9.0",
     "doctrine/migrations": "^2.3",
     "doctrine/common": "^2.13",
     "guzzlehttp/guzzle": "~6.5",
