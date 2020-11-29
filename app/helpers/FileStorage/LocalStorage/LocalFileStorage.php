@@ -59,12 +59,12 @@ class LocalFileStorage implements IFileStorage
      */
     private static function normalizePath(string $path): string
     {
-        if (Strings::contains($path, '..')) {
-            throw new FileStorageException("Substring '..' must not be present in any path.", $path);
-        }
         $path = preg_replace('@/[.]/@', '/', $path);
         $path = preg_replace('@[/\\\\]+@', '/', $path);
         $path = preg_replace('@(^[.]/)|(/[.]?$)@', '', $path);
+        if (Strings::startsWith($path, '../') || Strings::contains($path, '/../') || Strings::endsWith($path, '/..')) {
+            throw new FileStorageException("Substring '..' must not be present in any path.", $path);
+        }
         return $path;
     }
 
