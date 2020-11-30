@@ -150,7 +150,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $submissionsCountLimit = 32;
         $allowSecondDeadline = true;
         $canViewLimitRatios = false;
-        $canViewJudgeOutputs = true;
+        $canViewJudgeStdout = true;
+        $canViewJudgeStderr = false;
         $secondDeadline = (new \DateTime())->getTimestamp();
         $maxPointsBeforeSecondDeadline = 543;
         $visibleFrom = (new \DateTime())->getTimestamp();
@@ -171,7 +172,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'submissionsCountLimit' => $submissionsCountLimit,
                 'allowSecondDeadline' => $allowSecondDeadline,
                 'canViewLimitRatios' => $canViewLimitRatios,
-                'canViewJudgeOutputs' => $canViewJudgeOutputs,
+                'canViewJudgeStdout' => $canViewJudgeStdout,
+                'canViewJudgeStderr' => $canViewJudgeStderr,
                 'secondDeadline' => $secondDeadline,
                 'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
                 'visibleFrom' => $visibleFrom,
@@ -196,7 +198,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
         Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
         Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
-        Assert::equal($canViewJudgeOutputs, $updatedAssignment["canViewJudgeOutputs"]);
+        Assert::equal($canViewJudgeStdout, $updatedAssignment["canViewJudgeStdout"]);
+        Assert::equal($canViewJudgeStderr, $updatedAssignment["canViewJudgeStderr"]);
         Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
         Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
         Assert::equal($visibleFrom, $updatedAssignment["visibleFrom"]);
@@ -246,7 +249,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'submissionsCountLimit' => 10,
                 'allowSecondDeadline' => false,
                 'canViewLimitRatios' => false,
-                'canViewJudgeOutputs' => false,
+                'canViewJudgeStdout' => false,
+                'canViewJudgeStderr' => false,
                 'isBonus' => false,
                 'pointsPercentualThreshold' => 50.0,
                 'solutionFilesLimit' => null,
@@ -290,7 +294,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'submissionsCountLimit' => 32,
                 'allowSecondDeadline' => true,
                 'canViewLimitRatios' => false,
-                'canViewJudgeOutputs' => false,
+                'canViewJudgeStdout' => false,
+                'canViewJudgeStderr' => false,
                 'secondDeadline' => (new \DateTime())->getTimestamp(),
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
@@ -332,7 +337,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'submissionsCountLimit' => 32,
                 'allowSecondDeadline' => true,
                 'canViewLimitRatios' => false,
-                'canViewJudgeOutputs' => false,
+                'canViewJudgeStdout' => false,
+                'canViewJudgeStderr' => false,
                 'secondDeadline' => (new \DateTime())->getTimestamp(),
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,

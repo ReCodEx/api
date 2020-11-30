@@ -74,7 +74,7 @@ class TestTestResult extends Tester\TestCase
     static $evalRes = [
         "task-id" => "X",
         "status" => TaskResult::STATUS_OK,
-        "output" => ["stdout" => "0.123"]
+        "output" => ["stdout" => "0.123\nstdlog", "stderr" => "errlog"]
     ];
 
     static $execRes = [
@@ -172,7 +172,8 @@ class TestTestResult extends Tester\TestCase
         Assert::same(2.0, $res->getUsedCpuTimeLimit());
         Assert::same(0.037, $res->getUsedCpuTime());
         Assert::same("This is a random message", $res->getMessage());
-        Assert::equal("0.123", $res->getJudgeStdout());
+        Assert::equal("stdlog", $res->getJudgeStdout());
+        Assert::equal("errlog", $res->getJudgeStderr());
     }
 
     public function testFailedTestBecauseOfLimits()
@@ -212,7 +213,8 @@ class TestTestResult extends Tester\TestCase
         Assert::same(0.02, $res->getUsedCpuTimeLimit());
         Assert::same(0.037, $res->getUsedCpuTime());
         Assert::same("This is a random message", $res->getMessage());
-        Assert::equal("0.123", $res->getJudgeStdout());
+        Assert::equal("stdlog", $res->getJudgeStdout());
+        Assert::equal("errlog", $res->getJudgeStderr());
     }
 
     public function testFailedTestBecauseOfFailedExecution()
