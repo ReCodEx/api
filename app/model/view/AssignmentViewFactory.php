@@ -61,7 +61,8 @@ class AssignmentViewFactory
             "runtimeEnvironmentIds" => $assignment->getAllRuntimeEnvironmentsIds(),
             "disabledRuntimeEnvironmentIds" => $assignment->getDisabledRuntimeEnvironmentsIds(),
             "canViewLimitRatios" => $assignment->getCanViewLimitRatios(),
-            "canViewJudgeOutputs" => $assignment->getCanViewJudgeOutputs(),
+            "canViewJudgeStdout" => $assignment->getCanViewJudgeStdout(),
+            "canViewJudgeStderr" => $assignment->getCanViewJudgeStderr(),
             "isBonus" => $assignment->isBonus(),
             "pointsPercentualThreshold" => $assignment->getPointsPercentualThreshold() * 100,
             "exerciseSynchronizationInfo" => [

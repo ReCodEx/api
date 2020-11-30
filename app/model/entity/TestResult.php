@@ -153,8 +153,12 @@ class TestResult
      */
     protected $judgeStderr;
 
-    public function getData(bool $canViewLimits, bool $canViewValues, bool $canViewJudgeOutput)
-    {
+    public function getData(
+        bool $canViewLimits,
+        bool $canViewValues,
+        bool $canViewJudgeStdout,
+        bool $canViewJudgeStderr
+    ) {
         $wallTime = null;
         $wallTimeRatio = null;
         $wallTimeLimit = null;
@@ -164,7 +168,8 @@ class TestResult
         $memory = null;
         $memoryRatio = null;
         $memoryLimit = null;
-        $judgeLog = null;
+        $judgeLogStdout = null;
+        $judgeLogStderr = null;
 
         if ($canViewLimits) {
             $wallTimeLimit = $this->usedWallTimeLimit;
@@ -183,9 +188,11 @@ class TestResult
             $cpuTime = $this->usedCpuTime;
             $memory = $this->usedMemory;
         }
-        if ($canViewJudgeOutput) {
-            // FIXME
-            $judgeLog = $this->judgeStdout;
+        if ($canViewJudgeStdout) {
+            $judgeLogStdout = $this->judgeStdout;
+        }
+        if ($canViewJudgeStderr) {
+            $judgeLogStderr = $this->judgeStderr;
         }
 
         return [
@@ -209,7 +216,8 @@ class TestResult
             "wallTimeLimit" => $wallTimeLimit,
             "cpuTimeLimit" => $cpuTimeLimit,
             "memoryLimit" => $memoryLimit,
-            "judgeLog" => $judgeLog
+            "judgeLogStdout" => $judgeLogStdout,
+            "judgeLogStderr" => $judgeLogStderr,
         ];
     }
 }

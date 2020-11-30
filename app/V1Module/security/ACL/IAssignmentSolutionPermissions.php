@@ -29,7 +29,9 @@ interface IAssignmentSolutionPermissions
 
     function canViewEvaluationValues(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewEvaluationJudgeOutput(AssignmentSolution $assignmentSolution): bool;
+    function canViewEvaluationJudgeStdout(AssignmentSolution $assignmentSolution): bool;
+
+    function canViewEvaluationJudgeStderr(AssignmentSolution $assignmentSolution): bool;
 
     function canDeleteEvaluation(AssignmentSolution $assignmentSolution): bool;
 

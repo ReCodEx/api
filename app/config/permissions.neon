@@ -369,7 +369,8 @@ permissions:
           - viewEvaluation
           - viewEvaluationDetails
           - viewEvaluationValues
-          - viewEvaluationJudgeOutput
+          - viewEvaluationJudgeStdout
+          - viewEvaluationJudgeStderr
           - viewResubmissions
 
     - allow: true
@@ -412,11 +413,20 @@ permissions:
     - allow: true
       resource: assignmentSolution
       actions:
-          - viewEvaluationJudgeOutput
+          - viewEvaluationJudgeStdout
       conditions:
           or:
               - assignmentSolution.isSupervisor
-              - assignmentSolution.areJudgeOutputsPublic
+              - assignmentSolution.areJudgeStdoutsPublic
+
+    - allow: true
+      resource: assignmentSolution
+      actions:
+          - viewEvaluationJudgeStderr
+      conditions:
+          or:
+              - assignmentSolution.isSupervisor
+              - assignmentSolution.areJudgeStderrsPublic
 
     #######################
     # Comment permissions #
