@@ -87,11 +87,15 @@ class SolutionEvaluation
      */
     protected $testResults;
 
-    public function getData(bool $canViewLimits, bool $canViewValues = false, bool $canViewJudgeOutput = false)
-    {
+    public function getData(
+        bool $canViewLimits,
+        bool $canViewValues = false,
+        bool $canViewJudgeStdout = false,
+        bool $canViewJudgeStderr = false
+    ) {
         $testResults = $this->testResults->map(
-            function (TestResult $res) use ($canViewLimits, $canViewValues, $canViewJudgeOutput) {
-                return $res->getData($canViewLimits, $canViewValues, $canViewJudgeOutput);
+            function (TestResult $res) use ($canViewLimits, $canViewValues, $canViewJudgeStdout, $canViewJudgeStderr) {
+                return $res->getData($canViewLimits, $canViewValues, $canViewJudgeStdout, $canViewJudgeStderr);
             }
         )->getValues();
 

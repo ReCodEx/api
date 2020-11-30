@@ -9,9 +9,9 @@ use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use DateTime;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Gedmo\Mapping\Annotation as Gedmo;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -29,7 +29,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
  * @method DateTime|null getVisibleFrom()
- * @method bool getCanViewJudgeOutputs()
+ * @method bool getCanViewJudgeStdout()
+ * @method bool getCanViewJudgeStderr()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setMaxPointsBeforeFirstDeadline(int $points)
@@ -39,7 +40,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setCanViewLimitRatios(bool $canView)
  * @method setPointsPercentualThreshold(float $threshold)
  * @method setVisibleFrom(?DateTime $visibleFrom)
- * @method setCanViewJudgeOutputs(bool $canView)
+ * @method setCanViewJudgeStdout(bool $canView)
+ * @method setCanViewJudgeStderr(bool $canView)
  */
 class Assignment extends AssignmentBase implements IExercise
 {
@@ -60,7 +62,8 @@ class Assignment extends AssignmentBase implements IExercise
         bool $isBonus = false,
         $pointsPercentualThreshold = 0,
         ?DateTime $visibleFrom = null,
-        bool $canViewJudgeOutputs = false
+        bool $canViewJudgeStdout = false,
+        bool $canViewJudgeStderr = false
     ) {
         $this->exercise = $exercise;
         $this->group = $group;
@@ -84,7 +87,8 @@ class Assignment extends AssignmentBase implements IExercise
         $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
         $this->localizedAssignments = new ArrayCollection();
         $this->canViewLimitRatios = $canViewLimitRatios;
-        $this->canViewJudgeOutputs = $canViewJudgeOutputs;
+        $this->canViewJudgeStdout = $canViewJudgeStdout;
+        $this->canViewJudgeStderr = $canViewJudgeStderr;
         $this->version = 1;
         $this->isBonus = $isBonus;
         $this->pointsPercentualThreshold = $pointsPercentualThreshold;
@@ -179,7 +183,7 @@ class Assignment extends AssignmentBase implements IExercise
     public function isVisibleToStudents()
     {
         // Is public unconditionally, or visible from date has already passed
-        return $this->isPublic() && (!$this->visibleFrom || $this->visibleFrom <= (new \DateTime()));
+        return $this->isPublic() && (!$this->visibleFrom || $this->visibleFrom <= (new DateTime()));
     }
 
     /**
@@ -197,10 +201,10 @@ class Assignment extends AssignmentBase implements IExercise
      */
     protected $secondDeadline;
 
-    public function isAfterDeadline(\DateTime $now = null)
+    public function isAfterDeadline(DateTime $now = null)
     {
         if ($now === null) {
-            $now = new \DateTime();
+            $now = new DateTime();
         }
 
         if ($this->allowSecondDeadline) {
@@ -250,7 +254,12 @@ class Assignment extends AssignmentBase implements IExercise
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $canViewJudgeOutputs;
+    protected $canViewJudgeStdout;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $canViewJudgeStderr;
 
     /**
      * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")

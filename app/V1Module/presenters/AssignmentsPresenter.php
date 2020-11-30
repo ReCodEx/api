@@ -269,7 +269,8 @@ class AssignmentsPresenter extends BasePresenter
         $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
         $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
-        $assignment->setCanViewJudgeOutputs(filter_var($req->getPost("canViewJudgeOutputs"), FILTER_VALIDATE_BOOLEAN));
+        $assignment->setCanViewJudgeStdout(filter_var($req->getPost("canViewJudgeStdout"), FILTER_VALIDATE_BOOLEAN));
+        $assignment->setCanViewJudgeStderr(filter_var($req->getPost("canViewJudgeStderr"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setPointsPercentualThreshold($threshold);
         $assignment->setSolutionFilesLimit($req->getPost("solutionFilesLimit"));

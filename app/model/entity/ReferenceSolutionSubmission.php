@@ -50,7 +50,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     {
         $evaluationData = null;
         if ($this->evaluation !== null) {
-            $evaluationData = $this->evaluation->getData(true, true, true);
+            $evaluationData = $this->evaluation->getData(true, true, true, true);
         }
 
         $failure = $this->getFailure();
