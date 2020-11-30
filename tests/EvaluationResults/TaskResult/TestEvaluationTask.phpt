@@ -53,10 +53,12 @@ class TestEvaluationTask extends Tester\TestCase
     public function testParsingParams()
     {
         $result = new EvaluationTaskResult(
-            ['task-id' => 'ABC', 'status' => 'XYZ', 'output' => ["stdout" => "123", "stderr" => "456"]]
+            ['task-id' => 'ABC', 'status' => 'XYZ', 'output' => ["stdout" => "1.0\n123", "stderr" => "456"]]
         );
         Assert::same("ABC", $result->getId());
         Assert::same("XYZ", $result->getStatus());
+        Assert::equal("123", $result->getStdout());
+        Assert::equal("456", $result->getStderr());
         Assert::equal("123\n456", $result->getOutput());
     }
 

@@ -329,7 +329,7 @@ class TestEvaluationResults extends Tester\TestCase
             ]
         ];
 
-        $evalRes = ["task-id" => "Y", "status" => "OK", "output" => ["stdout" => "0.456"]];
+        $evalRes = ["task-id" => "Y", "status" => "OK", "output" => ["stdout" => "0.456\nbla bla"]];
         $results = new EvaluationResults(
             [
                 "job-id" => "student_bla bla bla",
@@ -346,7 +346,7 @@ class TestEvaluationResults extends Tester\TestCase
         Assert::equal(true, $testResult->isMemoryOK());
         Assert::equal(true, $testResult->isWallTimeOK());
         Assert::equal(true, $testResult->didExecutionMeetLimits());
-        Assert::equal("0.456", $testResult->getJudgeStdout());
+        Assert::equal("bla bla", $testResult->getJudgeStdout());
         Assert::equal(0.456, $testResult->getScore());
 
         Assert::equal(1, count($results->getTestsResults()));

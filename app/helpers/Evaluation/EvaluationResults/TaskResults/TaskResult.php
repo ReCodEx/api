@@ -16,11 +16,11 @@ class TaskResult
     public const MAX_SCORE = 1.0;
     public const MIN_SCORE = 0.0;
 
-    private const TASK_ID_KEY = "task-id";
-    private const STATUS_KEY = "status";
-    private const OUTPUT_KEY = "output";
-    private const OUTPUT_STDOUT_KEY = "stdout";
-    private const OUTPUT_STDERR_KEY = "stderr";
+    protected const TASK_ID_KEY = "task-id";
+    protected const STATUS_KEY = "status";
+    protected const OUTPUT_KEY = "output";
+    protected const OUTPUT_STDOUT_KEY = "stdout";
+    protected const OUTPUT_STDERR_KEY = "stderr";
 
     /** @var array Raw data */
     protected $data;
@@ -62,10 +62,10 @@ class TaskResult
 
         if (isset($data[self::OUTPUT_KEY])) {
             if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY])) {
-                $this->stdout .= $data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY];
+                $this->stdout = $data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY];
             }
             if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY])) {
-                $this->stderr .= $data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY];
+                $this->stderr = $data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY];
             }
         }
     }
