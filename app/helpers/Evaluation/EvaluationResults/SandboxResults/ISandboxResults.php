@@ -33,13 +33,13 @@ interface ISandboxResults
     public function getUsedMemory(): int;
 
     /**
-     * Get exit code of examined program
+     * Get exit code of the examined program
      * @return int The exit code for the executable
      */
     public function getExitCode(): int;
 
     /**
-     * Get exit signal that examined program
+     * Get exit signal that terminated the program
      * @return int|null The signal number or null if the program exitted normally
      */
     public function getExitSignal(): ?int;
