@@ -6,6 +6,7 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\SubmissionFailure;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Helpers\EvaluationStatus\EvaluationStatus;
+use App\Model\View\Helpers\SubmissionViewOptions;
 
 /**
  * Factory for assignment solution submission views.
@@ -31,24 +32,13 @@ class AssignmentSolutionSubmissionViewFactory
      */
     public function getSubmissionData(AssignmentSolutionSubmission $submission)
     {
-        // Get permission details
-        $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($submission->getAssignmentSolution());
-        $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($submission->getAssignmentSolution());
-        $canViewJudgeStdout = $this->assignmentSolutionAcl->canViewEvaluationJudgeStdout(
-            $submission->getAssignmentSolution()
-        );
-        $canViewJudgeStderr = $this->assignmentSolutionAcl->canViewEvaluationJudgeStderr(
-            $submission->getAssignmentSolution()
-        );
+        $solution = $submission->getAssignmentSolution();
 
         $evaluationData = null;
         if ($submission->getEvaluation() !== null) {
-            $evaluationData = $submission->getEvaluation()->getData(
-                $canViewDetails,
-                $canViewValues,
-                $canViewJudgeStdout,
-                $canViewJudgeStderr
-            );
+            $viewOptions = new SubmissionViewOptions();
+            $viewOptions->initialize($solution, $this->assignmentSolutionAcl);
+            $evaluationData = $submission->getEvaluation()->getDataForView($viewOptions);
         }
 
         $failure = $submission->getFailure();
@@ -60,7 +50,7 @@ class AssignmentSolutionSubmissionViewFactory
 
         return [
             "id" => $submission->getId(),
-            "assignmentSolutionId" => $submission->getAssignmentSolution()->getId(),
+            "assignmentSolutionId" => $solution->getId(),
             "evaluationStatus" => EvaluationStatus::getStatus($submission),
             "isCorrect" => $submission->isCorrect(),
             "evaluation" => $evaluationData,

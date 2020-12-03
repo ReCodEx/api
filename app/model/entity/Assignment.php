@@ -31,6 +31,7 @@ use DateTime;
  * @method DateTime|null getVisibleFrom()
  * @method bool getCanViewJudgeStdout()
  * @method bool getCanViewJudgeStderr()
+ * @method bool getMergeJudgeLogs()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setMaxPointsBeforeFirstDeadline(int $points)
@@ -89,6 +90,7 @@ class Assignment extends AssignmentBase implements IExercise
         $this->canViewLimitRatios = $canViewLimitRatios;
         $this->canViewJudgeStdout = $canViewJudgeStdout;
         $this->canViewJudgeStderr = $canViewJudgeStderr;
+        $this->mergeJudgeLogs = $exercise->getMergeJudgeLogs();
         $this->version = 1;
         $this->isBonus = $isBonus;
         $this->pointsPercentualThreshold = $pointsPercentualThreshold;
@@ -260,6 +262,11 @@ class Assignment extends AssignmentBase implements IExercise
      * @ORM\Column(type="boolean")
      */
     protected $canViewJudgeStderr;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $mergeJudgeLogs;
 
     /**
      * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")
@@ -438,6 +445,8 @@ class Assignment extends AssignmentBase implements IExercise
             // cannot sync exercise was deleted
             return;
         }
+
+        $this->mergeJudgeLogs = $exercise->getMergeJudgeLogs();
 
         $this->hardwareGroups->clear();
         foreach ($exercise->getHardwareGroups() as $group) {

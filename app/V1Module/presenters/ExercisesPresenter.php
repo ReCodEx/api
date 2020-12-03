@@ -284,15 +284,21 @@ class ExercisesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
-     * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
+     * @Param(type="post", name="difficulty",
+     *   description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
      * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
-     * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=false)
-     * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=false)
-     * @Param(type="post", name="configurationType", description="Identifies the way the evaluation of the exercise is configured", validation="string", required=false)
+     * @Param(type="post", name="isPublic", validation="bool", required=false,
+     *   description="Exercise can be public or private")
+     * @Param(type="post", name="isLocked", validation="bool", required=false,
+     *   description="If true, the exercise cannot be assigned")
+     * @Param(type="post", name="configurationType", validation="string", required=false,
+     *   description="Identifies the way the evaluation of the exercise is configured")
      * @Param(type="post", name="solutionFilesLimit", validation="numericint|null",
      *   description="Maximal number of files in a solution being submitted (default for assignments)")
      * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
      *   description="Maximal size (bytes) of all files in a solution being submitted (default for assignments)")
+     * @Param(type="post", name="mergeJudgeLogs", validation="bool",
+     *   description="Initial value for assignments. If true, judge stdout and stderr will be merged in one log - stdout")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
@@ -302,6 +308,7 @@ class ExercisesPresenter extends BasePresenter
         $difficulty = $req->getPost("difficulty");
         $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
         $isLocked = filter_var($req->getPost("isLocked"), FILTER_VALIDATE_BOOLEAN);
+        $mergeJudgeLogs = filter_var($req->getPost("mergeJudgeLogs"), FILTER_VALIDATE_BOOLEAN);
 
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
@@ -321,6 +328,7 @@ class ExercisesPresenter extends BasePresenter
         $exercise->setLocked($isLocked);
         $exercise->setSolutionFilesLimit($req->getPost("solutionFilesLimit"));
         $exercise->setSolutionSizeLimit($req->getPost("solutionSizeLimit"));
+        $exercise->setMergeJudgeLogs($mergeJudgeLogs);
 
         $configurationType = $req->getPost("configurationType");
         if ($configurationType) {

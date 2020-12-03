@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\EvaluationResults as ER;
+use App\Model\View\Helpers\SubmissionViewOptions;
 
 /**
  * @ORM\Entity
@@ -153,12 +154,8 @@ class TestResult
      */
     protected $judgeStderr;
 
-    public function getData(
-        bool $canViewLimits,
-        bool $canViewValues,
-        bool $canViewJudgeStdout,
-        bool $canViewJudgeStderr
-    ) {
+    public function getDataForView(SubmissionViewOptions $options)
+    {
         $wallTime = null;
         $wallTimeRatio = null;
         $wallTimeLimit = null;
@@ -171,7 +168,7 @@ class TestResult
         $judgeLogStdout = null;
         $judgeLogStderr = null;
 
-        if ($canViewLimits) {
+        if ($options->canViewDetails()) {
             $wallTimeLimit = $this->usedWallTimeLimit;
             $cpuTimeLimit = $this->usedCpuTimeLimit;
             $memoryLimit = $this->usedMemoryLimit;
@@ -183,15 +180,19 @@ class TestResult
             $memoryRatio = $this->usedMemoryLimit == 0 ? 0.0 :
                 floatval($this->usedMemory) / floatval($this->usedMemoryLimit);
         }
-        if ($canViewValues) {
+        if ($options->canViewValues()) {
             $wallTime = $this->usedWallTime;
             $cpuTime = $this->usedCpuTime;
             $memory = $this->usedMemory;
         }
-        if ($canViewJudgeStdout) {
+        if ($options->canViewJudgeStdout()) {
             $judgeLogStdout = $this->judgeStdout;
+            if ($options->mergeJudgeLogs() && $this->judgeStderr) {
+                // append stderr right after stdout
+                $judgeLogStdout .= ($judgeLogStdout ? "\n" : '') . $this->judgeStderr;
+            }
         }
-        if ($canViewJudgeStderr) {
+        if ($options->canViewJudgeStderr() && !$options->mergeJudgeLogs()) {
             $judgeLogStderr = $this->judgeStderr;
         }
 

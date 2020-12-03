@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use App\Helpers\EvaluationStatus as ES;
 use App\Helpers\EvaluationResults as ER;
+use App\Model\View\Helpers\SubmissionViewOptions;
 
 /**
  * @ORM\Entity
@@ -50,7 +51,8 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     {
         $evaluationData = null;
         if ($this->evaluation !== null) {
-            $evaluationData = $this->evaluation->getData(true, true, true, true);
+            // default SubmissionViewOptions enable all data in the view
+            $evaluationData = $this->evaluation->getDataForView(new SubmissionViewOptions());
         }
 
         $failure = $this->getFailure();
