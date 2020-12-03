@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Helpers\EvaluationResults\EvaluationResults;
+use App\Model\View\Helpers\SubmissionViewOptions;
 use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -87,15 +88,11 @@ class SolutionEvaluation
      */
     protected $testResults;
 
-    public function getData(
-        bool $canViewLimits,
-        bool $canViewValues = false,
-        bool $canViewJudgeStdout = false,
-        bool $canViewJudgeStderr = false
-    ) {
+    public function getDataForView(SubmissionViewOptions $options)
+    {
         $testResults = $this->testResults->map(
-            function (TestResult $res) use ($canViewLimits, $canViewValues, $canViewJudgeStdout, $canViewJudgeStderr) {
-                return $res->getData($canViewLimits, $canViewValues, $canViewJudgeStdout, $canViewJudgeStderr);
+            function (TestResult $res) use ($options) {
+                return $res->getDataForView($options);
             }
         )->getValues();
 

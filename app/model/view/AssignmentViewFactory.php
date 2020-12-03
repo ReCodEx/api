@@ -63,6 +63,7 @@ class AssignmentViewFactory
             "canViewLimitRatios" => $assignment->getCanViewLimitRatios(),
             "canViewJudgeStdout" => $assignment->getCanViewJudgeStdout(),
             "canViewJudgeStderr" => $assignment->getCanViewJudgeStderr(),
+            "mergeJudgeLogs" => $assignment->getMergeJudgeLogs(),
             "isBonus" => $assignment->isBonus(),
             "pointsPercentualThreshold" => $assignment->getPointsPercentualThreshold() * 100,
             "exerciseSynchronizationInfo" => [
@@ -105,7 +106,10 @@ class AssignmentViewFactory
                 ],
                 "runtimeEnvironments" => [
                     "upToDate" => $assignment->areRuntimeEnvironmentsInSync()
-                ]
+                ],
+                "mergeJudgeLogs" => [
+                    "upToDate" => $exercise && $assignment->getMergeJudgeLogs() === $exercise->getMergeJudgeLogs(),
+                ],
             ],
             "solutionFilesLimit" => $assignment->getSolutionFilesLimit(),
             "solutionSizeLimit" => $assignment->getSolutionSizeLimit(),

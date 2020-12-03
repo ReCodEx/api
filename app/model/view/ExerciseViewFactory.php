@@ -37,6 +37,7 @@ class ExerciseViewFactory
             "forkedFrom" => $forkedFrom ? $forkedFrom->getId() : null,
             "authorId" => $exercise->getAuthor() ? $exercise->getAuthor()->getId() : null,
             "groupsIds" => $exercise->getGroupsIds(),
+            "mergeJudgeLogs" => $exercise->getMergeJudgeLogs(),
             "isPublic" => $exercise->isPublic(),
             "isLocked" => $exercise->isLocked(),
             "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC

@@ -377,6 +377,7 @@ class TestExercisesPresenter extends Tester\TestCase
                 ],
                 'solutionFilesLimit' => 3,
                 'solutionSizeLimit' => 42,
+                'mergeJudgeLogs' => false,
             ]
         );
         $response = $this->presenter->run($request);

@@ -217,6 +217,21 @@ class Exercise implements IExercise
     protected $tags;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $mergeJudgeLogs;
+
+    public function getMergeJudgeLogs(): bool
+    {
+        return $this->mergeJudgeLogs;
+    }
+
+    public function setMergeJudgeLogs(bool $value): void
+    {
+        $this->mergeJudgeLogs = $value;
+    }
+
+    /**
      * Constructor
      * @param int $version
      * @param string $difficulty
@@ -290,6 +305,7 @@ class Exercise implements IExercise
         $this->solutionSizeLimit = $solutionSizeLimit;
         $this->validationError = "";
         $this->tags = new ArrayCollection();
+        $this->mergeJudgeLogs = true;
     }
 
     public static function create(
