@@ -37,7 +37,7 @@ class AssignmentSolutionSubmissionViewFactory
         $evaluationData = null;
         if ($submission->getEvaluation() !== null) {
             $viewOptions = new SubmissionViewOptions();
-            $viewOptions->initialize($solution, $this->assignmentSolutionAcl);
+            $viewOptions->initializeAssignment($solution, $this->assignmentSolutionAcl);
             $evaluationData = $submission->getEvaluation()->getDataForView($viewOptions);
         }
 

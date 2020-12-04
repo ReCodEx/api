@@ -51,8 +51,12 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     {
         $evaluationData = null;
         if ($this->evaluation !== null) {
-            // default SubmissionViewOptions enable all data in the view
-            $evaluationData = $this->evaluation->getDataForView(new SubmissionViewOptions());
+            $options = new SubmissionViewOptions();
+            $exercise = $this->referenceSolution->getExercise();
+            if ($exercise) {
+                $options->initializeExercise($exercise);
+            }
+            $evaluationData = $this->evaluation->getDataForView($options);
         }
 
         $failure = $this->getFailure();
