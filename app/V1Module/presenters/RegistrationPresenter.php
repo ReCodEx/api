@@ -22,6 +22,7 @@ use App\Helpers\RegistrationConfig;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use Nette\Http\IResponse;
+use Nette\Security\Passwords;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -89,6 +90,12 @@ class RegistrationPresenter extends BasePresenter
      * @inject
      */
     public $registrationConfig;
+
+    /**
+     * @var Passwords
+     * @inject
+     */
+    public $passwordsService;
 
     /**
      * Get an instance by its ID.
@@ -172,7 +179,7 @@ class RegistrationPresenter extends BasePresenter
             $instance
         );
 
-        Login::createLogin($user, $email, $password);
+        Login::createLogin($user, $email, $password, $this->passwordsService);
         $this->users->persist($user);
 
         // email verification

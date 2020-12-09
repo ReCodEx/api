@@ -117,10 +117,13 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         /** @var Nette\Application\Responses\JsonResponse $response */
         $response = $this->presenter->run(
             new Nette\Application\Request(
-                "V1:ExerciseFiles", "POST", [
+                "V1:ExerciseFiles",
+                "POST",
+                [
                 "action" => 'uploadSupplementaryFiles',
                 'id' => $exercise->id
-            ], [
+                ],
+                [
                     'files' => $files
                 ]
             )
@@ -176,10 +179,13 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             function () use ($exercise, $files) {
                 $this->presenter->run(
                     new Nette\Application\Request(
-                        "V1:ExerciseFiles", "POST", [
+                        "V1:ExerciseFiles",
+                        "POST",
+                        [
                         "action" => 'uploadSupplementaryFiles',
                         'id' => $exercise->id
-                    ], [
+                        ],
+                        [
                             'files' => $files
                         ]
                     )
@@ -229,10 +235,13 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             function () use ($exercise, $files) {
                 $this->presenter->run(
                     new Nette\Application\Request(
-                        "V1:ExerciseFiles", "POST", [
+                        "V1:ExerciseFiles",
+                        "POST",
+                        [
                         "action" => 'uploadSupplementaryFiles',
                         'id' => $exercise->id
-                    ], [
+                        ],
+                        [
                             'files' => $files
                         ]
                     )
@@ -247,7 +256,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         // prepare files into exercise
-        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
         $exercise = current(array_filter(
             $this->presenter->exercises->findAll(),
             function ($exercise) {
@@ -277,7 +286,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->supplementaryFiles->flush();
 
         $request = new Nette\Application\Request(
-            "V1:ExerciseFiles", 'GET',
+            "V1:ExerciseFiles",
+            'GET',
             ['action' => 'getSupplementaryFiles', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
@@ -312,7 +322,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         Assert::count($filesCount + 1, $exercise->getSupplementaryEvaluationFiles());
 
         $request = new Nette\Application\Request(
-            "V1:ExerciseFiles", 'DELETE',
+            "V1:ExerciseFiles",
+            'DELETE',
             [
                 'action' => 'deleteSupplementaryFile',
                 'id' => $exercise->getId(),
@@ -361,7 +372,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         // prepare files into exercise
-        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
         $exercise = $this->presenter->exercises->searchByName("An exercise")[0];
         $expectedFile1 = new AttachmentFile("name1", new DateTime(), 1, $user, $exercise);
         $expectedFile2 = new AttachmentFile("name2", new DateTime(), 2, $user, $exercise);
@@ -370,7 +381,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->attachmentFiles->flush();
 
         $request = new Nette\Application\Request(
-            "V1:ExerciseFiles", 'GET',
+            "V1:ExerciseFiles",
+            'GET',
             ['action' => 'getAttachmentFiles', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
@@ -410,7 +422,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            "V1:ExerciseFiles", 'DELETE',
+            "V1:ExerciseFiles",
+            'DELETE',
             [
                 'action' => 'deleteAttachmentFile',
                 'id' => $exercise->getId(),
@@ -481,11 +494,15 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         /** @var Nette\Application\Responses\JsonResponse $response */
         $response = $this->presenter->run(
             new Nette\Application\Request(
-                "V1:ExerciseFiles", "POST", [
+                "V1:ExerciseFiles",
+                "POST",
+                [
                 "action" => 'uploadAttachmentFiles',
                 'id' => $exercise->id
-            ], [ 'files' => $files ]
-        ));
+                ],
+                [ 'files' => $files ]
+            )
+        );
 
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 

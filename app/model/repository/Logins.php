@@ -6,6 +6,7 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Exceptions\NotFoundException;
+use Nette\Security\Passwords;
 
 class Logins extends BaseRepository
 {
@@ -55,14 +56,15 @@ class Logins extends BaseRepository
      *
      * @param string $username
      * @param string $password
+     * @param Passwords $passwordsService injection of a service (we do not want to inject directly into entities)
      * @return User|null
      */
-    public function getUser(string $username, string $password)
+    public function getUser(string $username, string $password, Passwords $passwordsService): ?User
     {
         $login = $this->findOneBy(["username" => $username]);
         if ($login) {
             $oldPwdHash = $login->getPasswordHash();
-            if ($login->passwordsMatch($password)) {
+            if ($login->passwordsMatch($password, $passwordsService)) {
                 if ($login->getPasswordHash() !== $oldPwdHash) {
                     // the password has been rehashed - persist the information
                     $this->persist($login);

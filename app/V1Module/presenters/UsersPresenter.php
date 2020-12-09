@@ -21,6 +21,7 @@ use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IUserPermissions;
 use App\Security\Roles;
+use Nette\Security\Passwords;
 use DateTime;
 
 /**
@@ -82,6 +83,12 @@ class UsersPresenter extends BasePresenter
      * @inject
      */
     public $instanceViewFactory;
+
+    /**
+     * @var Passwords
+     * @inject
+     */
+    public $passwordsService;
 
 
     public function checkDefault()
@@ -347,7 +354,7 @@ class UsersPresenter extends BasePresenter
 
         // passwords need to be handled differently
         if (
-            $login->passwordsMatchOrEmpty($oldPassword) ||
+            $login->passwordsMatchOrEmpty($oldPassword, $this->passwordsService) ||
             (!$oldPassword && $this->userAcl->canForceChangePassword($login->getUser()))
         ) {
             // check if new passwords match each other
@@ -358,7 +365,7 @@ class UsersPresenter extends BasePresenter
                 );
             }
 
-            $login->changePassword($password);
+            $login->changePassword($password, $this->passwordsService);
             $login->getUser()->setTokenValidityThreshold(new DateTime());
         } else {
             throw new WrongCredentialsException(
@@ -505,7 +512,7 @@ class UsersPresenter extends BasePresenter
     {
         $user = $this->users->findOrThrow($id);
 
-        Login::createLogin($user, $user->getEmail(), "");
+        Login::createLogin($user, $user->getEmail(), "", $this->passwordsService);
         $this->users->flush();
         $this->sendSuccessResponse($this->userViewFactory->getUser($user));
     }

@@ -7,6 +7,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use Nette;
+use Nette\Security\Passwords;
 
 class CredentialsAuthenticator
 {
@@ -15,9 +16,13 @@ class CredentialsAuthenticator
     /** @var Logins */
     private $logins;
 
-    public function __construct(Logins $logins)
+    /** @var Passwords */
+    private $passwordsService;
+
+    public function __construct(Logins $logins, Passwords $passwordsService)
     {
         $this->logins = $logins;
+        $this->passwordsService = $passwordsService;
     }
 
     /**
@@ -26,9 +31,9 @@ class CredentialsAuthenticator
      * @return User
      * @throws WrongCredentialsException
      */
-    function authenticate(string $username, string $password)
+    public function authenticate(string $username, string $password)
     {
-        $user = $this->logins->getUser($username, $password);
+        $user = $this->logins->getUser($username, $password, $this->passwordsService);
 
         if ($user === null) {
             throw new WrongCredentialsException(
