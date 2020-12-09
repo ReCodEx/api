@@ -16,7 +16,6 @@ use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
-use Nette\Application\Responses\FileResponse;
 use Exception;
 
 /**
