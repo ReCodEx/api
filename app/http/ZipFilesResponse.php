@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\FileStorage\FileStorageException;
 use Nette;
+use Nette\Application\IResponse;
 use Nette\Application\Responses\FileResponse;
 use Nette\Utils\FileSystem;
 use ZipArchive;
@@ -15,7 +16,7 @@ use ZipArchive;
  * user and then delete created zip file. If flag deleteFiles is true, then
  * given files will be deleted after sending response.
  */
-class ZipFilesResponse extends FileResponse
+class ZipFilesResponse implements IResponse
 {
     /**
      * Indexed by local path, containing original filename or possibly IImmutableFile objects.
@@ -24,28 +25,44 @@ class ZipFilesResponse extends FileResponse
     private $files;
 
     /**
+     * @var string
+     */
+    private $name;
+
+    /**
+     * @var bool
+     */
+    private $forceDownload;
+
+    /**
      * ZipFilesResponse constructor.
      * @param array $files indexed by original name (becomes zip entry) where values are local paths (strings)
      *                        or possibly IImmutableFile objects
      * @param string|null $name
      * @param bool $forceDownload
-     * @throws Nette\Application\BadRequestException
      */
-    public function __construct(array $files, $name = null, bool $forceDownload = true)
+    public function __construct(array $files, string $name = null, bool $forceDownload = true)
     {
-        $zipFile = tempnam(sys_get_temp_dir(), "ReC");
-        parent::__construct($zipFile, $name, "application/zip", $forceDownload);
         $this->files = $files;
+        $this->name = $name;
+        $this->forceDownload = $forceDownload;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     /**
      * Compress given files to zip archive.
+     * @return string path to the constructed tmp zip archive
      * @throws ApiException
      */
-    private function compress()
+    private function compress(): string
     {
+        $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
         $zip = new ZipArchive();
-        if ($zip->open($this->getFile(), ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        if ($zip->open($tmpFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new ApiException("Archive could not be created");
         }
 
@@ -76,8 +93,10 @@ class ZipFilesResponse extends FileResponse
             // So for further processing we need to at least create an empty file,
             // which will omit further warnings concerning non-existing file during
             // sending back to the user.
-            touch($this->getFile());
+            touch($tmpFile);
         }
+
+        return $tmpFile;
     }
 
     /**
@@ -85,22 +104,24 @@ class ZipFilesResponse extends FileResponse
      * @param Nette\Http\IRequest $httpRequest
      * @param Nette\Http\IResponse $httpResponse
      * @throws ApiException
+     * @throws Nette\Application\BadRequestException
      */
     public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse): void
     {
         // first compress all given files into zip
-        $this->compress();
+        $zipFile = $this->compress();
 
         // clear all potentially cached information like filesize and such
         clearstatcache();
 
-        // in order to delete file after download, lets forbid continuous download
-        $this->resuming = false;
-        parent::send($httpRequest, $httpResponse);
+        // handle the send using already implemented file response
+        $response = new FileResponse($zipFile, $this->name, "application/zip", $this->forceDownload);
+        $response->resuming = false;  // in order to delete file after download, lets forbid continuous download
+        $response->send($httpRequest, $httpResponse);
 
         try {
             // delete file after it was served to user
-            FileSystem::delete($this->getFile());
+            FileSystem::delete($zipFile);
         } catch (Nette\IOException $e) {
             // silent
         }
