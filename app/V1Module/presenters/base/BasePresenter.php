@@ -28,7 +28,6 @@ use Tracy\ILogger;
 
 class BasePresenter extends \App\Presenters\BasePresenter
 {
-
     /**
      * @var Users
      * @inject

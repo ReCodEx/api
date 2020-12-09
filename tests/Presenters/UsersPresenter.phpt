@@ -109,7 +109,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'default', 'filters' => ['roles' => ['superadmin']]]
         );
         $response = $this->presenter->run($request);
@@ -127,7 +128,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'default', 'orderBy' => '!name']
         );
         $response = $this->presenter->run($request);
@@ -144,7 +146,8 @@ class TestUsersPresenter extends Tester\TestCase
 
         // Get all users ordered by email
         $requestAll = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'default', 'orderBy' => 'email']
         );
         $responseAll = $this->presenter->run($requestAll);
@@ -154,7 +157,8 @@ class TestUsersPresenter extends Tester\TestCase
 
         // Get a page of users ordered by email
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'default', 'orderBy' => 'email', 'offset' => 4, 'limit' => 3]
         );
         $response = $this->presenter->run($request);
@@ -178,7 +182,8 @@ class TestUsersPresenter extends Tester\TestCase
         $second = $users[1];
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'listByIds'],
             ['ids' => [$first->getId(), $second->getId()]]
         );
@@ -203,7 +208,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'detail', 'id' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -226,7 +232,8 @@ class TestUsersPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterNameUpdated";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
                 'firstName' => $firstName,
@@ -266,7 +273,8 @@ class TestUsersPresenter extends Tester\TestCase
         $this->presenter->emailVerificationHelper = $emailVerificationHelper;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
                 'firstName' => $firstName,
@@ -307,7 +315,8 @@ class TestUsersPresenter extends Tester\TestCase
         $passwordConfirm = "newPassword";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
                 'firstName' => $firstName,
@@ -328,7 +337,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         $updatedUser = $result["payload"]["user"];
         Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
-        Assert::true($login->passwordsMatchOrEmpty($password));
+        Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
         Assert::null($updatedUser["avatarUrl"]);
 
         $storedUpdatedUser = $this->users->get($user->getId());
@@ -341,7 +350,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
                 'firstName' => "firstNameUpdated",
@@ -368,7 +378,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
                 'firstName' => "firstNameUpdated",
@@ -398,7 +409,8 @@ class TestUsersPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterNameUpdated";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
                 'degreesBeforeName' => $degreesBeforeName,
@@ -445,7 +457,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal($updatedUser["privateData"]["email"], PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
 
         $login = $this->logins->findByUsernameOrThrow($user->getEmail());
-        Assert::true($login->passwordsMatch($newPassword));
+        Assert::true($login->passwordsMatch($newPassword, $this->presenter->passwordsService));
     }
 
     public function testCannotSelfForceUpdatePassword()
@@ -496,7 +508,8 @@ class TestUsersPresenter extends Tester\TestCase
         $submissionEvaluatedEmails = false;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'updateSettings', 'id' => $user->getId()],
             [
                 'darkTheme' => $darkTheme,
@@ -573,7 +586,8 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal(false, $user->hasLocalAccount());
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createLocalAccount', 'id' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -593,7 +607,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'groups', 'id' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -622,7 +637,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'groups', 'id' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -659,7 +675,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'instances', 'id' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -681,7 +698,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'exercises', 'id' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -716,7 +734,8 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'detail', 'id' => $user->getId()]
         );
 
@@ -732,13 +751,16 @@ class TestUsersPresenter extends Tester\TestCase
     {
         $victim = "user2@example.com";
         PresenterTestHelper::loginDefaultAdmin($this->container);
+
         $user = $this->users->getByEmail($victim);
+        Assert::truthy($user);
         $userId = $user->getId();
         Assert::type(Login::class, $this->logins->getByUsername($victim));
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'DELETE',
-            ['action' => 'delete', 'id' => $user->getId()]
+            $this->presenterPath,
+            'DELETE',
+            ['action' => 'delete', 'id' => $userId]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -749,6 +771,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::null($this->logins->getByUsername($victim));
 
         $deletedUser = $this->users->findOneByEvenIfDeleted(['id' => $userId]);
+        Assert::truthy($deletedUser);
         Assert::true($deletedUser->isDeleted());
         $suffix = $this->anonymizationHelper->getDeletedEmailSuffix();
         Assert::same(
@@ -765,7 +788,8 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal(Roles::STUDENT_ROLE, $user->getRole());
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'setRole', 'id' => $user->getId()],
             ['role' => Roles::SUPERVISOR_ROLE]
         );

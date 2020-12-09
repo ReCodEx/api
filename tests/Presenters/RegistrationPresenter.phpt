@@ -98,7 +98,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterName";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccount'],
             [
                 'email' => $email,
@@ -128,7 +129,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         // check created login
         $login = $this->logins->findByUserId($user["id"]);
         Assert::equal($user["id"], $login->getUser()->getId());
-        Assert::true($login->passwordsMatchOrEmpty($password));
+        Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
     }
 
     public function testCreateAccountWithImplicitGroups()
@@ -149,7 +150,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         )->first()->getId();
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccount'],
             [
                 'email' => $email,
@@ -185,7 +187,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         // check created login
         $login = $this->logins->findByUserId($user["id"]);
         Assert::equal($user["id"], $login->getUser()->getId());
-        Assert::true($login->passwordsMatchOrEmpty($password));
+        Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
 
         // check user is member of groups
         $joinedGroups = $this->groups->findFiltered($login->getUser(), $instanceId);
@@ -204,7 +206,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterName";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccount'],
             [
                 'email' => $email,
@@ -242,7 +245,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterName";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccount'],
             [
                 'email' => $email,
@@ -278,7 +282,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterName";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccount'],
             [
                 'email' => $email,
@@ -311,7 +316,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $degreesAfterName = "degreesAfterName";
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccount'],
             [
                 'email' => $email,
@@ -346,8 +352,14 @@ class TestRegistrationPresenter extends Tester\TestCase
         $serviceId = "serviceId";
 
         $user = new User(
-            $username, $firstname, $lastname, $degreesBeforeName,
-            $degreesAfterName, "", $instance, false
+            $username,
+            $firstname,
+            $lastname,
+            $degreesBeforeName,
+            $degreesAfterName,
+            "",
+            $instance,
+            false
         );
 
         // setup mocking authService
@@ -369,7 +381,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $this->presenter->emailVerificationHelper = $mockVerificationEmail;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccountExt'],
             [
                 'username' => $username,
@@ -424,7 +437,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $this->presenter->emailVerificationHelper = $mockVerificationEmail;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'createAccountExt'],
             [
                 'username' => $username,
@@ -452,7 +466,8 @@ class TestRegistrationPresenter extends Tester\TestCase
     public function testValidateRegistrationData()
     {
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
+            $this->presenterPath,
+            'POST',
             ['action' => 'validateRegistrationData'],
             [
                 'email' => "totallyFreeEmail@EmailFreeTotally.freeEmailTotally",
@@ -472,7 +487,6 @@ class TestRegistrationPresenter extends Tester\TestCase
         Assert::true(array_key_exists("passwordScore", $result["payload"]));
         Assert::type('int', $result["payload"]["passwordScore"]);
     }
-
 }
 
 $testCase = new TestRegistrationPresenter();

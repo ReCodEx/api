@@ -324,7 +324,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $second = $exercises[1];
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'POST',
+            'V1:Exercises',
+            'POST',
             ['action' => 'listByIds'],
             ['ids' => [$first->getId(), $second->getId()]]
         );
@@ -424,7 +425,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $exercise = current($this->presenter->exercises->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'POST',
+            'V1:Exercises',
+            'POST',
             ['action' => 'validate', 'id' => $exercise->getId()],
             ['version' => 2]
         );
@@ -451,7 +453,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $group = current($this->presenter->groups->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'POST',
+            'V1:Exercises',
+            'POST',
             ['action' => 'create'],
             ['groupId' => $group->getId()]
         );
@@ -478,7 +481,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $exercise = current($this->presenter->exercises->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'DELETE',
+            'V1:Exercises',
+            'DELETE',
             ['action' => 'remove', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
@@ -501,7 +505,7 @@ class TestExercisesPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         // prepare pipelines into exercise
-        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
         $pipeline = current($this->pipelines->findAll());
         $pipeline1 = Pipeline::forkFrom($user, $pipeline);
         $pipeline2 = Pipeline::forkFrom($user, $pipeline);
@@ -514,7 +518,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $this->exercises->persist($exercise);
 
         $request = new Nette\Application\Request(
-            "V1:Exercises", 'GET',
+            "V1:Exercises",
+            'GET',
             ['action' => 'getPipelines', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
@@ -550,7 +555,8 @@ class TestExercisesPresenter extends Tester\TestCase
         Assert::notEqual(null, $exercise);
 
         $request = new Nette\Application\Request(
-            "V1:Exercises", 'GET',
+            "V1:Exercises",
+            'GET',
             ['action' => 'assignments', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
@@ -581,12 +587,13 @@ class TestExercisesPresenter extends Tester\TestCase
     {
         PresenterTestHelper::login($this->container, $this->adminLogin);
 
-        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
         $exercise = current($this->presenter->exercises->findAll());
         $group = current($this->presenter->groups->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'POST',
+            'V1:Exercises',
+            'POST',
             ['action' => 'forkFrom', 'id' => $exercise->getId()],
             ['groupId' => $group->getId()]
         );
@@ -615,7 +622,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $exercise = current($this->presenter->exercises->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'POST',
+            'V1:Exercises',
+            'POST',
             ['action' => 'hardwareGroups', 'id' => $exercise->getId()],
             [
                 'hwGroups' => [
@@ -642,7 +650,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $group = current($this->presenter->groups->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'POST',
+            'V1:Exercises',
+            'POST',
             ['action' => 'attachGroup', 'id' => $exercise->getId(), 'groupId' => $group->getId()]
         );
         $response = $this->presenter->run($request);
@@ -667,7 +676,8 @@ class TestExercisesPresenter extends Tester\TestCase
         Assert::count(1, $exercise->getGroups());
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'DELETE',
+            'V1:Exercises',
+            'DELETE',
             ['action' => 'detachGroup', 'id' => $exercise->getId(), 'groupId' => $group->getId()]
         );
         Assert::exception(
@@ -690,7 +700,8 @@ class TestExercisesPresenter extends Tester\TestCase
         $this->presenter->exercises->flush();
 
         $request = new Nette\Application\Request(
-            'V1:Exercises', 'DELETE',
+            'V1:Exercises',
+            'DELETE',
             ['action' => 'detachGroup', 'id' => $exercise->getId(), 'groupId' => $group1->getId()]
         );
         $response = $this->presenter->run($request);

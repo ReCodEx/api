@@ -96,7 +96,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
         $file = current($this->presenter->uploadedFiles->findBy(["isPublic" => false]));
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'detail', 'id' => $file->getId()]
         );
         Assert::exception(
@@ -114,7 +115,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $file = current($this->presenter->uploadedFiles->findAll());
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'detail', 'id' => $file->getId()]
         );
         $response = $this->presenter->run($request);
@@ -130,7 +132,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
-        $user = $this->logins->getUser($this->userLogin, $this->userPassword);
+        $user = $this->logins->getUser($this->userLogin, $this->userPassword, new Nette\Security\Passwords());
         $uploadedFile = new UploadedFile("nonexistfile", new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
@@ -140,7 +142,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'download', 'id' => $uploadedFile->getId()]
         );
         Assert::exception(
@@ -158,7 +161,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $filename = "file.ext";
 
         // create new file upload
-        $user = $this->logins->getUser($this->userLogin, $this->userPassword);
+        $user = $this->logins->getUser($this->userLogin, $this->userPassword, new Nette\Security\Passwords());
         $uploadedFile = new UploadedFile($filename, new DateTime(), 1, $user);
         $this->presenter->uploadedFiles->persist($uploadedFile);
         $this->presenter->uploadedFiles->flush();
@@ -170,7 +173,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
         
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'download', 'id' => $uploadedFile->getId()]
         );
         $response = $this->presenter->run($request);
@@ -199,7 +203,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
         
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
         );
         $response = $this->presenter->run($request);
@@ -233,7 +238,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
         
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
         );
         $response = $this->presenter->run($request);
@@ -254,7 +260,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
     
-        $size = 1024*1024;
+        $size = 1024 * 1024;
         $contents = random_bytes($size);
 
         // create new file upload
@@ -272,7 +278,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
         
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
         );
         $response = $this->presenter->run($request);
@@ -312,7 +319,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET',
+            $this->presenterPath,
+            'GET',
             ['action' => 'content', 'id' => $uploadedFile->getId()]
         );
         $response = $this->presenter->run($request);
@@ -357,8 +365,11 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'POST',
-            ['action' => 'upload'], [], [$fileUpload]
+            $this->presenterPath,
+            'POST',
+            ['action' => 'upload'],
+            [],
+            [$fileUpload]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -386,10 +397,12 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET', [
+            $this->presenterPath,
+            'GET',
+            [
             'action' => 'download',
             'id' => $file->id
-        ]
+            ]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
@@ -410,10 +423,12 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET', [
+            $this->presenterPath,
+            'GET',
+            [
             'action' => 'download',
             'id' => $file->id
-        ]
+            ]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
@@ -433,10 +448,12 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
-            $this->presenterPath, 'GET', [
+            $this->presenterPath,
+            'GET',
+            [
             'action' => 'download',
             'id' => $file->id
-        ]
+            ]
         );
 
         Assert::exception(function () use ($request) {
@@ -467,7 +484,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal($file->getName(), $response->getName());
     }
-
 }
 
 $testCase = new TestUploadedFilesPresenter();

@@ -277,7 +277,8 @@ services:
   http.requestFactory: App\RequestFactory
   router: App\RouterFactory::createRouter
   nette.mailer: Nette\Mail\SmtpMailer(%mail%)
-
+  security.passwords: Nette\Security\Passwords(::PASSWORD_BCRYPT, [cost: 12])
+  
   # commands
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)

@@ -42,39 +42,30 @@ class Login
      */
     protected $user;
 
-    const HASHING_OPTIONS = [
-        "cost" => 11
-    ];
-
-    /**
-     * TODO: This has to be done better! Move it somewhere else!
-     */
-    private static function createPasswordUtils(): Passwords {
-        return new Passwords(PASSWORD_DEFAULT, self::HASHING_OPTIONS);
-    }
-
     /**
      * TODO: This has to be done better! Move it somewhere else!
      * Hash the password accordingly.
      * @param string|null $password Plaintext password
+     * @param Passwords $passwordsService injection of a service (we do not want to inject directly into entities)
      * @return string|null Password hash
      */
-    public static function hashPassword($password)
+    public static function hashPassword($password, Passwords $passwordsService)
     {
         if ($password === null) {
             return "";
         }
 
-        return self::createPasswordUtils()->hash($password);
+        return $passwordsService->hash($password);
     }
 
     /**
      * Change the password to the given one (the password will be hashed).
      * @param string $password New password
+     * @param Passwords $passwordsService injection of a service (we do not want to inject directly into entities)
      */
-    public function changePassword($password)
+    public function changePassword($password, Passwords $passwordsService)
     {
-        $this->setPasswordHash(self::hashPassword($password));
+        $this->setPasswordHash(self::hashPassword($password, $passwordsService));
     }
 
     /**
@@ -98,9 +89,10 @@ class Login
      * Verify that the given password matches the stored password. If the current
      * password is empty and given one too, the passwords are considered to match.
      * @param string $password The password given by the user
+     * @param Passwords $passwordsService injection of a service (we do not want to inject directly into entities)
      * @return bool
      */
-    public function passwordsMatchOrEmpty($password)
+    public function passwordsMatchOrEmpty($password, Passwords $passwordsService)
     {
         if (empty($this->passwordHash) && empty($password)) {
             // quite special situation, but can happen if user registered using CAS
@@ -108,25 +100,24 @@ class Login
             return true;
         }
 
-        return $this->passwordsMatch($password);
+        return $this->passwordsMatch($password, $passwordsService);
     }
 
     /**
      * Verify that the given password matches the stored password.
      * @param string $password The password given by the user
+     * @param Passwords $passwordsService injection of a service (we do not want to inject directly into entities)
      * @return bool
      */
-    public function passwordsMatch($password)
+    public function passwordsMatch($password, Passwords $passwordsService)
     {
         if (empty($this->passwordHash) || empty($password)) {
             return false;
         }
 
-        // TODO: This has to be done better! Move it somewhere else!
-        $passwordUtils = self::createPasswordUtils();
-        if ($passwordUtils->verify($password, $this->passwordHash)) {
-            if ($passwordUtils->needsRehash($this->passwordHash)) {
-                $this->passwordHash = self::hashPassword($password);
+        if ($passwordsService->verify($password, $this->passwordHash)) {
+            if ($passwordsService->needsRehash($this->passwordHash)) {
+                $this->passwordHash = self::hashPassword($password, $passwordsService);
             }
 
             return true;
@@ -141,19 +132,26 @@ class Login
      * @param string $email
      * @param string $password
      * @return Login
+     * @param Passwords|null $passwordsService injection of a service (we do not want to inject directly into entities)
+     *                       if null, the service is constructed inplace (special case to make fixtures work)
      * @throws InvalidArgumentException
      */
-    public static function createLogin(User $user, string $email, string $password)
+    public static function createLogin(User $user, string $email, string $password, Passwords $passwordsService = null)
     {
         if (Validators::isEmail($email) === false) {
             throw new InvalidArgumentException("email", "Username must be a valid email address.");
+        }
+
+        if ($passwordsService === null) {
+            // this should happen only in fixtures!
+            $passwordsService = new Passwords(PASSWORD_BCRYPT, ['cost' => 11]);
         }
 
         $login = new Login();
         $login->username = $email;
         $login->passwordHash = "";
         if (!empty($password)) {
-            $login->passwordHash = self::hashPassword($password);
+            $login->passwordHash = self::hashPassword($password, $passwordsService);
         }
         $login->user = $user;
 

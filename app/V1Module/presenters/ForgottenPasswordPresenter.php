@@ -9,8 +9,9 @@ use App\Model\Repository\Logins;
 use App\Model\Entity\Login;
 use App\Security\AccessToken;
 use App\Security\TokenScope;
-use DateTime;
+use Nette\Security\Passwords;
 use ZxcvbnPhp\Zxcvbn;
+use DateTime;
 
 /**
  * Endpoints associated with resetting forgotten passwords
@@ -29,6 +30,12 @@ class ForgottenPasswordPresenter extends BasePresenter
      * @inject
      */
     public $forgottenPasswordHelper;
+
+    /**
+     * @var Passwords
+     * @inject
+     */
+    public $passwordsService;
 
     /**
      * Request a password reset (user will receive an e-mail that prompts them to reset their password)
@@ -68,7 +75,7 @@ class ForgottenPasswordPresenter extends BasePresenter
         $login = $this->getCurrentUser()->getLogin();
 
         // actually change the password
-        $login->setPasswordHash(Login::hashPassword($password));
+        $login->changePassword($password, $this->passwordsService);
         $this->getCurrentUser()->setTokenValidityThreshold(new DateTime());
         $this->logins->persist($login);
         $this->logins->flush();
