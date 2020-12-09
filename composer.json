@@ -61,7 +61,8 @@
     "mrdm-nl/ldap": "^1.1",
     "bjeavons/zxcvbn-php": "^0.3.0",
     "limenet/git-version": "^0.1",
-    "zenify/doctrine-fixtures": "master@dev"
+    "zenify/doctrine-fixtures": "master@dev",
+    "kdyby/events": "master@dev"
   },
   "require-dev": {
     "mockery/mockery": "@stable",

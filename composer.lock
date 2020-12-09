@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "70a342922b60771c3aa14ca83f928835",
+    "content-hash": "e0c0cbca56938655de602e7a1a0d7aeb",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -2261,6 +2261,84 @@
                 "source": "https://github.com/Kdyby/DoctrineMagicAccessors/tree/v1.0.0"
             },
             "time": "2017-05-18T23:05:24+00:00"
+        },
+        {
+            "name": "kdyby/events",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Kdyby/Events.git",
+                "reference": "c0ab8d285a95885839ec54e4bb42fef057366789"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Kdyby/Events/zipball/c0ab8d285a95885839ec54e4bb42fef057366789",
+                "reference": "c0ab8d285a95885839ec54e4bb42fef057366789",
+                "shasum": ""
+            },
+            "require": {
+                "nette/di": "^3.0",
+                "nette/reflection": "^2.4",
+                "nette/utils": "^3.0",
+                "php": "^7.1"
+            },
+            "require-dev": {
+                "jakub-onderka/php-parallel-lint": "^1.0",
+                "kdyby/coding-standard": "^1.0@dev",
+                "nette/application": "^3.0",
+                "nette/bootstrap": "^3.0",
+                "nette/caching": "^3.0",
+                "nette/http": "^3.0",
+                "nette/security": "^3.0",
+                "nette/tester": "^2.2",
+                "phpstan/phpstan-shim": "^0.11",
+                "symfony/event-dispatcher": "^3.0 || ^4.0",
+                "tracy/tracy": "^2.5"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kdyby\\Events\\": "src/Events"
+                },
+                "classmap": [
+                    "src/Events/exceptions.php"
+                ],
+                "files": [
+                    "src/Doctrine/compatibility.php",
+                    "src/Symfony/compatibility.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filip Procházka",
+                    "email": "filip@prochazka.su",
+                    "homepage": "http://filip-prochazka.com"
+                }
+            ],
+            "description": "Events for Nette Framework",
+            "homepage": "http://kdyby.org",
+            "keywords": [
+                "kdyby",
+                "nette"
+            ],
+            "support": {
+                "email": "filip@prochazka.su",
+                "issues": "https://github.com/kdyby/events/issues",
+                "source": "https://github.com/Kdyby/Events/tree/master"
+            },
+            "time": "2019-07-03T20:03:48+00:00"
         },
         {
             "name": "kdyby/strict-objects",
@@ -6409,6 +6487,7 @@
         "kdyby/console": 20,
         "gedmo/doctrine-extensions": 0,
         "zenify/doctrine-fixtures": 20,
+        "kdyby/events": 20,
         "mockery/mockery": 0,
         "mikey179/vfsstream": 0,
         "phpstan/phpstan": 0
