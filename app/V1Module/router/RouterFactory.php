@@ -10,7 +10,6 @@ use App\V1Module\Router\GetRoute;
 use App\V1Module\Router\PostRoute;
 use App\V1Module\Router\PutRoute;
 use App\V1Module\Router\DeleteRoute;
-use App\V1Module\Router\PreflightRoute;
 
 /**
  * Router factory for V1 module.
