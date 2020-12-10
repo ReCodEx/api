@@ -30,8 +30,7 @@ class SecurityPresenter extends BasePresenter
      */
     public function actionCheck()
     {
-        // TODO: RESOLVE THIS, return type of match function is different
-        $appRequest = $this->router->match(
+        $requestParams = $this->router->match(
             new Http\Request(
                 new Http\UrlScript("https://foo.tld/" . ltrim($this->getRequest()->getPost("url"), "/"), "/"),
                 null,
@@ -43,20 +42,22 @@ class SecurityPresenter extends BasePresenter
             )
         );
 
-        if (!$appRequest) {
+        if (!$requestParams) {
             throw new InvalidArgumentException("url");
         }
 
-        $presenter = $this->presenterFactory->createPresenter($appRequest->getPresenterName());
+        $presenterName = $requestParams["presenter"] ?? null;
+        if (!$presenterName) {
+            throw new InvalidArgumentException("url");
+        }
+
+        $presenter = $this->presenterFactory->createPresenter($presenterName);
         if (!($presenter instanceof BasePresenter)) {
             $this->checkFailed();
             return;
         }
 
-        $action = $appRequest->getParameter("action");
-        if (empty($action)) {
-            $action = Presenter::DEFAULT_ACTION;
-        }
+        $action = $requestParams["action"] ?? Presenter::DEFAULT_ACTION;
         $methodName = $presenter->formatPermissionCheckMethod($action);
         if (!method_exists($presenter, $methodName)) {
             $this->checkFailed();
@@ -66,7 +67,7 @@ class SecurityPresenter extends BasePresenter
         $presenterReflection = $presenter->getReflection();
         $arguments = $presenterReflection->combineArgs(
             $presenterReflection->getMethod($methodName),
-            $appRequest->getParameters()
+            $requestParams
         );
         $result = true;
 
