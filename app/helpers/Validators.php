@@ -16,7 +16,7 @@ class Validators extends Utils\Validators
      */
     public static function init()
     {
-        static::$validators['timestamp'] = [static::class, 'isTimestamp'];
+        static::$validators['timestamp'] = [self::class, 'isTimestamp'];
     }
 
     public static function isTimestamp($value)
