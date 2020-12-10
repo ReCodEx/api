@@ -43,7 +43,6 @@ class Login
     protected $user;
 
     /**
-     * TODO: This has to be done better! Move it somewhere else!
      * Hash the password accordingly.
      * @param string|null $password Plaintext password
      * @param Passwords $passwordsService injection of a service (we do not want to inject directly into entities)

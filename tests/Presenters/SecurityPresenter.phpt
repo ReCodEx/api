@@ -23,6 +23,9 @@ class TestSecurityPresenter extends Tester\TestCase
      */
     private $presenter;
 
+    /** @var App\Model\Repository\Exercises */
+    protected $exercises;
+
     private $argv;
 
     public function __construct(Container $container)
@@ -33,6 +36,7 @@ class TestSecurityPresenter extends Tester\TestCase
     protected function setUp()
     {
         $this->presenter = PresenterTestHelper::createPresenter($this->container, SecurityPresenter::class);
+        $this->exercises = $this->container->getByType(App\Model\Repository\Exercises::class);
         PresenterTestHelper::fillDatabase($this->container);
         $this->argv = $_SERVER["argv"];
         $_SERVER["argv"] = null;
@@ -49,11 +53,44 @@ class TestSecurityPresenter extends Tester\TestCase
 
         $response = $this->presenter->run(
             new Request(
-                "V1:Security", "POST", [
+                "V1:Security",
+                "POST",
+                [
                 "action" => "check"
-            ], [
+                ],
+                [
                     "url" => "/v1/exercises",
                     "method" => "GET"
+                ]
+            )
+        );
+
+        Assert::type(JsonResponse::class, $response);
+        $payload = $response->getPayload()["payload"];
+
+        Assert::true($payload["result"]);
+        Assert::true($payload["isResultReliable"]);
+    }
+
+    public function testAllowedUrlWithParams()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercises = $this->exercises->findAll();
+        $exercise = $exercises[0];
+        Assert::truthy($exercise);
+        $id = $exercise->getId();
+        Assert::truthy($id);
+
+        $response = $this->presenter->run(
+            new Request(
+                "V1:Security",
+                "POST",
+                [
+                "action" => "check"
+                ],
+                [
+                    "url" => "/v1/exercises/$id",
+                    "method" => "DELETE"
                 ]
             )
         );
@@ -71,9 +108,12 @@ class TestSecurityPresenter extends Tester\TestCase
 
         $response = $this->presenter->run(
             new Request(
-                "V1:Security", "POST", [
+                "V1:Security",
+                "POST",
+                [
                 "action" => "check"
-            ], [
+                ],
+                [
                     "url" => "/v1/exercises",
                     "method" => "GET"
                 ]
