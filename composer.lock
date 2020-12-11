@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e0c0cbca56938655de602e7a1a0d7aeb",
+    "content-hash": "1dc410f8526afa84d155ecc01646ae2c",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -6032,69 +6032,6 @@
             },
             "abandoned": "laminas/laminas-eventmanager",
             "time": "2018-04-25T15:33:34+00:00"
-        },
-        {
-            "name": "zenify/doctrine-fixtures",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ReCodEx/DoctrineFixtures.git",
-                "reference": "38aecc878255552c61c28ddca94e05ff5c4adecb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ReCodEx/DoctrineFixtures/zipball/38aecc878255552c61c28ddca94e05ff5c4adecb",
-                "reference": "38aecc878255552c61c28ddca94e05ff5c4adecb",
-                "shasum": ""
-            },
-            "require": {
-                "fzaninotto/faker": "~1.6",
-                "kdyby/console": "master@dev",
-                "kdyby/doctrine": "master@dev",
-                "nelmio/alice": "~2.2",
-                "nette/di": "^3.0",
-                "nette/finder": "~2.4",
-                "nette/reflection": "~2.4",
-                "php": "^7.0",
-                "symfony/console": "^3.0",
-                "tracy/tracy": "~2.4"
-            },
-            "require-dev": {
-                "nette/bootstrap": "^3.0",
-                "phpunit/phpunit": "^5.6",
-                "zenify/coding-standard": "^4.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Zenify\\DoctrineFixtures\\": "src"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Zenify\\DoctrineFixtures\\Tests\\": "tests"
-                }
-            },
-            "scripts": {
-                "check-cs": [
-                    "vendor/bin/phpcs src tests -ps --standard=vendor/zenify/coding-standard/src/ZenifyCodingStandard/ruleset.xml"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Tomáš Votruba",
-                    "homepage": "http://tomasvotruba.cz"
-                }
-            ],
-            "description": "Doctrine Fixtures, Faker and Alice integration into Nette",
-            "support": {
-                "source": "https://github.com/ReCodEx/DoctrineFixtures/tree/master"
-            },
-            "time": "2020-11-26T17:56:32+00:00"
         }
     ],
     "packages-dev": [
@@ -6485,9 +6422,8 @@
     "stability-flags": {
         "kdyby/doctrine": 20,
         "kdyby/console": 20,
-        "gedmo/doctrine-extensions": 0,
-        "zenify/doctrine-fixtures": 20,
         "kdyby/events": 20,
+        "gedmo/doctrine-extensions": 0,
         "mockery/mockery": 0,
         "mikey179/vfsstream": 0,
         "phpstan/phpstan": 0
