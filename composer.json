@@ -1,6 +1,6 @@
 {
   "name": "recodex/api",
-  "description": "Web api of ReCodEx Code Evaluator.",
+  "description": "Web REST API of ReCodEx Code Evaluator.",
   "homepage": "https://github.com/ReCodEx/api",
   "type": "project",
   "license": [
@@ -10,12 +10,6 @@
     {
       "name": "ReCodEx Team",
       "homepage": "https://github.com/ReCodEx/api/graphs/contributors"
-    }
-  ],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/ReCodEx/DoctrineFixtures"
     }
   ],
   "scripts": {
@@ -48,6 +42,7 @@
     "kdyby/doctrine-magic-accessors": "*",
     "kdyby/doctrine-cache": "master@dev as v3.0.0",
     "kdyby/console": "master@dev",
+    "kdyby/events": "master@dev",
     "gedmo/doctrine-extensions": "@stable",
     "doctrine/orm": "^2.7",
     "doctrine/dbal": "~2.9.0",
@@ -61,8 +56,8 @@
     "mrdm-nl/ldap": "^1.1",
     "bjeavons/zxcvbn-php": "^0.3.0",
     "limenet/git-version": "^0.1",
-    "zenify/doctrine-fixtures": "master@dev",
-    "kdyby/events": "master@dev"
+    "fzaninotto/faker": "~1.9",
+    "nelmio/alice": "~2.3"
   },
   "require-dev": {
     "mockery/mockery": "@stable",
@@ -72,5 +67,5 @@
     "phpstan/phpstan-nette": "^0.12.10"
   },
   "minimum-stability": "dev",
-  "prefer-stable" : true
+  "prefer-stable": true
 }
