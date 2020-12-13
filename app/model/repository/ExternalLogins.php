@@ -3,14 +3,14 @@
 namespace App\Model\Repository;
 
 use App\Helpers\ExternalLogin\IExternalLoginService;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ExternalLogins extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, ExternalLogin::class);
     }

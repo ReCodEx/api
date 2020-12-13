@@ -7,6 +7,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\GroupsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -27,7 +28,7 @@ class TestGroupsPresenter extends Tester\TestCase
     /** @var GroupsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

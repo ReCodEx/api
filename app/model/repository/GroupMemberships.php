@@ -2,13 +2,13 @@
 
 namespace App\Model\Repository;
 
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\GroupMembership;
+use Doctrine\ORM\EntityManagerInterface;
 
 class GroupMemberships extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, GroupMembership::class);
     }

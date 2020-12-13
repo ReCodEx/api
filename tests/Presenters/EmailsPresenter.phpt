@@ -6,6 +6,7 @@ use App\Helpers\EmailHelper;
 use App\Model\Entity\User;
 use App\Security\Roles;
 use App\V1Module\Presenters\EmailsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -17,7 +18,7 @@ class TestEmailsPresenter extends Tester\TestCase
     /** @var EmailsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

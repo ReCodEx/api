@@ -23,6 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ExportDatabase extends Command
 {
+    protected static $defaultName = 'db:export';
 
     /**
      * @var RuntimeEnvironments

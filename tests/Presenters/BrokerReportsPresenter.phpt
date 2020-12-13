@@ -9,6 +9,7 @@ use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
 use App\V1Module\Presenters\BrokerReportsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
@@ -24,7 +25,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
     /** @var BrokerReportsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

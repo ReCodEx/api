@@ -2,11 +2,10 @@
 
 namespace App\Model\Repository;
 
-use App\Helpers\Pair;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentPoints;
 use App\Model\Entity\User;
-use Kdyby\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method ShadowAssignmentPoints findOrThrow($id)
@@ -14,7 +13,7 @@ use Kdyby\Doctrine\EntityManager;
 class ShadowAssignmentPointsRepository extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, ShadowAssignmentPoints::class);
     }

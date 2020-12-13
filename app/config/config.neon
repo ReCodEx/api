@@ -193,12 +193,6 @@ parameters:
     solutionFilesLimitDefault: 10  # at most 10 files per solution
     solutionSizeLimitDefault: 262144  # 256 KiB is the maximal size for all submitted files
 
-  migrations:
-    table: doctrine_migrations # database table for applied migrations
-    column: version # database column for applied migrations
-    directory: %appDir%/../migrations # directory, where all migrations are stored
-    namespace: Migrations # namespace of migration classes
-
   anonymization:
     anonymizedName: "@@anonymized"  # String used as replacement for anonymized name a user
     deletedEmailSuffix: "@@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
@@ -259,20 +253,20 @@ acl:
     notification: App\Security\Policies\NotificationPermissionPolicy
 
 extensions:
-  console: Kdyby\Console\DI\ConsoleExtension
-  events: Kdyby\Events\DI\EventsExtension
-  annotations: Kdyby\Annotations\DI\AnnotationsExtension
-  doctrine: Kdyby\Doctrine\DI\OrmExtension
+  console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
+  nettrine.annotations: Nettrine\Annotations\DI\AnnotationsExtension
+  nettrine.cache: Nettrine\Cache\DI\CacheExtension
+  nettrine.dbal: Nettrine\DBAL\DI\DbalExtension
+  nettrine.dbal.console: Nettrine\DBAL\DI\DbalConsoleExtension
+  nettrine.orm: Nettrine\ORM\DI\OrmExtension
+  nettrine.orm.cache: Nettrine\ORM\DI\OrmCacheExtension
+  nettrine.orm.console: Nettrine\ORM\DI\OrmConsoleExtension(%consoleMode%)
+  nettrine.orm.annotations: Nettrine\ORM\DI\OrmAnnotationsExtension
+  nettrine.migrations: Nettrine\Migrations\DI\MigrationsExtension
+  nettrine.extensions.atlantic18: Nettrine\Extensions\Atlantic18\DI\Atlantic18BehaviorExtension
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
   acl: App\Security\SecurityExtension(%tempDir%)
   groupBindings: App\Helpers\GroupBindings\GroupBindingsExtension
-
-decorator:
-  Symfony\Component\Console\Command\Command:
-    tags: [kdyby.console.command]
-  Doctrine\Migrations\Tools\Console\Command\AbstractCommand:
-    setup:
-      - setMigrationConfiguration(@migrations.configuration)
 
 services:
   http.requestFactory: App\RequestFactory
@@ -293,27 +287,6 @@ services:
   - App\Console\CleanupExerciseConfigs
   - App\Console\CleanupPipelineConfigs
   - App\Console\RemoveInactiveUsers(%removeInactiveUsers.threshold%)
-
-  # migrations commands
-  - Doctrine\Migrations\Tools\Console\Command\ExecuteCommand
-  - Doctrine\Migrations\Tools\Console\Command\DiffCommand
-  - Doctrine\Migrations\Tools\Console\Command\GenerateCommand
-  - Doctrine\Migrations\Tools\Console\Command\MigrateCommand
-  - Doctrine\Migrations\Tools\Console\Command\StatusCommand
-  - Doctrine\Migrations\Tools\Console\Command\VersionCommand
-
-  # doctrine migrations
-  migrations.configuration:
-    factory: Doctrine\Migrations\Configuration\Configuration
-    setup:
-      - setMigrationsTableName(%migrations.table%)
-      - setMigrationsColumnName(%migrations.column%)
-      - setMigrationsDirectory(%migrations.directory%)
-      - setMigrationsNamespace(%migrations.namespace%)
-
-  # soft deletable filter
-  - factory: Gedmo\SoftDeleteable\SoftDeleteableListener()
-    tags: [kdyby.subscriber]
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -343,7 +316,7 @@ services:
 
   # helpers
   - App\Helpers\EvaluationLoadingHelper
-  - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
+  - App\Helpers\FailureHelper(@Doctrine\ORM\EntityManagerInterface, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\BackendSubmitHelper
   - App\Helpers\SubmissionHelper
@@ -392,7 +365,7 @@ services:
   - App\Helpers\Emails\EmailLocalizationHelper
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
-  - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
+  - App\Helpers\ForgottenPasswordHelper(@Doctrine\ORM\EntityManagerInterface, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
@@ -445,34 +418,55 @@ services:
   - App\Model\View\PipelineViewFactory
   - App\Model\View\InstanceViewFactory
 
-doctrine:
-  user: 'root'
-  password: ''
-  host: localhost
-  dbname: 'recodex-api'
-  autoGenerateProxyClasses: 2 # only generate proxies if their files do not exist
-  charset: utf8mb4
-  defaultTableOptions:
+nettrine.dbal:
+  debug:
+    panel: %debugMode%
+    sourcePaths: [%appDir%]
+  connection:
+    driver: pdo_mysql
+    host: localhost
+    dbname: 'recodex-api'
+    user: 'root'
+    password: ''
     charset: utf8mb4
-    collate: utf8mb4_unicode_ci
-  metadata:
-    App\Model\Entity: %appDir%/model/entity
-  types:
-    bit: Doctrine\DBAL\Types\BooleanType
-    datetime: DoctrineExtensions\DBAL\Types\UTCDateTimeType
-  dql:
-    string:
+    types:
+      bit: Doctrine\DBAL\Types\BooleanType
+      datetime: DoctrineExtensions\DBAL\Types\UTCDateTimeType
+    defaultTableOptions:
+      charset: utf8mb4
+      collate: utf8mb4_unicode_ci
+
+nettrine.orm:
+  configuration:
+    autoGenerateProxyClasses: true
+    customStringFunctions:
       coalesce_sub: DoctrineExtensions\Query\Functions\CoalesceSubselectsFunction
       type: DoctrineExtensions\Query\Functions\TypeFunction
 
-fixtures:
-  locale: "en_US"
-  seed: 1
+nettrine.orm.annotations:
+  mapping:
+   App\Model\Entity: %appDir%/model/entity
 
-annotations:
+nettrine.annotations:
   ignore:
     - LoggedIn
     - POST
     - GET
     - PUT
     - DELETE
+
+nettrine.extensions.atlantic18:
+    softDeleteable: true
+
+nettrine.migrations:
+  table: doctrine_migrations # database table for applied migrations
+  column: version # database column for applied migrations
+  directory: %appDir%/../migrations # directory, where all migrations are stored
+  namespace: Migrations # namespace of migration classes
+
+fixtures:
+  locale: "en_US"
+  seed: 1
+
+console:
+  name: ReCodEx Core API

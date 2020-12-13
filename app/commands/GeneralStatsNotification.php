@@ -13,6 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class GeneralStatsNotification extends Command
 {
+    protected static $defaultName = 'notifications:general-stats';
+
     /** @var GeneralStatsEmailsSender */
     private $emailSender;
 

@@ -79,8 +79,9 @@ parameters:
 
 
 # The most important part - a database system connection
-doctrine:
-  host: "localhost"
-  user: "recodex"
-  password: "someSecretPasswordYouNeedToSetYourself"
-  dbname: "recodex"
+nettrine.dbal:
+  connection:
+    host: "localhost"
+    user: "recodex"
+    password: "someSecretPasswordYouNeedToSetYourself"
+    dbname: "recodex"

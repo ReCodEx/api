@@ -8,7 +8,7 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionFailure;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Nette;
 
@@ -22,18 +22,18 @@ class EvaluationLoadingHelper
     /** @var FailureHelper */
     private $failureHelper;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
      * @param EvaluationLoader $evaluationLoader
      * @param FailureHelper $failureHelper
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         EvaluationLoader $evaluationLoader,
         FailureHelper $failureHelper,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     ) {
         $this->evaluationLoader = $evaluationLoader;
         $this->failureHelper = $failureHelper;
@@ -63,7 +63,7 @@ class EvaluationLoadingHelper
                 }
 
                 $this->entityManager->persist($evaluation);
-                $this->entityManager->flush($submission);
+                $this->entityManager->flush();
             } catch (SubmissionEvaluationFailedException $e) {
                 // the result cannot be loaded even though the result MUST be ready at this point
                 $message = "Loading evaluation results failed with exception '{$e->getMessage()}'";
@@ -77,7 +77,7 @@ class EvaluationLoadingHelper
 
                 $this->entityManager->persist($failure);
                 $this->entityManager->persist($submission);
-                $this->entityManager->flush($failure);
+                $this->entityManager->flush();
 
                 $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_API_ERROR);
             }

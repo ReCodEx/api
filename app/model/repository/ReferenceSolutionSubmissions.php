@@ -3,15 +3,13 @@
 namespace App\Model\Repository;
 
 use App\Model\Entity\ReferenceSolutionSubmission;
-use Kdyby\Doctrine\EntityManager;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ReferenceSolutionSubmissions extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, ReferenceSolutionSubmission::class);
     }

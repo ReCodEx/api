@@ -1,17 +1,22 @@
 <?php
 
 use App\Model\Entity\User;
-use App\Security\AccessToken;
+use App\Model\Repository\Users;
+use App\Security\AccessManager;
 use App\Security\TokenScope;
+use Doctrine\ORM\Configuration;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\IResponse;
+use Nette\Application\Request;
+use Nette\Application\Responses\ForwardResponse;
 use Nette\Application\Responses\JsonResponse;
 use Nette\DI\Container;
 use Nette\Utils\FileSystem;
-use Kdyby\Doctrine\EntityManager;
-use Kdyby\Doctrine\Configuration;
 use Doctrine\Common\EventManager;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use Nettrine\ORM\EntityManagerDecorator;
 use Symfony\Component\Process\Process;
 
 class PresenterTestHelper
@@ -26,12 +31,12 @@ class PresenterTestHelper
         string $dbPath,
         Configuration $configuration,
         EventManager $eventManager
-    ): EntityManager {
-        return EntityManager::create(
+    ): EntityManagerDecorator {
+        return new EntityManagerDecorator(EntityManager::create(
             ["driver" => "pdo_sqlite", "path" => $dbPath],
             $configuration,
             $eventManager
-        );
+        ));
     }
 
     public static function replaceService(Container $container, $service, $type = null)
@@ -61,10 +66,10 @@ class PresenterTestHelper
         return $payload;
     }
 
-    public static function getEntityManager(Container $container): EntityManager
+    public static function getEntityManager(Container $container): EntityManagerInterface
     {
-        /** @var EntityManager $em */
-        $em = $container->getByType(EntityManager::class);
+        /** @var EntityManagerInterface $em */
+        $em = $container->getByType(EntityManagerInterface::class);
         return $em;
     }
 
@@ -91,7 +96,7 @@ class PresenterTestHelper
                 $originalEm->getConfiguration(),
                 $originalEm->getEventManager()
             );
-            static::replaceService($container, $schemaEm);
+            static::replaceService($container, $schemaEm, EntityManagerDecorator::class);
 
             $schemaTool = new Doctrine\ORM\Tools\SchemaTool($schemaEm);
             $schemaTool->dropSchema($schemaEm->getMetadataFactory()->getAllMetadata());
@@ -106,7 +111,7 @@ class PresenterTestHelper
             $originalEm->flush();
             $originalEm->clear();
 
-            $sqliteProcess = new Process("sqlite3 --bail $dbPath");
+            $sqliteProcess = new Process(["sqlite3", "--bail", $dbPath]);
             $sqliteProcess->setInput(".dump");
             $rc = $sqliteProcess->run();
 
@@ -119,11 +124,11 @@ class PresenterTestHelper
             file_put_contents($dumpPath, $sqliteProcess->getOutput());
 
             // Replace the temporary entity manager with the original one
-            static::replaceService($container, $originalEm);
+            static::replaceService($container, $originalEm, EntityManagerDecorator::class);
         }
 
         flock($lockHandle, LOCK_UN);
-        $originalEm->getConnection()->exec(file_get_contents($dumpPath));
+        $originalEm->getConnection()->executeStatement(file_get_contents($dumpPath));
         $originalEm->clear();
     }
 
@@ -143,10 +148,10 @@ class PresenterTestHelper
     {
         /** @var \Nette\Security\User $userSession */
         $userSession = $container->getByType(\Nette\Security\User::class);
-        $user = $container->getByType(\App\Model\Repository\Users::class)->getByEmail($login);
+        $user = $container->getByType(Users::class)->getByEmail($login);
 
-        /** @var \App\Security\AccessManager $accessManager */
-        $accessManager = $container->getByType(\App\Security\AccessManager::class);
+        /** @var AccessManager $accessManager */
+        $accessManager = $container->getByType(AccessManager::class);
         $tokenText = $accessManager->issueToken($user, null, [TokenScope::MASTER, TokenScope::REFRESH]);
         $token = $accessManager->decodeToken($tokenText);
 
@@ -162,7 +167,7 @@ class PresenterTestHelper
     public static function getUser(Container $container, $login = null): User
     {
         $login = $login ?? self::ADMIN_LOGIN;
-        return $container->getByType(\App\Model\Repository\Users::class)->getByEmail($login);
+        return $container->getByType(Users::class)->getByEmail($login);
     }
 
     public static function jsonResponse($payload)
@@ -189,12 +194,12 @@ class PresenterTestHelper
         array $post = [],
         $expectedCode = 200
     ) {
-        $request = new \Nette\Application\Request($module, $method, $params, $post);
+        $request = new Request($module, $method, $params, $post);
         $response = $presenter->run($request);
-        while ($response instanceof \Nette\Application\Responses\ForwardResponse) {
+        while ($response instanceof ForwardResponse) {
             $response = $presenter->run($response->getRequest());
         }
-        Tester\Assert::type(\Nette\Application\Responses\JsonResponse::class, $response);
+        Tester\Assert::type(JsonResponse::class, $response);
 
         $result = $response->getPayload();
         Tester\Assert::equal($expectedCode, $result['code']);

@@ -6,7 +6,7 @@ use App\Model\Entity\Pipeline;
 use App\Model\Repository\Pipelines;
 use DateTime;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,14 +17,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupPipelineConfigs extends Command
 {
+    protected static $defaultName = 'db:cleanup:pipeline-configs';
 
     /** @var Pipelines */
     private $pipelines;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(Pipelines $pipelines, EntityManager $entityManager)
+    public function __construct(Pipelines $pipelines, EntityManagerInterface $entityManager)
     {
         parent::__construct();
         $this->pipelines = $pipelines;

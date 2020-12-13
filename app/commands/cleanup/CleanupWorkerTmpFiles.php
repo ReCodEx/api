@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CleanupWorkerTmpFiles extends Command
 {
+    protected static $defaultName = 'fs:cleanup:worker';
+
     /**
      * @var FileStorageManager
      */

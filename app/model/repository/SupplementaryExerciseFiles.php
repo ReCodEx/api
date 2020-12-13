@@ -2,8 +2,8 @@
 
 namespace App\Model\Repository;
 
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\SupplementaryExerciseFile;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method SupplementaryExerciseFile findOrThrow($id)
@@ -11,7 +11,7 @@ use App\Model\Entity\SupplementaryExerciseFile;
 class SupplementaryExerciseFiles extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, SupplementaryExerciseFile::class);
     }

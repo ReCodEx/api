@@ -4,18 +4,16 @@ namespace App\Model\Repository;
 
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
-use Kdyby\Doctrine\EntityManager;
-use Doctrine\ORM\Query;
 use App\Model\Entity\User;
-use App\Exceptions\InvalidArgumentException;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method User findOrThrow(string $id)
  */
 class Users extends BaseSoftDeleteRepository
 {
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, User::class);
     }

@@ -15,6 +15,7 @@ use App\Model\Repository\Users;
 use App\Model\View\UserViewFactory;
 use App\Security\Roles;
 use App\V1Module\Presenters\UsersPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 /**
@@ -26,7 +27,7 @@ class TestUsersPresenter extends Tester\TestCase
     /** @var UsersPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var Nette\Security\User */

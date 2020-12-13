@@ -5,6 +5,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Helpers\Notifications\AssignmentCommentsEmailsSender;
 use App\Helpers\Notifications\SolutionCommentsEmailsSender;
 use App\V1Module\Presenters\CommentsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -19,7 +20,7 @@ class TestCommentsPresenter extends Tester\TestCase
     /** @var CommentsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

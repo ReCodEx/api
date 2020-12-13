@@ -9,7 +9,6 @@ use App\Helpers\MonitorConfig;
 use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\FileStorageManager;
-use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
@@ -17,10 +16,10 @@ use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\V1Module\Presenters\SubmitPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Model\Entity\UploadedFile;
-use App\Model\Entity\AssignmentSolution;
 
 
 /**
@@ -31,7 +30,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var SubmitPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

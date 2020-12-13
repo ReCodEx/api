@@ -13,6 +13,7 @@ use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -24,7 +25,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     /** @var AssignmentSolutionsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

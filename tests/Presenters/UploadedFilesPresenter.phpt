@@ -5,7 +5,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Model\Entity\AttachmentFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
-use App\Model\Entity\SolutionFile;
 use App\Model\Repository\Logins;
 use App\Model\Repository\AssignmentSolutions;
 use App\Exceptions\ForbiddenRequestException;
@@ -15,10 +14,9 @@ use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Json;
 use Tester\Assert;
-use org\bovigo\vfs\vfsStream;
 
 /**
  * @httpCode any
@@ -38,7 +36,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     /** @var UploadedFilesPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */
@@ -413,8 +411,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        /** @var EntityManager $em */
-        $em = $this->container->getByType(EntityManager::class);
+        /** @var EntityManagerInterface $em */
+        $em = $this->container->getByType(EntityManagerInterface::class);
         $file = current($em->getRepository(AttachmentFile::class)->findAll());
 
         $mockFile = Mockery::mock(LocalImmutableFile::class);
@@ -439,8 +437,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
 
-        /** @var EntityManager $em */
-        $em = $this->container->getByType(EntityManager::class);
+        /** @var EntityManagerInterface $em */
+        $em = $this->container->getByType(EntityManagerInterface::class);
         $file = current($em->getRepository(AttachmentFile::class)->findAll());
 
         $mockStorage = Mockery::mock(FileStorageManager::class);

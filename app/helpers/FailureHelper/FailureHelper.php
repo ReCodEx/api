@@ -5,9 +5,9 @@ namespace App\Helpers;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Nette\Utils\Arrays;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\ReportedErrors;
 
 /**
@@ -31,16 +31,16 @@ class FailureHelper
     /** @var string Prefix of mail subject to be used */
     private $subjectPrefix;
 
-    /** @var EntityManager Database entity manager */
+    /** @var EntityManagerInterface Database entity manager */
     private $em;
 
     /**
      * Constructor
-     * @param EntityManager $em Database entity manager
+     * @param EntityManagerInterface $em Database entity manager
      * @param EmailHelper $emailHelper Instance of object which is able to sending mails
      * @param array $params Array of configurable options like destination addresses etc.
      */
-    public function __construct(EntityManager $em, EmailHelper $emailHelper, array $params)
+    public function __construct(EntityManagerInterface $em, EmailHelper $emailHelper, array $params)
     {
         $this->em = $em;
         $this->emailHelper = $emailHelper;
@@ -68,7 +68,7 @@ class FailureHelper
         // Save the report to the database
         $entry = new ReportedErrors($type, $recipients, $subject, $message);
         $this->em->persist($entry);
-        $this->em->flush($entry);
+        $this->em->flush();
 
         // Send the mail
         return $this->emailHelper->send(

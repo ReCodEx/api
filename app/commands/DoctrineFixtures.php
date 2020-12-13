@@ -4,8 +4,8 @@ namespace App\Console;
 
 use App\Model\Entity\Pipeline;
 use Doctrine\DBAL;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AssignedGenerator;
-use Kdyby\Doctrine\EntityManager;
 use Nette\Utils\Finder;
 use Nette\Utils\Strings;
 use SplFileInfo;
@@ -23,6 +23,7 @@ use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
  */
 class DoctrineFixtures extends Command
 {
+    protected static $defaultName = 'db:fill';
 
     /**
      * Loader of YAML files with database values
@@ -38,7 +39,7 @@ class DoctrineFixtures extends Command
 
     /**
      * Entity manager used for setting of db metadata
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $em;
 
@@ -46,12 +47,12 @@ class DoctrineFixtures extends Command
      * Constructor, some magic with fixtures
      * @param AliceLoaderInterface $aliceLoader Fixture loader
      * @param DBAL\Connection $dbConnection Database connection
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         AliceLoaderInterface $aliceLoader,
         DBAL\Connection $dbConnection,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     ) {
         parent::__construct();
         $this->aliceLoader = $aliceLoader;

@@ -4,10 +4,9 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\Group;
 use App\Model\Entity\SolutionFile;
-use Nette;
 use DateTime;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\UploadedFile;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method UploadedFile findOrThrow($id)
@@ -15,7 +14,7 @@ use App\Model\Entity\UploadedFile;
 class UploadedFiles extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, UploadedFile::class);
     }

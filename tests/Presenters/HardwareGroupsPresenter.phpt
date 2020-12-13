@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\HardwareGroupsPresenter;
 use App\V1Module\Presenters\UsersPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\HardwareGroup;
@@ -17,7 +18,7 @@ class TestHardwareGroupsPresenter extends Tester\TestCase
     /** @var UsersPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var Nette\Security\User */

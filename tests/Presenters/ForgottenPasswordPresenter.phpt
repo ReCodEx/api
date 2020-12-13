@@ -5,6 +5,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Security\Identity;
 use App\Security\TokenScope;
 use App\V1Module\Presenters\ForgottenPasswordPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -19,7 +20,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     /** @var ForgottenPasswordPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

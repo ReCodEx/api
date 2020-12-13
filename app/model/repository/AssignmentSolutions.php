@@ -2,11 +2,10 @@
 
 namespace App\Model\Repository;
 
-use App\Helpers\Pair;
-use App\Model\Entity\User;
-use Kdyby\Doctrine\EntityManager;
-use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
 
 /**
@@ -16,7 +15,7 @@ use Nette\Utils\Arrays;
 class AssignmentSolutions extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, AssignmentSolution::class);
     }
@@ -28,15 +27,14 @@ class AssignmentSolutions extends BaseRepository
      */
     public function findSolutions(Assignment $assignment, User $user)
     {
-        return $this->findBy(
-            [
-                "solution.author" => $user,
-                "assignment" => $assignment
-            ],
-            [
-                "solution.createdAt" => "DESC"
-            ]
-        );
+        $qb = $this->createQueryBuilder("asol");
+        $qb->leftJoin("asol.solution", "sol")
+            ->andWhere($qb->expr()->eq("sol.author", ":author"))
+            ->andWhere($qb->expr()->eq("asol.assignment", ":assignment"))
+            ->setParameter("author", $user->getId())
+            ->setParameter("assignment", $assignment->getId())
+            ->orderBy("sol.createdAt", "DESC");
+        return $qb->getQuery()->getResult();
     }
 
     /**
@@ -98,7 +96,12 @@ class AssignmentSolutions extends BaseRepository
      */
     private function findValidSolutionsForAssignments(array $assignments, ?User $user = null)
     {
-        $assignmentIds = array_map(function ($assignment) { return $assignment->getId(); }, $assignments);
+        $assignmentIds = array_map(
+            function ($assignment) {
+                return $assignment->getId();
+            },
+            $assignments
+        );
 
         $qb = $this->createQueryBuilder("asol");
         $qb->andWhere($qb->expr()->in("asol.assignment", $assignmentIds));

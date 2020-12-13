@@ -6,8 +6,8 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\User;
 use App\Model\Entity\Group;
 use DateTime;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Assignment;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method Assignment findOrThrow($id)
@@ -15,7 +15,7 @@ use App\Model\Entity\Assignment;
 class Assignments extends BaseSoftDeleteRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Assignment::class);
     }

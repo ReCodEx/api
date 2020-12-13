@@ -1,7 +1,7 @@
 <?php
 
-use App\Model\Entity\SubmissionFailure;
 use App\V1Module\Presenters\SubmissionFailuresPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
@@ -17,7 +17,7 @@ class TestSubmissionFailures extends Tester\TestCase
     /** @var SubmissionFailuresPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

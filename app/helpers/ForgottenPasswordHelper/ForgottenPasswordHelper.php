@@ -8,10 +8,9 @@ use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailRenderResult;
 use App\Security\TokenScope;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Latte;
 use Nette\Utils\Arrays;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use App\Model\Entity\ForgottenPassword;
 use App\Security\AccessManager;
@@ -26,7 +25,7 @@ class ForgottenPasswordHelper
 
     /**
      * Database entity manager
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $em;
 
@@ -62,13 +61,13 @@ class ForgottenPasswordHelper
 
     /**
      * Constructor
-     * @param EntityManager $em
+     * @param EntityManagerInterface $em
      * @param EmailHelper $emailHelper
      * @param AccessManager $accessManager
      * @param array $params Parameters from configuration file
      */
     public function __construct(
-        EntityManager $em,
+        EntityManagerInterface $em,
         EmailHelper $emailHelper,
         AccessManager $accessManager,
         array $params

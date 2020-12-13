@@ -7,14 +7,13 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
-use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Entity\Group;
 use App\Model\Repository\Users;
 use App\Model\Repository\Groups;
 use App\V1Module\Presenters\RegistrationPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
-use App\Helpers\ExternalLogin\UserData;
 
 /**
  * @httpCode any
@@ -25,7 +24,7 @@ class TestRegistrationPresenter extends Tester\TestCase
     /** @var RegistrationPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var Nette\Security\User */

@@ -14,6 +14,8 @@ use Tracy\ILogger;
 
 class CleanupUploads extends Command
 {
+    protected static $defaultName = 'db:cleanup:uploads';
+
     /**
      * @var UploadsConfig
      */

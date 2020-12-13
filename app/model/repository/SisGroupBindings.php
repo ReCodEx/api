@@ -5,11 +5,11 @@ namespace App\Model\Repository;
 use App\Helpers\GroupBindings\IGroupBindingProvider;
 use App\Model\Entity\Group;
 use App\Model\Entity\SisGroupBinding;
-use Kdyby\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
 {
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, SisGroupBinding::class);
     }
@@ -20,12 +20,12 @@ class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
      */
     public function findByCode($code)
     {
-        return $this->findBy(
-            [
-                'code' => $code,
-                'group.deletedAt' => null
-            ]
-        );
+        $qb = $this->createQueryBuilder("sis");
+        $qb->leftJoin("sis.group", "gr")
+            ->andWhere($qb->expr()->eq("sis.code", ":code"))
+            ->andWhere($qb->expr()->isNull("gr.deletedAt"))
+            ->setParameter("code", $code);
+        return $qb->getQuery()->getResult();
     }
 
     /**

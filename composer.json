@@ -1,71 +1,66 @@
 {
-  "name": "recodex/api",
-  "description": "Web REST API of ReCodEx Code Evaluator.",
-  "homepage": "https://github.com/ReCodEx/api",
-  "type": "project",
-  "license": [
-    "MIT"
-  ],
-  "authors": [
-    {
-      "name": "ReCodEx Team",
-      "homepage": "https://github.com/ReCodEx/api/graphs/contributors"
-    }
-  ],
-  "scripts": {
-    "post-install-cmd": [
-      "composer dump-autoload --optimize --classmap-authoritative"
-    ]
-  },
-  "require": {
-    "php": ">=7.3",
-    "ext-yaml": ">=2.0",
-    "ext-json": ">=1.7",
-    "ext-zip": ">=1.15",
-    "nette/application": "^3.0",
-    "nette/bootstrap": "^3.0",
-    "nette/caching": "^3.0",
-    "nette/database": "^3.0",
-    "nette/di": "^3.0",
-    "nette/finder": "^2.5",
-    "nette/forms": "^3.0",
-    "nette/http": "^3.0",
-    "nette/mail": "^3.1",
-    "nette/robot-loader": "^3.3",
-    "nette/safe-stream": "^2.4",
-    "nette/security": "^3.0",
-    "nette/utils": "^3.2",
-    "latte/latte": "^2.9",
-    "tracy/tracy": "^2.7",
-    "dg/adminer-custom": "^1.24",
-    "kdyby/doctrine": "master@dev",
-    "kdyby/doctrine-magic-accessors": "*",
-    "kdyby/doctrine-cache": "master@dev as v3.0.0",
-    "kdyby/console": "master@dev",
-    "kdyby/events": "master@dev",
-    "gedmo/doctrine-extensions": "@stable",
-    "doctrine/orm": "^2.7",
-    "doctrine/dbal": "~2.9.0",
-    "doctrine/migrations": "^2.3",
-    "doctrine/common": "^2.13",
-    "guzzlehttp/guzzle": "~6.5",
-    "symfony/yaml": "^3.4",
-    "symfony/process": "^3.4",
-    "firebase/php-jwt": "^5.2",
-    "forxer/gravatar": "^2.1",
-    "mrdm-nl/ldap": "^1.1",
-    "bjeavons/zxcvbn-php": "^0.3.0",
-    "limenet/git-version": "^0.1",
-    "fzaninotto/faker": "~1.9",
-    "nelmio/alice": "~2.3"
-  },
-  "require-dev": {
-    "mockery/mockery": "@stable",
-    "mikey179/vfsstream": "@stable",
-    "phpstan/phpstan": "@stable",
-    "nette/tester": "^2.3",
-    "phpstan/phpstan-nette": "^0.12.10"
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+    "name": "recodex/api",
+    "description": "Web REST API of ReCodEx Code Evaluator.",
+    "homepage": "https://github.com/ReCodEx/api",
+    "type": "project",
+    "license": [
+        "MIT"
+    ],
+    "authors": [
+        {
+            "name": "ReCodEx Team",
+            "homepage": "https://github.com/ReCodEx/api/graphs/contributors"
+        }
+    ],
+    "scripts": {
+        "post-install-cmd": [
+            "composer dump-autoload --optimize --classmap-authoritative"
+        ]
+    },
+    "require": {
+        "php": ">=7.3",
+        "ext-yaml": ">=2.0",
+        "ext-json": ">=1.7",
+        "ext-zip": ">=1.15",
+        "nette/application": "^3.0",
+        "nette/bootstrap": "^3.0",
+        "nette/caching": "^3.0",
+        "nette/database": "^3.0",
+        "nette/di": "^3.0",
+        "nette/finder": "^2.5",
+        "nette/forms": "^3.0",
+        "nette/http": "^3.0",
+        "nette/mail": "^3.1",
+        "nette/robot-loader": "^3.3",
+        "nette/safe-stream": "^2.4",
+        "nette/security": "^3.0",
+        "nette/utils": "^3.2",
+        "nette/reflection": "^2.4",
+        "latte/latte": "^2.9",
+        "tracy/tracy": "^2.7",
+        "dg/adminer-custom": "^1.24",
+        "contributte/console": "^0.9.0",
+        "nettrine/orm": "^0.8.0",
+        "nettrine/dbal": "^0.7.0",
+        "nettrine/migrations": "^0.7.0",
+        "nettrine/extensions-atlantic18": "^0.5.0",
+        "kdyby/doctrine-magic-accessors": "*",
+        "guzzlehttp/guzzle": "~6.5",
+        "symfony/process": "^5.2",
+        "firebase/php-jwt": "^5.2",
+        "forxer/gravatar": "^2.1",
+        "mrdm-nl/ldap": "^1.1",
+        "bjeavons/zxcvbn-php": "^0.3",
+        "limenet/git-version": "^0.1",
+        "nelmio/alice": "^2.3"
+    },
+    "require-dev": {
+        "mockery/mockery": "@stable",
+        "mikey179/vfsstream": "@stable",
+        "phpstan/phpstan": "@stable",
+        "nette/tester": "^2.3",
+        "phpstan/phpstan-nette": "^0.12.10"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

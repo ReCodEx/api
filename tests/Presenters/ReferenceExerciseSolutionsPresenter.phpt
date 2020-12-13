@@ -18,6 +18,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\V1Module\Presenters\ReferenceExerciseSolutionsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 
@@ -30,7 +31,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     /** @var ReferenceExerciseSolutionsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

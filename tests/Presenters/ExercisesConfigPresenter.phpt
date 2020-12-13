@@ -9,6 +9,7 @@ use App\Helpers\ExercisesConfig;
 use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\Yaml;
 
@@ -20,7 +21,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     /** @var ExercisesConfigPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

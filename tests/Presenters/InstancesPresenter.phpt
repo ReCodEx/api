@@ -2,9 +2,9 @@
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Helpers\Localizations;
 use App\Model\Entity\Instance;
 use App\V1Module\Presenters\InstancesPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Model\Entity\Licence;
 
@@ -23,7 +23,7 @@ class TestInstancesPresenter extends Tester\TestCase
     /** @var InstancesPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

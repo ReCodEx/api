@@ -5,6 +5,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\NotFoundException;
 use App\Model\Entity\Notification;
 use App\V1Module\Presenters\NotificationsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -16,7 +17,7 @@ class TestNotificationsPresenter extends Tester\TestCase
     /** @var NotificationsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

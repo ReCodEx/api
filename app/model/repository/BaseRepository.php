@@ -3,18 +3,18 @@
 namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
-use Doctrine\Common\Collections\Criteria;
-use Kdyby\Doctrine\EntityManager;
-use Kdyby\Doctrine\EntityRepository;
-use Nette;
 use DateTime;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Nette;
 
 class BaseRepository
 {
     use Nette\SmartObject;
 
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     protected $em;
     /**
@@ -22,10 +22,12 @@ class BaseRepository
      */
     protected $repository;
 
-    public function __construct(EntityManager $em, $entityType)
+    public function __construct(EntityManagerInterface $em, $entityType)
     {
         $this->em = $em;
-        $this->repository = $em->getRepository($entityType);
+        /** @var EntityRepository $repository */
+        $repository = $em->getRepository($entityType);
+        $this->repository = $repository;
     }
 
     public function get($id)
@@ -43,14 +45,14 @@ class BaseRepository
         return $this->repository->findAll();
     }
 
-    public function findBy($params, $orderBy = [])
+    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
-        return $this->repository->findBy($params, $orderBy);
+        return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
     }
 
-    public function findOneBy($params)
+    public function findOneBy(array $criteria)
     {
-        return $this->repository->findOneBy($params);
+        return $this->repository->findOneBy($criteria);
     }
 
     public function findByIds(array $ids)
