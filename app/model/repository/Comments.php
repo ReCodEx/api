@@ -2,9 +2,9 @@
 
 namespace App\Model\Repository;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Nette;
 use DateTime;
-use Kdyby\Doctrine\EntityManager;
 use Doctrine\Common\Collections\Criteria;
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
@@ -16,7 +16,7 @@ class Comments extends BaseRepository
     private $threads;
     private $comments;
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Comment::class);
         $this->threads = $em->getRepository(CommentThread::class);

@@ -13,6 +13,7 @@ use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExerciseFilesPresenter;
 use App\Model\Entity\SupplementaryExerciseFile;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -24,7 +25,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     /** @var ExerciseFilesPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

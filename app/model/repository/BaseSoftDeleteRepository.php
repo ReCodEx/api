@@ -4,13 +4,13 @@ namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
 use Doctrine\Common\Collections\Criteria;
-use Kdyby\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class BaseSoftDeleteRepository extends BaseRepository
 {
     protected $softDeleteColumn;
 
-    public function __construct(EntityManager $em, $entityType, $softDeleteColumn = "deletedAt")
+    public function __construct(EntityManagerInterface $em, $entityType, $softDeleteColumn = "deletedAt")
     {
         parent::__construct($em, $entityType);
         $this->softDeleteColumn = $softDeleteColumn;
@@ -39,24 +39,26 @@ class BaseSoftDeleteRepository extends BaseRepository
         return $this->repository->findAll();
     }
 
-    public function findBy($params, $orderBy = [])
+    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
         return $this->repository->findBy(
             array_merge(
-                $params,
+                $criteria,
                 [
                     $this->softDeleteColumn => null
                 ]
             ),
-            $orderBy
+            $orderBy,
+            $limit,
+            $offset
         );
     }
 
-    public function findOneBy($params)
+    public function findOneBy(array $criteria)
     {
         return $this->repository->findOneBy(
             array_merge(
-                $params,
+                $criteria,
                 [
                     $this->softDeleteColumn => null
                 ]

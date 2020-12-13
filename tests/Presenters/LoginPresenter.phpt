@@ -8,6 +8,7 @@ use App\Security\AccessToken;
 use App\Security\Identity;
 use App\Security\TokenScope;
 use App\V1Module\Presenters\LoginPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
@@ -26,7 +27,7 @@ class TestLoginPresenter extends Tester\TestCase
     /** @var LoginPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

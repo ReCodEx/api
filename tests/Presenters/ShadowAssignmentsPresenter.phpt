@@ -6,6 +6,7 @@ use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Model\Entity\Assignment;
 use App\V1Module\Presenters\ShadowAssignmentsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Exceptions\NotFoundException;
@@ -19,7 +20,7 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     /** @var ShadowAssignmentsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

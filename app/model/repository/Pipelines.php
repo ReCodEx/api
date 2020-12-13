@@ -2,13 +2,10 @@
 
 namespace App\Model\Repository;
 
-use Doctrine\Common\Collections\Collection;
-use Kdyby\Doctrine\EntityManager;
-use Doctrine\ORM\Query;
 use App\Model\Entity\Pipeline;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
-use App\Exceptions\InvalidArgumentException;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method Pipeline findOrThrow($id)
@@ -17,7 +14,7 @@ use App\Exceptions\InvalidArgumentException;
 class Pipelines extends BaseSoftDeleteRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Pipeline::class);
     }

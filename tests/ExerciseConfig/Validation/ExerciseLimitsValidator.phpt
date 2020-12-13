@@ -14,7 +14,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Repository\Pipelines;
-use Kdyby\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\DI\Container;
 use Tester\Assert;
 
@@ -33,7 +33,7 @@ class TestExerciseLimitsValidator extends Tester\TestCase
     /** @var Pipelines */
     private $pipelines;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $em;
 
     /** @var Loader */

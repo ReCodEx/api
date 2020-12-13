@@ -2,19 +2,14 @@
 
 namespace App\Model\Repository;
 
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\Query;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
-use App\Model\Entity\Group;
 use App\Model\Entity\User;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
-use App\Exceptions\InvalidArgumentException;
 
 /**
  * @method Exercise findOrThrow($id)
@@ -22,7 +17,7 @@ use App\Exceptions\InvalidArgumentException;
 class Exercises extends BaseSoftDeleteRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Exercise::class);
     }

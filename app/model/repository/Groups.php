@@ -10,8 +10,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\GroupMembership;
 use App\Model\Entity\User;
 use App\Model\Helpers\PaginationDbHelper;
-use Doctrine\Common\Collections\Criteria;
-use Kdyby\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method Group findOrThrow($id)
@@ -19,7 +18,7 @@ use Kdyby\Doctrine\EntityManager;
 class Groups extends BaseSoftDeleteRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Group::class);
     }

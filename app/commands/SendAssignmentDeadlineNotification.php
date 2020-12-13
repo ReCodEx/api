@@ -12,6 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SendAssignmentDeadlineNotification extends Command
 {
+    protected static $defaultName = 'notifications:assignment-deadlines';
+
     /** @var AssignmentEmailsSender */
     private $sender;
 

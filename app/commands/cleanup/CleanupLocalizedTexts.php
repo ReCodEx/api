@@ -8,7 +8,7 @@ use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use DateTime;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,6 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupLocalizedTexts extends Command
 {
+    protected static $defaultName = 'db:cleanup:localized-texts';
 
     /** @var Exercises */
     private $exercises;
@@ -26,10 +27,10 @@ class CleanupLocalizedTexts extends Command
     /** @var Assignments */
     private $assignments;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(Exercises $exercises, Assignments $assignments, EntityManager $entityManager)
+    public function __construct(Exercises $exercises, Assignments $assignments, EntityManagerInterface $entityManager)
     {
         parent::__construct();
         $this->exercises = $exercises;

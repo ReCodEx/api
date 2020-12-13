@@ -14,6 +14,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Tester\Assert;
@@ -35,7 +36,7 @@ class TestDeadlineNotifications extends Tester\TestCase
     /** @var SendAssignmentDeadlineNotification */
     protected $command;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var Nette\DI\Container */

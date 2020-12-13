@@ -7,10 +7,10 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Users;
 use App\Model\Entity\UploadedFile;
 use App\Helpers\FileStorageManager;
-use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -22,7 +22,7 @@ class TestCleanupUploads extends Tester\TestCase
     /** @var CleanupUploads */
     protected $command;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var Nette\DI\Container */

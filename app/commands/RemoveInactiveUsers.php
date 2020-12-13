@@ -20,6 +20,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  */
 class RemoveInactiveUsers extends Command
 {
+    protected static $defaultName = 'users:remove-inactive';
+
     /** @var string */
     private $inactivityThreshold;
 

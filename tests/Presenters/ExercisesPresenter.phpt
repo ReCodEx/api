@@ -12,6 +12,7 @@ use App\Model\Entity\Pipeline;
 use App\Model\Entity\Group;
 use App\Security\AccessManager;
 use App\V1Module\Presenters\ExercisesPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -26,7 +27,7 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var ExercisesPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

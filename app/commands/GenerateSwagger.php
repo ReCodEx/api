@@ -4,10 +4,12 @@ namespace App\Console;
 
 use App\Helpers\ApiConfig;
 use App\V1Module\Router\MethodRoute;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use JsonSerializable;
 use Nette\Application\IPresenterFactory;
-use Nette\Application\Routers\Route;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\UI\Presenter;
 use Nette\Reflection\ClassType;
@@ -28,10 +30,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Helpers\Yaml;
 use Nelmio\Alice\Fixtures;
-use Kdyby;
 
 class GenerateSwagger extends Command
 {
+    protected static $defaultName = 'swagger:generate';
+
     /**
      * @var RouteList
      */
@@ -48,7 +51,7 @@ class GenerateSwagger extends Command
     private $fixtureLoader;
 
     /**
-     * @var Kdyby\Doctrine\EntityManager
+     * @var EntityManagerInterface
      */
     private $em;
 
@@ -84,7 +87,7 @@ class GenerateSwagger extends Command
         RouteList $router,
         IPresenterFactory $presenterFactory,
         Fixtures\Loader $loader,
-        Kdyby\Doctrine\EntityManager $em,
+        EntityManagerInterface $em,
         ApiConfig $apiConfig
     ) {
         parent::__construct();
@@ -501,9 +504,10 @@ class GenerateSwagger extends Command
         sort($files);
 
         // Create a DB in memory so that we don't mess up the default one
-        $em = Kdyby\Doctrine\EntityManager::create(
-            Kdyby\Doctrine\Connection::create(
+        $em = EntityManager::create(
+            new Connection(
                 ['url' => 'sqlite://:memory:'],
+                $this->em->getConnection()->getDriver(),
                 $this->em->getConfiguration(),
                 $this->em->getEventManager()
             ),

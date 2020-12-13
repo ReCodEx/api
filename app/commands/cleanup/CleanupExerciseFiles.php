@@ -13,6 +13,8 @@ use Tracy\ILogger;
 
 class CleanupExercisesFiles extends Command
 {
+    protected static $defaultName = 'db:cleanup:exercise-files';
+
     /**
      * @var SupplementaryExerciseFiles
      */

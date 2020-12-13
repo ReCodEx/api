@@ -12,6 +12,7 @@ use App\Model\Entity\Pipeline;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\PipelinesPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\UuidGenerator;
 use Tester\Assert;
 
@@ -24,7 +25,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     /** @var PipelinesPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

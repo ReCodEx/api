@@ -11,7 +11,7 @@ use App\Model\Repository\SolutionEvaluations;
 use DateTime;
 use Exception;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,6 +22,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupExerciseConfigs extends Command
 {
+    protected static $defaultName = 'db:cleanup:exercise-configs';
+
     /** @var Exercises */
     private $exercises;
 
@@ -31,14 +33,14 @@ class CleanupExerciseConfigs extends Command
     /** @var SolutionEvaluations */
     private $solutionEvaluations;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     public function __construct(
         Exercises $exercises,
         Assignments $assignments,
         SolutionEvaluations $solutionEvaluations,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     ) {
         parent::__construct();
         $this->exercises = $exercises;

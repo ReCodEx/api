@@ -2,8 +2,8 @@
 
 namespace App\Model\Repository;
 
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Licence;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method Licence findOrThrow($id)
@@ -11,7 +11,7 @@ use App\Model\Entity\Licence;
 class Licences extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Licence::class);
     }

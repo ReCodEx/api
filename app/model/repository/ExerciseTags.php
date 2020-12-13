@@ -4,12 +4,12 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
-use Kdyby\Doctrine\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ExerciseTags extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, ExerciseTag::class);
     }
@@ -69,7 +69,7 @@ class ExerciseTags extends BaseRepository
      */
     public function renameTag(string $oldName, string $newName)
     {
-        $qb = $this->repository->createQueryBuilder();
+        $qb = $this->createQueryBuilder('et');
         $qb->update(ExerciseTag::class, 'et')->set('et.name', ':newName')->where('et.name = :oldName')
             ->setParameter('oldName', $oldName)->setParameter('newName', $newName);
         return $qb->getQuery()->execute();
@@ -82,7 +82,7 @@ class ExerciseTags extends BaseRepository
      */
     public function removeTag(string $name)
     {
-        $qb = $this->repository->createQueryBuilder();
+        $qb = $this->createQueryBuilder('et');
         $qb->delete(ExerciseTag::class, 'et')->where('et.name = :name')->setParameter('name', $name);
         return $qb->getQuery()->execute();
     }

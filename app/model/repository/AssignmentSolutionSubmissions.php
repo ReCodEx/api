@@ -4,8 +4,8 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
-use Kdyby\Doctrine\EntityManager;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method AssignmentSolutionSubmission findOrThrow($id)
@@ -13,7 +13,7 @@ use DateTime;
 class AssignmentSolutionSubmissions extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, AssignmentSolutionSubmission::class);
     }

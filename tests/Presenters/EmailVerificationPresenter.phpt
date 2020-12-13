@@ -8,6 +8,7 @@ use App\Helpers\EmailVerificationHelper;
 use App\Security\TokenScope;
 use App\V1Module\Presenters\EmailVerificationPresenter;
 use App\V1Module\Presenters\GroupsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 
@@ -19,7 +20,7 @@ class TestEmailVerificationPresenter extends Tester\TestCase
     /** @var GroupsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */

@@ -2,16 +2,16 @@
 
 namespace App\Model\Repository;
 
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Exceptions\NotFoundException;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Security\Passwords;
 
 class Logins extends BaseRepository
 {
 
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Login::class);
     }

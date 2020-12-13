@@ -21,6 +21,7 @@ use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\V1Module\Presenters\AssignmentsPresenter;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Json;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -36,7 +37,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     /** @var AssignmentsPresenter */
     protected $presenter;
 
-    /** @var Kdyby\Doctrine\EntityManager */
+    /** @var EntityManagerInterface */
     protected $em;
 
     /** @var  Nette\DI\Container */
