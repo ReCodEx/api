@@ -80,13 +80,13 @@ dependencies to the `vendor/` subdirectory.
    `app/config/config.local.neon` (for an example, see 
    `app/config/config.local.neon.example`)
    do not forget to set the database configuration, especially the credentials.
-4. Setup the database schema by running `php www/index.php migrations:migrate`
+4. Setup the database schema by running `bin/console migrations:migrate`
 
 
 ### Post-Install
 
 You may optionally fill the database with initial values by running
-`php www/index.php db:fill init`, after this database will contain:
+`bin/console db:fill init`, after this database will contain:
 * Instance with administrator registered as local account with credentials username: `admin@admin.com`, password: `admin`
 * Runtime environments which ReCodEx can handle
 * Default single hardware group which might be used for workers
@@ -157,11 +157,11 @@ notifications of assignment deadlines and cleaning up uploaded files. The
 recommended way of ensuring this is using a crontab like this:
 
 ```
-00	03	*	*	6	php www/index.php db:cleanup:uploads
-15	03	*	*	6	php www/index.php db:cleanup:exercise-configs
-30	03	*	*	6	php www/index.php db:cleanup:localized-texts
-45	03	*	*	6	php www/index.php db:cleanup:pipeline-configs
-00	04	*	*	*	php www/index.php notifications:assignment-deadlines
+00	03	*	*	6	bin/console db:cleanup:uploads
+15	03	*	*	6	bin/console db:cleanup:exercise-configs
+30	03	*	*	6	bin/console db:cleanup:localized-texts
+45	03	*	*	6	bin/console db:cleanup:pipeline-configs
+00	04	*	*	*	bin/console notifications:assignment-deadlines
 ```
 
 The example above will send email notifications at 4 a.m. every day and perform database garbage collection tasks between 3 and 4 a.m. every Saturday. 
