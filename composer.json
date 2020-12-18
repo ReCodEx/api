@@ -17,6 +17,9 @@
             "composer dump-autoload --optimize --classmap-authoritative"
         ]
     },
+    "autoload": {
+        "classmap": ["app/Bootstrap.php"]
+    },
     "require": {
         "php": ">=7.3",
         "ext-yaml": ">=2.0",
