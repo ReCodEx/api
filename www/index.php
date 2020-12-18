@@ -18,5 +18,9 @@ if (!empty($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD'])
 // Uncomment this line if you must temporarily take down your site for maintenance.
 // require __DIR__ . '/.maintenance.php';
 
-$container = require __DIR__ . '/../app/bootstrap.php';
-$container->getByType(Nette\Application\Application::class)->run();
+require __DIR__ . '/../vendor/autoload.php';
+
+$configurator = App\Bootstrap::boot();
+$container = $configurator->createContainer();
+$application = $container->getByType(Nette\Application\Application::class);
+$application->run();
