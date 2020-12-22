@@ -150,23 +150,43 @@ Run them with the following command (feel free to adjust the path to php.ini):
 php vendor/bin/tester -c /etc/php/php.ini tests
 ```
 
-## Cron setup
+## Periodical commands
 
-The ReCodEx API requires some commands to be run periodically to allow sending 
-notifications of assignment deadlines and cleaning up uploaded files. The 
-recommended way of ensuring this is using a crontab like this:
+Core API offers several command line commands for cleanup, maintenance, and
+email notifications. It is recommended you set up some periodical execution of
+these commands -- e.g., by crontab. The actual frequency depends on utilization
+of your system, but here are some recommendations: 
 
-```
-00	03	*	*	6	bin/console db:cleanup:uploads
-15	03	*	*	6	bin/console db:cleanup:exercise-configs
-30	03	*	*	6	bin/console db:cleanup:localized-texts
-45	03	*	*	6	bin/console db:cleanup:pipeline-configs
-00	04	*	*	*	bin/console notifications:assignment-deadlines
-```
+Daily:
 
-The example above will send email notifications at 4 a.m. every day and perform database garbage collection tasks between 3 and 4 a.m. every Saturday. 
+* `notifications:assignment-deadlines` will send emails to students (who
+  actually allowed this in their configurations) about approaching deadlines.
+  This is the most important command as it is directly related to ReCodEx operations.
+  It is recommended to run this command every night.
+* `fs:cleanup:worker` will remove old files that are exchanged between core api and worker backend
+* `db:cleanup:uploads` will remove old uploaded files
 
-Some details of these periodic commands (e.g., a threshold period of relevant assignment deadlines) can be configured in api neon config file.
+Weekly:
+
+* `notifications:general-stats` will send an email to all administrators with
+  brief statistics about ReCodEx usage. It is recommended to run this command
+  once a week (e.g., during the night between Saturday and Monday).
+
+Monthly:
+
+* `db:cleanup:localized-texts` will remove old texts of groups and exercises
+* `db:cleanup:exercise-configs` will remove old exercise configs
+* `db:cleanup:exercise-files` will remove unused files (attachments and test files) of deleted exercises/assignments and pipelines 
+* `db:cleanup:pipeline-configs` will remove old pipeline configs
+
+Annually:
+
+* `users:remove-inactive` will soft-delete and anonymize users who are deemed
+  inactive (i.e., they have not verified their credentials for a period of time
+  that is set in core module config)
+
+Some details of these periodic commands (e.g., a threshold period of relevant
+assignment deadlines) can be configured in the neon config file.
 
 
 ## Adminer
