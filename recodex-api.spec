@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.24.0
-%define unmangled_version bd39d61e951e4f6c1cd6b4c6b653c1bd897d7529
-%define release 1
+%define unmangled_version 85d2399767433b4862dc39cceb26883049b70445
+%define release 3
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -41,6 +41,7 @@ ln -sf /var/log/recodex/core-api %{buildroot}%{install_dir}/log
 mkdir -p %{buildroot}%{install_dir}/temp
 cp -r www %{buildroot}%{install_dir}/www
 cp -r app %{buildroot}%{install_dir}/app
+cp -r bin %{buildroot}%{install_dir}/bin
 cp -r migrations %{buildroot}%{install_dir}/migrations
 mkdir -p %{buildroot}%{install_dir}/fixtures
 cp -r fixtures/init %{buildroot}%{install_dir}/fixtures/init
@@ -88,8 +89,9 @@ fi
 %attr(0775,apache,recodex) %{install_dir}/log
 %dir %attr(0775,apache,recodex) %{install_dir}/temp
 %dir %{install_dir}/app
+%dir %{install_dir}/bin
 
-%{install_dir}/app/bootstrap.php
+%{install_dir}/app/Bootstrap.php
 %{install_dir}/app/commands
 %{install_dir}/app/exceptions
 %{install_dir}/app/helpers
@@ -108,6 +110,7 @@ fi
 %{install_dir}/migrations
 %{install_dir}/www
 %attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.local.neon
+%attr(0770,recodex,recodex) %{install_dir}/bin/console
 
 %config %{install_dir}/app/config/config.neon
 %config %{install_dir}/app/config/permissions.neon
