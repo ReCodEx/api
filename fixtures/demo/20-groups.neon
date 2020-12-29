@@ -31,16 +31,14 @@ App\Model\Entity\Group:
             - NPRG031
             - @demoInstance
             - @demoAdmin
-        addLocalizedText:
-            - @demoGroupText
+        addLocalizedText: @demoGroupText
     demoChildGroup:
         __construct:
             - NPRG031
             - @demoInstance
             - @demoAdmin
             - @demoGroup
-        addLocalizedText:
-            - @demoChildGroupText
+        addLocalizedText: @demoChildGroupText
     demoPrivateGroup:
         __construct:
             - NPRG031
@@ -49,41 +47,35 @@ App\Model\Entity\Group:
             - NULL
             - TRUE
             - FALSE
-        addLocalizedText:
-            - @demoPrivateGroupText
+        addLocalizedText: @demoPrivateGroupText
     demoArchivedGroup:
         __construct:
             - OLD002
             - @demoInstance
             - @demoAdmin
             - @demoGroup
-        addLocalizedText:
-            - @demoArchivedGroupText
-        archive:
-            - "<dateTimeBetween('-10 months', '-1 months')>"
+        addLocalizedText: @demoArchivedGroupText
+        archive: "<dateTimeBetween('-10 months', '-1 months')>"
     demoArchivedXOGroup:
         __construct:
             - OLD001
             - @demoInstance
             - @demoAdmin
             - @demoGroup
-        addLocalizedText:
-            - @demoArchivedXOGroupText
-        archive:
-            - "<dateTimeBetween('-5 years', '-3 years')>"
+        addLocalizedText: @demoArchivedXOGroupText
+        archive: "<dateTimeBetween('-5 years', '-3 years')>"
 
 App\Model\Entity\User:
     'demoGroupMember{1..10}':
         __construct:
-            - "demoGroupMember<current()>@example.com"
+            - 'demoGroupMember<current()>\@example.com'
             - "<firstName()>"
             - "<lastName()>"
             - ""
             - ""
             - student
             - @demoInstance
-        makeStudentOf:
-            - @demoGroup
+        makeStudentOf: @demoGroup
 
     demoGroupSupervisor:
         __construct:
@@ -94,8 +86,7 @@ App\Model\Entity\User:
             - ""
             - supervisor
             - @demoInstance
-        makeSupervisorOf:
-            - @demoGroup
+        makeSupervisorOf: @demoGroup
 
     demoGroupSupervisor2:
         __construct:
@@ -106,12 +97,11 @@ App\Model\Entity\User:
             - ""
             - supervisor
             - @demoInstance
-        makeSupervisorOf:
-            - @demoGroup
+        makeSupervisorOf: @demoGroup
 
     "submitUser1":
         __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", student, @demoInstance]
-        makeStudentOf: [@demoGroup]
+        makeStudentOf: @demoGroup
 
 App\Model\Entity\Login:
     submitUser1Login:

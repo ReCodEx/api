@@ -39,6 +39,7 @@
         "nette/security": "^3.0",
         "nette/utils": "^3.2",
         "nette/reflection": "^2.4",
+        "nette/neon": "^3.2",
         "latte/latte": "^2.9",
         "tracy/tracy": "^2.7",
         "dg/adminer-custom": "^1.24",
@@ -55,7 +56,7 @@
         "mrdm-nl/ldap": "^1.1",
         "bjeavons/zxcvbn-php": "^0.3",
         "limenet/git-version": "^0.1",
-        "nelmio/alice": "^2.3"
+        "nelmio/alice": "^3.7"
     },
     "require-dev": {
         "mockery/mockery": "@stable",

@@ -9,80 +9,53 @@ declare(strict_types=1);
 
 namespace Zenify\DoctrineFixtures\Alice\Fixtures\Parser\Methods;
 
-use Nelmio\Alice\Fixtures\Parser\Methods\Base;
-use Nette\DI\Config\Helpers;
+use Exception;
+use Nelmio\Alice\Parser\ChainableParserInterface;
+use Nelmio\Alice\Throwable\Exception\InvalidArgumentExceptionFactory;
+use Nelmio\Alice\Throwable\Exception\Parser\ParseExceptionFactory;
+use Nelmio\Alice\Throwable\Exception\Parser\UnparsableFileException;
 use Nette\Neon\Neon;
 
 
-final class NeonParser extends Base
+final class NeonParser implements ChainableParserInterface
 {
+    private const REGEX = '/.{1,}\.neon/i';
 
-	/**
-	 * @var string
-	 */
-	protected $extension = 'neon';
+    /**
+     * @inheritDoc
+     */
+    public function canParse(string $file): bool
+    {
+        if (false === stream_is_local($file)) {
+            return false;
+        }
 
+        return 1 === preg_match(self::REGEX, $file);
+    }
 
-	/**
-	 * @param string $file
-	 * @return array
-	 */
-	public function parse($file)
-	{
-		ob_start();
-		$loader = $this;
+    /**
+     * @inheritDoc
+     */
+    public function parse($file): array
+    {
+        if (false === is_file($file)) {
+            throw InvalidArgumentExceptionFactory::createForFileCouldNotBeFound($file);
+        }
 
-		// isolates the file from current context variables and gives
-		// it access to the $loader object to inline php blocks if needed
-		$includeWrapper = function () use ($file) {
-			return include $file;
-		};
-		$data = $includeWrapper();
+        try {
+            $data = Neon::decode(file_get_contents($file));
 
-		if ($data === 1) {
-			// include didn't return data but included correctly, parse it as yaml
-			$neon = ob_get_clean();
-			$data = Neon::decode($neon) ?: [];
+            if (null === $data) {
+                throw new UnparsableFileException(sprintf('The file "%s" does not contain valid NEON.', $file));
+            }
 
-		} else {
-			// make sure to clean up if there is a failure
-			ob_end_clean();
-		}
+            return $data;
+        } catch (Exception $exception) {
+            if ($exception instanceof UnparsableFileException) {
+                throw $exception;
+            }
 
-		return $this->processIncludes($data, $file);
-	}
-
-
-	/**
-	 * @param array $data
-	 * @param string $filename
-	 * @return array
-	 */
-	protected function processIncludes($data, $filename)
-	{
-		$includeKeywords = [
-			'include',
-			'includes' // BC
-		];
-		foreach ($includeKeywords as $includeKeyword) {
-			$data = $this->mergeIncludedFiles($data, $filename, $includeKeyword);
-		}
-
-		return $data;
-	}
-
-
-	private function mergeIncludedFiles(array $data, string $filename, string $includeKeyword) : array
-	{
-		if (isset($data[$includeKeyword])) {
-			foreach ($data[$includeKeyword] as $include) {
-				$includeFile = dirname($filename) . DIRECTORY_SEPARATOR . $include;
-				$includeData = $this->parse($includeFile);
-				$data = Helpers::merge($includeData, $data);
-			}
-			unset($data[$includeKeyword]);
-		}
-		return $data;
-	}
-
+            throw ParseExceptionFactory::createForUnparsableFile($file, 0, $exception);
+        }
+    }
 }

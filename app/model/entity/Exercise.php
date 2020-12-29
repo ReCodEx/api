@@ -376,6 +376,11 @@ class Exercise implements IExercise
         $this->runtimeEnvironments->add($runtimeEnvironment);
     }
 
+    public function removeRuntimeEnvironment(?RuntimeEnvironment $runtimeEnvironment)
+    {
+        $this->runtimeEnvironments->remove($runtimeEnvironment);
+    }
+
     public function setExerciseTests(Collection $exerciseTests)
     {
         $this->exerciseTests = $exerciseTests;
@@ -384,6 +389,11 @@ class Exercise implements IExercise
     public function addExerciseTest(ExerciseTest $test)
     {
         $this->exerciseTests->add($test);
+    }
+
+    public function removeExerciseTest(?ExerciseTest $test)
+    {
+        $this->exerciseTests->remove($test);
     }
 
     public function addHardwareGroup(HardwareGroup $hardwareGroup)

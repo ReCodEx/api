@@ -15,8 +15,7 @@ App\Model\Entity\Notification:
             - @demoAdmin
         visibleFrom: "<dateTimeBetween('-3 day', '-1 day')>"
         visibleTo: "<dateTimeBetween('+1 day', '+3 day')>"
-        addLocalizedText:
-            - @globalNotificationText
+        addLocalizedText: @globalNotificationText
         role: "student"
         type: "custom-notification-type"
 
@@ -25,8 +24,7 @@ App\Model\Entity\Notification:
             - @demoAdmin
         visibleFrom: "<dateTimeBetween('-20 day', '-10 day')>"
         visibleTo: "<dateTimeBetween('-3 day', '-1 day')>"
-        addLocalizedText:
-            - @globalNotificationText
+        addLocalizedText: @globalNotificationText
         role: "student"
         type: "custom-notification-type"
 
@@ -35,9 +33,7 @@ App\Model\Entity\Notification:
             - @demoAdmin
         visibleFrom: "<dateTimeBetween('-3 day', '-1 day')>"
         visibleTo: "<dateTimeBetween('+1 day', '+3 day')>"
-        addLocalizedText:
-            - @groupNotificationText
+        addLocalizedText: @groupNotificationText
         role: "student"
         type: "custom-notification-type"
-        addGroup:
-            - @demoChildGroup
+        addGroup: @demoChildGroup

@@ -9,11 +9,9 @@ declare(strict_types=1);
 
 namespace Zenify\DoctrineFixtures\DI;
 
-use Faker\Provider\Base;
-use Nelmio\Alice\Fixtures\Loader;
-use Nelmio\Alice\Fixtures\Parser\Methods\MethodInterface;
+use Faker\Generator;
+use Nelmio\Alice\Faker\Provider\AliceProvider;
 use Nette\DI\CompilerExtension;
-use Nette\DI\Definitions\Definition;
 use Nette\DI\Definitions\ServiceDefinition;
 
 
@@ -41,35 +39,19 @@ final class FixturesExtension extends CompilerExtension
         $containerBuilder = $this->getContainerBuilder();
         $containerBuilder->resolve();
 
-        $this->loadFakerProvidersToAliceLoader();
-        $this->loadParsersToAliceLoader();
+        $this->loadFakerConfiguration();
     }
 
 
-    private function loadFakerProvidersToAliceLoader()
+    private function loadFakerConfiguration()
     {
-        $containerBuilder = $this->getContainerBuilder();
         $this->setConfig($this->validateConfig($this->defaults));
         $config = $this->getConfig();
 
-        $this->getDefinitionByType(Loader::class)->setArguments(
-            [
-                $config['locale'],
-                $containerBuilder->findByType(Base::class),
-                $config['seed']
-            ]
-        );
-    }
-
-
-    private function loadParsersToAliceLoader()
-    {
-        $containerBuilder = $this->getContainerBuilder();
-
-        $aliceLoaderDefinition = $this->getDefinitionByType(Loader::class);
-        foreach ($containerBuilder->findByType(MethodInterface::class) as $parserDefinition) {
-            $aliceLoaderDefinition->addSetup('addParser', ['@' . $parserDefinition->getType()]);
-        }
+        $this->getDefinitionByType(Generator::class)
+            ->setArgument('locale', $config['locale'])
+            ->addSetup('seed', [$config['seed']])
+            ->addSetup('addProvider', [new AliceProvider()]);
     }
 
 

@@ -49,8 +49,7 @@ App\Model\Entity\SubmissionFailure:
                 - evaluation_failure
                 - Things went south
                 - "<dateTime()>"
-        resolve:
-            - Got it!
+        resolve: Got it!
     unresolvedSubmissionFailure:
         __construct:
             create:

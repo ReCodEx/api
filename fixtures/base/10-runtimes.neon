@@ -2,78 +2,54 @@ App\Model\Entity\RuntimeEnvironment:
     CRuntime:
         __construct:
             - c-gcc-linux
-            - "C (GCC)"
+            - 'C (GCC)'
             - C
-            - "[c, h]"
-            - "GNU/Linux"
-            - "C compiled with GCC"
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.{c,h}"
-              '''
+            - '\[c, h]'
+            - 'GNU/Linux'
+            - 'C compiled with GCC'
+            - '[{name: source-files, type: "file[]", value: "*.{c,h}"}]'
     PascalRuntime:
         __construct:
             - freepascal-linux
-            - "Pascal (FreePascal)"
+            - 'Pascal (FreePascal)'
             - Pascal
-            - "[pas]"
-            - "GNU/Linux"
-            - "Pascal compiled with FreePascal"
-            - '''
-              - name: "source-file"
-                type: "file"
-                value: "*.pas"
-              '''
+            - '\[pas]'
+            - 'GNU/Linux'
+            - 'Pascal compiled with FreePascal'
+            - '[{name: source-files, type: "file[]", value: "*.{pas,lpr}"}]'
     CPPRuntime:
         __construct:
             - cxx-gcc-linux
-            - "C++ (GCC)"
+            - 'C++ (GCC)'
             - 'C++'
-            - "[cpp, h, hpp]"
-            - "GNU/Linux"
+            - '\[cpp, h, hpp]'
+            - 'GNU/Linux'
             - C++ compiled with G++
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.{cpp,h,hpp}"
-              '''
+            - '[{name: source-files, type: "file[]", value: "*.{cpp,h,hpp}"}]'
     MonoRuntime:
         __construct:
             - mono
-            - "C# (Mono)"
+            - 'C# (Mono)'
             - 'C#'
-            - "[cs]"
-            - "GNU/Linux"
-            - "C# run in Mono"
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.cs"
-              '''
+            - '\[cs]'
+            - 'GNU/Linux'
+            - 'C# run in Mono'
+            - '[{name: source-files, type: "file[]", value: "*.cs"}]'
     JavaRuntime:
         __construct:
             - java
-            - "Java (OpenJDK)"
+            - 'Java (OpenJDK)'
             - 'Java'
-            - "[java]"
-            - "GNU/Linux"
-            - "Java"
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.java"
-              '''
+            - '\[java]'
+            - 'GNU/Linux'
+            - 'Java'
+            - '[{name: source-files, type: "file[]", value: "*.java"}]'
     Python3Runtime:
         __construct:
             - python3
-            - "Python 3"
-            - "Python 3"
-            - "[py]"
-            - "GNU/Linux"
-            - "Python 3 (CPython)"
-            - '''
-              - name: "source-file"
-                type: "file"
-                value: "*.py"
-              '''
+            - 'Python 3'
+            - 'Python 3'
+            - '\[py]'
+            - 'GNU/Linux'
+            - 'Python 3 (CPython)'
+            - '[{name: source-files, type: "file[]", value: "*.py"}]'

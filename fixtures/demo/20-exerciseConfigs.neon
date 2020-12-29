@@ -2,29 +2,17 @@ App\Model\Entity\ExerciseEnvironmentConfig:
     demoEnvironmentConfig:
         __construct:
             - @CRuntime
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.c"
-              '''
+            - '[{name: source-files, type: "file[]", value: "*.c"}]'
             - @demoAdmin
     demoJavaEnvironmentConfig:
         __construct:
             - @JavaRuntime
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.java"
-              '''
+            - '[{name: source-files, type: "file[]", value: "*.java"}]'
             - @demoAdmin
     demoMonoEnvironmentConfig:
         __construct:
             - @MonoRuntime
-            - '''
-              - name: "source-files"
-                type: "file[]"
-                value: "*.cs"
-              '''
+            - '[{name: source-files, type: "file[]", value: "*.cs"}]'
             - @demoAdmin
 
 App\Model\Entity\ExerciseTest:
@@ -62,7 +50,7 @@ App\Model\Entity\ExerciseConfig:
                             - name: expected-output
                               type: remote-file
                               value: expected.1.java.out
-                    c-gcc-linux: []
+                    c-gcc-linux: {}
                 "Test 2":
                   pipelines:
                     - name: "compilationPipeline"
@@ -78,6 +66,6 @@ App\Model\Entity\ExerciseConfig:
                             - name: expected-output
                               type: remote-file
                               value: expected.2.cpp.out
-                    java: []
+                    java: {}
               '''
             - @demoAdmin
