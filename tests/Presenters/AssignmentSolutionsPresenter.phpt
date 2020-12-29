@@ -6,6 +6,7 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\AssignmentSolutionsPresenter;
 use App\Helpers\FileStorageManager;
@@ -420,7 +421,8 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     public function testDownloadResultArchive()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-        $submission = current($this->presenter->assignmentSolutionSubmissions->findAll());
+        $submissions = $this->presenter->assignmentSolutionSubmissions->findAll();
+        $submission = current(array_filter($submissions, function (AssignmentSolutionSubmission $sub) { return $sub->hasEvaluation(); }));
 
         $mockFile = Mockery::mock(LocalImmutableFile::class);
         $mockFileStorage = Mockery::mock(FileStorageManager::class);

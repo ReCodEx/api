@@ -29,7 +29,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Helpers\Yaml;
-use Nelmio\Alice\Fixtures;
+use Zenify\DoctrineFixtures\Alice\AliceLoader;
 
 class GenerateSwagger extends Command
 {
@@ -46,7 +46,7 @@ class GenerateSwagger extends Command
     private $presenterFactory;
 
     /**
-     * @var Fixtures\Loader
+     * @var AliceLoader
      */
     private $fixtureLoader;
 
@@ -86,7 +86,7 @@ class GenerateSwagger extends Command
     public function __construct(
         RouteList $router,
         IPresenterFactory $presenterFactory,
-        Fixtures\Loader $loader,
+        AliceLoader $loader,
         EntityManagerInterface $em,
         ApiConfig $apiConfig
     ) {

@@ -13,4 +13,4 @@ App\Model\Entity\ShadowAssignmentPoints:
             - "@demoShadowAssignment<current()>"
             - @demoAdmin
             - @demoUser1
-            - "<date()>"
+            - "<dateTime()>"

@@ -41,16 +41,14 @@ App\Model\Entity\Exercise:
                 - @demoGroup
                 - @weightedTwoTests
         difficulty: "moderate"
-        addLocalizedText:
-            - @demoExerciseText
+        addLocalizedText: @demoExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
-        addExerciseLimits:
-            - @demoExerciseLimits
+        addExerciseLimits: @demoExerciseLimits
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
@@ -68,16 +66,14 @@ App\Model\Entity\Exercise:
                 - @demoGroup
                 - @weightedTwoTests
         difficulty: "easy"
-        addLocalizedText:
-            - @sampleExerciseText
+        addLocalizedText: @sampleExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
-        addExerciseLimits:
-            - @demoExerciseLimits
+        addExerciseLimits: @demoExerciseLimits
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
@@ -95,8 +91,7 @@ App\Model\Entity\Exercise:
                 - @demoChildGroup
                 - @weightedTwoTests
         difficulty: "moderate"
-        addLocalizedText:
-            - @privateAdminExerciseText
+        addLocalizedText: @privateAdminExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
@@ -104,8 +99,7 @@ App\Model\Entity\Exercise:
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
-        addExerciseLimits:
-            - @demoExerciseLimits
+        addExerciseLimits: @demoExerciseLimits
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
@@ -124,16 +118,14 @@ App\Model\Entity\Exercise:
                 - @demoGroup
                 - @weightedTwoTests
         difficulty: "moderate"
-        addLocalizedText:
-            - @publicSupervisor2ExerciseText
+        addLocalizedText: @publicSupervisor2ExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
-        addExerciseLimits:
-            - @demoExerciseLimits
+        addExerciseLimits: @demoExerciseLimits
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
