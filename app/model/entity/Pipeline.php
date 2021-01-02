@@ -212,6 +212,11 @@ class Pipeline
         $this->runtimeEnvironments->add($environment);
     }
 
+    public function removeRuntimeEnvironment(?RuntimeEnvironment $environment)
+    {
+        $this->runtimeEnvironments->remove($environment);
+    }
+
     /**
      * Get array of identifications of supplementary files
      * @return array

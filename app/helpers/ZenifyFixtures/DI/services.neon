@@ -4,9 +4,7 @@ services:
 	- Zenify\DoctrineFixtures\Alice\Fixtures\Parser\Methods\NeonParser
 
 	# Alice
-	- Symfony\Component\Yaml\Parser
-	- Nelmio\Alice\Parser\Chainable\YamlParser
-	- App\Helpers\ZenifyFixtures\Alice\CustomNativeLoader(@Faker\Generator, @Zenify\DoctrineFixtures\Alice\Fixtures\Parser\Methods\NeonParser, @Nelmio\Alice\Parser\Chainable\YamlParser)
+	- App\Helpers\ZenifyFixtures\Alice\CustomNativeLoader
 
 	# Faker
 	- class: Faker\Generator

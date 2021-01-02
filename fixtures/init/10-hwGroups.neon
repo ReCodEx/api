@@ -1,7 +1,18 @@
+parameters:
+	param_01-default:
+		"""
+			memory: 1048576
+			cpuTimePerTest: 60
+			cpuTimePerExercise: 300
+			wallTimePerTest: 60
+			wallTimePerExercise: 300
+		"""
+
 App\Model\Entity\HardwareGroup:
-	01-default:
+	"01-default":
 		__construct:
-			- 01-default
-			- "Default Group"
-			- "This is the default group for common exercises"
-			- "memory: 1048576\ncpuTimePerTest: 60\ncpuTimePerExercise: 300\nwallTimePerTest: 60\nwallTimePerExercise: 300"
+			- "01-default"
+			- Default Group
+			- This is the default group for common exercises
+			- "<{param_01-default}>"
+
