@@ -99,7 +99,7 @@ class DoctrineFixtures extends Command
             $groupFiles = [];
 
             /** @var SplFileInfo $file */
-            foreach (Finder::findFiles("*.neon", "*.yml", "*.yaml")->in($fixtureDir . "/" . $group) as $file) {
+            foreach (Finder::findFiles("*.neon", "*.yml", "*.yaml", "*.json")->in($fixtureDir . "/" . $group) as $file) {
                 $groupFiles[] = $file->getRealPath();
             }
 
