@@ -16,7 +16,6 @@ use SplFileInfo;
 use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
 use Zenify\DoctrineFixtures\Exception\MissingSourceException;
 
-
 final class AliceLoader implements AliceLoaderInterface
 {
 
@@ -46,7 +45,7 @@ final class AliceLoader implements AliceLoaderInterface
     {
         if (!is_array($sources) && is_dir($sources)) {
             $sources = $this->getFilesFromDirectory($sources);
-        } else if (!is_array($sources)) {
+        } elseif (!is_array($sources)) {
             $sources = [$sources];
         }
 
@@ -68,6 +67,10 @@ final class AliceLoader implements AliceLoaderInterface
                 throw new MissingSourceException(
                     sprintf('Source "%s" was not found.', $source)
                 );
+            }
+
+            if (!is_readable($source)) {
+                throw new MissingSourceException(sprintf('Source "%s" is not readable', $source));
             }
         }
     }

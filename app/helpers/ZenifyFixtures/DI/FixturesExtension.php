@@ -14,7 +14,6 @@ use Nelmio\Alice\Faker\Provider\AliceProvider;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\ServiceDefinition;
 
-
 final class FixturesExtension extends CompilerExtension
 {
 
@@ -62,5 +61,4 @@ final class FixturesExtension extends CompilerExtension
         $definition = $containerBuilder->getDefinition($containerBuilder->getByType($type));
         return $definition;
     }
-
 }

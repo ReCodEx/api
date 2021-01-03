@@ -1,7 +1,7 @@
 services:
 	# Zenify
 	- Zenify\DoctrineFixtures\Alice\AliceLoader
-	- Zenify\DoctrineFixtures\Alice\Fixtures\Parser\Methods\NeonParser
+	- Zenify\DoctrineFixtures\Alice\Parser\NeonParser
 
 	# Alice
 	- App\Helpers\ZenifyFixtures\Alice\CustomNativeLoader

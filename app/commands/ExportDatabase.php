@@ -109,6 +109,19 @@ class ExportDatabase extends Command
         return preg_replace('~\r\n?~', "\n", $content);
     }
 
+    /**
+     * All strings in nelmio/alice are evaluated, that means characters like $,
+     * [ or @ are interpreted. To overcome this behavior (for example if storing
+     * markdown or yaml) it is recommended to use parameters which are not
+     * evaluated and therefore can contain any string. Note that escaping
+     * aforementioned characters does not work as expected, so parameters are
+     * the way to go.
+     * @param string $name identification of the parameter
+     * @param string $value value of the parameter
+     * @param array $parameters reference to parameters array to which parameter
+     * should be added
+     * @return string reference name pointing to the correct parameter
+     */
     private function addParameterAndGetReference(string $name, string $value, array &$parameters): string
     {
         $paramName = "param_" . $name;
