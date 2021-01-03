@@ -11,7 +11,6 @@ namespace Zenify\DoctrineFixtures\Exception;
 
 use Exception;
 
-
 final class MissingSourceException extends Exception
 {
 
