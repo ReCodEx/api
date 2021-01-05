@@ -23,12 +23,6 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     protected $hashName;
 
     /**
-     * @ORM\Column(type="string")
-     * DEPRECATED -- will be removed in the next migration
-     */
-    protected $fileServerPath;
-
-    /**
      * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
      */
     protected $exercises;
