@@ -62,23 +62,19 @@ App\Model\Entity\AssignmentSolutionSubmission:
         __construct:
             - "@solution1"
             - @submitUser1
-        resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
     "submission{3..4}":
         __construct:
             - "@solution2"
             - @submitUser1
-        resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
     "submission5":
         __construct:
             - "@solution1"
             - @submitUser1
-        resultsUrl: localhost/results/hehe.zip
         failure: "@resolvedSubmissionFailure"
     "submission6":
         __construct:
             - "@solution1"
             - @submitUser1
-        resultsUrl: localhost/results/hehe.zip
         failure: "@unresolvedSubmissionFailure"

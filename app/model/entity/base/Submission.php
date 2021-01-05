@@ -41,18 +41,6 @@ abstract class Submission implements IEvaluable
     }
 
     /**
-     * @ORM\Column(type="string", nullable=true)
-     * DEPRECATED -- will be removed in next migration
-     */
-    protected $resultsUrl;
-
-    /**
-     * @ORM\Column(type="string")
-     * DEPRECATED -- will be removed in next migration
-     */
-    protected $jobConfigPath;
-
-    /**
      * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"}, fetch="EAGER")
      * @var SolutionEvaluation
      */
@@ -75,7 +63,6 @@ abstract class Submission implements IEvaluable
     {
         $this->submittedAt = new DateTime();
         $this->submittedBy = $submittedBy;
-        $this->jobConfigPath = ''; //$jobConfigPath; DEPRECATED
         $this->isDebug = $isDebug;
         $this->subdir = $this->submittedAt->format('Y-m');
     }
