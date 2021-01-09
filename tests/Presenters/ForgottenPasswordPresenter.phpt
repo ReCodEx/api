@@ -120,6 +120,22 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
         Assert::type("int", $result['payload']['passwordScore']);
     }
 
+    public function testNullPasswordStrength()
+    {
+        $request = new Nette\Application\Request(
+            'V1:ForgottenPassword',
+            'POST',
+            ['action' => 'validatePasswordStrength'],
+            ['password' => null]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::type("int", $result['payload']['passwordScore']);
+    }
+
     public function testCorrectPasswordReset()
     {
         // issue token for password change in proper scope

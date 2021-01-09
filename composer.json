@@ -54,7 +54,7 @@
         "firebase/php-jwt": "^5.2",
         "forxer/gravatar": "^2.1",
         "mrdm-nl/ldap": "^1.1",
-        "bjeavons/zxcvbn-php": "^0.3",
+        "bjeavons/zxcvbn-php": "^1.2",
         "limenet/git-version": "^0.1",
         "nelmio/alice": "^3.7"
     },
