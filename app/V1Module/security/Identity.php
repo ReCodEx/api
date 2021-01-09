@@ -77,6 +77,11 @@ class Identity implements Nette\Security\IIdentity
         return $this->user;
     }
 
+    public function getData()
+    {
+        $this->getUserData();
+    }
+
     public function getToken()
     {
         return $this->token;

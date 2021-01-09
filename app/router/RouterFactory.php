@@ -14,7 +14,7 @@ class RouterFactory
 
     /**
      * Create list of routes from all modules.
-     * @return Nette\Application\IRouter
+     * @return Nette\Routing\Router
      */
     public static function createRouter()
     {
