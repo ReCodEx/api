@@ -2,16 +2,13 @@
 
 namespace App\Security;
 
-use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\UnauthorizedException;
 use App\Model\Entity\User;
-use Nette\Security\IIdentity;
-use Nette\Security\IUserStorage;
 use Nette;
+use Nette\Security\IIdentity;
 
-class UserStorage implements IUserStorage
+class UserStorage implements Nette\Security\UserStorage
 {
     use Nette\SmartObject;
 
@@ -25,7 +22,7 @@ class UserStorage implements IUserStorage
 
     private $authenticated;
 
-    /** @var IIdentity */
+    /** @var ?IIdentity */
     private $cachedIdentity;
 
     public function __construct(AccessManager $accessManager, Nette\Http\IRequest $httpRequest)
@@ -35,45 +32,59 @@ class UserStorage implements IUserStorage
     }
 
     /**
-     * @param bool $state
-     * @return self
+     * @inheritDoc
      */
-    function setAuthenticated($state)
+    public function setExpiration(?string $expire, bool $clearIdentity): void
     {
-        $this->authenticated = $state;
-        return $this;
+        // no-op - doesn't really make sense with this implementation
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function saveAuthentication(IIdentity $identity): void
+    {
+        if ($identity !== null && !($identity instanceof Identity)) {
+            throw new InvalidArgumentException("Wrong identity class");
+        }
+
+        $this->authenticated = true;
+        $this->cachedIdentity = $identity;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function clearAuthentication(bool $clearIdentity): void
+    {
+        $this->authenticated = false;
+        if ($clearIdentity) {
+            $this->cachedIdentity = null;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getState(): array
+    {
+        return [$this->isAuthenticated(), $this->getIdentity(), 0];
     }
 
     /**
      * Is this user authenticated?
      * @return bool
      */
-    function isAuthenticated(): bool
+    public function isAuthenticated(): bool
     {
         return $this->httpRequest->getHeader(self::AUTH_HEADER) !== null || $this->authenticated;
-    }
-
-    /**
-     * Set user identity (after login or for testing purposes)
-     * @param IIdentity|null $identity
-     * @return self
-     * @throws InvalidArgumentException
-     */
-    function setIdentity(IIdentity $identity = null)
-    {
-        if ($identity !== null && !($identity instanceof Identity)) {
-            throw new InvalidArgumentException("Wrong identity class");
-        }
-
-        $this->cachedIdentity = $identity;
-        return $this;
     }
 
     /**
      * Returns current user identity, if any.
      * @return IIdentity|null
      */
-    function getIdentity(): ?IIdentity
+    public function getIdentity(): ?IIdentity
     {
         if ($this->cachedIdentity === null) {
             $token = $this->accessManager->getGivenAccessToken($this->httpRequest);
@@ -93,6 +104,20 @@ class UserStorage implements IUserStorage
     }
 
     /**
+     * Returns current user entity from user identity, if any.
+     * @return ?\App\Model\Entity\User
+     */
+    public function getUserData()
+    {
+        $identity = $this->getIdentity();
+        if ($identity instanceof Identity) {
+            return $identity->getUserData();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * @throws InvalidAccessTokenException
      * @throws InvalidArgumentException
      */
@@ -106,40 +131,5 @@ class UserStorage implements IUserStorage
         if (!$wasTokenIssuedAfterThreshold) {
             throw new InvalidAccessTokenException("Your access token was revoked and cannot be used anymore");
         }
-    }
-
-
-    /**
-     * Returns current user entity from user identity, if any.
-     * @return ?\App\Model\Entity\User
-     */
-    function getUserData()
-    {
-        $identity = $this->getIdentity();
-        if ($identity instanceof Identity) {
-            return $identity->getUserData();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * No-op - doesn't really make sense with this implementation
-     * @param string|int|\DateTimeInterface $time number of seconds or timestamp
-     * @param int $flags Log out when the browser is closed | Clear the identity from persistent storage?
-     * @return self
-     */
-    function setExpiration($time, $flags = 0)
-    {
-        return $this;
-    }
-
-    /**
-     * Why was user logged out? Who cares anyway...
-     * @return ?int
-     */
-    function getLogoutReason(): ?int
-    {
-        return 0;
     }
 }
