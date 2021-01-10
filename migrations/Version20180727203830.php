@@ -19,7 +19,7 @@ class Version20180727203830 extends AbstractMigration
     {
         $this->pipelines = $this->connection->executeQuery(
             "SELECT id, exercise_id FROM pipeline WHERE exercise_id IS NOT NULL"
-        )->fetchAll();
+        )->fetchAllAssociative();
     }
 
     /**
@@ -72,7 +72,7 @@ class Version20180727203830 extends AbstractMigration
             "SELECT p.id AS pid, ep.exercise_id AS eid FROM pipeline AS p
       JOIN exercise_pipeline AS ep ON p.id = ep.pipeline_id"
         )
-            ->fetchAll();
+            ->fetchAllAssociative();
     }
 
     /**
@@ -88,7 +88,7 @@ class Version20180727203830 extends AbstractMigration
         $maxExercises = $this->connection->executeQuery(
             "SELECT MAX(tmp.exercises_count) FROM
       (SELECT pipeline_id, COUNT(exercise_id) AS exercises_count FROM exercise_pipeline GROUP BY pipeline_id) AS tmp"
-        )->fetchColumn();
+        )->fetchOne();
         $this->abortIf(
             $maxExercises > 1,
             'Migraction can only be executed safely when every pipeline is attached to at most one exercise (so many-to-many relation may be reduced to one-to-many).'

@@ -60,7 +60,7 @@ final class Version20200421000600 extends AbstractMigration
         $scoreConfigs = $this->connection->executeQuery(
             "SELECT id, config FROM exercise_score_config WHERE calculator = :calculator",
             [ "calculator" => self::WEIGHTED_ID ]
-        )->fetchAll();
+        )->fetchAllAssociative();
 
         foreach ($scoreConfigs as $config) {
             if (!$config['config'] || $this->isUniform($config['config'])) {
@@ -85,7 +85,7 @@ final class Version20200421000600 extends AbstractMigration
                 "SELECT t.id AS tid, esc.id AS id FROM $table AS t
                 JOIN exercise_score_config AS esc ON t.score_config_id = esc.id WHERE esc.calculator = :calculator",
                 [ "calculator" => self::UNIFORM_ID ]
-            )->fetchAll();
+            )->fetchAllAssociative();
 
             foreach ($scoreConfigs as $config) {
                 // get list of tests so we can use it to construct config
@@ -93,7 +93,7 @@ final class Version20200421000600 extends AbstractMigration
                     "SELECT et.name AS `name` FROM exercise_test AS et
                     JOIN ${table}_exercise_test AS eet ON eet.exercise_test_id = et.id WHERE eet.${table}_id = :tid",
                     [ 'tid' => $config['tid'] ]
-                )->fetchAll(\PDO::FETCH_COLUMN);
+                )->fetchFirstColumn();
 
                 $this->addSql(
                     'UPDATE exercise_score_config SET config = :config, calculator = :calculator WHERE id = :id',

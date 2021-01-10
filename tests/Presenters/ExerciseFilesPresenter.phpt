@@ -160,7 +160,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         }
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
-        $fileStorage->shouldDeferMissing();
+        $fileStorage->makePartial();
         $fileStorage->shouldNotReceive("storeUploadedSupplementaryFile");
         $this->presenter->fileStorage = $fileStorage;
 
@@ -216,7 +216,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         }
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
-        $fileStorage->shouldDeferMissing();
+        $fileStorage->makePartial();
         $fileStorage->shouldNotReceive("storeUploadedSupplementaryFile");
         $this->presenter->fileStorage = $fileStorage;
 

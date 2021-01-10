@@ -4,6 +4,7 @@ namespace App\Security;
 
 use LogicException;
 use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\Dumper;
 use Nette\PhpGenerator\PhpLiteral;
 use Nette\PhpGenerator\Helpers;
 use Nette\Security\Permission;
@@ -14,6 +15,11 @@ use ReflectionException;
 class AuthorizatorBuilder
 {
     private $checkCounter;
+    private $dumper;
+
+    public function __construct() {
+        $this->dumper = new Dumper();
+    }
 
     public function getClassName($uniqueId)
     {
@@ -91,7 +97,7 @@ class AuthorizatorBuilder
             }
 
             $checkVariable = "\$check_" . $this->checkCounter++;
-            $checkValues[$checkVariable] = Helpers::format(
+            $checkValues[$checkVariable] = $this->dumper->format(
                 '$this->policy->check(?, ?, $this->queriedIdentity)',
                 new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)),
                 $condition
@@ -121,9 +127,9 @@ class AuthorizatorBuilder
         }
 
         if ($type === "and") {
-            return Helpers::format("(?)", new PhpLiteral(join(" && ", $children)));
+            return $this->dumper->format("(?)", new PhpLiteral(join(" && ", $children)));
         } elseif ($type === "or") {
-            return Helpers::format("(?)", new PhpLiteral(join(" || ", $children)));
+            return $this->dumper->format("(?)", new PhpLiteral(join(" || ", $children)));
         } else {
             return new PhpLiteral("true");
         }

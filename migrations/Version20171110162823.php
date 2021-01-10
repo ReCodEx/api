@@ -21,10 +21,9 @@ class Version20171110162823 extends AbstractMigration
             $originalId = null;
             $parentId = $row["original_submission_id"];
             while (true) {
-                $parentResult = $this->connection->executeQuery(
+                $parent = $this->connection->executeQuery(
                     "SELECT * FROM assignment_solution WHERE id = '{$parentId}'"
-                );
-                $parent = $parentResult->fetch();
+                )->fetchAssociative();
                 $originalId = $parent["id"];
                 $parentId = $parent["original_submission_id"];
                 if (empty($parentId)) {

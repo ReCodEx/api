@@ -40,7 +40,7 @@ class Version20171209092808 extends AbstractMigration
     {
         $exerciseConfig = $this->connection->executeQuery(
             "SELECT * FROM exercise_config WHERE id = '{$configId}'"
-        )->fetch();
+        )->fetchAssociative();
         $config = Yaml::parse($exerciseConfig["config"]);
 
         foreach ($config["tests"] as $testName => $test) {
@@ -80,7 +80,7 @@ class Version20171209092808 extends AbstractMigration
         foreach ($limits as $lim) {
             $limitConfig = $this->connection->executeQuery(
                 "SELECT * FROM exercise_limits WHERE id = '{$lim["id"]}'"
-            )->fetch();
+            )->fetchAssociative();
             $config = Yaml::parse($limitConfig["limits"]);
 
             foreach ($config as $testName => $testLimits) {

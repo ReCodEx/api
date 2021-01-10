@@ -2,7 +2,6 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use App\Helpers\Yaml;
@@ -21,7 +20,6 @@ class Version20180329190603 extends AbstractMigration
 
     /**
      * @return string[]
-     * @throws DBALException
      */
     private function getExtraFilesRelevantPipelineConfigsIds(): array
     {
@@ -37,7 +35,7 @@ class Version20180329190603 extends AbstractMigration
             $pipelines[] = $this->connection->executeQuery(
                 "SELECT * FROM pipeline WHERE name = :name",
                 ["name" => $name]
-            )->fetch()["pipeline_config_id"];
+            )->fetchAssociative()["pipeline_config_id"];
         }
 
         return $pipelines;
@@ -45,7 +43,6 @@ class Version20180329190603 extends AbstractMigration
 
     /**
      * @param Schema $schema
-     * @throws DBALException
      */
     public function up(Schema $schema): void
     {
@@ -53,7 +50,7 @@ class Version20180329190603 extends AbstractMigration
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = :id",
                 ["id" => $configId]
-            )->fetch();
+            )->fetchAssociative();
             if (!$pipelineConfig || empty($pipelineConfig["pipeline_config"])) {
                 continue;
             }

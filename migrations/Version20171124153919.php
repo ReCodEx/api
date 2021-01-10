@@ -62,7 +62,7 @@ class Version20171124153919 extends AbstractMigration
 
         $exerciseConfig = $this->connection->executeQuery(
             "SELECT * FROM exercise_config WHERE id = '{$exercise["exercise_config_id"]}'"
-        )->fetch();
+        )->fetchAssociative();
         $authorId = $exerciseConfig["author_id"];
         $config = Yaml::parse($exerciseConfig["config"]);
 

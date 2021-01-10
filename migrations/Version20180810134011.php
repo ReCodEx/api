@@ -2,7 +2,6 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use App\Helpers\Yaml;
@@ -24,7 +23,6 @@ class Version20180810134011 extends AbstractMigration
 
     /**
      * @return array java compilation changed pipelines
-     * @throws DBALException
      */
     private function updatePipelines(): array
     {
@@ -33,7 +31,7 @@ class Version20180810134011 extends AbstractMigration
         foreach ($pipelinesResult as $pipeline) {
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'"
-            )->fetch();
+            )->fetchAssociative();
             $config = Yaml::parse($pipelineConfig["pipeline_config"]);
             $changed = false;
 
@@ -116,7 +114,6 @@ class Version20180810134011 extends AbstractMigration
 
     /**
      * @param array $changedPipelines
-     * @throws DBALException
      */
     private function updateExercises(array $changedPipelines)
     {
@@ -151,7 +148,6 @@ class Version20180810134011 extends AbstractMigration
 
     /**
      * @param Schema $schema
-     * @throws DBALException
      */
     public function up(Schema $schema): void
     {

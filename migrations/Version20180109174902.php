@@ -43,7 +43,7 @@ class Version20180109174902 extends AbstractMigration
         $pipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => self::$PYTHON_COMPILATION_PIPELINE]
-        )->fetch();
+        )->fetchAssociative();
 
         $config = [
             "boxes" => [
@@ -144,12 +144,12 @@ class Version20180109174902 extends AbstractMigration
             $pipeline = $this->connection->executeQuery(
                 "SELECT * FROM pipeline WHERE name = :name",
                 ["name" => $name]
-            )->fetch();
+            )->fetchAssociative();
             $pipelines[] = $pipeline["id"];
 
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'"
-            )->fetch();
+            )->fetchAssociative();
             if (!$pipelineConfig) {
                 continue;
             }
