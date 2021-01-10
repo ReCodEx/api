@@ -13,18 +13,23 @@ use Faker\Generator;
 use Nelmio\Alice\Faker\Provider\AliceProvider;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\ServiceDefinition;
+use Nette\Schema\Expect;
+use Nette\Schema\Schema;
+use stdClass;
 
+/**
+ * @property-read stdClass $config
+ */
 final class FixturesExtension extends CompilerExtension
 {
 
-    /**
-     * @var array
-     */
-    private $defaults = [
-        'locale' => 'cs_CZ',
-        'seed' => 1
-    ];
-
+    public function getConfigSchema(): Schema
+    {
+        return Expect::structure([
+            'locale' => Expect::string()->default('cs_CZ'),
+            'seed' => Expect::int()->default(1),
+        ]);
+    }
 
     public function loadConfiguration()
     {
@@ -44,12 +49,9 @@ final class FixturesExtension extends CompilerExtension
 
     private function loadFakerConfiguration()
     {
-        $this->setConfig($this->validateConfig($this->defaults));
-        $config = $this->getConfig();
-
         $this->getDefinitionByType(Generator::class)
-            ->setArgument('locale', $config['locale'])
-            ->addSetup('seed', [$config['seed']])
+            ->setArgument('locale', $this->config->locale)
+            ->addSetup('seed', [$this->config->seed])
             ->addSetup('addProvider', [new AliceProvider()]);
     }
 

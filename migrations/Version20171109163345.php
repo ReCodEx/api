@@ -65,7 +65,7 @@ class Version20171109163345 extends AbstractMigration
         foreach ($result as $row) {
             $submissionId = $this->connection->executeQuery(
                 "SELECT * FROM assignment_solution_submission WHERE assignment_solution_id = '{$row["assignment_solution_id"]}'"
-            )->fetchColumn(0);
+            )->fetchOne();
             $this->connection->executeQuery(
                 "UPDATE submission_failure SET assignment_solution_submission_id = '{$submissionId}', assignment_solution_id = NULL WHERE assignment_solution_id = '{$row['assignment_solution_id']}'"
             );

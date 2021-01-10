@@ -72,7 +72,8 @@ class EvaluationLoadingHelper
                     $failure = SubmissionFailure::create(SubmissionFailure::TYPE_LOADING_FAILURE, $message);
                     $submission->setFailure($failure);
                 } else {
-                    throw new InternalServerException("Unknown submission type '{$submission->getClassName()}'");
+                    $className = get_class($submission);
+                    throw new InternalServerException("Unknown submission type '{$className}'");
                 }
 
                 $this->entityManager->persist($failure);

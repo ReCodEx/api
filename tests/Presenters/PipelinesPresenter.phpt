@@ -383,7 +383,7 @@ class TestPipelinesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->flush();
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
-        $fileStorage->shouldDeferMissing();
+        $fileStorage->makePartial();
         $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file1)->once();
         $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file2)->once();
         $this->presenter->fileStorage = $fileStorage;

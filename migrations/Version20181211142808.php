@@ -2,7 +2,6 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Migrations\AbortMigrationException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
@@ -31,7 +30,6 @@ class Version20181211142808 extends AbstractMigration
 
     /**
      * @param Schema $schema
-     * @throws DBALException
      */
     public function postUp(Schema $schema): void
     {

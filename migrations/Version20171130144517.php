@@ -101,7 +101,7 @@ class Version20171130144517 extends AbstractMigration
             $id = $exercise["exercise_config_id"];
             $exerciseConfig = $this->connection->executeQuery(
                 "SELECT * FROM exercise_config WHERE id = '{$id}'"
-            )->fetch();
+            )->fetchAssociative();
             $config = Yaml::parse($exerciseConfig["config"]);
 
             // load files and make them associative array suitable for searching
@@ -129,7 +129,7 @@ class Version20171130144517 extends AbstractMigration
             $id = $pipeline["pipeline_config_id"];
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = '{$id}'"
-            )->fetch();
+            )->fetchAssociative();
             $config = Yaml::parse($pipelineConfig["pipeline_config"]);
 
             // load files and make them associative array suitable for searching

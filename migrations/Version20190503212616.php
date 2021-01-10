@@ -26,7 +26,7 @@ final class Version20190503212616 extends AbstractMigration
     {
         $this->failures = $this->connection->executeQuery(
             "SELECT id, reference_solution_submission_id, assignment_solution_submission_id FROM submission_failure"
-        )->fetchAll();
+        )->fetchAllAssociative();
     }
 
     /**
@@ -96,10 +96,10 @@ final class Version20190503212616 extends AbstractMigration
     {
         $this->assignmentSubmissions = $this->connection->executeQuery(
             "SELECT id, failure_id FROM assignment_solution_submission WHERE failure_id IS NOT NULL"
-        )->fetchAll();
+        )->fetchAllAssociative();
         $this->referenceSubmissions = $this->connection->executeQuery(
             "SELECT id, failure_id FROM reference_solution_submission WHERE failure_id IS NOT NULL"
-        )->fetchAll();
+        )->fetchAllAssociative();
     }
 
     /**

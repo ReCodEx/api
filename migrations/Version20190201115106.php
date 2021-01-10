@@ -24,7 +24,7 @@ class Version20190201115106 extends AbstractMigration
         $tables = $this->connection->executeQuery(
             "SELECT DISTINCT table_name FROM `information_schema`.`tables` WHERE `table_schema` = :db",
             ["db" => $this->connection->getDatabase()]
-        )->fetchAll(\PDO::FETCH_COLUMN);
+        )->fetchFirstColumn();
 
         $this->addSql('SET FOREIGN_KEY_CHECKS=0');
         foreach ($tables as $table) {

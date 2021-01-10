@@ -3,13 +3,13 @@
 namespace App\Responses;
 
 use Nette;
-use Nette\Application\IResponse;
+use Nette\Application\Response;
 use App\Helpers\FileStorage\IImmutableFile;
 
 /**
  * File response that serves IImmutableFile from file storage.
  */
-class StorageFileResponse implements IResponse
+class StorageFileResponse implements Response
 {
 
     /** @var IImmutableFile */

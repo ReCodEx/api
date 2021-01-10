@@ -4,16 +4,16 @@ use App\Model\Entity\User;
 use App\Model\Repository\Users;
 use App\Security\AccessManager;
 use App\Security\TokenScope;
+use Doctrine\Common\EventManager;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Nette\Application\IResponse;
 use Nette\Application\Request;
+use Nette\Application\Response;
 use Nette\Application\Responses\ForwardResponse;
 use Nette\Application\Responses\JsonResponse;
 use Nette\DI\Container;
 use Nette\Utils\FileSystem;
-use Doctrine\Common\EventManager;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use Nettrine\ORM\EntityManagerDecorator;
@@ -51,7 +51,7 @@ class PresenterTestHelper
      * @throws Tester\AssertException
      * @throws JsonException
      */
-    public static function extractPayload(IResponse $response, $jsonify = true)
+    public static function extractPayload(Response $response, $jsonify = true)
     {
         Tester\Assert::type(JsonResponse::class, $response);
 

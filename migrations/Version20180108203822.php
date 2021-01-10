@@ -75,7 +75,7 @@ class Version20180108203822 extends AbstractMigration
         foreach ($pipelinesResult as $pipeline) {
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'"
-            )->fetch();
+            )->fetchAssociative();
             $config = Yaml::parse($pipelineConfig["pipeline_config"]);
 
             $compilationBoxFound = false;

@@ -2,7 +2,6 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use App\Helpers\Yaml;
@@ -82,18 +81,17 @@ class Version20180316141301 extends AbstractMigration
      * @param string $pipelineName
      * @param string $entryBox
      * @param bool $hasEntryPoint
-     * @throws DBALException
      */
     private function updatePipeline(string $pipelineName, string $entryBox, bool $hasEntryPoint)
     {
         $pipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => $pipelineName]
-        )->fetch();
+        )->fetchAssociative();
         $pipelineConfig = $this->connection->executeQuery(
             "SELECT * FROM pipeline_config WHERE id = :id",
             ["id" => $pipeline["pipeline_config_id"]]
-        )->fetch();
+        )->fetchAssociative();
         if (!$pipelineConfig) {
             return;
         }
@@ -147,7 +145,6 @@ class Version20180316141301 extends AbstractMigration
      * environment exercises configurations.
      * @param string $environmentId
      * @param string $ext
-     * @throws DBALException
      */
     private function updateEnvironment(string $environmentId, string $ext)
     {
@@ -190,18 +187,17 @@ class Version20180316141301 extends AbstractMigration
     /**
      * Update pass-through pipelines of exercise configs of given runtime environments which just got multiple submit files.
      * @param array $environments
-     * @throws DBALException
      */
     private function updateExerciseConfig(array $environments)
     {
         $passthroughFilePipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => "Compilation source file pass-through"]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
         $passthroughFilesPipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => "Compilation source files pass-through"]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
 
         $configsResult = $this->connection->executeQuery("SELECT * FROM exercise_config");
         foreach ($configsResult as $exerciseConfig) {
@@ -235,7 +231,6 @@ class Version20180316141301 extends AbstractMigration
     /**
      * For given environment add solution parameter with the uploaded file as entry point.
      * @param string $environmentId
-     * @throws DBALException
      */
     private function addSolutionParams(string $environmentId)
     {
@@ -253,7 +248,7 @@ class Version20180316141301 extends AbstractMigration
                 continue;
             }
 
-            $file = $filesResult->fetch();
+            $file = $filesResult->fetchAssociative();
             $solutionParams = [
                 "variables" => [
                     ["name" => self::$ENTRY_POINT_PORT, "value" => $file["name"]]
@@ -269,7 +264,6 @@ class Version20180316141301 extends AbstractMigration
 
     /**
      * @param Schema $schema
-     * @throws DBALException
      */
     public function up(Schema $schema): void
     {

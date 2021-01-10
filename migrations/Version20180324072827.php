@@ -2,7 +2,6 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use App\Helpers\Yaml;
@@ -27,18 +26,17 @@ class Version20180324072827 extends AbstractMigration
 
     /**
      * For PHP and Node change their relation to compilation pipeline, which is now source files passthrough.
-     * @throws DBALException
      */
     private function updatePassthroughEnvironments()
     {
         $passthroughFilePipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => "Compilation source file pass-through"]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
         $passthroughFilesPipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => "Compilation source files pass-through"]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
 
         $phpid = "php-linux";
         $nodeid = "node-linux";
@@ -65,7 +63,6 @@ class Version20180324072827 extends AbstractMigration
 
     /**
      * From PHP, Node, Python environments remove entry-point variables.
-     * @throws DBALException
      */
     private function updateEnvironment()
     {
@@ -97,7 +94,6 @@ class Version20180324072827 extends AbstractMigration
 
     /**
      * @return string[]
-     * @throws DBALException
      */
     private function getEntryPointsRelevantPipelinesIds(): array
     {
@@ -115,7 +111,7 @@ class Version20180324072827 extends AbstractMigration
             $pipelines[] = $this->connection->executeQuery(
                 "SELECT * FROM pipeline WHERE name = :name",
                 ["name" => $name]
-            )->fetch()["id"];
+            )->fetchAssociative()["id"];
         }
 
         return $pipelines;
@@ -124,7 +120,6 @@ class Version20180324072827 extends AbstractMigration
     /**
      * Update exercise config for PHP, Node and Python environments and execution
      * pipelines, so they contains submit references on entry-points.
-     * @throws DBALException
      */
     private function updateExerciseConfigs()
     {
@@ -162,7 +157,6 @@ class Version20180324072827 extends AbstractMigration
 
     /**
      * @param Schema $schema
-     * @throws DBALException
      */
     public function up(Schema $schema): void
     {

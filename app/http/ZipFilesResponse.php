@@ -3,10 +3,10 @@
 namespace App\Responses;
 
 use App\Exceptions\ApiException;
-use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\FileStorage\FileStorageException;
+use App\Helpers\FileStorage\IImmutableFile;
 use Nette;
-use Nette\Application\IResponse;
+use Nette\Application\Response;
 use Nette\Application\Responses\FileResponse;
 use Nette\Utils\FileSystem;
 use ZipArchive;
@@ -16,7 +16,7 @@ use ZipArchive;
  * user and then delete created zip file. If flag deleteFiles is true, then
  * given files will be deleted after sending response.
  */
-class ZipFilesResponse implements IResponse
+class ZipFilesResponse implements Response
 {
     /**
      * Indexed by local path, containing original filename or possibly IImmutableFile objects.

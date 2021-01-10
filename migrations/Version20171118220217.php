@@ -32,7 +32,7 @@ class Version20171118220217 extends AbstractMigration
         // prep
         $pipelineConfig = $this->connection->executeQuery(
             "SELECT * FROM pipeline_config WHERE id = '{$pipelineConfigId}'"
-        )->fetch();
+        )->fetchAssociative();
         $config = Yaml::parse($pipelineConfig["pipeline_config"]);
 
         // boxes walk through

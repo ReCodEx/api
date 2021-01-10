@@ -83,7 +83,7 @@ final class Version20200418223054 extends AbstractMigration
     {
         // Create new score config entities
         foreach ($this->upScoreConfigs as &$config) {
-            $uuid = $this->connection->executeQuery('SELECT UUID()')->fetchColumn(); // this is the only way...
+            $uuid = $this->connection->executeQuery('SELECT UUID()')->fetchOne(); // this is the only way...
             $this->connection->executeQuery(
                 "INSERT INTO exercise_score_config (id, calculator, config, created_at) VALUES (:id, :calculator, :config, :created_at)",
                 [
@@ -131,7 +131,7 @@ final class Version20200418223054 extends AbstractMigration
         $unconvertableConfigsCount = $this->connection->executeQuery(
             "SELECT COUNT(*) FROM exercise_score_config WHERE calculator != :calculator",
             ["calculator" => self::CALCULATOR_ID]
-        )->fetchColumn();
+        )->fetchOne();
         $this->abortIf($unconvertableConfigsCount > 0, 'Some of the configs cannot be converted back to previous format.');
 
         foreach ($this->downScoreConfigs as $table => $_) {
@@ -140,7 +140,7 @@ final class Version20200418223054 extends AbstractMigration
                 JOIN exercise_score_config AS esc ON esc.id = t.score_config_id
                 WHERE esc.calculator = :calculator",
                 ["calculator" => self::CALCULATOR_ID]
-            )->fetchAll();
+            )->fetchAllAssociative();
         }
     }
 

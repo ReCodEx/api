@@ -2,7 +2,6 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use App\Helpers\Yaml;
@@ -28,14 +27,13 @@ class Version20181207152232 extends AbstractMigration
 
     /**
      * For Python change their relation to compilation pipeline, which is now source files passthrough.
-     * @throws DBALException
      */
     private function updatePassthroughEnvironments()
     {
         $passthroughFilesPipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => "Compilation source files pass-through"]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
 
         $python = "python3";
         if ($passthroughFilesPipeline) {
@@ -48,14 +46,13 @@ class Version20181207152232 extends AbstractMigration
 
     /**
      * Remove compilation python pipeline which is no longer needed.
-     * @throws DBALException
      */
     private function removePythonCompilationPipeline(): ?string
     {
         $pipelineId = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => self::PYTHON_COMPILATION_PIPELINE_NAME]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
 
         $this->connection->executeQuery(
             "DELETE FROM pipeline_parameter WHERE pipeline_id = :id",
@@ -72,7 +69,6 @@ class Version20181207152232 extends AbstractMigration
     /**
      * Update python run pipelines.
      * @return string[]
-     * @throws \Doctrine\DBAL\DBALException
      */
     private function updatePythonRunPipelines(): array
     {
@@ -81,12 +77,12 @@ class Version20181207152232 extends AbstractMigration
             $pipeline = $this->connection->executeQuery(
                 "SELECT * FROM pipeline WHERE name = :name",
                 ["name" => $name]
-            )->fetch();
+            )->fetchAssociative();
             $pipelines[] = $pipeline["id"];
 
             $pipelineConfig = $this->connection->executeQuery(
                 "SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'"
-            )->fetch();
+            )->fetchAssociative();
             if (!$pipelineConfig || empty($pipelineConfig["pipeline_config"])) {
                 continue;
             }
@@ -155,14 +151,13 @@ class Version20181207152232 extends AbstractMigration
 
     /**
      * @param string $compilationPipelineId
-     * @throws DBALException
      */
     private function updatePythonConfigs(?string $compilationPipelineId)
     {
         $passthroughFilesPipeline = $this->connection->executeQuery(
             "SELECT * FROM pipeline WHERE name = :name",
             ["name" => "Compilation source files pass-through"]
-        )->fetch()["id"];
+        )->fetchAssociative()["id"];
 
         $configsResult = $this->connection->executeQuery("SELECT * FROM exercise_config");
         foreach ($configsResult as $exerciseConfig) {
@@ -192,7 +187,6 @@ class Version20181207152232 extends AbstractMigration
     /**
      * @param Schema $schema
      * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
      */
     public function up(Schema $schema): void
     {

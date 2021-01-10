@@ -82,7 +82,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     {
         $this->container->removeService("http.request");
         $mockRequest = Mockery::mock($this->originalHttpRequest)  // create proxied partial mock
-        ->shouldDeferMissing()
+            ->makePartial()
             ->shouldReceive('getPost')->with('username')->andReturn($this->userLogin)->zeroOrMoreTimes()
             ->shouldReceive('getPost')->with('password')->andReturn($this->userPassword)->zeroOrMoreTimes()
             ->shouldReceive('getRemoteAddress')->withNoArgs()->andReturn('localhost')->zeroOrMoreTimes()
