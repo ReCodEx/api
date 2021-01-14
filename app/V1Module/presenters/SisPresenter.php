@@ -255,7 +255,9 @@ class SisPresenter extends BasePresenter
         $user = $this->users->findOrThrow($userId);
         $sisUserId = $this->getSisUserIdOrThrow($user);
 
+        // we separate groups and courses (courses hold only groupIds), to avoid duplicit groups in the output
         $groups = [];
+        $courses = [];
 
         foreach ($this->sisHelper->getCourses($sisUserId, $year, $term) as $course) {
             if (!$course->isOwnerStudent()) {
@@ -263,6 +265,7 @@ class SisPresenter extends BasePresenter
             }
 
             $bindings = $this->sisGroupBindings->findByCode($course->getCode());
+            $courseGroupIds = [];
             foreach ($bindings as $binding) {
                 if ($binding->getGroup() !== null && !$binding->getGroup()->isArchived()) {
                     /** @var Group $group */
@@ -272,13 +275,25 @@ class SisPresenter extends BasePresenter
                         !array_key_exists($group->getId(), $groups) && !$group->isOrganizational(
                         ) && !$group->isArchived()
                     ) {
-                        $groups[$group->getId()] = $this->groupViewFactory->getGroup($group);
+                        $groups[$group->getId()] = $group;
+                        $courseGroupIds[] = $group->getId();
                     }
                 }
             }
+
+            $courses[] = [
+                'course' => $course,
+                'groups' => $courseGroupIds,
+            ];
         }
 
-        $this->sendSuccessResponse(array_values($groups));
+        // and we need to perform ancestral closure to make sure the student can assemlbe complete hiarichal names
+        $groups = $this->groups->groupsAncestralClosure($groups);
+
+        $this->sendSuccessResponse([
+            'courses' => $courses,  // courses info + bound groups (referenced by ids)
+            'groups' => $this->groupViewFactory->getGroups($groups),
+        ]);
     }
 
     public function checkSupervisedCourses($userId, $year, $term)

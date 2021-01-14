@@ -90,12 +90,14 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'GET', [
+                'V1:Sis',
+                'GET',
+                [
                 'action' => 'supervisedCourses',
                 'userId' => $user->getId(),
                 'year' => 2016,
                 'term' => 2
-            ]
+                ]
             )
         );
         Assert::type(JsonResponse::class, $response);
@@ -124,12 +126,14 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'GET', [
+                'V1:Sis',
+                'GET',
+                [
                 'action' => 'supervisedCourses',
                 'userId' => $user->getId(),
                 'year' => 2016,
                 'term' => 2
-            ]
+                ]
             )
         );
         Assert::type(JsonResponse::class, $response);
@@ -162,10 +166,13 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'POST', [
+                'V1:Sis',
+                'POST',
+                [
                 'action' => 'createGroup',
                 'courseId' => $courseId
-            ], [
+                ],
+                [
                     'parentGroupId' => $this->groups->findAll()[0]->getId()
                 ]
             )
@@ -212,9 +219,11 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'GET', [
+                'V1:Sis',
+                'GET',
+                [
                 'action' => 'status'
-            ]
+                ]
             )
         );
 
@@ -238,9 +247,11 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'GET', [
+                'V1:Sis',
+                'GET',
+                [
                 'action' => 'status'
-            ]
+                ]
             )
         );
 
@@ -286,12 +297,14 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'GET', [
+                'V1:Sis',
+                'GET',
+                [
                 'action' => 'subscribedGroups',
                 'userId' => $user->getId(),
                 'year' => 3054,
                 'term' => 1
-            ]
+                ]
             )
         );
 
@@ -300,18 +313,27 @@ class TestSisPresenter extends TestCase
         Assert::type(JsonResponse::class, $response);
         Assert::same(200, $result['code']);
 
+        $payload = $result['payload'];
+
         $returnedGroups = array_map(
             function (array $data) {
                 return $data["id"];
             },
-            $result['payload']
+            $payload['groups']
         );
-
         $expected = [$group_2->getId(), $group_1->getId()];
         sort($expected);
         sort($returnedGroups);
-
         Assert::equal($expected, $returnedGroups);
+
+        $returnedCourses = array_map(
+            function (array $course) {
+                return $course['course']->getCode();
+            },
+            $payload['courses']
+        );
+        sort($returnedCourses);
+        Assert::equal(['16bNPRG042p1', '16bNSWI153x01'], $returnedCourses);
     }
 
     public function testBindingsAreReturned()
@@ -370,10 +392,13 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'POST', [
+                'V1:Sis',
+                'POST',
+                [
                 'action' => 'bindGroup',
                 'courseId' => $courseId
-            ], [
+                ],
+                [
                     'groupId' => $group->getId()
                 ]
             )
@@ -411,11 +436,13 @@ class TestSisPresenter extends TestCase
         /** @var JsonResponse $response */
         $response = $this->presenter->run(
             new Request(
-                'V1:Sis', 'POST', [
+                'V1:Sis',
+                'POST',
+                [
                 'action' => 'unbindGroup',
                 'courseId' => $courseId,
                 'groupId' => $group->getId()
-            ]
+                ]
             )
         );
 
@@ -428,4 +455,3 @@ class TestSisPresenter extends TestCase
 }
 
 (new TestSisPresenter())->run();
-
