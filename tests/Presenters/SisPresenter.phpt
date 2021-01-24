@@ -107,6 +107,7 @@ class TestSisPresenter extends TestCase
 
         $payload = $result['payload'];
         Assert::count(2, $payload);
+        Assert::count(2, $payload['courses']);
     }
 
     public function testGetSupervisedCoursesHybrid()
@@ -300,7 +301,7 @@ class TestSisPresenter extends TestCase
                 'V1:Sis',
                 'GET',
                 [
-                'action' => 'subscribedGroups',
+                'action' => 'subscribedCourses',
                 'userId' => $user->getId(),
                 'year' => 3054,
                 'term' => 1

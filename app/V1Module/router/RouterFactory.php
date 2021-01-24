@@ -531,7 +531,7 @@ class RouterFactory
         $router[] = new DeleteRoute("$prefix/terms/<id>", "Sis:deleteTerm");
         $router[] = new GetRoute(
             "$prefix/users/<userId>/subscribed-groups/<year>/<term>/as-student",
-            "Sis:subscribedGroups"
+            "Sis:subscribedCourses"
         );
         $router[] = new GetRoute("$prefix/users/<userId>/supervised-courses/<year>/<term>", "Sis:supervisedCourses");
         $router[] = new GetRoute("$prefix/remote-courses/<courseId>/possible-parents", "Sis:possibleParents");

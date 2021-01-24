@@ -241,8 +241,10 @@ class SisPresenter extends BasePresenter
     }
 
     /**
-     * Get ReCodEx groups bound to SIS groups of which the user is a student.
+     * Get all courses subscirbed by a student and corresponding ReCodEx groups.
      * Organizational and archived groups are filtered out from the result.
+     * Each course holds bound group IDs and group objects are returned in a separate array.
+     * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
      * @GET
      * @param string $userId
      * @param int $year
@@ -250,7 +252,7 @@ class SisPresenter extends BasePresenter
      * @throws InvalidArgumentException
      * @throws BadRequestException
      */
-    public function actionSubscribedGroups($userId, $year, $term)
+    public function actionSubscribedCourses($userId, $year, $term)
     {
         $user = $this->users->findOrThrow($userId);
         $sisUserId = $this->getSisUserIdOrThrow($user);
@@ -307,7 +309,9 @@ class SisPresenter extends BasePresenter
     }
 
     /**
-     * Get SIS groups of which the user is a supervisor (regardless of them being bound to a local group)
+     * Get supervised SIS courses and corresponding ReCodEx groups.
+     * Each course holds bound group IDs and group objects are returned in a separate array.
+     * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
      * @GET
      * @param string $userId
      * @param int $year
@@ -321,7 +325,8 @@ class SisPresenter extends BasePresenter
         $user = $this->users->findOrThrow($userId);
         $sisUserId = $this->getSisUserIdOrThrow($user);
 
-        $result = [];
+        $groups = [];
+        $courses = [];
 
         foreach ($this->sisHelper->getCourses($sisUserId, $year, $term) as $course) {
             if (!$course->isOwnerSupervisor()) {
@@ -329,28 +334,30 @@ class SisPresenter extends BasePresenter
             }
 
             $bindings = $this->sisGroupBindings->findByCode($course->getCode());
-            $groups = array_map(
-                function (SisGroupBinding $binding) {
-                    return $binding->getGroup();
-                },
-                $bindings
-            );
-            $groups = array_values(
-                array_filter(
-                    $groups,
-                    function (Group $group) {
-                        return !$group->isArchived();
-                    }
-                )
-            );
+            $courseGroupIds = [];
+            foreach ($bindings as $binding) {
+                if ($binding->getGroup() !== null && !$binding->getGroup()->isArchived()) {
+                    /** @var Group $group */
+                    $group = $binding->getGroup();
 
-            $result[] = [
+                    $groups[$group->getId()] = $group;
+                    $courseGroupIds[] = $group->getId();
+                }
+            }
+
+            $courses[] = [
                 'course' => $course,
-                'groups' => $this->groupViewFactory->getGroups($groups)
+                'groups' => $courseGroupIds,
             ];
         }
 
-        $this->sendSuccessResponse($result);
+        // and we need to perform ancestral closure to make sure the student can assemlbe complete hiarichal names
+        $groups = $this->groups->groupsAncestralClosure($groups);
+
+        $this->sendSuccessResponse([
+            'courses' => $courses,  // courses info + bound groups (referenced by ids)
+            'groups' => $this->groupViewFactory->getGroups($groups),
+        ]);
     }
 
     /**
@@ -374,7 +381,8 @@ class SisPresenter extends BasePresenter
     }
 
     /**
-     * Make sure new group captions (in all languages) are unique. If not, new unique names are created by appending value of a counter.
+     * Make sure new group captions (in all languages) are unique.
+     * If not, new unique names are created by appending value of a counter.
      * @param array $captions List of captions [ lang => caption ].
      * @param Group $parentGroup The uniqueness is ensured only amongst the siblings.
      */
