@@ -435,23 +435,25 @@ class SisPresenter extends BasePresenter
         $captions = [];
         foreach (["en", "cs"] as $language) {
             // Assemble new group name from course data....
-            if (
-                $remoteCourse->getDayOfWeek() !== null &&
-                $remoteCourse->getTime() !== null &&
-                $remoteCourse->getRoom() !== null
-            ) {
-                $timeInfo = $this->dayToString(
-                    $remoteCourse->getDayOfWeek(),
-                    $language
-                ) . ", " . $remoteCourse->getTime();
-                if ($remoteCourse->isFortnightly()) {
-                    $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
-                }
+            $schedulingInfo = [];
+            if ($remoteCourse->getDayOfWeek() !== null) {
+                $schedulingInfo[] = $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language);
+            }
+            if ($remoteCourse->getTime() !== null) {
+                $schedulingInfo[] = $remoteCourse->getTime();
+            }
+            if ($remoteCourse->isFortnightly()) {
+                $schedulingInfo[] = $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
+            }
+            if ($remoteCourse->getRoom() !== null) {
+                $schedulingInfo[] = $remoteCourse->getRoom();
+            }
+
+            if ($schedulingInfo) {
                 $captions[$language] = sprintf(
-                    "%s (%s, %s)",
+                    "%s (%s)",
                     $remoteCourse->getCaption($language),
-                    $timeInfo,
-                    $remoteCourse->getRoom()
+                    join(', ', $schedulingInfo)
                 );
             } else {
                 $captions[$language] = $remoteCourse->getCaption($language);
