@@ -351,7 +351,7 @@ class SisPresenter extends BasePresenter
             ];
         }
 
-        // and we need to perform ancestral closure to make sure the student can assemlbe complete hiarichal names
+        // and we need to perform ancestral closure to make sure the student can assemble complete hierarchical names
         $groups = $this->groups->groupsAncestralClosure($groups);
 
         $this->sendSuccessResponse([
