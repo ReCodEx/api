@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
+use App\Model\Repository\Users;
 use App\V1Module\Presenters\GroupsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
@@ -215,11 +216,13 @@ class TestGroupsPresenter extends Tester\TestCase
         )->first();
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'POST', [
+            'V1:Groups',
+            'POST',
+            [
             'action' => 'addStudent',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -245,11 +248,13 @@ class TestGroupsPresenter extends Tester\TestCase
         )->first();
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'POST', [
+            'V1:Groups',
+            'POST',
+            [
             'action' => 'addStudent',
             'id' => $group->getId(),
             'userId' => $user->getId()
-        ]
+            ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -273,11 +278,13 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(true, $group->isStudentOf($user));
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'DELETE', [
+            'V1:Groups',
+            'DELETE',
+            [
             'action' => 'removeStudent',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -304,11 +311,13 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(true, $group->isStudentOf($user));
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'DELETE', [
+            'V1:Groups',
+            'DELETE',
+            [
             'action' => 'removeStudent',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -331,18 +340,20 @@ class TestGroupsPresenter extends Tester\TestCase
         $user->makeStudentOf($group); // ! necessary
         $group->setDetaining(true);
         $this->presenter->users->flush();
-        $this->presenter->groups->flush();        
+        $this->presenter->groups->flush();
 
         // initial checks
         Assert::equal(true, $group->isStudentOf($user));
         Assert::equal(true, $group->isDetaining());
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'DELETE', [
+            'V1:Groups',
+            'DELETE',
+            [
             'action' => 'removeStudent',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         Assert::exception(
@@ -356,6 +367,7 @@ class TestGroupsPresenter extends Tester\TestCase
     public function testAddGroup()
     {
         $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
 
         /** @var Instance $instance */
         $instance = $this->presenter->instances->findAll()[0];
@@ -404,6 +416,64 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(true, $payload["privateData"]["publicStats"]);
         Assert::equal(true, $payload["privateData"]["detaining"]);
         Assert::equal(true, $payload["public"]);
+        Assert::count(1, $payload['primaryAdminsIds']);
+        Assert::equal($admin->getId(), $payload["primaryAdminsIds"][0]);
+    }
+
+    public function testAddGroupNoAdmin()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
+
+        /** @var Instance $instance */
+        $instance = $this->presenter->instances->findAll()[0];
+        $allGroupsCount = count($this->presenter->groups->findAll());
+
+        $request = new Nette\Application\Request(
+            'V1:Groups',
+            'POST',
+            ['action' => 'addGroup'],
+            [
+                'localizedTexts' => [
+                    [
+                        'locale' => 'en',
+                        'name' => 'new name',
+                        'description' => 'some neaty description'
+                    ]
+                ],
+                'instanceId' => $instance->getId(),
+                'externalId' => 'external identification of exercise',
+                'parentGroupId' => null,
+                'publicStats' => true,
+                'isPublic' => true,
+                'hasThreshold' => false,
+                'isOrganizational' => false,
+                'detaining' => true,
+                'noAdmin' => true,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        /** @var Group $payload */
+        $payload = $result['payload'];
+
+        Assert::count(1, $payload["localizedTexts"]);
+        $localizedGroup = current($payload["localizedTexts"]);
+        Assert::notSame(null, $localizedGroup);
+
+        Assert::equal(200, $result['code']);
+        Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
+        Assert::equal('new name', $localizedGroup->getName());
+        Assert::equal('some neaty description', $localizedGroup->getDescription());
+        Assert::equal($instance->getId(), $payload["privateData"]["instanceId"]);
+        Assert::equal('external identification of exercise', $payload["externalId"]);
+        Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
+        Assert::equal(true, $payload["privateData"]["publicStats"]);
+        Assert::equal(true, $payload["privateData"]["detaining"]);
+        Assert::equal(true, $payload["public"]);
+        Assert::count(0, $payload['primaryAdminsIds']);
     }
 
     public function testValidateAddGroupData()
@@ -782,11 +852,13 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(false, $group->isSupervisorOf($user));
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'POST', [
+            'V1:Groups',
+            'POST',
+            [
             'action' => 'addSupervisor',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -812,11 +884,13 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(false, $group->isSupervisorOf($user));
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'POST', [
+            'V1:Groups',
+            'POST',
+            [
             'action' => 'addSupervisor',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         Assert::exception(
@@ -840,11 +914,13 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(true, $group->isSupervisorOf($user));
 
         $request = new Nette\Application\Request(
-            'V1:Groups', 'DELETE', [
+            'V1:Groups',
+            'DELETE',
+            [
             'action' => 'removeSupervisor',
             'id' => $group->id,
             'userId' => $user->id
-        ]
+            ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -1219,7 +1295,6 @@ class TestGroupsPresenter extends Tester\TestCase
 
         Assert::equal(false, $group->isAdminOf($user));
     }
-
 }
 
 $testCase = new TestGroupsPresenter();
