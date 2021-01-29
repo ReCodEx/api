@@ -162,7 +162,7 @@ class ZipFileStorage implements IFileStorage
             }
 
             // check the entire file has been copied
-            if ($copied !== $size || !feof($fpIn)) {
+            if ($copied !== $size || ($size > 0 && !feof($fpIn))) {
                 throw new FileStorageException(
                     "Extraction of '$entry' from ZIP archive was not completed entirely.",
                     $zipArchivePath
