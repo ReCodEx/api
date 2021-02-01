@@ -82,6 +82,25 @@ class TestGroupsPresenter extends Tester\TestCase
         return $group;
     }
 
+    /**
+     * Helper which returns group with no assignments
+     * @return Group
+     */
+    private function getGroupWithNoAssignments(): Group
+    {
+        $groups = $this->presenter->groups->findAll();
+        $group = null;
+        foreach ($groups as $grp) {
+            if (!$grp->isOrganizational() && $grp->getAssignments()->count() == 0) {
+                $group = $grp;
+                break;
+            }
+        }
+        Assert::notEqual(null, $group);
+        return $group;
+    }
+
+
     private function getAllGroupsInDepth($depth, $filter = null, $root = null)
     {
         if (!$root) {
@@ -811,6 +830,25 @@ class TestGroupsPresenter extends Tester\TestCase
         $payload = $result['payload'];
         Assert::equal(200, $result['code']);
         Assert::count(11, $payload);
+    }
+
+    public function testStatsEmpty()
+    {
+        PresenterTestHelper::login($this->container, $this->adminLogin);
+        $group = $this->getGroupWithNoAssignments();
+
+        $request = new Nette\Application\Request(
+            'V1:Groups',
+            'GET',
+            ['action' => 'stats', 'id' => $group->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        $payload = $result['payload'];
+        Assert::equal(200, $result['code']);
+        Assert::equal([], $payload);
     }
 
     public function testStudentsStats()
