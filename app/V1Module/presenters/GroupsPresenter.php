@@ -278,12 +278,18 @@ class GroupsPresenter extends BasePresenter
     /**
      * Update group info
      * @POST
-     * @Param(type="post", name="externalId", required=false, description="An informative, human readable indentifier of the group")
-     * @Param(type="post", name="publicStats", validation="bool", description="Should students be able to see each other's results?")
-     * @Param(type="post", name="detaining", validation="bool", required=false, description="Are students prevented from leaving the group on their own?")
-     * @Param(type="post", name="isPublic", validation="bool", description="Should the group be visible to all student?")
-     * @Param(type="post", name="hasThreshold", validation="bool", description="True if threshold was given, false if it should be unset")
-     * @Param(type="post", name="threshold", validation="numericint", required=false, description="A minimum percentage of points needed to pass the course")
+     * @Param(type="post", name="externalId", required=false,
+     *        description="An informative, human readable indentifier of the group")
+     * @Param(type="post", name="publicStats", validation="bool",
+     *        description="Should students be able to see each other's results?")
+     * @Param(type="post", name="detaining", validation="bool",
+     *        required=false, description="Are students prevented from leaving the group on their own?")
+     * @Param(type="post", name="isPublic", validation="bool",
+     *        description="Should the group be visible to all student?")
+     * @Param(type="post", name="hasThreshold", validation="bool",
+     *        description="True if threshold was given, false if it should be unset")
+     * @Param(type="post", name="threshold", validation="numericint", required=false,
+     *        description="A minimum percentage of points needed to pass the course")
      * @Param(type="post", name="localizedTexts", validation="array", description="Localized names and descriptions")
      * @param string $id An identifier of the updated group
      * @throws InvalidArgumentException
@@ -456,7 +462,9 @@ class GroupsPresenter extends BasePresenter
         } else {
             if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
                 throw new ForbiddenRequestException(
-                    "Group '$id' is the root group of instance '{$group->getInstance()->getId()}' and root groups cannot be deleted."
+                    "Group '$id' is the root group of instance '"
+                    . $group->getInstance()->getId()
+                    . "' and root groups cannot be deleted."
                 );
             }
         }
@@ -1017,8 +1025,8 @@ class GroupsPresenter extends BasePresenter
 
             /** @var LocalizedGroup $text */
             foreach ($group->getLocalizedTexts() as $text) {
-                // Localizations::updateCollection only updates the inverse side of the relationship - Doctrine needs us to
-                // update the owning side manually. We set it to null for all potentially removed localizations first.
+                // Localizations::updateCollection only updates the inverse side of the relationship. Doctrine needs us
+                // to update the other side manually. We set it to null for all potentially removed localizations first.
                 $text->setGroup(null);
             }
 
