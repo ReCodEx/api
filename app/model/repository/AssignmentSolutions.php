@@ -96,6 +96,10 @@ class AssignmentSolutions extends BaseRepository
      */
     private function findValidSolutionsForAssignments(array $assignments, ?User $user = null)
     {
+        if (!$assignments) {
+            return []; // this shortcut also prevents assembling wrong DQL
+        }
+
         $assignmentIds = array_map(
             function ($assignment) {
                 return $assignment->getId();
