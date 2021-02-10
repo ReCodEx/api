@@ -71,9 +71,9 @@ class AccessManager
         try {
             $decodedToken = JWT::decode($token, $this->verificationKey, $this->allowedAlgorithms);
         } catch (DomainException $e) {
-            throw new InvalidAccessTokenException($token);
+            throw new InvalidAccessTokenException($token, $e);
         } catch (UnexpectedValueException $e) {
-            throw new InvalidAccessTokenException($token);
+            throw new InvalidAccessTokenException($token, $e);
         }
 
         if (!isset($decodedToken->sub)) {
