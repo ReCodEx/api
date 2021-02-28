@@ -111,8 +111,11 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter
         string $frontendErrorCode = FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
         $frontendErrorParams = null
     ) {
-        // log the action done by the current user
-        if ($this->getUser()->isLoggedIn()) {
+        // calling user->isLoggedIn results in throwing exception in case of
+        // invalid token (after update to nette/security:v3.1), therefore we
+        // need to call our UserStorage directly
+        if ($this->getUser()->getStorage()->isAuthenticated()) {
+            // log the action done by the current user
             // determine the action name from the application request
             $req = $this->getRequest();
             $params = $req->getParameters();
