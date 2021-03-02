@@ -469,6 +469,7 @@ permissions:
           - viewAll
           - viewAllAuthors
           - viewDetail
+          - viewConfig
           - viewLimits
           - viewScoreConfig
           - viewPipelines
@@ -486,11 +487,12 @@ permissions:
       resource: exercise
       actions:
           - viewDetail
+          - viewConfig
           - viewLimits
           - viewScoreConfig
-          - addReferenceSolution
           - viewPipelines
           - viewAssignments
+          - addReferenceSolution
           - fork
       conditions:
           or:
