@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php declare(strict_types = 1);
+
+require __DIR__ . '/../vendor/autoload.php';
+
+// Get worker ID from command line arguments...
+$workerId = 'worker1';
+foreach ($argv as $arg) {
+    if (preg_match('/^--workerId=(?<id>.*)$/', $arg, $matches)) {
+        $workerId = $matches['id'];
+    }
+}
+
+exit(App\Bootstrap::boot()
+    ->createContainer()
+    ->getByType(App\Async\Worker::class)
+    ->run($workerId));

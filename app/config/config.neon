@@ -17,18 +17,28 @@ parameters:
       prefixLength: 2 # splitting hash files into 256 subdirectories by prefix should be enough
 
   api:
-    address: https://recodex.mff.cuni.cz:4000
+    address: "https://your.recodex.domain/api"
     name: "ReCodEx API"
     description: "ReCodEx Code Examiner - API Server"
     versionFormat: "{tag}"
 
+  async:
+    pollingInterval: 60 # seconds (you may set this to larger values if inotify wakeups are allowed)
+    retries: 3 # how many times each async job is retried when failing
+    # inotify can wake the async worker (immediately once an async opertion is issued)
+    inotify: false # set to true only if your system (and PHP) supports inotify (not available on Windows, extension required on Linux)
+    inotifyFile: %tempDir%/async-inotify-file # file used as inotify rod for triggering async worker on dispatch
+    restartWorkerAfter: # memory leak precaution - worker is restarted once in a while
+      time: 86400 # after given amount of seconds
+      jobs: 42    # or after certain amount of jobs processed (whatever comes first)
+
   webapp:
-    address: https://recodex.mff.cuni.cz/en
+    address: "https://your.recodex.domain"
 
   accessManager:  # configuration of access token in JWT standard. Do not modify unless you really know what are you doing.
     leeway: 60
-    issuer: https://recodex.mff.cuni.cz
-    audience: https://recodex.mff.cuni.cz
+    issuer: "%webapp.address%"
+    audience: "%webapp.address%"
     expiration: 86400
     usedAlgorithm: HS256
     allowedAlgorithms:
@@ -36,7 +46,7 @@ parameters:
     verificationKey: "recodex-123"
 
   broker:  # connection to broker
-    address: tcp://195.113.17.8:9668  # URI of broker
+    address: "tcp://127.0.0.1:9658"
     auth:  # username and password for broker callback authentication back to API
       username: "re"
       password: "codex"
@@ -46,7 +56,7 @@ parameters:
       result: 1000  # result timeout how long to wait for confirmation if job can be processed or not
 
   monitor:  # connection to monitor
-    address: wss://recodex.mff.cuni.cz:4443/ws  # URI of monitor
+    address: "wss://your.recodex.domain:443/ws"  # URI of monitor
 
   workerFiles:  # configuration for worker-files endpoint (direct access from worker to the core to upload/download files)
     enabled: true
@@ -67,13 +77,11 @@ parameters:
     serviceId: "cas-uk"  # visible identifier of this service
     options:
       ldap:  # parameters for connecting to LDAP, hostname, base_dn, port, security and bindName
-        hostname: "ldap.cuni.cz"
-        base_dn: "ou=people,dc=cuni,dc=cz"
-        #port: 389
-        #security: SSL
-        bindName: "cunipersonalid"
+        hostname: "your.ldap.server"
+        base_dn: "ou=people,dc=your,dc=ldap,dc=server"
+        bindName: "personalid"
       cas:
-        baseUri: "https://idp.cuni.cz/cas/"
+        baseUri: "https://your.ldap.server/cas/"
     fields:  # names of LDAP keys for informations as email, firstName and lastName
       cas:
         ukco: "cunipersonalid"
@@ -100,14 +108,14 @@ parameters:
 
   emails:  # common configuration for sending email (addresses and template variables)
     apiUrl: %api.address%  # base URL of API server including port (for referencing pictures in messages)
-    footerUrl: https://recodex.mff.cuni.cz  # link in the message footer
+    footerUrl: %webapp.address%  # link in the message footer
     siteName: "ReCodEx"  # name of frontend (ReCodEx, or KSP for unique instance for KSP course)
     githubUrl: https://github.com/ReCodEx  # URL to GitHub repository of this project
-    from: "ReCodEx <noreply@recodex.mff.cuni.cz>"  # sending email address
+    from: "ReCodEx <noreply@your.recodex.domain>"  # sending email address
     subjectPrefix: "ReCodEx - "
     debugMode: false  # in debug mode, no messages are sent via SMTP
     archivingDir: ""  # a directory where copies of all emails sent are stored (in text files)
-    defaultAdminTo: "Administrator <admin@example.com>"  # admin mail address
+    defaultAdminTo: "Administrator <admin@your.recodex.domain>"  # admin mail address
 
   failures:  # admin messages on errors
     emails:  # additional info for sending mails
@@ -169,7 +177,7 @@ parameters:
 
   mail:  # configuration of sending mails
     smtp: true  # using SMTP server, have to be "true"
-    host: "smtp.ps.stdin.cz"  # address of the server
+    host: "your.smtp.domain"  # address of the server
     port: 587  # sending port (common values are 25, 465, 587)
     username: ""  # login to the server
     password: ""  # password to the server
@@ -274,6 +282,10 @@ services:
   nette.mailer: Nette\Mail\SmtpMailer(%mail%)
   security.passwords: Nette\Security\Passwords(::PASSWORD_BCRYPT, [cost: 12])
   
+  # async
+  - App\Async\Worker(%async%)
+  - App\Async\Dispatcher(%async%, [])
+  
   # commands
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)
@@ -375,6 +387,7 @@ services:
   - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)
 
   # models - repositories
+  - App\Model\Repository\AsyncJobs
   - App\Model\Repository\Comments
   - App\Model\Repository\Exercises
   - App\Model\Repository\ExerciseTests

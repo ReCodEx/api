@@ -5,6 +5,11 @@ parameters:
   webapp:
     address: "https://your.recodex.domain"
 
+  async:
+    pollingInterval: 10 # seconds (you may set this to larger values if inotify wakeups are allowed)
+    # inotify can wake the async worker (immediately once an async opertion is issued)
+    inotify: false # set to true only if your system (and PHP) supports inotify (not available on Windows, extension required on Linux)
+
   fileStorage: # where the local files are being stored
     local:
       root: %appDir%/../storage/local # this should be replaced with path to existing directory
@@ -40,6 +45,8 @@ parameters:
     options:
       ldap:
         hostname: "your.ldap.server"
+        base_dn: "ou=people,dc=your,dc=recodex,dc=domain"
+        bindName: "personalid"
       cas:
         baseUri: "https://your.ldap.server/cas/"
 
