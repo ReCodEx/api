@@ -135,7 +135,7 @@ class ExercisesConfigPresenter extends BasePresenter
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
-        if (!$this->exerciseAcl->canUpdate($exercise)) {
+        if (!$this->exerciseAcl->canViewConfig($exercise)) {
             throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
         }
     }
@@ -261,7 +261,7 @@ class ExercisesConfigPresenter extends BasePresenter
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
-        if (!$this->exerciseAcl->canUpdate($exercise)) {
+        if (!$this->exerciseAcl->canViewConfig($exercise)) {
             throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
         }
     }
@@ -347,7 +347,7 @@ class ExercisesConfigPresenter extends BasePresenter
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
-        if (!$this->exerciseAcl->canUpdate($exercise)) {
+        if (!$this->exerciseAcl->canViewConfig($exercise)) {
             throw new ForbiddenRequestException(
                 "You are not allowed to get variables for this exercise configuration."
             );
