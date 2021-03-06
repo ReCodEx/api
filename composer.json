@@ -20,6 +20,11 @@
     "autoload": {
         "classmap": ["app/Bootstrap.php"]
     },
+    "config": {
+        "platform": {
+            "php": "7.3.29"
+        }
+    },
     "require": {
         "php": ">=7.3",
         "ext-yaml": ">=2.0",
@@ -31,37 +36,37 @@
         "nette/database": "^3.1",
         "nette/di": "^3.0",
         "nette/finder": "^2.5",
-        "nette/forms": "^3.0",
+        "nette/forms": "^3.1",
         "nette/http": "^3.1",
         "nette/mail": "^3.1",
-        "nette/robot-loader": "^3.3",
+        "nette/robot-loader": "^3.4",
         "nette/safe-stream": "^2.4",
         "nette/security": "^3.1",
         "nette/utils": "^3.2",
         "nette/reflection": "^2.4",
         "nette/neon": "^3.2",
-        "latte/latte": "^2.9",
+        "latte/latte": "^2.10",
         "tracy/tracy": "^2.8",
-        "dg/adminer-custom": "^1.25",
+        "dg/adminer-custom": "^1.28",
         "contributte/console": "^0.9.0",
         "nettrine/orm": "^0.8.0",
         "nettrine/dbal": "^0.7.0",
         "nettrine/migrations": "^0.7.0",
-        "nettrine/extensions-atlantic18": "^0.5.0",
+        "nettrine/extensions-atlantic18": "^0.6.0",
         "guzzlehttp/guzzle": "~6.5",
-        "symfony/process": "^5.2",
-        "firebase/php-jwt": "^5.2",
+        "symfony/process": "^5.3",
+        "firebase/php-jwt": "^5.4",
         "forxer/gravatar": "^2.1",
         "mrdm-nl/ldap": "^1.1",
         "bjeavons/zxcvbn-php": "^1.2",
-        "limenet/git-version": "^0.1",
-        "nelmio/alice": "^3.7"
+        "limenet/git-version": "v0.1.0",
+        "nelmio/alice": "^3.8"
     },
     "require-dev": {
         "mockery/mockery": "@stable",
         "mikey179/vfsstream": "@stable",
         "phpstan/phpstan": "^0.12",
-        "nette/tester": "^2.3",
+        "nette/tester": "^2.4",
         "phpstan/phpstan-nette": "^0.12"
     },
     "minimum-stability": "dev",
