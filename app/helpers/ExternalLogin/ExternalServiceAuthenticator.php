@@ -6,25 +6,22 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\WrongCredentialsException;
+use App\Exceptions\InvalidExternalTokenException;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Logins;
 use App\Model\Repository\Users;
+use App\Model\Repository\Instances;
 use App\V1Module\Presenters\RegistrationPresenter;
+use DomainException;
+use UnexpectedValueException;
 
 /**
  * Mapper of service identification to object instance
  */
 class ExternalServiceAuthenticator
 {
-
-    /**
-     * External authentication services
-     * @var IExternalLoginService[]
-     */
-    private $services;
-
     /**
      * @var ExternalLogins
      */
@@ -41,175 +38,172 @@ class ExternalServiceAuthenticator
     private $logins;
 
     /**
+     * @var Instances
+     */
+    public $instances;
+
+
+    /**
+     * @var array [ name => { jwtSecret, jwtAlgorithms, expiration } ]
+     */
+    private $authenticators = [];
+
+    /**
      * Constructor with instantiation of all login services
      * @param ExternalLogins $externalLogins
      * @param Users $users
      * @param Logins $logins
-     * @param IExternalLoginService ...$services
+     * @param array $authenticators (each one holding 'name' and 'jwtSecret')
      */
-    public function __construct(ExternalLogins $externalLogins, Users $users, Logins $logins, ...$services)
+    public function __construct(array $authenticators, ExternalLogins $externalLogins, Users $users, Logins $logins, Instances $instances)
     {
         $this->externalLogins = $externalLogins;
         $this->users = $users;
-        $this->services = $services;
         $this->logins = $logins;
-    }
+        $this->instances = $instances;
 
-    /**
-     * Get external service depending on the ID
-     * @param string $serviceId Identifier of wanted service
-     * @param string|null $type Type of authentication process
-     * @return IExternalLoginService Instance of login service with given ID
-     * @throws BadRequestException when such service is not known
-     */
-    public function findService(string $serviceId, ?string $type = "default"): IExternalLoginService
-    {
-        foreach ($this->services as $service) {
-            if ($service->getServiceId() === $serviceId && $service->getType() === $type) {
-                return $service;
+        foreach ($authenticators as $auth) {
+            if (!empty($auth['name'] && !empty($auth['jwtSecret']))) {
+                $this->authenticators[$auth['name']] = (object)[
+                    'jwtSecret' => $auth['jwtSecret'],
+                    'jwtAlgorithms' => Arrays::get($auth, 'jwtAlgorithms', ['HS256']),
+                    'expiration' => Arrays::get($auth, 'expiration', 60),
+                ];
             }
         }
-
-        throw new BadRequestException("Authentication service '$serviceId/$type' is not supported.");
     }
 
     /**
-     * Authenticate a user against given external authentication service
-     * @param IExternalLoginService $service
-     * @param array $credentials
+     * Verify that given authenticator exists.
+     * @param string $name of the external authenticator
+     * @return bool
+     */
+    public function hasAuthenticator(string $name): bool
+    {
+        return array_key_exists($name, $this->authenticators);
+    }
+
+    /**
+     * Authenticate a user against given external authentication service.
+     * The external identification may be paired with already existing account by email.
+     * If instanceId is provided (either externally or in token), user will be registered if not present.
+     * @param string $authName name of the external authenticator
+     * @param string $token form the external authentication service
+     * @param string|null $instanceId identifier of an instance where the user should be registered
+     *                                (this may be overriden by a value in the token)
      * @return User
      * @throws BadRequestException
      * @throws WrongCredentialsException
      */
-    public function authenticate(IExternalLoginService $service, $credentials)
+    public function authenticate(string $authName, string $token, string $instanceId = null): User
     {
         $user = null;
-        $userData = $service->getUser($credentials, true); // true = only ID
-        try {
-            $user = $this->findUser($service, $userData);
-        } catch (WrongCredentialsException $e) {
-            // second try - is there a user with a verified email corresponding to this one?
-            if ($userData !== null) {
-                $user = $this->tryConnect($service, $userData);
-            }
+        $decodedToken = $this->decodeToken($authName, $token);
 
-            if ($user === null) {
-                throw $e;
-            }
-        }
+        // try to get the user by external ID
+        $userData = new UserData($decodedToken); // this wrapping also performs some check
+        $user = $this->externalLogins->getUser($authName, $userData->id);
 
-        return $user;
-    }
-
-    /**
-     * Register and authenticate user against given external authentication service.
-     * @param IExternalLoginService $service
-     * @param Instance $instance
-     * @param array $credentials
-     * @return User
-     * @throws BadRequestException
-     * @throws WrongCredentialsException
-     */
-    public function register(IExternalLoginService $service, Instance $instance, $credentials): User
-    {
-        $userData = $service->getUser($credentials); // throws if the user cannot be logged in
-        $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
-
-        if ($user !== null) {
-            throw new WrongCredentialsException(
-                "User is already registered using '{$service->getServiceId()}'.",
-                FrontendErrorMappings::E400_106__WRONG_CREDENTIALS_EXTERNAL_USER_REGISTERED,
-                ["service" => $service->getServiceId()]
-            );
-        }
-
-        // try to connect new user to already existing ones
-        $user = $this->tryConnect($service, $userData);
+        // try to match existing local user by email address
         if ($user === null) {
-            // user is not registered locally, create brand new one
-            $user = $userData->createEntity($instance);
-            $this->users->persist($user);
-            // connect the account to the login method
-            $this->externalLogins->connect($service, $user, $userData->getId());
+            $user = $this->tryConnect($authName, $userData);
         }
 
-        return $user;
-    }
-
-    /**
-     * Try to find a user account based on the data collected from
-     * an external login service.
-     * @param IExternalLoginService $service
-     * @param UserData|null $userData
-     * @return User
-     * @throws WrongCredentialsException
-     */
-    private function findUser(IExternalLoginService $service, ?UserData $userData): User
-    {
-        if ($userData === null) {
-            throw new WrongCredentialsException(
-                "External authentication failed.",
-                FrontendErrorMappings::E400_104__WRONG_CREDENTIALS_EXTERNAL_FAILED
-            );
+        // try to register a new user
+        if ($user === null) {
+            $instance = $this->getInstance($decodedToken, $instanceId);
+            if ($instance) {
+                $user = $userData->createEntity($instance);
+                $this->users->persist($user);
+                // connect the account to the login method
+                $this->externalLogins->connect($authName, $user, $userData->id);
+            }
         }
 
-        $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
         if ($user === null) {
             throw new WrongCredentialsException(
-                "User authenticated through '{$service->getServiceId()}' has no corresponding account in ReCodEx. Please register to ReCodEx first.",
+                "User authenticated through '$authName' has no corresponding account in ReCodEx.",
                 FrontendErrorMappings::E400_105__WRONG_CREDENTIALS_EXTERNAL_USER_NOT_FOUND,
-                ["service" => $service->getServiceId()]
+                ["service" => $authName]
             );
         }
 
         return $user;
     }
 
+    /**
+     * Attempt to decode and verify the token.
+     * @param string $authName name of the external authenticator
+     * @param string $token
+     * @return object data of decoded token
+     * @throws BadRequestException
+     * @throws InvalidExternalTokenException
+     */
+    private function decodeToken(string $authName, string $token)
+    {
+        if ($this->hasAuthenticator($authName)) {
+            throw new BadRequestException("Unkown external authenticator name '$authName'.");
+        }
+
+        $authenticator = $this->authenticators[$name];
+        try {
+            $decodedToken = JWT::decode($token, $authenticator->jwtSecret, $authenticator->jwtAlgorithms);
+        } catch (DomainException $e) {
+            throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
+        } catch (UnexpectedValueException $e) {
+            throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
+        }
+
+        if (empty($decodedToken->iat) || $decodedToken->iat + $authenticator->expiration < time()) {
+            throw new InvalidExternalTokenException($token, 'Token has expired.');
+        }
+
+        return $decodedToken;
+    }
 
     /**
-     * Try connecting given external user to local ReCodEx user account.
-     * @param IExternalLoginService $service
+     * Try connecting given external user to local ReCodEx user account by email.
+     * @param string $authName
      * @param UserData $userData
      * @return User|null
-     * @throws BadRequestException
      */
-    private function tryConnect(IExternalLoginService $service, UserData $userData): ?User
+    private function tryConnect(string $authName, UserData $userData): ?User
     {
-        $unconnectedUsers = [];
-        foreach ($userData->getEmails() as $email) {
-            if (empty($email)) {
-                continue;
-            }
-
-            $user = $this->users->getByEmail($email);
-            if ($user) {
-                $unconnectedUsers[] = $user;
-            }
+        $user = $this->users->getByEmail($userData->mail);
+        if ($user) {
+            $this->externalLogins->connect($authName, $user, $userData->id);
+            // and also clear local account password just to be sure
+            $this->logins->clearUserPassword($user);
         }
-
-        if (count($unconnectedUsers) === 0) {
-            // no recodex users are suitable for connecting to external service account
-            return null;
-        } else {
-            if (count($unconnectedUsers) > 1) {
-                // multiple recodex accounts were found for emails in external service
-                throw new BadRequestException(
-                    sprintf(
-                        "User '%s' has multiple specified emails (%s) which are also registered locally in ReCodEx",
-                        $userData->getId(),
-                        join(", ", $userData->getEmails())
-                    ),
-                    FrontendErrorMappings::E400_001__BAD_REQUEST_EXT_MULTIPLE_USERS_FOUND,
-                    ["user" => $userData->getId(), "emails" => $userData->getEmails()]
-                );
-            }
-        }
-
-        // there was only one suitable user, try to connect it
-        $user = current($unconnectedUsers);
-        $this->externalLogins->connect($service, $user, $userData->getId());
-        // and also clear local account password just to be sure
-        $this->logins->clearUserPassword($user);
         return $user;
+    }
+
+    /**
+     * Retrieve instance entity where the user should be registered
+     * @param $decodedToken which is searched for instanceId key
+     * @param string $instancesId instance suggested externally
+     */
+    private function getInstance($decodedToken, string $instanceId = null): ?Instance
+    {
+        if ($decodedToken->instanceId) {
+            $instanceId = $decodedToken->instanceId;
+        }
+
+        // fetch the enetity from DB
+        if ($instanceId) {
+            $instance = $this->instances->get($instanceId);
+            if (!$instance) {
+                throw new BadRequestException("Instance '$instanceId' does not exist.");
+            }
+            return $instance;
+        }
+
+        // if there is only one instance in the system, let's use it as default
+        $instances = $this->instances->findAll();
+        if (count($instances) === 1) {
+            return $instances[0];
+        }
+
+        return null;
     }
 }

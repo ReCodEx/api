@@ -76,7 +76,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
         $router[] = new PostRoute("$prefix/issue-restricted-token", "Login:issueRestrictedToken");
         $router[] = new PostRoute("$prefix/takeover/<userId>", "Login:takeOver");
-        $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
+        $router[] = new PostRoute("$prefix/<authenticatorName>", "Login:external");
         return $router;
     }
 
@@ -428,7 +428,6 @@ class RouterFactory
         $router = new RouteList();
         $router[] = new GetRoute("$prefix", "Users:");
         $router[] = new PostRoute("$prefix", "Registration:createAccount");
-        $router[] = new PostRoute("$prefix/ext", "Registration:createAccountExt");
         $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
         $router[] = new PostRoute("$prefix/list", "Users:listByIds");
 

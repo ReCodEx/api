@@ -121,19 +121,18 @@ class LoginPresenter extends BasePresenter
     /**
      * Log in using an external authentication service
      * @POST
-     * @param string $serviceId Identifier of the login service
-     * @param string $type Type of the authentication process
+     * @Param(type="post", name="token", validation="string:1..", description="JWT external authentication token")
+     * @param string $authenticatorName Identifier of the external authenticator
      * @throws AuthenticationException
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      * @throws WrongCredentialsException
      * @throws BadRequestException
      */
-    public function actionExternal($serviceId, $type)
+    public function actionExternal($authenticatorName)
     {
         $req = $this->getRequest();
-        $service = $this->externalServiceAuthenticator->findService($serviceId, $type);
-        $user = $this->externalServiceAuthenticator->authenticate($service, $req->getPost());
+        $user = $this->externalServiceAuthenticator->authenticate($authenticatorName, $req->getPost("token"));
         $user->updateLastAuthenticationAt();
         $this->users->flush();
         $this->sendAccessTokenResponse($user);

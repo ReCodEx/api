@@ -11,18 +11,8 @@ use App\Model\Entity\User;
  */
 final class UserData
 {
-
     /** @var string Unique user identifier inside identity provider's system */
     private $id;
-
-    /**
-     * Get user identifier
-     * @return string Unique user ID
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /** @var string First name of user */
     private $firstName;
@@ -31,58 +21,53 @@ final class UserData
     private $lastName;
 
     /** @var string Degrees before user's name' */
-    private $degreesBeforeName;
+    private $degreesBeforeName = '';
 
     /** @var string Degrees after user's name */
-    private $degreesAfterName;
+    private $degreesAfterName = '';
 
-    /** @var string[] Email address of user */
-    private $emails;
+    /** @var string Email address of user */
+    private $mail;
 
     /** @var string|null Role which created user should have */
-    private $role;
+    private $role = null;
 
-    /**
-     * get user's email address
-     * @return string[]
-     */
-    public function getEmails()
+    // Read-only accessors
+    public function __isset($name)
     {
-        return $this->emails;
+        return isset($this->$name);
+    }
+
+    public function __get($name)
+    {
+        return $this->$name;
     }
 
     /**
-     * Constructor
-     * @param string $id Identifier of user (inside identity provider)
-     * @param array $emails Email address of user
-     * @param string $firstName First name of user
-     * @param string $lastName Last name of user
-     * @param string $degreesBeforeName Degrees before user's name
-     * @param string $degreesAfterName Degrees after user's name
-     * @param string|null $role
-     * @throws InvalidArgumentException
+     * Initialize the structure from raw decoded data.
+     * @param array|object $data from decoded token
      */
-    public function __construct(
-        string $id,
-        array $emails,
-        string $firstName,
-        string $lastName,
-        string $degreesBeforeName,
-        string $degreesAfterName,
-        string $role = null
-    ) {
-        // check if at least one email was given
-        if (count($emails) === 0) {
-            throw new InvalidArgumentException("LDAP user '$id' does not have any email specified");
+    public function __construct($data)
+    {
+        $data = (array)$data;
+
+        foreach ($data as $name => $value) {
+            if (property_exists($this, $name)) {
+                $this->$name = $value;
+            }
         }
 
-        $this->id = $id;
-        $this->firstName = $firstName;
-        $this->lastName = $lastName;
-        $this->emails = $emails;
-        $this->degreesBeforeName = $degreesBeforeName;
-        $this->degreesAfterName = $degreesAfterName;
-        $this->role = $role;
+        if (empty($this->id)) {
+            throw new InvalidArgumentException("User's external identifier must be specified.");
+        }
+
+        if (empty($this->firstName) || empty($this->lastName)) {
+            throw new InvalidArgumentException("User's full name must be specified.");
+        }
+
+        if (empty($this->mail)) {
+            throw new InvalidArgumentException("User's e-mail address must be specified.");
+        }
     }
 
     /**
@@ -93,7 +78,7 @@ final class UserData
     public function createEntity(Instance $instance): User
     {
         return new User(
-            current($this->emails), // first email is picked
+            $this->mail,
             $this->firstName,
             $this->lastName,
             $this->degreesBeforeName,
