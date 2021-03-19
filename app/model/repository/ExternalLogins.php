@@ -2,7 +2,6 @@
 
 namespace App\Model\Repository;
 
-use App\Helpers\ExternalLogin\IExternalLoginService;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -53,14 +52,14 @@ class ExternalLogins extends BaseRepository
 
     /**
      * Connect the user account with the data received from the authentication service server.
-     * @param IExternalLoginService $service
+     * @param string $authName
      * @param User $user
      * @param string $externalId
      * @return ExternalLogin
      */
-    public function connect(IExternalLoginService $service, User $user, string $externalId): ExternalLogin
+    public function connect(string $authName, User $user, string $externalId): ExternalLogin
     {
-        $externalLogin = new ExternalLogin($user, $service->getServiceId(), $externalId);
+        $externalLogin = new ExternalLogin($user, $authName, $externalId);
         $this->persist($externalLogin);
         return $externalLogin;
     }
