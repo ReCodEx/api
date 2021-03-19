@@ -28,6 +28,8 @@ use GuzzleHttp\Client;
  *
  * This is hard to test on a local server, as the CAS will only reveal the sensitive
  * personal information to computers in the CUNI network.
+ *
+ * DEPRECATED - remove
  */
 class CASLoginService implements IExternalLoginService
 {

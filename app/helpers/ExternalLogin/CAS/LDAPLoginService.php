@@ -25,6 +25,8 @@ use Toyota\Component\Ldap\Core\NodeAttribute;
  * and we can read his email address and other information to save them into our
  * database. There is also function to find user by email, but it's not guaranteed
  * to be unique, so this method may fail (but very unlikely).
+ *
+ * DEPRECATED - remove
  */
 class LDAPLoginService implements IExternalLoginService
 {

@@ -62,8 +62,10 @@ parameters:
   uploads:
     removalThreshold: "1 day"
     maxPreviewSize: 65536
+  
+  externalAuthenticators: []
 
-  CAS:  # CAS external authentication
+  CAS:  # CAS external authentication - DEPRECATED - remove
     serviceId: "cas-uk"  # visible identifier of this service
     options:
       ldap:  # parameters for connecting to LDAP, hostname, base_dn, port, security and bindName
@@ -294,14 +296,7 @@ services:
   - App\Security\CredentialsAuthenticator
 
   # external login services
-  - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)
-  - App\Helpers\ExternalLogin\CAS\CASLoginService(%CAS.serviceId%, %CAS.options.cas%, %CAS.fields.cas%)
-  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
-    @App\Model\Repository\ExternalLogins,
-    @App\Model\Repository\Users,
-    @App\Model\Repository\Logins,
-    @App\Helpers\ExternalLogin\CAS\CASLoginService,
-  )
+  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(%externalAuthenticators%)
 
   # config objects
   - App\Helpers\ApiConfig(%api%)

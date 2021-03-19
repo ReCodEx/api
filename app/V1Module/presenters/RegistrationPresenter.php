@@ -205,41 +205,6 @@ class RegistrationPresenter extends BasePresenter
     }
 
     /**
-     * Create an account authenticated with an external service (and link it with either a new user account or an existing one)
-     * @POST
-     * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
-     * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
-     * @throws BadRequestException
-     * @throws WrongCredentialsException
-     */
-    public function actionCreateAccountExt()
-    {
-        $req = $this->getRequest();
-        $serviceId = $req->getPost("serviceId");
-        $authType = $req->getPost("authType");
-
-        $instanceId = $req->getPost("instanceId");
-        $instance = $this->getInstance($instanceId);
-
-        $authService = $this->externalServiceAuthenticator->findService($serviceId, $authType);
-        $user = $this->externalServiceAuthenticator->register($authService, $instance, $req->getPost());
-
-        // email verification
-        if (!$user->isVerified()) {
-            $this->emailVerificationHelper->process($user, true); // true = account has just been created
-        }
-
-        // successful!
-        $this->sendSuccessResponse(
-            [
-                "user" => $this->userViewFactory->getFullUser($user),
-                "accessToken" => $this->accessManager->issueToken($user)
-            ],
-            IResponse::S201_CREATED
-        );
-    }
-
-    /**
      * Check if the registered E-mail isn't already used and if the password is strong enough
      * @POST
      * @Param(type="post", name="email", description="E-mail address (login name)")
