@@ -42,11 +42,17 @@ final class UserData
     /** @var string|null Role which created user should have */
     private $role = null;
 
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
     /**
      * Initialize the structure from raw decoded data.
      * @param array|object $data from decoded token
+     * @param string|null $defaultRole role set if no role is available in the data
      */
-    public function __construct($data)
+    public function __construct($data, string $defaultRole = null)
     {
         $data = (array)$data;
 
@@ -66,6 +72,10 @@ final class UserData
 
         if (empty($this->mail)) {
             throw new InvalidArgumentException("User's e-mail address must be specified.");
+        }
+
+        if (!$this->role) {
+            $this->role = $defaultRole;
         }
     }
 

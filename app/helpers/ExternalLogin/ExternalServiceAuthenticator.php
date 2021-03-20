@@ -76,6 +76,8 @@ class ExternalServiceAuthenticator
                     'jwtSecret' => $auth['jwtSecret'],
                     'jwtAlgorithms' => Arrays::get($auth, 'jwtAlgorithms', ['HS256']),
                     'expiration' => Arrays::get($auth, 'expiration', 60),
+                    'defaultRole' => Arrays::get($auth, 'defaultRole', null),
+                    // if set, users may register even when extrnal authenticator does not provide role
                 ];
             }
         }
@@ -110,7 +112,8 @@ class ExternalServiceAuthenticator
 
         // try to get the user by external ID
         try {
-            $userData = new UserData($decodedToken); // this wrapping also performs some check
+            // wrap data from token in UserData (which also performs important checks)
+            $userData = new UserData($decodedToken, $this->authenticators[$authName]->defaultRole);
         } catch (InvalidArgumentException $e) {
             throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
         }
@@ -125,6 +128,14 @@ class ExternalServiceAuthenticator
         if ($user === null) {
             $instance = $this->getInstance($decodedToken, $instanceId);
             if ($instance) {
+                if ($userData->getRole() === null) {
+                    throw new WrongCredentialsException(
+                        "User registration failed since '$authName' was not able to provide any role.",
+                        FrontendErrorMappings::E400_105__EXTERNAL_AUTH_FAILED_MISSING_ROLE,
+                        ["service" => $authName]
+                    );
+                }
+
                 $user = $userData->createEntity($instance);
                 $this->users->persist($user);
                 // connect the account to the login method
@@ -135,7 +146,7 @@ class ExternalServiceAuthenticator
         if ($user === null) {
             throw new WrongCredentialsException(
                 "User authenticated through '$authName' has no corresponding account in ReCodEx.",
-                FrontendErrorMappings::E400_105__WRONG_CREDENTIALS_EXTERNAL_USER_NOT_FOUND,
+                FrontendErrorMappings::E400_104__EXTERNAL_AUTH_FAILED_USER_NOT_FOUND,
                 ["service" => $authName]
             );
         }
