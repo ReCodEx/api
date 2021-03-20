@@ -10,6 +10,7 @@ use App\V1Module\Presenters\LoginPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
+use Firebase\JWT\JWT;
 use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
@@ -35,15 +36,27 @@ class TestLoginPresenter extends Tester\TestCase
     /** @var Nette\Security\User */
     private $user;
 
+    /** @var \App\Model\Repository\Users */
+    private $users;
+
     /** @var \App\Model\Repository\Logins */
     private $logins;
+
+    /** @var \App\Model\Repository\ExternalLogins */
+    private $externalLogins;
+
+    /** @var \App\Model\Repository\Instances */
+    private $instances;
 
     public function __construct($container)
     {
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->users = $container->getByType(\App\Model\Repository\Users::class);
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
+        $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
+        $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
     }
 
     protected function setUp()
@@ -103,28 +116,33 @@ class TestLoginPresenter extends Tester\TestCase
         Assert::false($this->presenter->user->isLoggedIn());
     }
 
-    /*
-    TODO -- fix this test
     public function testLoginExternal()
     {
+        $authenticator = new ExternalServiceAuthenticator(
+            [ [
+                'name' => 'test-cas',
+                'jwtSecret' => 'tajnyRetezec',
+            ] ],
+            $this->externalLogins,
+            $this->users,
+            $this->logins,
+            $this->instances
+        );
 
         $user = $this->presenter->users->getByEmail($this->userLogin);
-        $mockAuthenticator = Mockery::mock(ExternalServiceAuthenticator::class);
 
-        $service = Mockery::mock(LDAPLoginService::class);
-        $mockAuthenticator->shouldReceive("findService")
-            ->with("foo", null)
-            ->andReturn($service);
+        $payload = [
+            'iat' => time(),
+            'id' => 'external-id-1',
+            'mail' => $this->userLogin,
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+        ];
+        $token = JWT::encode($payload, 'tajnyRetezec', "HS256");
 
-        $credentials = ["username" => $this->userLogin, "password" => $this->userPassword];
+        $this->presenter->externalServiceAuthenticator = $authenticator;
 
-        $mockAuthenticator->shouldReceive("authenticate")
-            ->with($service, $credentials)
-            ->andReturn($user);
-
-        $this->presenter->externalServiceAuthenticator = $mockAuthenticator;
-
-        $request = new Request("V1:Login", "POST", ["action" => "external", "serviceId" => "foo"], $credentials);
+        $request = new Request("V1:Login", "POST", ["action" => "external", "authenticatorName" => "test-cas"], [ 'token' => $token ]);
 
         $response = $this->presenter->run($request);
         Assert::type(JsonResponse::class, $response);
@@ -135,7 +153,6 @@ class TestLoginPresenter extends Tester\TestCase
         Assert::equal($user->getId(), $result["payload"]["user"]["id"]);
         Assert::true($this->presenter->user->isLoggedIn());
     }
-    */
 
     public function testTakeover()
     {

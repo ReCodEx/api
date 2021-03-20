@@ -14,6 +14,11 @@ final class UserData
     /** @var string Unique user identifier inside identity provider's system */
     private $id;
 
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
     /** @var string First name of user */
     private $firstName;
 
@@ -29,19 +34,13 @@ final class UserData
     /** @var string Email address of user */
     private $mail;
 
+    public function getMail(): string
+    {
+        return $this->mail;
+    }
+
     /** @var string|null Role which created user should have */
     private $role = null;
-
-    // Read-only accessors
-    public function __isset($name)
-    {
-        return isset($this->$name);
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
-    }
 
     /**
      * Initialize the structure from raw decoded data.
