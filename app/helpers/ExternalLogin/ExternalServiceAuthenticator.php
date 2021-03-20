@@ -7,6 +7,7 @@ use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\InvalidExternalTokenException;
+use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
@@ -14,6 +15,8 @@ use App\Model\Repository\Logins;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\V1Module\Presenters\RegistrationPresenter;
+use Nette\Utils\Arrays;
+use Firebase\JWT\JWT;
 use DomainException;
 use UnexpectedValueException;
 
@@ -55,8 +58,13 @@ class ExternalServiceAuthenticator
      * @param Logins $logins
      * @param array $authenticators (each one holding 'name' and 'jwtSecret')
      */
-    public function __construct(array $authenticators, ExternalLogins $externalLogins, Users $users, Logins $logins, Instances $instances)
-    {
+    public function __construct(
+        array $authenticators,
+        ExternalLogins $externalLogins,
+        Users $users,
+        Logins $logins,
+        Instances $instances
+    ) {
         $this->externalLogins = $externalLogins;
         $this->users = $users;
         $this->logins = $logins;
@@ -101,8 +109,12 @@ class ExternalServiceAuthenticator
         $decodedToken = $this->decodeToken($authName, $token);
 
         // try to get the user by external ID
-        $userData = new UserData($decodedToken); // this wrapping also performs some check
-        $user = $this->externalLogins->getUser($authName, $userData->id);
+        try {
+            $userData = new UserData($decodedToken); // this wrapping also performs some check
+        } catch (InvalidArgumentException $e) {
+            throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
+        }
+        $user = $this->externalLogins->getUser($authName, $userData->getId());
 
         // try to match existing local user by email address
         if ($user === null) {
@@ -116,7 +128,7 @@ class ExternalServiceAuthenticator
                 $user = $userData->createEntity($instance);
                 $this->users->persist($user);
                 // connect the account to the login method
-                $this->externalLogins->connect($authName, $user, $userData->id);
+                $this->externalLogins->connect($authName, $user, $userData->getId());
             }
         }
 
@@ -141,11 +153,11 @@ class ExternalServiceAuthenticator
      */
     private function decodeToken(string $authName, string $token)
     {
-        if ($this->hasAuthenticator($authName)) {
+        if (!$this->hasAuthenticator($authName)) {
             throw new BadRequestException("Unkown external authenticator name '$authName'.");
         }
 
-        $authenticator = $this->authenticators[$name];
+        $authenticator = $this->authenticators[$authName];
         try {
             $decodedToken = JWT::decode($token, $authenticator->jwtSecret, $authenticator->jwtAlgorithms);
         } catch (DomainException $e) {
@@ -154,7 +166,7 @@ class ExternalServiceAuthenticator
             throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
         }
 
-        if (empty($decodedToken->iat) || $decodedToken->iat + $authenticator->expiration < time()) {
+        if (empty($decodedToken->iat) || (int)$decodedToken->iat + (int)$authenticator->expiration < time()) {
             throw new InvalidExternalTokenException($token, 'Token has expired.');
         }
 
@@ -169,9 +181,9 @@ class ExternalServiceAuthenticator
      */
     private function tryConnect(string $authName, UserData $userData): ?User
     {
-        $user = $this->users->getByEmail($userData->mail);
+        $user = $this->users->getByEmail($userData->getMail());
         if ($user) {
-            $this->externalLogins->connect($authName, $user, $userData->id);
+            $this->externalLogins->connect($authName, $user, $userData->getId());
             // and also clear local account password just to be sure
             $this->logins->clearUserPassword($user);
         }
@@ -180,12 +192,12 @@ class ExternalServiceAuthenticator
 
     /**
      * Retrieve instance entity where the user should be registered
-     * @param $decodedToken which is searched for instanceId key
-     * @param string $instancesId instance suggested externally
+     * @param object $decodedToken which is searched for instanceId key
+     * @param string $instanceId instance suggested externally
      */
     private function getInstance($decodedToken, string $instanceId = null): ?Instance
     {
-        if ($decodedToken->instanceId) {
+        if (!empty($decodedToken->instanceId)) {
             $instanceId = $decodedToken->instanceId;
         }
 
@@ -193,7 +205,7 @@ class ExternalServiceAuthenticator
         if ($instanceId) {
             $instance = $this->instances->get($instanceId);
             if (!$instance) {
-                throw new BadRequestException("Instance '$instanceId' does not exist.");
+                return null;
             }
             return $instance;
         }
