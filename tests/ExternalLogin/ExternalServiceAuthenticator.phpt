@@ -131,7 +131,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase
     {
         $usersCount = count($this->users->findAll());
         $email = 'brandnew@email.recodex.test';
-        $token = $this->prepareToken('foo', 'brandnew@email.recodex.test', 'John', 'Smith', 'supervisor');
+        $token = $this->prepareToken('foo', $email, 'John', 'Smith', 'supervisor');
         $user = $this->authenticator->authenticate(self::AUTH_NAME, $token);
         $this->users->refresh($user);
         Assert::equal($email, $user->getEmail());
@@ -140,6 +140,14 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase
         $externLogin = $user->getExternalLogins()->first();
         Assert::equal('foo', $externLogin->getExternalId());
         Assert::count($usersCount + 1, $this->users->findAll());
+    }
+
+    public function testAuthenticateAndRegisterNewUserFail()
+    {
+        Assert::exception(function () {
+            $token = $this->prepareToken('foo'); // no role
+            $res = $this->authenticator->authenticate(self::AUTH_NAME, $token);
+        }, WrongCredentialsException::class);
     }
 
     public function testAuthenticateConnectByEmail()

@@ -25,26 +25,10 @@ class FrontendErrorMappings
     const E400_102__WRONG_CREDENTIALS_PASSWORDS_NOT_MATCH = "400-102";
     /** Your current password does not match */
     const E400_103__WRONG_CREDENTIALS_CURRENT_PASSWORD_NOT_MATCH = "400-103";
-    /** External authentication failed. */
-    const E400_104__WRONG_CREDENTIALS_EXTERNAL_FAILED = "400-104";
-    /** User authenticated through '$service' has no corresponding account in ReCodEx. Please register to ReCodEx first. */
-    const E400_105__WRONG_CREDENTIALS_EXTERNAL_USER_NOT_FOUND = "400-105";
-    /** User is already registered using '$service'. */
-    const E400_106__WRONG_CREDENTIALS_EXTERNAL_USER_REGISTERED = "400-106";
-    /** Email address '$email' cannot be paired with a specific user in CAS. */
-    const E400_120__WRONG_CREDENTIALS_LDAP_EMAIL_NOT_PAIRED = "400-120";
-    /** The UKCO given by the user is not a number. */
-    const E400_121__WRONG_CREDENTIALS_LDAP_UKCO_NOT_NUMBER = "400-121";
-    /** This account cannot be used for authentication to ReCodEx. The password is probably not verified. */
-    const E400_122__WRONG_CREDENTIALS_LDAP_NOT_VERIFIED = "400-122";
-    /** Too many unsuccessful tries. You won't be able to log in for a short amount of time. */
-    const E400_123__WRONG_CREDENTIALS_LDAP_TOO_MANY_TRIES = "400-123";
-    /** The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used. */
-    const E400_130__WRONG_CREDENTIALS_CAS_INVALID_TICKET = "400-130";
-    /** The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete. */
-    const E400_131__WRONG_CREDENTIALS_CAS_CORRUPTED_TICKET = "400-131";
-    /** The ticket '$ticket' cannot be validated as the CUNI CAS service is unavailable. */
-    const E400_132__WRONG_CREDENTIALS_CAS_UNAVAILABLE = "400-132";
+    /** External authentication failed - no matching user found in ReCodEx a automated registration is not possible. */
+    const E400_104__EXTERNAL_AUTH_FAILED_USER_NOT_FOUND = "400-104";
+    /** External authentication failed - unable to register new user because no role was provided. */
+    const E400_105__EXTERNAL_AUTH_FAILED_MISSING_ROLE = "400-105";
 
     /** General job config error */
     const E400_200__JOB_CONFIG = "400-200";
