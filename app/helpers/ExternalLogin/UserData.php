@@ -74,6 +74,10 @@ final class UserData
             throw new InvalidArgumentException("User's e-mail address must be specified.");
         }
 
+        if (!filter_var($this->mail, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException("User's e-mail address is not valid.");
+        }
+
         if (!$this->role) {
             $this->role = $defaultRole;
         }
