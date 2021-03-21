@@ -4,7 +4,6 @@ namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\FrontendErrorMappings;
-use App\Exceptions\InvalidStateException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\InvalidExternalTokenException;
 use App\Exceptions\InvalidArgumentException;
@@ -14,7 +13,7 @@ use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Logins;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
-use App\V1Module\Presenters\RegistrationPresenter;
+use App\Helpers\EmailVerificationHelper;
 use Nette\Utils\Arrays;
 use Firebase\JWT\JWT;
 use DomainException;
@@ -25,26 +24,20 @@ use UnexpectedValueException;
  */
 class ExternalServiceAuthenticator
 {
-    /**
-     * @var ExternalLogins
-     */
+    /** @var ExternalLogins */
     private $externalLogins;
 
-    /**
-     * @var Users
-     */
+    /** @var Users */
     private $users;
 
-    /**
-     * @var Logins
-     */
+    /** @var Logins */
     private $logins;
 
-    /**
-     * @var Instances
-     */
+    /** @var Instances */
     public $instances;
 
+    /** @var EmailVerificationHelper */
+    public $emailVerificationHelper;
 
     /**
      * @var array [ name => { jwtSecret, jwtAlgorithms, expiration } ]
@@ -53,22 +46,25 @@ class ExternalServiceAuthenticator
 
     /**
      * Constructor with instantiation of all login services
+     * @param array $authenticators (each one holding 'name' and 'jwtSecret')
      * @param ExternalLogins $externalLogins
      * @param Users $users
      * @param Logins $logins
-     * @param array $authenticators (each one holding 'name' and 'jwtSecret')
+     * @param EmailVerificationHelper $emailVerificationHelper
      */
     public function __construct(
         array $authenticators,
         ExternalLogins $externalLogins,
         Users $users,
         Logins $logins,
-        Instances $instances
+        Instances $instances,
+        EmailVerificationHelper $emailVerificationHelper
     ) {
         $this->externalLogins = $externalLogins;
         $this->users = $users;
         $this->logins = $logins;
         $this->instances = $instances;
+        $this->emailVerificationHelper = $emailVerificationHelper;
 
         foreach ($authenticators as $auth) {
             if (!empty($auth['name'] && !empty($auth['jwtSecret']))) {
@@ -96,7 +92,8 @@ class ExternalServiceAuthenticator
     /**
      * Authenticate a user against given external authentication service.
      * The external identification may be paired with already existing account by email.
-     * If instanceId is provided (either externally or in token), user will be registered if not present.
+     * The user may be registered if no account exists, but correct instance must be determined
+     * (the instanceId must be either in token, passed as argument, or only one instance in the system exists).
      * @param string $authName name of the external authenticator
      * @param string $token form the external authentication service
      * @param string|null $instanceId identifier of an instance where the user should be registered
@@ -140,6 +137,7 @@ class ExternalServiceAuthenticator
                 $this->users->persist($user);
                 // connect the account to the login method
                 $this->externalLogins->connect($authName, $user, $userData->getId());
+                $this->emailVerificationHelper->process($user, true); // true = just created
             }
         }
 

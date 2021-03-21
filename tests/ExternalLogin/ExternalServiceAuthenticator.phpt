@@ -5,6 +5,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\InvalidExternalTokenException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\ExternalLogin\UserData;
+use App\Helpers\EmailVerificationHelper;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
@@ -56,7 +57,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase
             $this->externalLogins,
             $this->users,
             $this->logins,
-            $container->getByType(Instances::class)
+            $container->getByType(Instances::class),
+            $container->getByType(EmailVerificationHelper::class)
         );
     }
 

@@ -48,6 +48,9 @@ class TestLoginPresenter extends Tester\TestCase
     /** @var \App\Model\Repository\Instances */
     private $instances;
 
+    /** @var \App\Helpers\EmailVerificationHelper */
+    private $emailVerificationHelper;
+
     public function __construct($container)
     {
         $this->container = $container;
@@ -57,6 +60,7 @@ class TestLoginPresenter extends Tester\TestCase
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
         $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
         $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
+        $this->emailVerificationHelper = $container->getByType(\App\Helpers\EmailVerificationHelper::class);
     }
 
     protected function setUp()
@@ -126,7 +130,8 @@ class TestLoginPresenter extends Tester\TestCase
             $this->externalLogins,
             $this->users,
             $this->logins,
-            $this->instances
+            $this->instances,
+            $this->emailVerificationHelper
         );
 
         $user = $this->presenter->users->getByEmail($this->userLogin);
