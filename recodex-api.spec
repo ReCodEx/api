@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.26.0
-%define unmangled_version 817d1492c38bde7dbbbdca0615e19727599cfd1c
-%define release 1
+%define unmangled_version 2ccfb87c6b875fb81ca2bbdd1a111bb851522d1c
+%define release 2
 
 Summary: ReCodEx core API component
 Name: %{name}

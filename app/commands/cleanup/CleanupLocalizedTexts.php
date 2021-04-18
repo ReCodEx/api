@@ -68,10 +68,7 @@ class CleanupLocalizedTexts extends Command
         }
 
         $deleteQuery = $this->entityManager->createQuery(
-            '
-      DELETE FROM App\Model\Entity\LocalizedExercise l
-      WHERE l.createdAt <= :date AND l.id NOT IN (:ids)
-    '
+            'DELETE FROM App\Model\Entity\LocalizedExercise l WHERE l.createdAt <= :date AND l.id NOT IN (:ids)'
         );
 
         $limit = clone $now;

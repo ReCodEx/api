@@ -30,6 +30,19 @@ trait ExerciseData
         return $this->localizedTexts;
     }
 
+    /**
+     * Return all localized texts as an array indexed by locales.
+     * @return array
+     */
+    public function getLocalizedTextsAssocArray(): array
+    {
+        $result = [];
+        foreach ($this->getLocalizedTexts() as $text) {
+            $result[$text->getLocale()] = $text;
+        }
+        return $result;
+    }
+
     public function addLocalizedText(LocalizedExercise $localizedText)
     {
         $this->localizedTexts->add($localizedText);
