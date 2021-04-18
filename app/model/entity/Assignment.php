@@ -361,15 +361,36 @@ class Assignment extends AssignmentBase implements IExercise
     public function areLocalizedTextsInSync(): bool
     {
         $exercise = $this->getExercise();
-        return $exercise
-            && $this->getLocalizedTexts()->count() >= $exercise->getLocalizedTexts()->count()
-            && $this->getLocalizedTexts()->forAll(
-                function ($key, LocalizedExercise $ours) use ($exercise) {
-                    $theirs = $exercise->getLocalizedTextByLocale($ours->getLocale());
-                    return $theirs === null || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt(
-                    );
-                }
-            );
+        if (!$exercise) {
+            return false;
+        }
+
+        $theirLocales = $exercise->getLocalizedTextsAssocArray();
+        $ourLocales = $this->getLocalizedTextsAssocArray();
+        $missingTheirs = false;
+
+        // try to match our locales with exercise locales
+        foreach ($ourLocales as $locale => $ours) {
+            if (empty($theirLocales[$locale])) {
+                $missingTheirs = true;
+                continue;
+            }
+
+            $theirs = $theirLocales[$locale];
+            if (!$ours->equals($theirs) && $theirs->getCreatedAt() > $ours->getCreatedAt()) {
+                return false; // at least one locale is out of sync, no need to examine further
+            }
+
+            unset($theirLocales[$locale]); // already processed -> remove it
+        }
+
+        $missingOurs = (bool)$theirLocales; // some exercise locales were not processed
+
+        // if some locales are missing on either side, the exercise must have been modified after the assignment
+        return (!$missingTheirs && !$missingOurs) || $this->getUpdatedAt() >= $exercise->getUpdatedAt();
+        // TODO: this should be replaced with some better condition, but we need to modify the data model first
+        // Either we need a separate updatedAt just for localized texts, or we need to keep placeholders
+        // for deleted localized texts
     }
 
     public function areLimitsInSync(): bool
