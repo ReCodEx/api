@@ -283,8 +283,11 @@ services:
   security.passwords: Nette\Security\Passwords(::PASSWORD_BCRYPT, [cost: 12])
   
   # async
+  - App\Async\Handler\PingAsyncJobHandler
   - App\Async\Worker(%async%)
-  - App\Async\Dispatcher(%async%, [])
+  - App\Async\Dispatcher(%async%, [
+    @App\Async\Handler\PingAsyncJobHandler,
+  ])
   
   # commands
   - App\Console\DoctrineFixtures
