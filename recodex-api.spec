@@ -1,9 +1,9 @@
 %define name recodex-core
 %define short_name api
 %define install_dir /opt/%{name}
-%define version 1.25.0
+%define version 1.26.0
 %define unmangled_version d750ef17d6ddf0ce73283fa2a5cbb21d9b8cc56e
-%define release 1
+%define release 3
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -49,6 +49,8 @@ cp composer.json composer.lock composer-stable.phar cleaner %{buildroot}%{instal
 mkdir -p %{buildroot}/%{_sysconfdir}/recodex/core-api
 mv %{buildroot}%{install_dir}/app/config/config.local.neon.example %{buildroot}%{install_dir}/app/config/config.local.neon
 ln -sf %{install_dir}/app/config/config.local.neon %{buildroot}/%{_sysconfdir}/recodex/core-api/config.local.neon
+install -d %{buildroot}/lib/systemd/system
+cp -r install/recodex-core.service %{buildroot}/lib/systemd/system/recodex-core.service
 
 %clean
 
@@ -65,9 +67,12 @@ php %{install_dir}/composer-stable.phar install --no-ansi --no-dev --no-interact
 # Run cleaner after installation
 %{install_dir}/cleaner
 
+%systemd_post 'recodex-core.service'
+
 
 
 %postun
+%systemd_postun_with_restart 'recodex-core.service'
 
 %pre
 getent group recodex >/dev/null || groupadd -r recodex
@@ -75,6 +80,7 @@ getent passwd recodex >/dev/null || useradd -r -g recodex -d %{_sysconfdir}/reco
 exit 0
 
 %preun
+%systemd_preun 'recodex-core.service'
 if [ $1 == 0 ]; then
 	%{install_dir}/cleaner
 	rm -rf %{install_dir}/vendor
@@ -115,6 +121,9 @@ fi
 %config %{install_dir}/app/config/config.neon
 %config %{install_dir}/app/config/permissions.neon
 %config(noreplace) %attr(0660,apache,recodex) %{install_dir}/app/config/config.local.neon
+
+#%{_unitdir}/recodex-core.service
+%attr(-,root,root) /lib/systemd/system/recodex-core.service
 
 %changelog
 
