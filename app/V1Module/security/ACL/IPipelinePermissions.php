@@ -7,15 +7,15 @@ use App\Model\Entity\Pipeline;
 
 interface IPipelinePermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 
-    function canViewDetail(Pipeline $pipeline): bool;
+    public function canViewDetail(Pipeline $pipeline): bool;
 
-    function canUpdate(Pipeline $pipeline): bool;
+    public function canUpdate(Pipeline $pipeline): bool;
 
-    function canCreate(): bool;
+    public function canCreate(): bool;
 
-    function canRemove(Pipeline $pipeline): bool;
+    public function canRemove(Pipeline $pipeline): bool;
 
-    function canFork(Pipeline $pipeline): bool;
+    public function canFork(Pipeline $pipeline): bool;
 }

@@ -7,21 +7,21 @@ use App\Model\Entity\Licence;
 
 interface IInstancePermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 
-    function canViewDetail(Instance $instance): bool;
+    public function canViewDetail(Instance $instance): bool;
 
-    function canViewLicences(Instance $instance): bool;
+    public function canViewLicences(Instance $instance): bool;
 
-    function canAddLicence(Instance $instance): bool;
+    public function canAddLicence(Instance $instance): bool;
 
-    function canUpdateLicence(Licence $licence): bool;
+    public function canUpdateLicence(Licence $licence): bool;
 
-    function canRemoveLicence(Licence $licence): bool;
+    public function canRemoveLicence(Licence $licence): bool;
 
-    function canAdd(): bool;
+    public function canAdd(): bool;
 
-    function canUpdate(Instance $instance): bool;
+    public function canUpdate(Instance $instance): bool;
 
-    function canRemove(Instance $instance): bool;
+    public function canRemove(Instance $instance): bool;
 }

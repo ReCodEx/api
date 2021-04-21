@@ -7,11 +7,11 @@ use App\Model\Entity\SubmissionFailure;
 
 interface ISubmissionFailurePermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 
-    function canView(SubmissionFailure $failure): bool;
+    public function canView(SubmissionFailure $failure): bool;
 
-    function canResolve(SubmissionFailure $failure): bool;
+    public function canResolve(SubmissionFailure $failure): bool;
 
-    function canViewForAssignmentSolutionSubmission(AssignmentSolutionSubmission $submission): bool;
+    public function canViewForAssignmentSolutionSubmission(AssignmentSolutionSubmission $submission): bool;
 }

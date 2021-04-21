@@ -244,15 +244,21 @@ class AsyncJob implements JsonSerializable
         $this->arguments = json_encode($arguments);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             "id" => $this->id,
             "createdBy" => $this->createdBy->getId(),
             "createdAt" => $this->createdAt->getTimestamp(),
+            "scheduledAt" => $this->scheduledAt->getTimestamp(),
             "startedAt" => $this->startedAt->getTimestamp(),
             "terminatedAt" => $this->terminatedAt->getTimestamp(),
+            "retries" => $this->retries,
+            "workerId" => $this->workerId,
+            "command" => $this->command,
+            "arguments" => $this->getArguments(),
             "error" => $this->error,
+            "associatedAssignment" => $this->associatedAssignment,
         ];
     }
 }

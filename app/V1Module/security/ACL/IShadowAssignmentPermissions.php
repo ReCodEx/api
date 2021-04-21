@@ -6,17 +6,17 @@ use App\Model\Entity\ShadowAssignment;
 
 interface IShadowAssignmentPermissions
 {
-    function canViewDetail(ShadowAssignment $assignment): bool;
+    public function canViewDetail(ShadowAssignment $assignment): bool;
 
-    function canUpdate(ShadowAssignment $assignment): bool;
+    public function canUpdate(ShadowAssignment $assignment): bool;
 
-    function canRemove(ShadowAssignment $assignment): bool;
+    public function canRemove(ShadowAssignment $assignment): bool;
 
-    function canViewAllPoints(ShadowAssignment $assignment): bool;
+    public function canViewAllPoints(ShadowAssignment $assignment): bool;
 
-    function canCreatePoints(ShadowAssignment $assignment): bool;
+    public function canCreatePoints(ShadowAssignment $assignment): bool;
 
-    function canUpdatePoints(ShadowAssignment $assignment): bool;
+    public function canUpdatePoints(ShadowAssignment $assignment): bool;
 
-    function canRemovePoints(ShadowAssignment $assignment): bool;
+    public function canRemovePoints(ShadowAssignment $assignment): bool;
 }

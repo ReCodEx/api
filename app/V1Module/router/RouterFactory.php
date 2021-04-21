@@ -53,6 +53,7 @@ class RouterFactory
         $router[] = self::createShadowAssignmentsRoutes("$prefix/shadow-assignments");
         $router[] = self::createNotificationsRoutes("$prefix/notifications");
         $router[] = self::createWorkerFilesRoutes("$prefix/worker-files");
+        $router[] = self::createAsyncJobsRoutes("$prefix/async-jobs");
 
         return $router;
     }
@@ -587,6 +588,16 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/submission-archive/<type>/<id>", "WorkerFiles:downloadSubmissionArchive");
         $router[] = new GetRoute("$prefix/supplementary-file/<hash>", "WorkerFiles:downloadSupplementaryFile");
         $router[] = new PutRoute("$prefix/result/<type>/<id>", "WorkerFiles:uploadResultsFile");
+        return $router;
+    }
+
+    private static function createAsyncJobsRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+        $router[] = new GetRoute("$prefix/<id>", "AsyncJobs:default");
+        $router[] = new GetRoute("$prefix/list", "AsyncJobs:list");
+        $router[] = new PostRoute("$prefix/abort/<id>", "AsyncJobs:abort");
+        $router[] = new PostRoute("$prefix/ping", "AsyncJobs:ping");
         return $router;
     }
 }

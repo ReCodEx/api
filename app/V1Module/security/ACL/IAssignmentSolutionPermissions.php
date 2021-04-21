@@ -7,33 +7,33 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 
 interface IAssignmentSolutionPermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 
-    function canViewDetail(AssignmentSolution $assignmentSolution): bool;
+    public function canViewDetail(AssignmentSolution $assignmentSolution): bool;
 
-    function canUpdate(AssignmentSolution $assignmentSolution): bool;
+    public function canUpdate(AssignmentSolution $assignmentSolution): bool;
 
-    function canDelete(AssignmentSolution $assignmentSolution): bool;
+    public function canDelete(AssignmentSolution $assignmentSolution): bool;
 
-    function canSetBonusPoints(AssignmentSolution $assignmentSolution): bool;
+    public function canSetBonusPoints(AssignmentSolution $assignmentSolution): bool;
 
-    function canSetAccepted(AssignmentSolution $assignmentSolution): bool;
+    public function canSetAccepted(AssignmentSolution $assignmentSolution): bool;
 
-    function canSetFlag(AssignmentSolution $assignmentSolution): bool;
+    public function canSetFlag(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewResubmissions(AssignmentSolution $assignmentSolution): bool;
+    public function canViewResubmissions(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewEvaluation(AssignmentSolution $assignmentSolution): bool;
+    public function canViewEvaluation(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewEvaluationDetails(AssignmentSolution $assignmentSolution): bool;
+    public function canViewEvaluationDetails(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewEvaluationValues(AssignmentSolution $assignmentSolution): bool;
+    public function canViewEvaluationValues(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewEvaluationJudgeStdout(AssignmentSolution $assignmentSolution): bool;
+    public function canViewEvaluationJudgeStdout(AssignmentSolution $assignmentSolution): bool;
 
-    function canViewEvaluationJudgeStderr(AssignmentSolution $assignmentSolution): bool;
+    public function canViewEvaluationJudgeStderr(AssignmentSolution $assignmentSolution): bool;
 
-    function canDeleteEvaluation(AssignmentSolution $assignmentSolution): bool;
+    public function canDeleteEvaluation(AssignmentSolution $assignmentSolution): bool;
 
-    function canDownloadResultArchive(AssignmentSolution $assignmentSolution): bool;
+    public function canDownloadResultArchive(AssignmentSolution $assignmentSolution): bool;
 }

@@ -3,6 +3,7 @@
 namespace App\Async\Handler;
 
 use App\Model\Entity\AsyncJob;
+use App\Model\Entity\User;
 use App\Async\IAsyncJobHandler;
 
 /**
@@ -25,5 +26,14 @@ class PingAsyncJobHandler implements IAsyncJobHandler
     public function execute(AsyncJob $job)
     {
         // nothing to do
+    }
+
+    /**
+     * Factory method for async job entity that will be handled by this handler.
+     * @param User|null $user creator of the job
+     */
+    public static function createAsyncJob(?User $user): AsyncJob
+    {
+        return new AsyncJob($user, PingAsyncJobHandler::ID);
     }
 }

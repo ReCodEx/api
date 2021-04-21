@@ -6,37 +6,37 @@ use App\Model\Entity\User;
 
 interface IUserPermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 
-    function canViewList(): bool;
+    public function canViewList(): bool;
 
-    function canCreate(): bool;
+    public function canCreate(): bool;
 
-    function canViewPublicData(User $user): bool;
+    public function canViewPublicData(User $user): bool;
 
-    function canViewDetail(User $user): bool;
+    public function canViewDetail(User $user): bool;
 
-    function canUpdateProfile(User $user): bool;
+    public function canUpdateProfile(User $user): bool;
 
-    function canViewExercises(User $user): bool;
+    public function canViewExercises(User $user): bool;
 
-    function canViewGroups(User $user): bool;
+    public function canViewGroups(User $user): bool;
 
-    function canViewInstances(User $user): bool;
+    public function canViewInstances(User $user): bool;
 
-    function canDelete(User $user): bool;
+    public function canDelete(User $user): bool;
 
-    function canTakeOver(User $user): bool;
+    public function canTakeOver(User $user): bool;
 
-    function canCreateLocalAccount(User $user): bool;
+    public function canCreateLocalAccount(User $user): bool;
 
-    function canUpdatePersonalData(User $user): bool;
+    public function canUpdatePersonalData(User $user): bool;
 
-    function canSetRole(User $user): bool;
+    public function canSetRole(User $user): bool;
 
-    function canSetIsAllowed(User $user): bool;
+    public function canSetIsAllowed(User $user): bool;
 
-    function canInvalidateTokens(User $user): bool;
+    public function canInvalidateTokens(User $user): bool;
 
-    function canForceChangePassword(User $user): bool;
+    public function canForceChangePassword(User $user): bool;
 }

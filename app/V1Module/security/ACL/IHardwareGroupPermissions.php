@@ -4,5 +4,5 @@ namespace App\Security\ACL;
 
 interface IHardwareGroupPermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 }

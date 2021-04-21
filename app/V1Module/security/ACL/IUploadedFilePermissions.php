@@ -7,11 +7,11 @@ use App\Model\Entity\UploadedFile;
 
 interface IUploadedFilePermissions
 {
-    function canViewDetail(UploadedFile $file): bool;
+    public function canViewDetail(UploadedFile $file): bool;
 
-    function canDownload(UploadedFile $file): bool;
+    public function canDownload(UploadedFile $file): bool;
 
-    function canUpload(): bool;
+    public function canUpload(): bool;
 
-    function canDownloadSupplementaryFile(SupplementaryExerciseFile $file): bool;
+    public function canDownloadSupplementaryFile(SupplementaryExerciseFile $file): bool;
 }

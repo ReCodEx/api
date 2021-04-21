@@ -852,3 +852,29 @@ permissions:
         - or:
           - notification.isAncestorGroupAdmin
           - notification.isAuthor
+
+    #########################
+    # AsyncJobs permissions #
+    #########################
+
+    - allow: true
+      role: scope-read-all
+      resource: asyncJob
+      actions:
+        - viewDetail
+        - list
+
+    - allow: true
+      role: student
+      resource: asyncJob
+      actions:
+        - viewDetail
+        - abort
+      conditions:
+        - asyncJob.isCreator
+
+    - allow: true
+      role: student
+      resource: asyncJob
+      actions:
+        - list

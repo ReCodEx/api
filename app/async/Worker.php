@@ -96,23 +96,30 @@ class Worker
      */
     private function getNextJob(string $workerId): ?AsyncJob
     {
-        // get jobs in the actual order they should be executed
-        $jobs = $this->asyncJobs->findAllReadyForExecution($this->pollingInterval, $workerId);
-        if (!$jobs) {
-            return null;
-        }
-
-        $selectedJob = reset($jobs); // default is the first job returned from repository
-        foreach ($jobs as $job) {
-            if ($job->getScheduledAt() && $this->getJobDispatchDelay($job) === 0) {
-                // but if we have a scheduled job that already should have been executed...
-                $selectedJob = $job; // ... we make it a priority!
-                break;
+        $this->asyncJobs->beginTransaction();
+        try {
+            // get jobs in the actual order they should be executed
+            $jobs = $this->asyncJobs->findAllReadyForExecution($this->pollingInterval, $workerId);
+            if (!$jobs) {
+                $this->asyncJobs->rollback();
+                return null;
             }
-        }
 
-        $selectedJob->allocateForWorker($workerId);
-        $this->asyncJobs->flush();
+            $selectedJob = reset($jobs); // default is the first job returned from repository
+            foreach ($jobs as $job) {
+                if ($job->getScheduledAt() && $this->getJobDispatchDelay($job) === 0) {
+                    // but if we have a scheduled job that already should have been executed...
+                    $selectedJob = $job; // ... we make it a priority!
+                    break;
+                }
+            }
+
+            $selectedJob->allocateForWorker($workerId);
+            $this->asyncJobs->commit();
+        } catch (Exception $e) {
+            $this->asyncJobs->rollback();
+            throw $e;
+        }
         return $selectedJob;
     }
 

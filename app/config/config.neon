@@ -242,6 +242,7 @@ acl:
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
     notification: App\Security\ACL\INotificationPermissions
     broker: App\Security\ACL\IBrokerPermissions
+    asyncJob: App\Security\ACL\IAsyncJobPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -259,6 +260,7 @@ acl:
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
     notification: App\Security\Policies\NotificationPermissionPolicy
+    asyncJob: App\Security\Policies\AsyncJobPermissionPolicy
 
 extensions:
   console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
