@@ -11,12 +11,12 @@ DefaultDependencies=true
 [Service]
 Type=simple
 StandardInput=null
-StandardOutput=null
-StandardError=journal
+StandardOutput=/opt/recodex-core/log/worker.log
+StandardError=/opt/recodex-core/log/worker.log
 User=recodex
 Group=recodex
 WorkingDirectory=/opt/recodex-core
-ExecStart=/opt/recodex-web/bin/async-worker
+ExecStart=/opt/recodex-core/bin/async-worker
 Restart=on-success
 
 [Install]

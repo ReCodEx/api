@@ -115,6 +115,7 @@ class Worker
             }
 
             $selectedJob->allocateForWorker($workerId);
+            $this->asyncJobs->persist($selectedJob);
             $this->asyncJobs->commit();
         } catch (Exception $e) {
             $this->asyncJobs->rollback();
@@ -146,6 +147,7 @@ class Worker
         if ($job->getRetries() > $this->retries) {
             // this job has been beaten to death...
             $job->setTerminatedNow();
+            $this->asyncJobs->persist($job);
             $this->asyncJobs->flush();
             return;
         }
@@ -163,6 +165,7 @@ class Worker
             );
         }
 
+        $this->asyncJobs->persist($job);
         $this->asyncJobs->flush();
     }
 

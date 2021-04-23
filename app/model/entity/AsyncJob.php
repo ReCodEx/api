@@ -60,7 +60,7 @@ class AsyncJob implements JsonSerializable
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @var DateTime
+     * @var DateTime|null
      * Time when the async task should be executed. If null, the task is executed as soon as possible.
      */
     protected $scheduledAt = null;
@@ -84,7 +84,7 @@ class AsyncJob implements JsonSerializable
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @var DateTime
+     * @var DateTime|null
      */
     protected $startedAt = null;
 
@@ -95,7 +95,7 @@ class AsyncJob implements JsonSerializable
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @var DateTime
+     * @var DateTime|null
      * This is the time when the task was either processed, killed, or deferred as unsolvable.
      */
     protected $terminatedAt = null;
@@ -248,11 +248,11 @@ class AsyncJob implements JsonSerializable
     {
         return [
             "id" => $this->id,
-            "createdBy" => $this->createdBy->getId(),
+            "createdBy" => $this->createdBy ? $this->createdBy->getId() : null,
             "createdAt" => $this->createdAt->getTimestamp(),
-            "scheduledAt" => $this->scheduledAt->getTimestamp(),
-            "startedAt" => $this->startedAt->getTimestamp(),
-            "terminatedAt" => $this->terminatedAt->getTimestamp(),
+            "scheduledAt" => $this->scheduledAt ? $this->scheduledAt->getTimestamp() : null,
+            "startedAt" => $this->startedAt ? $this->startedAt->getTimestamp() : null,
+            "terminatedAt" => $this->terminatedAt ? $this->terminatedAt->getTimestamp() : null,
             "retries" => $this->retries,
             "workerId" => $this->workerId,
             "command" => $this->command,

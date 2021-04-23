@@ -123,6 +123,7 @@ class AsyncJobsPresenter extends BasePresenter
                 // if the job has not been started yet, it can be aborted
                 $asyncJob->setTerminatedNow();
                 $asyncJob->appendError("ABORTED");
+                $this->asyncJobs->persist($asyncJob);
                 $this->asyncJobs->commit();
             } else {
                 $this->asyncJobs->rollback();

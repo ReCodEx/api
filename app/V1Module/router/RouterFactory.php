@@ -595,7 +595,7 @@ class RouterFactory
     {
         $router = new RouteList();
         $router[] = new GetRoute("$prefix/<id>", "AsyncJobs:default");
-        $router[] = new GetRoute("$prefix/list", "AsyncJobs:list");
+        $router[] = new GetRoute("$prefix", "AsyncJobs:list");
         $router[] = new PostRoute("$prefix/abort/<id>", "AsyncJobs:abort");
         $router[] = new PostRoute("$prefix/ping", "AsyncJobs:ping");
         return $router;
