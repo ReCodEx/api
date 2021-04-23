@@ -11,13 +11,14 @@ DefaultDependencies=true
 [Service]
 Type=simple
 StandardInput=null
-StandardOutput=/opt/recodex-core/log/worker.log
-StandardError=/opt/recodex-core/log/worker.log
+StandardOutput=file:/opt/recodex-core/log/worker.log
+StandardError=file:/opt/recodex-core/log/worker.log
 User=recodex
 Group=recodex
 WorkingDirectory=/opt/recodex-core
 ExecStart=/opt/recodex-core/bin/async-worker
 Restart=on-success
+TimeoutStopSec=60
 
 [Install]
 WantedBy=multi-user.target

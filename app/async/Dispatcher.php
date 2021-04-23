@@ -33,6 +33,8 @@ class Dispatcher
      */
     private $knownHandlers = [];
 
+    private $pendingHandler = null;
+
 
     public function __construct($config, array $knownHandlers, AsyncJobs $asyncJobs)
     {
@@ -77,7 +79,20 @@ class Dispatcher
             throw new InvalidArgumentException("Unknown async job type '$command'.");
         }
 
-        $jobHandler = $this->knownHandlers[$command];
-        $jobHandler->execute($job);
+        // pending handler is set so it can be interrupted by async handler
+        $this->pendingHandler = $this->knownHandlers[$command];
+        $this->pendingHandler->execute($job);
+        $this->pendingHandler = null;
+    }
+
+    /**
+     * Try to cancel last dispatched job.
+     * Called in async signal handler.
+     */
+    public function cancel()
+    {
+        if ($this->pendingHandler) {
+            $this->pendingHandler->cancel();
+        }
     }
 }

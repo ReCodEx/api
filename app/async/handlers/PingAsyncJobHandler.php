@@ -36,4 +36,9 @@ class PingAsyncJobHandler implements IAsyncJobHandler
     {
         return new AsyncJob($user, PingAsyncJobHandler::ID);
     }
+
+    public function cancel(): void
+    {
+        // ping is not interruptable, nothing to do here
+    }
 }

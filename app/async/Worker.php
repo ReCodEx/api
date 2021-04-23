@@ -60,6 +60,12 @@ class Worker
      */
     private $jobsRemaining = 1;
 
+    /**
+     * Terminate signal has been risen.
+     * @var bool
+     */
+    private $terminated = false;
+
 
     public function __construct($config, Dispatcher $dispatcher, AsyncJobs $asyncJobs, ILogger $logger)
     {
@@ -79,6 +85,20 @@ class Worker
         }
 
         $this->jobsRemaining = Arrays::get($config, ["restartWorkerAfter", "jobs"], 1);
+
+        // setup signal handling (try to terminate gracefuly on these signals)
+        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
+            pcntl_async_signals(true);
+            pcntl_signal(SIGINT, [$this, 'terminate']);
+            pcntl_signal(SIGTERM, [$this, 'terminate']);
+        }
+    }
+
+    public function terminate(): void
+    {
+        echo "Terminating on signal...\n";
+        $this->terminated = true;
+        $this->dispatcher->cancel();
     }
 
     /**
@@ -87,7 +107,7 @@ class Worker
      */
     private function shallContinue(): bool
     {
-        return $this->jobsRemaining > 0 && $this->timeToRestart > new DateTime();
+        return !$this->terminated && $this->jobsRemaining > 0 && $this->timeToRestart > new DateTime();
     }
 
     /**
@@ -181,7 +201,7 @@ class Worker
         while ($this->shallContinue()) { // just a precaution so the worker will not run forever
             // allocate and mark the best suitable job (null = none available)
             $job = $this->getNextJob($workerId);
-            if ($job) {
+            if ($job && !$this->terminated) {
                 // when this job should be executed (in how many seconds)?
                 $timeout = $this->getJobDispatchDelay($job);
                 if ($timeout === 0) { // immediately => let's do it!
@@ -192,12 +212,13 @@ class Worker
                 $timeout = $this->pollingInterval;
             }
 
-            if ($timeout > 0) {
+            if ($timeout > 0 && !$this->terminated) {
                 // some time to spare => let's take a nap!
                 $this->notify->waitForNotification($timeout);
             }
         }
 
         $this->notify->clear();
+        echo "Shutdown.\n";
     }
 }

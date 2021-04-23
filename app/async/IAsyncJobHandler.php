@@ -29,4 +29,10 @@ interface IAsyncJobHandler
      * @param AsyncJob $job entity to be executed
      */
     public function execute(AsyncJob $job);
+
+    /**
+     * Called by signal handler to terminate the job asap (but gracefully).
+     * If the job is not interruptable, this function should be implemented with empty body.
+     */
+    public function cancel(): void;
 }
