@@ -83,6 +83,13 @@ class EmailLatteFactory
             }
         );
 
+        $latte->addFilter(
+            "relativeDateTime",
+            function ($dateDiff, $locale) {
+                return EmailLocalizationHelper::getDateIntervalLocalizedString($dateDiff, $locale);
+            }
+        );
+
         return new LatteWrapper($latte);
     }
 }

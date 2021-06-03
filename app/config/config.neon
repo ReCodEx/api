@@ -31,6 +31,14 @@ parameters:
     restartWorkerAfter: # memory leak precaution - worker is restarted once in a while
       time: 86400 # after given amount of seconds
       jobs: 42    # or after certain amount of jobs processed (whatever comes first)
+    upkeep: # removes old jobs from DB and checks no jobs are stuck
+      period: "30 minutes"
+      cleanupThreshold: "1 hour"
+      cleanupFailedThreshold: "1 month"
+      stuckThreshold: "30 minutes"
+      emails: # where notifications are sent
+        from: %emails.from%
+        to: %emails.defaultAdminTo%
 
   webapp:
     address: "https://your.recodex.domain"
@@ -298,6 +306,7 @@ services:
   - App\Console\CleanupExercisesFiles
   - App\Console\CleanupWorkerTmpFiles
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
+  - App\Console\AsyncJobsUpkeep(%async.upkeep%)
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
   - App\Console\CleanupLocalizedTexts
@@ -389,6 +398,7 @@ services:
   - App\Helpers\Notifications\AssignmentCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentCommentsNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, @App\Model\Repository\AssignmentSolutions, %submissionNotifications%)
   - App\Helpers\Notifications\GeneralStatsEmailsSender(@App\Helpers\EmailHelper, %generalStatsNotifications%)
+  - App\Helpers\Notifications\AsyncJobsStuckEmailsSender(@App\Helpers\EmailHelper, %async.upkeep.emails%)
   - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)
 
   # models - repositories

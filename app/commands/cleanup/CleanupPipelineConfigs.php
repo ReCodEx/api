@@ -53,10 +53,7 @@ class CleanupPipelineConfigs extends Command
         }
 
         $deleteQuery = $this->entityManager->createQuery(
-            '
-      DELETE FROM App\Model\Entity\PipelineConfig c
-      WHERE c.createdAt <= :date AND c.id NOT IN (:ids)
-    '
+            'DELETE FROM App\Model\Entity\PipelineConfig c WHERE c.createdAt <= :date AND c.id NOT IN (:ids)'
         );
 
         $limit = clone $now;
