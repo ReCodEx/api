@@ -60,21 +60,11 @@ class ReferenceExerciseSolution
         $this->submissions->add($submission);
     }
 
-    public function getFiles()
-    {
-        return $this->solution->getFiles();
-    }
-
     public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime)
     {
         $this->exercise = $exercise;
         $this->description = $description;
         $this->solution = new Solution($user, $runtime);
         $this->submissions = new ArrayCollection();
-    }
-
-    public function getRuntimeEnvironment()
-    {
-        return $this->solution->getRuntimeEnvironment();
     }
 }

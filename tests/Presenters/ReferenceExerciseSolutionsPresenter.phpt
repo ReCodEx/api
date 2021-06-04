@@ -70,6 +70,20 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         ));
     }
 
+    private function createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator = null)
+    {
+        return new SubmissionHelper(
+            $mockBackendSubmitHelper,
+            $this->container->getByType(App\Model\Repository\AssignmentSolutions::class),
+            $this->container->getByType(App\Model\Repository\AssignmentSolutionSubmissions::class),
+            $this->container->getByType(App\Model\Repository\ReferenceSolutionSubmissions::class),
+            $this->container->getByType(App\Model\Repository\SubmissionFailures::class),
+            $this->container->getByType(App\Helpers\FailureHelper::class),
+            $mockGenerator ?? $this->container->getByType(App\Helpers\JobConfig\Generator::class),
+        );
+    }
+
+
     protected function setUp()
     {
         PresenterTestHelper::fillDatabase($this->container);
@@ -96,10 +110,12 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $exercise = $this->exercises->searchByName("Convex hull")[0];
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'GET', [
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            [
             'action' => 'solutions',
             'exerciseId' => $exercise->getId()
-        ]
+            ]
         );
 
         $response = $this->presenter->run($request);
@@ -115,13 +131,15 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $solution = current($this->referenceSolutions->findAll());
-        $environmentId = $solution->getRuntimeEnvironment()->getId();
+        $environmentId = $solution->getSolution()->getRuntimeEnvironment()->getId();
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'GET', [
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            [
             'action' => 'submissions',
             'solutionId' => $solution->getId()
-        ]
+            ]
         );
 
         $response = $this->presenter->run($request);
@@ -141,10 +159,14 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $evaluation = current($this->referenceSolutionEvaluations->findAll());
 
         $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter, 'V1:ReferenceExerciseSolutions', 'GET', [
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            [
             'action' => 'submission',
             'submissionId' => $evaluation->getId()
-        ]);
+            ]
+        );
 
         Assert::type(ReferenceSolutionSubmission::class, $payload);
         Assert::equal($evaluation->getId(), $payload->getId());
@@ -157,10 +179,14 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $evaluation = current($this->referenceSolutionEvaluations->findAll());
 
         $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter, 'V1:ReferenceExerciseSolutions', 'GET', [
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            [
             'action' => 'evaluationScoreConfig',
             'submissionId' => $evaluation->getId()
-        ]);
+            ]
+        );
 
         Assert::same('weighted', $payload->getCalculator());
         Assert::truthy($payload->getConfig());
@@ -184,10 +210,12 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'DELETE', [
+            'V1:ReferenceExerciseSolutions',
+            'DELETE',
+            [
             'action' => 'deleteReferenceSolution',
             'solutionId' => $solution->getId()
-        ]
+            ]
         );
 
         $response = $this->presenter->run($request);
@@ -261,7 +289,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $files = [$file1->getId(), $file2->getId()];
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'POST',
+            'V1:ReferenceExerciseSolutions',
+            'POST',
             ['action' => 'preSubmit', 'exerciseId' => $exercise->getId()],
             ['files' => $files]
         );
@@ -301,7 +330,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $files = [$file1->getId(), $file2->getId()];
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'POST',
+            'V1:ReferenceExerciseSolutions',
+            'POST',
             ['action' => 'preSubmit', 'exerciseId' => $exercise->getId()],
             ['files' => $files]
         );
@@ -341,7 +371,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $files = [$file1->getId(), $file2->getId()];
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'POST',
+            'V1:ReferenceExerciseSolutions',
+            'POST',
             ['action' => 'preSubmit', 'exerciseId' => $exercise->getId()],
             ['files' => $files]
         );
@@ -402,7 +433,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $mockBackendSubmitHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
         $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withAnyArgs()->once()->andReturn("resultUrl1");
         $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withAnyArgs()->once()->andReturn("resultUrl2");
-        $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper);
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator);
 
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
@@ -410,10 +441,13 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'POST', [
+            'V1:ReferenceExerciseSolutions',
+            'POST',
+            [
             'action' => 'submit',
             'exerciseId' => $exercise->getId()
-        ], [
+            ],
+            [
                 'note' => 'new reference solution',
                 'files' => $files,
                 'runtimeEnvironmentId' => $environment->getId()
@@ -444,7 +478,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
         /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
         $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
-            
+
         /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
         $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
         $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(2)
@@ -473,10 +507,11 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
                 "group2"
             ]
         )->andReturn(true)->once();
-        $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper);
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator);
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'POST',
+            'V1:ReferenceExerciseSolutions',
+            'POST',
             ['action' => 'resubmit', 'id' => $solution->getId()]
         );
 
@@ -533,17 +568,18 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'GET', [
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            [
             'action' => 'downloadResultArchive',
             'submissionId' => $submission->getId()
-        ]
+            ]
         );
 
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal("results-" . $submission->getId() . '.zip', $response->getName());
     }
-
 }
 
 $testCase = new TestReferenceExerciseSolutionsPresenter();

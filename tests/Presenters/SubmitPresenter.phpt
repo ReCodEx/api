@@ -61,6 +61,19 @@ class TestSubmitPresenter extends Tester\TestCase
         ));
     }
 
+    private function createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator = null)
+    {
+        return new SubmissionHelper(
+            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage),
+            $this->container->getByType(App\Model\Repository\AssignmentSolutions::class),
+            $this->container->getByType(App\Model\Repository\AssignmentSolutionSubmissions::class),
+            $this->container->getByType(App\Model\Repository\ReferenceSolutionSubmissions::class),
+            $this->container->getByType(App\Model\Repository\SubmissionFailures::class),
+            $this->container->getByType(App\Helpers\FailureHelper::class),
+            $mockGenerator ?? $this->container->getByType(App\Helpers\JobConfig\Generator::class),
+        );
+    }
+
     protected function setUp()
     {
         PresenterTestHelper::fillDatabase($this->container);
@@ -86,7 +99,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $assignment = current($this->assignments->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Submit', 'GET',
+            'V1:Submit',
+            'GET',
             ['action' => 'canSubmit', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -150,10 +164,8 @@ class TestSubmitPresenter extends Tester\TestCase
             ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->once()
             ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
             ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
-    
-        $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
-        );
+
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator);
         $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
@@ -165,7 +177,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->monitorConfig = $monitorConfig;
 
         $request = new Nette\Application\Request(
-            'V1:Submit', 'POST',
+            'V1:Submit',
+            'POST',
             ['action' => 'submit', 'id' => $assignment->getId()],
             [
                 'note' => 'someNiceNoteAboutThisCrazySubmit',
@@ -246,9 +259,7 @@ class TestSubmitPresenter extends Tester\TestCase
             ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
             ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
 
-        $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
-        );
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator);
         $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
@@ -260,7 +271,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->monitorConfig = $monitorConfig;
 
         $request = new Nette\Application\Request(
-            'V1:Submit', 'POST',
+            'V1:Submit',
+            'POST',
             ['action' => 'submit', 'id' => $assignment->getId()],
             [
                 'note' => 'someNiceNoteAboutThisCrazySubmit',
@@ -320,9 +332,7 @@ class TestSubmitPresenter extends Tester\TestCase
         $mockFileStorage->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
             ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
 
-        $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
-        );
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator);
         $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
@@ -334,7 +344,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->monitorConfig = $monitorConfig;
 
         $request = new Nette\Application\Request(
-            'V1:Submit', 'POST',
+            'V1:Submit',
+            'POST',
             ['action' => 'submit', 'id' => $assignment->getId()],
             [
                 'note' => 'someNiceNoteAboutThisCrazySubmit',
@@ -391,14 +402,12 @@ class TestSubmitPresenter extends Tester\TestCase
         $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs(
             [$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl]
         )->andReturn($evaluationStarted = true)->once();
-        
+
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->once()
             ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->once();
 
-        $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
-        );
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator);
         $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
@@ -410,7 +419,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->monitorConfig = $monitorConfig;
 
         $request = new Nette\Application\Request(
-            'V1:Submit', 'POST',
+            'V1:Submit',
+            'POST',
             ['action' => 'resubmit', 'id' => $solution->getId()],
             ['private' => 0]
         );
@@ -479,9 +489,7 @@ class TestSubmitPresenter extends Tester\TestCase
         $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->atLeast(1)
             ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->atLeast(1);
 
-        $this->presenter->submissionHelper = new SubmissionHelper(
-            new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage)
-        );
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator);
         $this->presenter->fileStorage = $mockFileStorage;
 
         // fake monitor configuration
@@ -493,7 +501,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->monitorConfig = $monitorConfig;
 
         $request = new Nette\Application\Request(
-            'V1:Submit', 'POST',
+            'V1:Submit',
+            'POST',
             ['action' => 'resubmitAll', 'id' => $assignment->getId()],
             []
         );
@@ -528,8 +537,13 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->files->flush();
         $files = [$file1->getId(), $file2->getId()];
 
-        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Submit', 'POST',
-            ['action' => 'preSubmit', 'id' => $assignment->getId()], ['files' => $files]);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Submit',
+            'POST',
+            ['action' => 'preSubmit', 'id' => $assignment->getId()],
+            ['files' => $files]
+        );
 
         Assert::count(4, $payload);
         Assert::true(array_key_exists("environments", $payload));
@@ -559,8 +573,13 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->files->flush();
         $files = [$file1->getId(), $file2->getId()];
 
-        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Submit', 'POST',
-            ['action' => 'preSubmit', 'id' => $assignment->getId()], ['files' => $files]);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Submit',
+            'POST',
+            ['action' => 'preSubmit', 'id' => $assignment->getId()],
+            ['files' => $files]
+        );
 
         Assert::false($payload["countLimitOK"]);
         Assert::true($payload["sizeLimitOK"]);
@@ -584,8 +603,13 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->files->flush();
         $files = [$file1->getId(), $file2->getId()];
 
-        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Submit', 'POST',
-            ['action' => 'preSubmit', 'id' => $assignment->getId()], ['files' => $files]);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Submit',
+            'POST',
+            ['action' => 'preSubmit', 'id' => $assignment->getId()],
+            ['files' => $files]
+        );
 
         Assert::true($payload["countLimitOK"]);
         Assert::false($payload["sizeLimitOK"]);
