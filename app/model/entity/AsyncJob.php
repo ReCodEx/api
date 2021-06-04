@@ -229,19 +229,26 @@ class AsyncJob implements JsonSerializable
      */
     protected $associatedAssignment = null;
 
+    public function getAssociatedAssignment(): ?Assignment
+    {
+        return $this->associatedAssignment;
+    }
+
 
     /**
      * Initialize a new job.
      * @param User $createdBy current user who initiated the job.
      * @param string $command class name of the handler that process the job
      * @param array $arguments for the job execution
+     * @param Assignment|null $assignment associated with the job
      */
-    public function __construct(?User $createdBy, string $command, array $arguments = [])
+    public function __construct(?User $createdBy, string $command, array $arguments = [], Assignment $assignment = null)
     {
         $this->createdBy = $createdBy;
         $this->createdAt = new DateTime();
         $this->command = $command;
         $this->arguments = json_encode($arguments);
+        $this->associatedAssignment = $assignment;
     }
 
     public function jsonSerialize(): array

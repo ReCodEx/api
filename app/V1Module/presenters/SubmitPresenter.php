@@ -29,6 +29,7 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutionSubmissions;
+use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Solutions;
@@ -37,6 +38,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
+use App\Async\Handler\ResubmitAllAsyncJobHandler;
 use Exception;
 use Nette\Http\IResponse;
 
@@ -46,6 +48,12 @@ use Nette\Http\IResponse;
  */
 class SubmitPresenter extends BasePresenter
 {
+    /**
+     * @var AsyncJobs
+     * @inject
+     */
+    public $asyncJobs;
+
     /**
      * @var FileStorageManager
      * @inject
@@ -355,6 +363,30 @@ class SubmitPresenter extends BasePresenter
         $this->sendSuccessResponse($this->finishSubmission($solution, $isDebug));
     }
 
+    public function checkResubmitAllAsyncJobStatus(string $id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+        if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
+            throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
+        }
+    }
+
+    /**
+     * Return a list of all pending resubmit async jobs associated with given assignment.
+     * Under normal circumstances, the list shoul be either empty, or contian only one job.
+     * @GET
+     * @param string $id Identifier of the assignment
+     * @throws ForbiddenRequestException
+     * @throws NotFoundException
+     */
+    public function actionResubmitAllAsyncJobStatus(string $id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+        $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
+        $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
+        $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);
+    }
+
     public function checkResubmitAll(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -364,25 +396,26 @@ class SubmitPresenter extends BasePresenter
     }
 
     /**
-     * Resubmit all submissions to an assignment
+     * Start async job that resubmits all submissions of an assignment.
+     * No job is started when there are pending resubmit jobs for the selected assignment.
+     * Returns list of pending async jobs (same as GET call)
      * @POST
      * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
      * @throws NotFoundException
-     * @throws ParseException
      */
     public function actionResubmitAll(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
-
-        $result = [];
-        /** @var AssignmentSolution $solution */
-        foreach ($assignment->getAssignmentSolutions() as $solution) {
-            $result[] = $this->finishSubmission($solution, false);
+        $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
+        $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
+        if (!$asyncJobs) {
+            // new job is started only if no async jobs are pending
+            $asyncJob = ResubmitAllAsyncJobHandler::createAsyncJob($this->getCurrentUser(), $assignment);
+            $this->asyncJobs->persist($asyncJob);
+            $asyncJobs = [ $asyncJob ];
         }
-
-        $this->sendSuccessResponse($result);
+        $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);
     }
 
     public function checkPreSubmit(string $id, string $userId = null)

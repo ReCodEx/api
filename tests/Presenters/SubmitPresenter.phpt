@@ -20,6 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Model\Entity\UploadedFile;
+use App\Async\Handler\ResubmitAllAsyncJobHandler;
 
 
 /**
@@ -512,10 +513,20 @@ class TestSubmitPresenter extends Tester\TestCase
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
-        Assert::equal(
-            $totalSubmissionCount + $solutionCount,
-            count($this->presenter->assignmentSubmissions->findAll())
-        );
+        Assert::equal(['pending', 'failed'], array_keys($result['payload']));
+        Assert::count(1, $result['payload']['pending']);
+        Assert::count(0, $result['payload']['failed']);
+
+        if (!empty($result['payload']['pending']) && count($result['payload']['pending']) === 1) {
+            // manually process the async job to make sure the result will be correct
+            $asyncJob = $result['payload']['pending'][0];
+            $handler = new ResubmitAllAsyncJobHandler($this->presenter->submissionHelper, $this->presenter->assignments);
+            $handler->execute($asyncJob);
+            Assert::equal(
+                $totalSubmissionCount + $solutionCount,
+                count($this->presenter->assignmentSubmissions->findAll())
+            );
+        }
     }
 
     public function testPreSubmit()

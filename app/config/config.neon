@@ -294,9 +294,11 @@ services:
   
   # async
   - App\Async\Handler\PingAsyncJobHandler
+  - App\Async\Handler\ResubmitAllAsyncJobHandler
   - App\Async\Worker(%async%)
   - App\Async\Dispatcher(%async%, [
     @App\Async\Handler\PingAsyncJobHandler,
+    @App\Async\Handler\ResubmitAllAsyncJobHandler,
   ])
   
   # commands

@@ -34,7 +34,7 @@ class PingAsyncJobHandler implements IAsyncJobHandler
      */
     public static function createAsyncJob(?User $user): AsyncJob
     {
-        return new AsyncJob($user, PingAsyncJobHandler::ID);
+        return new AsyncJob($user, self::ID);
     }
 
     public function cancel(): void
