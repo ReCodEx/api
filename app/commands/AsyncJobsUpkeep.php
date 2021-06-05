@@ -96,7 +96,7 @@ class AsyncJobsUpkeep extends Command
         $limit->modify("-$this->stuckThreshold");
 
         $stuckQuery = $this->entityManager->createQuery(
-            'SELECT COUNT(*) AS stuckedCount, MIN(COALESCE(aj.scheduledAt, aj.createdAt)) AS minTime
+            'SELECT COUNT(aj.id) AS stuckedCount, MIN(COALESCE(aj.scheduledAt, aj.createdAt)) AS minTime
             FROM App\Model\Entity\AsyncJob aj
             WHERE aj.terminatedAt IS NULL AND COALESCE(aj.scheduledAt, aj.createdAt) <= :dateLimit'
         );
@@ -105,7 +105,7 @@ class AsyncJobsUpkeep extends Command
 
         $count = (int)$stuckResult["stuckedCount"];
         if ($count) {
-            $maxDelay = new DateTime() - $stuckResult["minTime"];
+            $maxDelay = (new DateTime())->diff(new DateTime($stuckResult["minTime"]));
             $this->sender->send($count, $maxDelay);
         }
     }

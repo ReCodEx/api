@@ -95,7 +95,7 @@ class EmailHelper
         if (file_exists($this->archivingDir) && is_writeable($this->archivingDir)) {
             $data = [
                 '----- BEGIN MAIL -----',
-                $_SERVER['REQUEST_URI'],
+                $_SERVER['REQUEST_URI'] ?? 'CLI',
             ];
             if (!empty($lastMailerException)) {
                 $data[] = $lastMailerException->getMessage();

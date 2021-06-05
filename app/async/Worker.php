@@ -66,6 +66,11 @@ class Worker
      */
     private $terminated = false;
 
+    /**
+     * @var bool
+     */
+    private $quiet = false;
+
 
     public function __construct($config, Dispatcher $dispatcher, AsyncJobs $asyncJobs, ILogger $logger)
     {
@@ -86,6 +91,8 @@ class Worker
 
         $this->jobsRemaining = Arrays::get($config, ["restartWorkerAfter", "jobs"], 1);
 
+        $this->quiet = (bool)Arrays::get($config, "quiet", false);
+
         // setup signal handling (try to terminate gracefuly on these signals)
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
@@ -96,7 +103,9 @@ class Worker
 
     public function terminate(): void
     {
-        echo "Terminating on signal...\n";
+        if (!$this->quiet) {
+            echo "Terminating on signal...\n";
+        }
         $this->terminated = true;
         $this->dispatcher->cancel();
     }
@@ -107,7 +116,8 @@ class Worker
      */
     private function shallContinue(): bool
     {
-        return !$this->terminated && $this->jobsRemaining > 0 && $this->timeToRestart > new DateTime();
+        return !$this->terminated && $this->jobsRemaining > 0
+            && (!$this->timeToRestart || $this->timeToRestart > new DateTime());
     }
 
     /**
@@ -219,6 +229,8 @@ class Worker
         }
 
         $this->notify->clear();
-        echo "Shutdown.\n";
+        if (!$this->quiet) {
+            echo "Shutdown.\n";
+        }
     }
 }

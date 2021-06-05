@@ -225,7 +225,7 @@ class AsyncJob implements JsonSerializable
 
     /**
      * @ORM\ManyToOne(targetEntity="Assignment", cascade={"persist", "remove"})
-     * @var Assignment
+     * @var Assignment|null
      */
     protected $associatedAssignment = null;
 
@@ -265,7 +265,7 @@ class AsyncJob implements JsonSerializable
             "command" => $this->command,
             "arguments" => $this->getArguments(),
             "error" => $this->error,
-            "associatedAssignment" => $this->associatedAssignment,
+            "associatedAssignment" => $this->associatedAssignment ? $this->associatedAssignment->getId() : null,
         ];
     }
 }
