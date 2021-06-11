@@ -154,7 +154,7 @@ class EvaluationPointsLoader
 
         // calculate percentual score of whole solution
         $calculator = $this->calculators->getCalculator($exercise->getScoreConfig()->getCalculator());
-        if ($calculator !== null && !$evaluation->getInitFailed()) {
+        if ($calculator !== null) {
             $score = $calculator->computeScore($exercise->getScoreConfig()->getConfigParsed(), $testResults);
         }
 

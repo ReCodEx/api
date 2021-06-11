@@ -15,6 +15,8 @@ interface IExercisePermissions
 
     public function canViewDetail(Exercise $exercise): bool;
 
+    public function canViewConfig(Exercise $exercise): bool;
+
     public function canUpdate(Exercise $exercise): bool;
 
     public function canCreate(): bool;

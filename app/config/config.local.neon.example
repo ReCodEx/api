@@ -41,14 +41,11 @@ parameters:
   localRegistration:
     enabled: false  # set to true if you want to permit simple local registration
 
-  CAS:
-    options:
-      ldap:
-        hostname: "your.ldap.server"
-        base_dn: "ou=people,dc=your,dc=recodex,dc=domain"
-        bindName: "personalid"
-      cas:
-        baseUri: "https://your.ldap.server/cas/"
+  externalAuthenticators:
+    - name: "cas-auth-ext"
+      jwtSecret: "secretStringSharedWithExternAuth"
+      jwtAlgorithms: ["HS256"]
+      expiration: 60 # seconds passed since iat
 
   emails:
     footerUrl: "%webapp.address%"

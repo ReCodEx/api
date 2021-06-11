@@ -2,7 +2,6 @@
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
-use App\Helpers\ExternalLogin\CAS\LDAPLoginService;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Security\AccessToken;
 use App\Security\Identity;
@@ -11,6 +10,7 @@ use App\V1Module\Presenters\LoginPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
+use Firebase\JWT\JWT;
 use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
@@ -36,15 +36,31 @@ class TestLoginPresenter extends Tester\TestCase
     /** @var Nette\Security\User */
     private $user;
 
+    /** @var \App\Model\Repository\Users */
+    private $users;
+
     /** @var \App\Model\Repository\Logins */
     private $logins;
+
+    /** @var \App\Model\Repository\ExternalLogins */
+    private $externalLogins;
+
+    /** @var \App\Model\Repository\Instances */
+    private $instances;
+
+    /** @var \App\Helpers\EmailVerificationHelper */
+    private $emailVerificationHelper;
 
     public function __construct($container)
     {
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->users = $container->getByType(\App\Model\Repository\Users::class);
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
+        $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
+        $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
+        $this->emailVerificationHelper = $container->getByType(\App\Helpers\EmailVerificationHelper::class);
     }
 
     protected function setUp()
@@ -62,10 +78,13 @@ class TestLoginPresenter extends Tester\TestCase
     public function testLogin()
     {
         $request = new Request(
-            "V1:Login", "POST", ["action" => "default"], [
+            "V1:Login",
+            "POST",
+            ["action" => "default"],
+            [
             "username" => $this->userLogin,
             "password" => $this->userPassword
-        ]
+            ]
         );
 
         /** @var JsonResponse $response */
@@ -82,10 +101,13 @@ class TestLoginPresenter extends Tester\TestCase
     public function testLoginIncorrect()
     {
         $request = new Request(
-            "V1:Login", "POST", ["action" => "default"], [
+            "V1:Login",
+            "POST",
+            ["action" => "default"],
+            [
             "username" => $this->userLogin,
             "password" => $this->userPassword . "42"
-        ]
+            ]
         );
 
         Assert::exception(
@@ -100,25 +122,33 @@ class TestLoginPresenter extends Tester\TestCase
 
     public function testLoginExternal()
     {
+        $authenticator = new ExternalServiceAuthenticator(
+            [ [
+                'name' => 'test-cas',
+                'jwtSecret' => 'tajnyRetezec',
+            ] ],
+            $this->externalLogins,
+            $this->users,
+            $this->logins,
+            $this->instances,
+            $this->emailVerificationHelper
+        );
+
         $user = $this->presenter->users->getByEmail($this->userLogin);
-        $mockAuthenticator = Mockery::mock(ExternalServiceAuthenticator::class);
 
-        $service = Mockery::mock(LDAPLoginService::class);
-        $mockAuthenticator->shouldReceive("findService")
-            ->with("foo", null)
-            ->andReturn($service);
+        $payload = [
+            'iat' => time(),
+            'id' => 'external-id-1',
+            'mail' => $this->userLogin,
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+        ];
+        $token = JWT::encode($payload, 'tajnyRetezec', "HS256");
 
-        $credentials = ["username" => $this->userLogin, "password" => $this->userPassword];
+        $this->presenter->externalServiceAuthenticator = $authenticator;
 
-        $mockAuthenticator->shouldReceive("authenticate")
-            ->with($service, $credentials)
-            ->andReturn($user);
+        $request = new Request("V1:Login", "POST", ["action" => "external", "authenticatorName" => "test-cas"], [ 'token' => $token ]);
 
-        $this->presenter->externalServiceAuthenticator = $mockAuthenticator;
-
-        $request = new Request("V1:Login", "POST", ["action" => "external", "serviceId" => "foo"], $credentials);
-
-        /** @var JsonResponse $response */
         $response = $this->presenter->run($request);
         Assert::type(JsonResponse::class, $response);
         $result = $response->getPayload();

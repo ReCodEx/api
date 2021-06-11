@@ -80,34 +80,8 @@ parameters:
   uploads:
     removalThreshold: "1 day"
     maxPreviewSize: 65536
-
-  CAS:  # CAS external authentication
-    serviceId: "cas-uk"  # visible identifier of this service
-    options:
-      ldap:  # parameters for connecting to LDAP, hostname, base_dn, port, security and bindName
-        hostname: "your.ldap.server"
-        base_dn: "ou=people,dc=your,dc=ldap,dc=server"
-        bindName: "personalid"
-      cas:
-        baseUri: "https://your.ldap.server/cas/"
-    fields:  # names of LDAP keys for informations as email, firstName and lastName
-      cas:
-        ukco: "cunipersonalid"
-        email: "mail"
-        firstName: "givenname"
-        lastName: "sn"
-        affiliation: "edupersonscopedaffiliation"
-        studentAffiliations:
-          - "student@mff.cuni.cz"
-          - "interrupted-student@mff.cuni.cz"
-        supervisorAffiliations:
-          - "faculty@mff.cuni.cz"
-          - "staff@mff.cuni.cz"
-          - "employee@mff.cuni.cz"
-      ldap:
-        email: "mail"
-        firstName: "givenName"
-        lastName: "sn"
+  
+  externalAuthenticators: []
 
   sis:
     apiBase: https://sis.university.tld/is/
@@ -322,14 +296,7 @@ services:
   - App\Security\CredentialsAuthenticator
 
   # external login services
-  - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)
-  - App\Helpers\ExternalLogin\CAS\CASLoginService(%CAS.serviceId%, %CAS.options.cas%, %CAS.fields.cas%)
-  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
-    @App\Model\Repository\ExternalLogins,
-    @App\Model\Repository\Users,
-    @App\Model\Repository\Logins,
-    @App\Helpers\ExternalLogin\CAS\CASLoginService,
-  )
+  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(%externalAuthenticators%)
 
   # config objects
   - App\Helpers\ApiConfig(%api%)
