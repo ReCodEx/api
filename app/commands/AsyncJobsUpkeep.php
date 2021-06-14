@@ -66,7 +66,7 @@ class AsyncJobsUpkeep extends Command
 
             $deleteQuery = $this->entityManager->createQuery(
                 "DELETE FROM App\Model\Entity\AsyncJob aj
-                WHERE $additionalErrorClause AND aj.terminatedAt IS NOT NULL AND aj.terminatedAt <= :dateLimit"
+                WHERE $additionalErrorClause AND aj.finishedAt IS NOT NULL AND aj.finishedAt <= :dateLimit"
             );
             $deleteQuery->setParameter("dateLimit", $limit);
             $deleteQuery->execute();
@@ -98,7 +98,7 @@ class AsyncJobsUpkeep extends Command
         $stuckQuery = $this->entityManager->createQuery(
             'SELECT COUNT(aj.id) AS stuckedCount, MIN(COALESCE(aj.scheduledAt, aj.createdAt)) AS minTime
             FROM App\Model\Entity\AsyncJob aj
-            WHERE aj.terminatedAt IS NULL AND COALESCE(aj.scheduledAt, aj.createdAt) <= :dateLimit'
+            WHERE aj.finishedAt IS NULL AND COALESCE(aj.scheduledAt, aj.createdAt) <= :dateLimit'
         );
         $stuckQuery->setParameter("dateLimit", $limit);
         $stuckResult = $stuckQuery->getSingleResult();

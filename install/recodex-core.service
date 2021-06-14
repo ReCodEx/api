@@ -4,7 +4,7 @@
 # This file should be placed in /lib/systemd/system/ directory
 
 [Unit]
-Description=Recodex Core API Async Handler
+Description=ReCodEx Core API Async Handler
 Documentation=https://github.com/ReCodEx/api
 DefaultDependencies=true
 

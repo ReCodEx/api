@@ -68,10 +68,10 @@ class TestAsyncJobsPresenter extends Tester\TestCase
 
         Assert::type(AsyncJob::class, $asyncJob);
         Assert::equal('ping', $asyncJob->getCommand());
-        Assert::null($asyncJob->getTerminatedAt());
+        Assert::null($asyncJob->getFinishedAt());
 
         $worker = $this->createWorker();
-        $worker->run();
+        $worker->run('w1');
 
         $asyncJob2 = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -84,7 +84,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         Assert::equal($asyncJob->getId(), $asyncJob2->getId());
 
         $this->asyncJobs->refresh($asyncJob);
-        Assert::truthy($asyncJob->getTerminatedAt());
+        Assert::truthy($asyncJob->getFinishedAt());
         Assert::null($asyncJob->getError());
     }
 
@@ -97,7 +97,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
 
         Assert::type(AsyncJob::class, $asyncJob);
         Assert::equal('ping', $asyncJob->getCommand());
-        Assert::null($asyncJob->getTerminatedAt());
+        Assert::null($asyncJob->getFinishedAt());
 
         $asyncJob2 = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -110,7 +110,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         Assert::equal($asyncJob->getId(), $asyncJob2->getId());
 
         $this->asyncJobs->refresh($asyncJob);
-        Assert::truthy($asyncJob->getTerminatedAt());
+        Assert::truthy($asyncJob->getFinishedAt());
         Assert::equal('ABORTED', $asyncJob->getError());
     }
 
@@ -130,7 +130,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         }
 
         $worker = $this->createWorker();
-        $worker->run();
+        $worker->run('w1');
 
         // use list to see how it ended
         $list = PresenterTestHelper::performPresenterRequest(
@@ -145,7 +145,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         foreach ($list as $asyncJob) {
             Assert::type(AsyncJob::class, $asyncJob);
             Assert::equal('ping', $asyncJob->getCommand());
-            if ($asyncJob->getTerminatedAt()) {
+            if ($asyncJob->getFinishedAt()) {
                 ++$terminated;
             }
         }

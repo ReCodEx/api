@@ -19,7 +19,7 @@ use JsonSerializable;
  *   @ORM\Index(name="created_at_idx", columns={"created_at"}),
  *   @ORM\Index(name="scheduled_at_idx", columns={"scheduled_at"}),
  *   @ORM\Index(name="started_at_idx", columns={"started_at"}),
- *   @ORM\Index(name="terminated_at_idx", columns={"terminated_at"})
+ *   @ORM\Index(name="finished_at_idx", columns={"finished_at"})
  * })
  */
 class AsyncJob implements JsonSerializable
@@ -98,16 +98,16 @@ class AsyncJob implements JsonSerializable
      * @var DateTime|null
      * This is the time when the task was either processed, killed, or deferred as unsolvable.
      */
-    protected $terminatedAt = null;
+    protected $finishedAt = null;
 
-    public function getTerminatedAt(): ?DateTime
+    public function getFinishedAt(): ?DateTime
     {
-        return $this->terminatedAt;
+        return $this->finishedAt;
     }
 
-    public function setTerminatedNow()
+    public function setFinishedNow()
     {
-        $this->terminatedAt = new DateTime();
+        $this->finishedAt = new DateTime();
     }
 
     /**
@@ -143,8 +143,8 @@ class AsyncJob implements JsonSerializable
      */
     public function allocateForWorker(string $workerId)
     {
-        if ($this->terminatedAt !== null) {
-            throw new LogicException("Async job '$this->id' has already been terminated.");
+        if ($this->finishedAt !== null) {
+            throw new LogicException("Async job '$this->id' has already finished.");
         }
 
         if ($this->workerId !== null && $this->workerId !== $workerId) {
@@ -259,7 +259,7 @@ class AsyncJob implements JsonSerializable
             "createdAt" => $this->createdAt->getTimestamp(),
             "scheduledAt" => $this->scheduledAt ? $this->scheduledAt->getTimestamp() : null,
             "startedAt" => $this->startedAt ? $this->startedAt->getTimestamp() : null,
-            "terminatedAt" => $this->terminatedAt ? $this->terminatedAt->getTimestamp() : null,
+            "finishedAt" => $this->finishedAt ? $this->finishedAt->getTimestamp() : null,
             "retries" => $this->retries,
             "workerId" => $this->workerId,
             "command" => $this->command,

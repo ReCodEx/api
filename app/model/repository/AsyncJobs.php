@@ -31,7 +31,7 @@ class AsyncJobs extends BaseRepository
         Assignment $assignment = null
     ): array {
         $qb = $this->repository->createQueryBuilder("j");
-        $qb->andWhere($qb->expr()->isNull("j.terminatedAt"));
+        $qb->andWhere($qb->expr()->isNull("j.finishedAt"));
 
         if ($command) {
             $qb->andWhere($qb->expr()->eq("j.command", ':command'))->setParameter("command", $command);
@@ -68,7 +68,7 @@ class AsyncJobs extends BaseRepository
         Assignment $assignment = null
     ): array {
         $qb = $this->repository->createQueryBuilder("j");
-        $qb->andWhere($qb->expr()->isNotNull("j.terminatedAt"))->andWhere($qb->expr()->isNotNull("j.error"));
+        $qb->andWhere($qb->expr()->isNotNull("j.finishedAt"))->andWhere($qb->expr()->isNotNull("j.error"));
 
         if ($command) {
             $qb->andWhere($qb->expr()->eq("j.command", ':command'))->setParameter("command", $command);
@@ -84,7 +84,7 @@ class AsyncJobs extends BaseRepository
                 ->setParameter("assignment", $assignment->getId());
         }
 
-        $qb->addOrderBy('j.terminatedAt', 'DESC')->addOrderBy('j.createdAt', 'DESC');
+        $qb->addOrderBy('j.finishedAt', 'DESC')->addOrderBy('j.createdAt', 'DESC');
         return $qb->getQuery()->getResult();
     }
 
@@ -118,7 +118,7 @@ class AsyncJobs extends BaseRepository
         $qb->setParameter("scheduledAt", $scheduledAt);
 
         // assemble all where clauses
-        $qb->andWhere($qb->expr()->isNull("j.terminatedAt"))
+        $qb->andWhere($qb->expr()->isNull("j.finishedAt"))
             ->andWhere($workerWhere)
             ->andWhere($scheduleWhere);
 

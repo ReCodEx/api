@@ -14,8 +14,9 @@ use Exception;
 use DateTime;
 
 /**
- * Endpoints used by workers to exchange files with core.
- * These endpoints take over responsibilities of FileServer component when integrated file-storage is used.
+ * Basic management of asynchronous jobs executed by core systemd service.
+ * Async jobs are jobs that might take a long time, so they cannot be executed in request handler;
+ * however, they need to access functions of the core API module.
  */
 class AsyncJobsPresenter extends BasePresenter
 {
@@ -72,21 +73,21 @@ class AsyncJobsPresenter extends BasePresenter
         }
 
         // criterium for termination (either pending or within threshold)
-        $terminatedAt = Criteria::expr()->eq('terminatedAt', null);
+        $finishedAt = Criteria::expr()->eq('finishedAt', null);
         if ($ageThreshold) {
             $thresholdDate = new DateTime();
             $thresholdDate->modify("-$ageThreshold seconds");
-            $terminatedAt = Criteria::expr()->orX(
-                $terminatedAt,
-                Criteria::expr()->gte('terminatedAt', $thresholdDate)
+            $finishedAt = Criteria::expr()->orX(
+                $finishedAt,
+                Criteria::expr()->gte('finishedAt', $thresholdDate)
             );
         }
 
         $criteria = Criteria::create()->where(
             $includeScheduled
-                ? $terminatedAt
+                ? $finishedAt
                 : Criteria::expr()->andX(
-                    $terminatedAt,
+                    $finishedAt,
                     Criteria::expr()->eq('scheduledAt', null)
                 )
         );
@@ -119,9 +120,9 @@ class AsyncJobsPresenter extends BasePresenter
         $this->asyncJobs->beginTransaction();
         try {
             $asyncJob = $this->asyncJobs->findOrThrow($id);
-            if ($asyncJob->getStartedAt() === null && $asyncJob->getTerminatedAt() === null) {
+            if ($asyncJob->getStartedAt() === null && $asyncJob->getFinishedAt() === null) {
                 // if the job has not been started yet, it can be aborted
-                $asyncJob->setTerminatedNow();
+                $asyncJob->setFinishedNow();
                 $asyncJob->appendError("ABORTED");
                 $this->asyncJobs->persist($asyncJob);
                 $this->asyncJobs->commit();

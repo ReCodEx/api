@@ -176,7 +176,7 @@ class Worker
     {
         if ($job->getRetries() > $this->retries) {
             // this job has been beaten to death...
-            $job->setTerminatedNow();
+            $job->setFinishedNow();
             $this->asyncJobs->persist($job);
             $this->asyncJobs->flush();
             return;
@@ -186,7 +186,7 @@ class Worker
 
         try {
             $this->dispatcher->dispatch($job);
-            $job->setTerminatedNow();
+            $job->setFinishedNow();
         } catch (Exception $e) {
             $job->appendError($e->getMessage());
             $this->logger->log(
@@ -204,7 +204,7 @@ class Worker
      * This method is blockinig, once it terminates the worker process should also terminate.
      * @param string $workerId identifier of the worker (should be gathered from the CLI arguments)
      */
-    public function run(string $workerId = 'worker1')
+    public function run(string $workerId)
     {
         $this->notify->init(); // start listeining for notifications
 

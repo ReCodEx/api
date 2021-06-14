@@ -112,7 +112,11 @@ class EmailLocalizationHelper
     }
 
     /**
-     *
+     * Translation table of localized suffixes for relative time strings.
+     * The array is constructed as [locale][time_control_char][min_count] => 'suffix'
+     * The min_count is used for inflections -- e.g., [ 1 => "year", 2 => "years" ] means
+     * that for y >= 1, 'year' would be used, but from y >= 2 'years' would be used as suffix.
+     * The min_count keys must be sorted in ascending order.
      */
     private static $localizations = [
         EmailLocalizationHelper::CZECH_LOCALE => [

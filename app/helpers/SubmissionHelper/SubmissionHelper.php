@@ -160,7 +160,7 @@ class SubmissionHelper
     public function submit(AssignmentSolution $solution, User $user, bool $isDebug = false): array
     {
         if ($solution->getId() === null) {
-            throw new InvalidArgumentException("The submission object is missing an id");
+            throw new InvalidArgumentException("The solution object is missing an id");
         }
 
         // check for the license of instance of user
