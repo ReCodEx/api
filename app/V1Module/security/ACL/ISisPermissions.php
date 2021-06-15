@@ -46,19 +46,19 @@ class SisGroupContext
 
 interface ISisPermissions
 {
-    function canCreateGroup(SisGroupContext $groupContext, SisCourseRecord $course): bool;
+    public function canCreateGroup(SisGroupContext $groupContext, SisCourseRecord $course): bool;
 
-    function canBindGroup(Group $group, SisCourseRecord $course): bool;
+    public function canBindGroup(Group $group, SisCourseRecord $course): bool;
 
-    function canUnbindGroup(Group $group, SisCourseRecord $course): bool;
+    public function canUnbindGroup(Group $group, SisCourseRecord $course): bool;
 
-    function canViewCourses(SisIdWrapper $sisId): bool;
+    public function canViewCourses(SisIdWrapper $sisId): bool;
 
-    function canCreateTerm(): bool;
+    public function canCreateTerm(): bool;
 
-    function canEditTerm(SisValidTerm $term): bool;
+    public function canEditTerm(SisValidTerm $term): bool;
 
-    function canDeleteTerm(SisValidTerm $term): bool;
+    public function canDeleteTerm(SisValidTerm $term): bool;
 
-    function canViewTerms(): bool;
+    public function canViewTerms(): bool;
 }

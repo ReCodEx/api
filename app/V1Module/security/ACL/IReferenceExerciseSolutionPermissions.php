@@ -6,9 +6,9 @@ use App\Model\Entity\ReferenceExerciseSolution;
 
 interface IReferenceExerciseSolutionPermissions
 {
-    function canDelete(ReferenceExerciseSolution $referenceExerciseSolution): bool;
+    public function canDelete(ReferenceExerciseSolution $referenceExerciseSolution): bool;
 
-    function canEvaluate(ReferenceExerciseSolution $referenceExerciseSolution): bool;
+    public function canEvaluate(ReferenceExerciseSolution $referenceExerciseSolution): bool;
 
-    function canDeleteEvaluation(ReferenceExerciseSolution $referenceExerciseSolution): bool;
+    public function canDeleteEvaluation(ReferenceExerciseSolution $referenceExerciseSolution): bool;
 }

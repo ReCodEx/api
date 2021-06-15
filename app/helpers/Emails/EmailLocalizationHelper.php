@@ -7,6 +7,7 @@ use App\Model\Entity\LocalizedEntity;
 use App\Model\Entity\User;
 use Doctrine\Common\Collections\Collection;
 use Nette;
+use DateInterval;
 
 /**
  * Email localization helper for identifying the right template file and right
@@ -14,10 +15,9 @@ use Nette;
  */
 class EmailLocalizationHelper
 {
-
-    const CZECH_LOCALE = "cs";
-    const DEFAULT_LOCALE = "en";
-    const LOCALE_PLACEHOLDER_PATTERN = '/{locale}/';
+    public const CZECH_LOCALE = "cs";
+    public const DEFAULT_LOCALE = "en";
+    public const LOCALE_PLACEHOLDER_PATTERN = '/{locale}/';
 
 
     /**
@@ -109,5 +109,79 @@ class EmailLocalizationHelper
         }
 
         return $result;
+    }
+
+    /**
+     * Translation table of localized suffixes for relative time strings.
+     * The array is constructed as [locale][time_control_char][min_count] => 'suffix'
+     * The min_count is used for inflections -- e.g., [ 1 => "year", 2 => "years" ] means
+     * that for y >= 1, 'year' would be used, but from y >= 2 'years' would be used as suffix.
+     * The min_count keys must be sorted in ascending order.
+     */
+    private static $localizations = [
+        EmailLocalizationHelper::CZECH_LOCALE => [
+            // this is actually not perfect, but it will do for now
+            'y' => [ 1 => "rok", 2 => "roky", 5 => "let" ],
+            'm' => [ 1 => "měsíc", 2 => "měsíce", 5 => "měsíců" ],
+            'd' => [ 1 => "den", 2 => "dny", 5 => 'dní' ],
+            'h' => [ 1 => "hodina", 2 => "hodiny", 5 => "hodin" ],
+            'i' => [ 1 => "minuta", 2 => "minuty", 5 => "minut" ],
+            's' => [ 1 => "vteřina", 2 => "vteřiny", 5 => "vteřin" ],
+        ],
+        EmailLocalizationHelper::DEFAULT_LOCALE => [ // default (English)
+            'y' => [ 1 => "year", 2 => "years" ],
+            'm' => [ 1 => "month", 2 => "months" ],
+            'd' => [ 1 => "day", 2 => "days" ],
+            'h' => [ 1 => "hour", 2 => "hours" ],
+            'i' => [ 1 => "minute", 2 => "minutes" ],
+            's' => [ 1 => "second", 2 => "seconds" ],
+        ]
+    ];
+
+    /**
+     * Helps find the right suffix (considering forms of plural) for a given value.
+     * @param int $value for which we find the suffix
+     * @param array $suffixes [ minValue => suffixString ]
+     * @return string suffix
+     */
+    private static function getDateIntervalLocalizationSuffix(int $value, array $suffixes): string
+    {
+        $bestSuffix = reset($suffixes);
+        foreach ($suffixes as $min => $suffix) {
+            if ($min <= $value) {
+                $bestSuffix = $suffix;
+            }
+        }
+        return $bestSuffix;
+    }
+
+    /**
+     * Return localized string with an informal description of relative time (date interval).
+     * It writes out up to two the most significant values, so it is brief yet it scales from seconds to years.
+     * The interval is treated as absoluted value (ignoring the sign).
+     * @param DateInterval $dateDiff interval to be displayed
+     * @param string $locale identification of the language
+     * @return string formatted relative time
+     */
+    public static function getDateIntervalLocalizedString(DateInterval $dateDiff, string $locale): string
+    {
+        $localization = array_key_exists($locale, self::$localizations)
+            ? self::$localizations[$locale] : self::$localizations[EmailLocalizationHelper::DEFAULT_LOCALE];
+
+        $result = [];
+        foreach ($localization as $key => $suffixes) {
+            if (count($result) >= 2) {
+                break; // two subsequent values are enough for precision
+            }
+            $value = $dateDiff->$key;
+            if ($value > 0) {
+                $bestSuffix = self::getDateIntervalLocalizationSuffix($value, $suffixes);
+                $result[] = "$value $bestSuffix";
+            } elseif ($result) {
+                break; // this should have been second value, but it was empty
+            }
+        }
+
+        return join(', ', $result);
     }
 }

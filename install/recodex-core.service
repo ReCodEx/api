@@ -1,0 +1,24 @@
+# ReCodEx core-api systemd configuration file
+# The core-api runs under PHP server, this service executes the async operations
+#
+# This file should be placed in /lib/systemd/system/ directory
+
+[Unit]
+Description=ReCodEx Core API Async Handler
+Documentation=https://github.com/ReCodEx/api
+DefaultDependencies=true
+
+[Service]
+Type=simple
+StandardInput=null
+StandardOutput=file:/opt/recodex-core/log/worker.log
+StandardError=file:/opt/recodex-core/log/worker.log
+User=recodex
+Group=recodex
+WorkingDirectory=/opt/recodex-core
+ExecStart=/opt/recodex-core/bin/async-worker
+Restart=on-success
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

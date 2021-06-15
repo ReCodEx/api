@@ -4,9 +4,9 @@ namespace App\Security\ACL;
 
 interface IEmailPermissions
 {
-    function canSendToAll(): bool;
+    public function canSendToAll(): bool;
 
-    function canSendToSupervisors(): bool;
+    public function canSendToSupervisors(): bool;
 
-    function canSendToRegularUsers(): bool;
+    public function canSendToRegularUsers(): bool;
 }

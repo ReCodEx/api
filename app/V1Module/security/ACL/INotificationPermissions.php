@@ -7,19 +7,19 @@ use App\Model\Entity\Notification;
 
 interface INotificationPermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 
-    function canViewCurrent(): bool;
+    public function canViewCurrent(): bool;
 
-    function canViewDetail(Notification $notification): bool;
+    public function canViewDetail(Notification $notification): bool;
 
-    function canCreate(): bool;
+    public function canCreate(): bool;
 
-    function canCreateGlobal(): bool;
+    public function canCreateGlobal(): bool;
 
-    function canAddGroup(Group $group): bool;
+    public function canAddGroup(Group $group): bool;
 
-    function canUpdate(Notification $notification): bool;
+    public function canUpdate(Notification $notification): bool;
 
-    function canRemove(Notification $notification): bool;
+    public function canRemove(Notification $notification): bool;
 }

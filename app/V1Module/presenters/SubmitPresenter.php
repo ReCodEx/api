@@ -29,6 +29,7 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutionSubmissions;
+use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Solutions;
@@ -37,6 +38,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
+use App\Async\Handler\ResubmitAllAsyncJobHandler;
 use Exception;
 use Nette\Http\IResponse;
 
@@ -46,6 +48,12 @@ use Nette\Http\IResponse;
  */
 class SubmitPresenter extends BasePresenter
 {
+    /**
+     * @var AsyncJobs
+     * @inject
+     */
+    public $asyncJobs;
+
     /**
      * @var FileStorageManager
      * @inject
@@ -220,10 +228,12 @@ class SubmitPresenter extends BasePresenter
     /**
      * Submit a solution of an assignment
      * @POST
-     * @Param(type="post", name="note", validation="string:0..1024", description="A note by the author of the solution")
+     * @Param(type="post", name="note", validation="string:0..1024",
+     *        description="A note by the author of the solution")
      * @Param(type="post", name="userId", required=false, description="Author of the submission")
      * @Param(type="post", name="files", description="Submitted files")
-     * @Param(type="post", name="runtimeEnvironmentId", description="Identifier of the runtime environment used for evaluation")
+     * @Param(type="post", name="runtimeEnvironmentId",
+     *        description="Identifier of the runtime environment used for evaluation")
      * @Param(type="post", name="solutionParams", required=false, description="Solution parameters")
      * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
@@ -263,9 +273,13 @@ class SubmitPresenter extends BasePresenter
         }
 
         // perform size/count limits checks on submitted files
-        if ($assignment->getSolutionFilesLimit() !== null && count($uploadedFiles) > $assignment->getSolutionFilesLimit()) {
+        if (
+            $assignment->getSolutionFilesLimit() !== null &&
+            count($uploadedFiles) > $assignment->getSolutionFilesLimit()
+        ) {
             throw new InvalidArgumentException("files", "Number of uploaded files exceeds assignment limits");
         }
+
         if (
             $assignment->getSolutionSizeLimit() !== null
             && $this->getFilesSize($uploadedFiles) > $assignment->getSolutionSizeLimit()
@@ -282,7 +296,7 @@ class SubmitPresenter extends BasePresenter
         $note = $req->getPost("note");
         $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution);
         $this->assignmentSolutions->persist($assignmentSolution);
-        
+
         foreach ($uploadedFiles as $file) {
             $this->fileStorage->storeUploadedSolutionFile($assignmentSolution->getSolution(), $file);
             $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
@@ -294,35 +308,8 @@ class SubmitPresenter extends BasePresenter
     }
 
     /**
-     * @param AssignmentSolutionSubmission $submission
-     * @param Exception $exception
-     * @param string $failureType
-     * @param string $reportType
-     * @param bool $sendEmail
-     * @throws Exception
-     */
-    private function submissionFailed(
-        AssignmentSolutionSubmission $submission,
-        Exception $exception,
-        string $failureType = SubmissionFailure::TYPE_BROKER_REJECT,
-        string $reportType = FailureHelper::TYPE_BACKEND_ERROR,
-        bool $sendEmail = true
-    ) {
-        $failure = SubmissionFailure::create($failureType, $exception->getMessage());
-        $submission->setFailure($failure);
-        $this->submissionFailures->persist($failure);
-        $this->assignmentSubmissions->persist($submission);
-
-        if ($sendEmail) {
-            $reportMessage = "Submission '{$submission->getId()}' errored - {$exception->getMessage()}";
-            $this->failureHelper->report($reportType, $reportMessage);
-        }
-        throw $exception; // rethrow
-    }
-
-    /**
      * Take a complete submission entity and submit it to the backend
-     * @param AssignmentSolution $solution a persisted submission entity
+     * @param AssignmentSolution $solution that holds the files and everything
      * @param bool $isDebug
      * @return array The response that can be sent to the client
      * @throws ForbiddenRequestException
@@ -332,67 +319,7 @@ class SubmitPresenter extends BasePresenter
      */
     private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false)
     {
-        if ($solution->getId() === null) {
-            throw new InvalidArgumentException("The submission object is missing an id");
-        }
-
-        // check for the license of instance of user
-        $assignment = $solution->getAssignment();
-        if ($assignment->getGroup() && $assignment->getGroup()->hasValidLicence() === false) {
-            throw new ForbiddenRequestException(
-                "Your institution does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
-                IResponse::S402_PAYMENT_REQUIRED
-            );
-        }
-
-        // generate job configuration
-        $compilationParams = CompilationParams::create(
-            $solution->getSolution()->getFileNames(),
-            $isDebug,
-            $solution->getSolution()->getSolutionParams()
-        );
-
-        // create submission entity
-        $submission = new AssignmentSolutionSubmission(
-            $solution,
-            $this->getCurrentUser(),
-            $isDebug
-        );
-        $this->assignmentSubmissions->persist($submission);
-        $solution->setLastSubmission($submission);
-        $this->assignmentSolutions->persist($solution);
-
-        try {
-            $jobConfig = $this->jobConfigGenerator->generateJobConfig(
-                $submission,
-                $solution->getAssignment(),
-                $solution->getSolution()->getRuntimeEnvironment(),
-                $compilationParams
-            );
-        } catch (ExerciseConfigException | ExerciseCompilationException | FileStorageException $e) {
-            $failureType = $e instanceof ExerciseCompilationSoftException ?
-                SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
-            $sendEmail = $e instanceof ExerciseCompilationSoftException ? false : true;
-
-            $this->submissionFailed($submission, $e, $failureType, FailureHelper::TYPE_API_ERROR, $sendEmail);
-            // this return is here just to fool static analysis,
-            // submissionFailed method throws an exception and therefore following return is never reached
-            return [];
-        }
-
-        // initiate submission
-        try {
-            $this->submissionHelper->submit(
-                $submission->getId(),
-                $solution->getSolution()->getRuntimeEnvironment()->getId(),
-                $jobConfig
-            );
-        } catch (Exception $e) {
-            $this->submissionFailed($submission, $e);
-        }
-
-        // If the submission was accepted we now have the URL where to look for the results later -> persist it
-        $this->assignmentSubmissions->persist($submission);
+        [ $submission, $jobConfig ] = $this->submissionHelper->submit($solution, $this->getCurrentUser(), $isDebug);
 
         // The solution needs to reload submissions (it is tedious and error prone to update them manually)
         $this->solutions->refresh($solution);
@@ -420,7 +347,8 @@ class SubmitPresenter extends BasePresenter
      * Resubmit a solution (i.e., create a new submission)
      * @POST
      * @param string $id Identifier of the solution
-     * @Param(type="post", name="debug", validation="bool", required=false, "Debugging resubmit with all logs and outputs")
+     * @Param(type="post", name="debug", validation="bool", required=false,
+     *        "Debugging resubmit with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
@@ -435,6 +363,30 @@ class SubmitPresenter extends BasePresenter
         $this->sendSuccessResponse($this->finishSubmission($solution, $isDebug));
     }
 
+    public function checkResubmitAllAsyncJobStatus(string $id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+        if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
+            throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
+        }
+    }
+
+    /**
+     * Return a list of all pending resubmit async jobs associated with given assignment.
+     * Under normal circumstances, the list shoul be either empty, or contian only one job.
+     * @GET
+     * @param string $id Identifier of the assignment
+     * @throws ForbiddenRequestException
+     * @throws NotFoundException
+     */
+    public function actionResubmitAllAsyncJobStatus(string $id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+        $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
+        $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
+        $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);
+    }
+
     public function checkResubmitAll(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -444,25 +396,26 @@ class SubmitPresenter extends BasePresenter
     }
 
     /**
-     * Resubmit all submissions to an assignment
+     * Start async job that resubmits all submissions of an assignment.
+     * No job is started when there are pending resubmit jobs for the selected assignment.
+     * Returns list of pending async jobs (same as GET call)
      * @POST
      * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
      * @throws NotFoundException
-     * @throws ParseException
      */
     public function actionResubmitAll(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
-
-        $result = [];
-        /** @var AssignmentSolution $solution */
-        foreach ($assignment->getAssignmentSolutions() as $solution) {
-            $result[] = $this->finishSubmission($solution, false);
+        $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
+        $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
+        if (!$asyncJobs) {
+            // new job is started only if no async jobs are pending
+            $asyncJob = ResubmitAllAsyncJobHandler::createAsyncJob($this->getCurrentUser(), $assignment);
+            $this->asyncJobs->persist($asyncJob);
+            $asyncJobs = [ $asyncJob ];
         }
-
-        $this->sendSuccessResponse($result);
+        $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);
     }
 
     public function checkPreSubmit(string $id, string $userId = null)

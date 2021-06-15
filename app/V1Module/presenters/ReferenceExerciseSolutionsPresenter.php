@@ -514,65 +514,19 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         ReferenceExerciseSolution $referenceSolution,
         bool $isDebug = false
     ): array {
-        $exercise = $referenceSolution->getExercise();
-        $runtimeEnvironment = $referenceSolution->getRuntimeEnvironment();
-        $hwGroups = $exercise->getHardwareGroups();
         $submissions = [];
         $errors = [];
-        $submittedFiles = array_map(
-            function (UploadedFile $file) {
-                return $file->getName();
-            },
-            $referenceSolution->getFiles()->getValues()
-        );
 
-        $compilationParams = CompilationParams::create(
-            $submittedFiles,
-            $isDebug,
-            $referenceSolution->getSolution()->getSolutionParams()
-        );
-
+        $hwGroups = $referenceSolution->getExercise()->getHardwareGroups();
         foreach ($hwGroups->getValues() as $hwGroup) {
-            // create the entity and generate the ID
-            $submission = new ReferenceSolutionSubmission(
-                $referenceSolution,
-                $hwGroup,
-                $this->getCurrentUser(),
-                $isDebug
-            );
-            $this->referenceSubmissions->persist($submission);
-
             try {
-                $jobConfig = $this->jobConfigGenerator
-                    ->generateJobConfig($submission, $exercise, $runtimeEnvironment, $compilationParams);
-            } catch (ExerciseConfigException | ExerciseCompilationException | FileStorageException $e) {
-                $failureType = $e instanceof ExerciseCompilationSoftException
-                    ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR
-                    : SubmissionFailure::TYPE_CONFIG_ERROR;
-                $sendEmail = $e instanceof ExerciseCompilationSoftException ? false : true;
+                [ $submission, $jobConfig ] = $this->submissionHelper->submitReference(
+                    $referenceSolution,
+                    $hwGroup,
+                    $this->getCurrentUser(),
+                    $isDebug
+                );
 
-                $failure = SubmissionFailure::create($failureType, $e->getMessage());
-                $submission->setFailure($failure);
-                $this->submissionFailures->persist($failure);
-                $this->referenceSubmissions->persist($submission);
-
-                if ($sendEmail) {
-                    $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
-                    $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
-                }
-
-                throw $e; // rethrow
-            }
-
-            $this->submissionHelper->submitReference(
-                $submission->getId(),
-                $runtimeEnvironment->getId(),
-                $hwGroup->getId(),
-                $jobConfig
-            );
-
-            try {
-                $this->referenceSubmissions->flush();
                 $submissions[] = [
                     "submission" => $submission,
                     "webSocketChannel" => [
@@ -581,21 +535,18 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
                         "expectedTasksCount" => $jobConfig->getTasksCount()
                     ]
                 ];
+            } catch (ExerciseConfigException | ExerciseCompilationException | FileStorageException $e) {
+                $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
+                throw $e; // unrecoverable errors
             } catch (Exception $e) {
                 $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
-                $failure = SubmissionFailure::create(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage());
-                $submission->setFailure($failure);
-                $this->submissionFailures->persist($failure, false);
-                $this->referenceSubmissions->persist($submission, false);
                 $errors[$hwGroup->getId()] = $e->getMessage();
             }
         }
 
         if (count($errors) > 0) {
             $this->referenceSubmissions->flush();
-            $this->referenceSolutions->refresh(
-                $referenceSolution
-            ); // special case, it would be tedious update the entity manually
+            $this->referenceSolutions->refresh($referenceSolution); // it would be tedious update the entity manually
         }
 
         return [

@@ -4,9 +4,9 @@ namespace App\Security\ACL;
 
 interface IBrokerPermissions
 {
-    function canViewStats(): bool;
+    public function canViewStats(): bool;
 
-    function canFreeze(): bool;
+    public function canFreeze(): bool;
 
-    function canUnfreeze(): bool;
+    public function canUnfreeze(): bool;
 }

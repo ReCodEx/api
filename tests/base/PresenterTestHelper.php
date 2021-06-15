@@ -21,11 +21,11 @@ use Symfony\Component\Process\Process;
 
 class PresenterTestHelper
 {
-    const ADMIN_LOGIN = "admin@admin.com";
-    const ADMIN_PASSWORD = "admin";
+    public const ADMIN_LOGIN = "admin@admin.com";
+    public const ADMIN_PASSWORD = "admin";
 
-    const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
-    const GROUP_SUPERVISOR_LOGIN = "demoGroupSupervisor@example.com";
+    public const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
+    public const GROUP_SUPERVISOR_LOGIN = "demoGroupSupervisor@example.com";
 
     private static function createEntityManager(
         string $dbPath,

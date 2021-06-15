@@ -4,5 +4,5 @@ namespace App\Security\ACL;
 
 interface IRuntimeEnvironmentPermissions
 {
-    function canViewAll(): bool;
+    public function canViewAll(): bool;
 }

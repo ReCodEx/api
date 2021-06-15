@@ -53,6 +53,7 @@ class RouterFactory
         $router[] = self::createShadowAssignmentsRoutes("$prefix/shadow-assignments");
         $router[] = self::createNotificationsRoutes("$prefix/notifications");
         $router[] = self::createWorkerFilesRoutes("$prefix/worker-files");
+        $router[] = self::createAsyncJobsRoutes("$prefix/async-jobs");
 
         return $router;
     }
@@ -221,6 +222,7 @@ class RouterFactory
 
         $router[] = new GetRoute("$prefix/<id>/can-submit", "Submit:canSubmit");
         $router[] = new PostRoute("$prefix/<id>/submit", "Submit:submit");
+        $router[] = new GetRoute("$prefix/<id>/resubmit-all", "Submit:resubmitAllAsyncJobStatus");
         $router[] = new PostRoute("$prefix/<id>/resubmit-all", "Submit:resubmitAll");
         $router[] = new PostRoute("$prefix/<id>/pre-submit", "Submit:preSubmit");
         return $router;
@@ -586,6 +588,16 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/submission-archive/<type>/<id>", "WorkerFiles:downloadSubmissionArchive");
         $router[] = new GetRoute("$prefix/supplementary-file/<hash>", "WorkerFiles:downloadSupplementaryFile");
         $router[] = new PutRoute("$prefix/result/<type>/<id>", "WorkerFiles:uploadResultsFile");
+        return $router;
+    }
+
+    private static function createAsyncJobsRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+        $router[] = new GetRoute("$prefix/<id>", "AsyncJobs:default");
+        $router[] = new GetRoute("$prefix", "AsyncJobs:list");
+        $router[] = new PostRoute("$prefix/<id>/abort", "AsyncJobs:abort");
+        $router[] = new PostRoute("$prefix/ping", "AsyncJobs:ping");
         return $router;
     }
 }
