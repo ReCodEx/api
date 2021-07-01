@@ -286,14 +286,14 @@ class LocalFileStorage implements IFileStorage
         if ($srcReal === $dstReal && $srcZip === $dstZip) {
             throw new FileStorageException("Unable to copy file to itself.", $src);
         }
-        
+
         if ($srcReal === $dstReal && ($srcZip || $dstZip) && (!$srcZip || !$dstZip)) {
             throw new FileStorageException(
                 "Unable to manipulate with ZIP archive and its contents in one copy procedure.",
                 $src
             );
         }
-        
+
         if ($srcZip && $dstZip && $srcReal === $dstReal) {
             // copy witin one archive -> use ZipFileStorage implementation
             $zip = new ZipFileStorage($this->tmpFilesHelper, $srcReal, null, false);
@@ -345,7 +345,7 @@ class LocalFileStorage implements IFileStorage
         if ($srcReal === $dstReal && $srcZip === $dstZip) {
             return; // nothing to move
         }
-        
+
         if ($srcReal === $dstReal && ($srcZip || $dstZip) && (!$srcZip || !$dstZip)) {
             throw new FileStorageException(
                 "Unable to manipulate with ZIP archive and its contents in one move procedure.",
@@ -432,7 +432,7 @@ class LocalFileStorage implements IFileStorage
     {
         $glob = $this->rootDirectory . '/' . $glob;
         $rootDirLen = strlen($this->rootDirectory);
-        
+
         $deleted = 0;
         $affectedDirectories = [];
 

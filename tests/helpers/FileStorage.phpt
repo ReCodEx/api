@@ -1,5 +1,7 @@
 <?php
 
+$container = require_once __DIR__ . "/../bootstrap.php";
+
 use App\Helpers\FileStorage\IHashFileStorage;
 use App\Helpers\FileStorage\IFileStorage;
 use App\Helpers\FileStorage\IImmutableFile;
@@ -9,14 +11,17 @@ use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\ZipFileStorage;
 use App\Helpers\FileStorage\FileStorageException;
+use App\Helpers\FileStorageManager;
+use App\Model\Entity\UploadedFile;
+use App\Model\Entity\UploadedPartialFile;
+use App\Model\Repository\Users;
+use App\Helpers\TmpFilesHelper;
 use Nette\Utils\Strings;
 use Tester\Assert;
 
-require __DIR__ . "/../bootstrap.php";
-
 /**
  * @testCase
- * 
+ *
  * !!! we are using actual filesystem (tmp directory) !!!
  * the reason is that vfs is not supported by ZipArchive
  */
@@ -25,6 +30,27 @@ class TestFileStorage extends Tester\TestCase
     protected $tmpDir = null;
     protected $hashStorageCounter = 1;
     protected $localStorageCounter = 1;
+
+    /** @var App\Model\Repository\Users */
+    protected $users;
+
+    /** @var  Nette\DI\Container */
+    protected $container;
+
+    public function __construct()
+    {
+        global $container;
+        $this->container = $container;
+        $this->users = $container->getByType(Users::class);
+    }
+
+    private static function setPropertyOfObject($object, $property, $newValue)
+    {
+        $reflectionClass = new ReflectionClass($object);
+        $reflectionProperty = $reflectionClass->getProperty($property);
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($object, $newValue);
+    }
 
     private static function createTmpDir()
     {
@@ -51,8 +77,10 @@ class TestFileStorage extends Tester\TestCase
     {
         if (!Strings::startsWith($path, sys_get_temp_dir())) {
             throw new \Exception("Must not rmdir something oustise temp dir $path");
-        }   
-        if (Strings::endsWith($path, '/.') || Strings::endsWith($path, '/..')) return;
+        }
+        if (Strings::endsWith($path, '/.') || Strings::endsWith($path, '/..')) {
+            return;
+        }
         if (is_dir($path)) {
             $entries = new DirectoryIterator($path);
             foreach ($entries as $fileinfo) {
@@ -61,7 +89,7 @@ class TestFileStorage extends Tester\TestCase
                 }
             }
             rmdir($path);
-        } else if (is_file($path)) {
+        } elseif (is_file($path)) {
             unlink($path);
         }
     }
@@ -104,7 +132,9 @@ class TestFileStorage extends Tester\TestCase
         foreach ($files as $file) {
             $hash = sha1($file);
             $hashDir .= '/' . substr($hash, 0, 3);
-            if (!is_dir($hashDir)) { @mkdir($hashDir); }
+            if (!is_dir($hashDir)) {
+                @mkdir($hashDir);
+            }
             file_put_contents($hashDir . '/' . $hash, $file);
         }
 
@@ -119,7 +149,7 @@ class TestFileStorage extends Tester\TestCase
             self::rmdirRecursive($rootDir);
         }
         @mkdir($rootDir);
-        $storage = new LocalFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), [ 'root' => $rootDir ]);
+        $storage = new LocalFileStorage(new TmpFilesHelper($this->tmpDir), [ 'root' => $rootDir ]);
 
         foreach ($files as $file => $contents) {
             if (Strings::contains($file, '/')) {
@@ -144,6 +174,7 @@ class TestFileStorage extends Tester\TestCase
 
     protected function setUp()
     {
+        PresenterTestHelper::fillDatabase($this->container);
         if ($this->tmpDir && is_dir($this->tmpDir)) {
             self::rmdirRecursive($this->tmpDir);
         }
@@ -178,7 +209,7 @@ class TestFileStorage extends Tester\TestCase
         $hashStorage = $this->prepareHashStorage([ $contents ]);
         $file = $hashStorage->fetch(sha1('no aint here'));
         Assert::null($file);
-        Assert::exception(function() use ($hashStorage) {
+        Assert::exception(function () use ($hashStorage) {
             $file = $hashStorage->fetchOrThrow(sha1('no aint here'));
         }, FileStorageException::class, "File hash not found.");
     }
@@ -186,7 +217,7 @@ class TestFileStorage extends Tester\TestCase
     public function testHashStoreFetchInvalidPath()
     {
         $hashStorage = $this->prepareHashStorage();
-        Assert::exception(function() use ($hashStorage) {
+        Assert::exception(function () use ($hashStorage) {
             $hashStorage->fetch('../../config.neon');
         }, FileStorageException::class, "Given file hash contains invalid characters.");
     }
@@ -259,7 +290,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageFetch()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
         $fileA = $storage->fetch('a.txt');
         Assert::equal('AAAAA', $fileA->getContents());
         $fileB = $storage->fetchOrThrow('b.txt');
@@ -272,11 +303,11 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageFetchNonexist()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
         $fileC = $storage->fetch('c.txt');
         Assert::null($fileC);
         $fileB = $storage->fetchOrThrow('b.txt');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->fetchOrThrow('A.TXT');
         }, FileStorageException::class, "File not found within the storage.");
     }
@@ -284,7 +315,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreFile()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $tmpX = $this->createTmpFile('XXX');
         $tmpY = $this->createTmpFile('YYY');
@@ -300,8 +331,8 @@ class TestFileStorage extends Tester\TestCase
         $tmpfile = $this->createTmpFile();
         $storage->extract('a.txt', $tmpfile, true);
         Assert::equal('YYY', file_get_contents($tmpfile));
-        
-        Assert::exception(function() use ($storage, $tmpfile) {
+
+        Assert::exception(function () use ($storage, $tmpfile) {
             $storage->storeFile($tmpfile, 'b.txt', false, false);
         }, FileStorageException::class, "Target entry already exists.");
     }
@@ -309,7 +340,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreContents()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->storeContents('XXX', 'x.txt', false);
         $storage->storeContents('YYY', 'a.txt', true);
@@ -319,8 +350,8 @@ class TestFileStorage extends Tester\TestCase
         $tmpfile = $this->createTmpFile();
         $storage->extract('a.txt', $tmpfile, true);
         Assert::equal('YYY', file_get_contents($tmpfile));
-        
-        Assert::exception(function() use ($storage) {
+
+        Assert::exception(function () use ($storage) {
             $storage->storeContents('ZZZ', 'b.txt', false);
         }, FileStorageException::class, "Target entry already exists.");
     }
@@ -328,7 +359,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreStream()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $tmpX = $this->createTmpFile('XXX');
         $tmpY = $this->createTmpFile('YYY');
@@ -346,9 +377,9 @@ class TestFileStorage extends Tester\TestCase
         $tmpfile = $this->createTmpFile();
         $storage->extract('a.txt', $tmpfile, true);
         Assert::equal('YYY', file_get_contents($tmpfile));
-        
+
         $fpX = fopen($tmpX, "rb");
-        Assert::exception(function() use ($storage, $fpX) {
+        Assert::exception(function () use ($storage, $fpX) {
             $storage->storeStream($fpX, 'b.txt', false);
         }, FileStorageException::class, "Target entry already exists.");
         Assert::true(fclose($fpX));
@@ -357,7 +388,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreCopy()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->copy('a.txt', 'c.txt');
         $storage->copy('b.txt', 'a.txt', true);
@@ -366,8 +397,8 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal('BBBB', $storage->extractToString('a.txt'));
         Assert::equal('BBBB', $storage->extractToString('b.txt'));
         Assert::equal('AAAAA', $storage->extractToString('c.txt'));
-        
-        Assert::exception(function() use ($storage) {
+
+        Assert::exception(function () use ($storage) {
             $storage->copy('a.txt', 'b.txt');
         }, FileStorageException::class, "Unable to copy file to 'b.txt', target entry already exists.");
     }
@@ -375,7 +406,7 @@ class TestFileStorage extends Tester\TestCase
     public function testZipFileStorageStoreMove()
     {
         $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->move('a.txt', 'c.txt');
         $storage->move('b.txt', 'a.txt');
@@ -384,7 +415,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal('BBBB', $storage->extractToString('a.txt'));
         Assert::equal('AAAAA', $storage->extractToString('c.txt'));
 
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('c.txt', 'a.txt');
         }, FileStorageException::class, "Unable to rename an entry 'c.txt' to 'a.txt' in the ZIP archive.");
 
@@ -400,7 +431,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $files = [ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ];
         $zip = $this->createZipFile($files);
-        $storage = new ZipFileStorage(new App\Helpers\TmpFilesHelper($this->tmpDir), $zip);
+        $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         foreach (array_keys($files) as $file) {
             Assert::true($storage->delete($file));
@@ -436,7 +467,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal('BAR', file_get_contents($tmp2));
 
         Assert::null($storage->fetch('q.txt'));
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->fetchOrThrow('z/z.zip#q.txt');
         }, FileStorageException::class, "File not found within the storage.");
     }
@@ -466,7 +497,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::true(file_exists($tmpA)); // file has been copied
         $this->checkFileContents($storage, 'a.txt', 'A-OVERWRITE');
 
-        Assert::exception(function() use ($storage, $tmpA) {
+        Assert::exception(function () use ($storage, $tmpA) {
             $storage->storeFile($tmpA, 'z/z.zip'); // no overwrite
         }, FileStorageException::class, "File already exists.");
 
@@ -480,7 +511,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::false(file_exists($tmpFoo)); // file has been moved
         $this->checkFileContents($storage, 'z/z.zip#foo.md', 'foverwrite');
 
-        Assert::exception(function() use ($storage, $tmpA) {
+        Assert::exception(function () use ($storage, $tmpA) {
             $storage->storeFile($tmpA, 'z/z.zip#bar/bar'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
     }
@@ -499,7 +530,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->storeContents('A-OVERWRITE', 'a.txt', true);
         $this->checkFileContents($storage, 'a.txt', 'A-OVERWRITE');
 
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->storeContents('zipzip', 'z/z.zip'); // no overwrite
         }, FileStorageException::class, "File already exists.");
 
@@ -510,7 +541,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->storeContents('foverwrite', 'z/z.zip#foo.md', true);
         $this->checkFileContents($storage, 'z/z.zip#foo.md', 'foverwrite');
 
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->storeContents('barbar', 'z/z.zip#bar/bar'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
     }
@@ -535,7 +566,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal(0, fseek($fpA, 0));
         $this->checkFileContents($storage, 'a.txt', 'A-OVERWRITE');
 
-        Assert::exception(function() use ($storage, $fpA) {
+        Assert::exception(function () use ($storage, $fpA) {
             $storage->storeStream($fpA, 'z/z.zip'); // no overwrite
         }, FileStorageException::class, "File already exists.");
         Assert::equal(0, fseek($fpA, 0));
@@ -549,7 +580,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal(0, fseek($fpA, 0));
         $this->checkFileContents($storage, 'z/z.zip#foo.md', 'A-OVERWRITE');
 
-        Assert::exception(function() use ($storage, $fpA) {
+        Assert::exception(function () use ($storage, $fpA) {
             $storage->storeStream($fpA, 'z/z.zip#bar/bar'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
         Assert::true(fclose($fpA));
@@ -569,7 +600,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->copy('b.txt', 'a.txt', true);
         $this->checkFileContents($storage, 'c.txt', 'AAA');
         $this->checkFileContents($storage, 'a.txt', 'BBB');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('a.txt', 'c.txt'); // no overwrite
         }, FileStorageException::class, "File already exists.");
 
@@ -578,7 +609,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->copy('a.txt', 'z/z.zip#foo.md', true);
         $this->checkFileContents($storage, 'z2.zip#b.txt', 'BBB');
         $this->checkFileContents($storage, 'z/z.zip#foo.md', 'BBB');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('a.txt', 'z/z.zip#bar/bar'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
 
@@ -587,7 +618,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->copy('z/z.zip#bar/bar', 'bar.txt', true);
         $this->checkFileContents($storage, 'newb.txt', 'BBB');
         $this->checkFileContents($storage, 'bar.txt', 'BAR');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('z2.zip#job.log', 'a.txt'); // no overwrite
         }, FileStorageException::class, "File already exists.");
 
@@ -596,7 +627,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->copy('z/z.zip#bar/bar', 'z/z.zip#foo.md', true);
         $this->checkFileContents($storage, 'z/z.zip#goo/foo.md', 'BBB');
         $this->checkFileContents($storage, 'z/z.zip#foo.md', 'BAR');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('z2.zip#job.log', 'z2.zip#b.txt'); // no overwrite
         }, FileStorageException::class, "Unable to copy file to 'b.txt', target entry already exists.");
 
@@ -605,7 +636,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->copy('z/z.zip#bar/bar', 'z2.zip#job.log', true);
         $this->checkFileContents($storage, 'z2.zip#foo.md', 'BAR');
         $this->checkFileContents($storage, 'z2.zip#job.log', 'BAR');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('z2.zip#job.log', 'z/z.zip#foo.md'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
 
@@ -618,10 +649,10 @@ class TestFileStorage extends Tester\TestCase
         $this->checkFileContents($storage, 'z2.zip', 'BBB');
 
         // nonexist file
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('nonexist', 'new.zip#unicorn'); // no overwrite
         }, FileStorageException::class, "File not found within the storage.");
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->copy('z', 'new.zip#unicorn'); // no overwrite
         }, FileStorageException::class, "Given path refers to a directory.");
     }
@@ -642,7 +673,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('b.txt', 'a.txt', true);
         $this->checkFileContents($storage, 'e.txt', 'AAA');
         $this->checkFileContents($storage, 'a.txt', 'BBB');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('a.txt', 'c.txt'); // no overwrite
         }, FileStorageException::class, "File already exists.");
 
@@ -651,7 +682,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('d.txt', 'z/z.zip#foo.md', true);
         $this->checkFileContents($storage, 'z2.zip#c.txt', 'CCC');
         $this->checkFileContents($storage, 'z/z.zip#foo.md', 'DDD');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('a.txt', 'z/z.zip#bar/bar'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
 
@@ -660,7 +691,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('z/z.zip#bar/bar', 'bar.txt', true);
         $this->checkFileContents($storage, 'newc.txt', 'CCC');
         $this->checkFileContents($storage, 'bar.txt', 'BAR');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('z2.zip#job.log', 'a.txt'); // no overwrite
         }, FileStorageException::class, "File already exists.");
 
@@ -669,7 +700,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('z/z.zip#boo', 'z/z.zip#loo', true);
         $this->checkFileContents($storage, 'z/z.zip#goo/foo.md', 'DDD');
         $this->checkFileContents($storage, 'z/z.zip#loo', 'BOO');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('z2.zip#job.log', 'z2.zip#config.yaml'); // no overwrite
         }, FileStorageException::class, "Unable to rename an entry 'job.log' to 'config.yaml' in the ZIP archive.");
 
@@ -678,7 +709,7 @@ class TestFileStorage extends Tester\TestCase
         $storage->move('z/z.zip#loo', 'z2.zip#job.log', true);
         $this->checkFileContents($storage, 'z2.zip#foo.md', 'DDD');
         $this->checkFileContents($storage, 'z2.zip#job.log', 'BOO');
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('z2.zip#job.log', 'z/z.zip#zoo'); // no overwrite
         }, FileStorageException::class, "Target entry already exists.");
 
@@ -691,10 +722,10 @@ class TestFileStorage extends Tester\TestCase
         $this->checkFileContents($storage, 'z2.zip', 'AAA');
 
         // nonexist file
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('nonexist', 'new.zip#unicorn'); // no overwrite
         }, FileStorageException::class, "File not found within the storage.");
-        Assert::exception(function() use ($storage) {
+        Assert::exception(function () use ($storage) {
             $storage->move('z', 'new.zip#unicorn'); // no overwrite
         }, FileStorageException::class, "Given path refers to a directory.");
     }
@@ -732,15 +763,15 @@ class TestFileStorage extends Tester\TestCase
         Assert::equal('BAR', file_get_contents($tmp));
         Assert::true(file_exists("$root/zip"));
 
-        Assert::exception(function() use ($storage, $tmp) {
+        Assert::exception(function () use ($storage, $tmp) {
             $storage->extract('zip#unicorn', $tmp, true);
         }, FileStorageException::class, "The ZIP archive is unable to open stream for entry 'unicorn'");
 
-        Assert::exception(function() use ($storage, $tmp) {
+        Assert::exception(function () use ($storage, $tmp) {
             $storage->extract('x.txt', $tmp, true);
         }, FileStorageException::class, "File not found within the storage.");
 
-        Assert::exception(function() use ($storage, $tmp) {
+        Assert::exception(function () use ($storage, $tmp) {
             $storage->extract('zip', $tmp); // no overwrite
         }, FileStorageException::class, "Target file exists.");
 
@@ -780,6 +811,41 @@ class TestFileStorage extends Tester\TestCase
         Assert::false($storage->delete('zip2'));
 
         Assert::true(is_dir($root));
+    }
+
+    public function testAssemblePartialUploadChunks()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+        $partialFile = new UploadedPartialFile("foo", 9, $user);
+        $uploadedFile = new UploadedFile("foo", new DateTime(), 9, $user, true);
+        self::setPropertyOfObject($partialFile, 'id', '123');
+        self::setPropertyOfObject($uploadedFile, 'id', '123');
+
+        $files = [
+            'uploads/partial/123_foo_0' => 'AAA',
+            'uploads/partial/123_foo_1' => 'BB',
+            'uploads/partial/123_foo_2' => 'CCCC',
+        ];
+        foreach ($files as $content) {
+            $partialFile->addChunk(strlen($content));
+        }
+
+        $storage = $this->prepareLocalStorage($files);
+        $root = $storage->getRootDirectory();
+        $manager = new FileStorageManager(
+            $storage,
+            $this->prepareHashStorage(),
+            new TmpFilesHelper($this->tmpDir),
+            ""
+        );
+
+        $manager->assembleUploadedPartialFile($partialFile, $uploadedFile);
+        foreach (array_keys($files) as $name) {
+            Assert::false(file_exists("$root/$name"));
+        }
+        Assert::true(file_exists("$root/uploads/123_foo"));
+        Assert::equal('AAABBCCCC', file_get_contents("$root/uploads/123_foo"));
     }
 }
 

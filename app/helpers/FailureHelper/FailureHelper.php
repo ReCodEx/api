@@ -16,8 +16,8 @@ use App\Model\Entity\ReportedErrors;
 class FailureHelper
 {
 
-    const TYPE_BACKEND_ERROR = "BACKEND ERROR";
-    const TYPE_API_ERROR = "API ERROR";
+    public const TYPE_BACKEND_ERROR = "BACKEND ERROR";
+    public const TYPE_API_ERROR = "API ERROR";
 
     /** @var EmailHelper Emails sending component */
     private $emailHelper;
