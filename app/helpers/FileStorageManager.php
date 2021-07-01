@@ -13,6 +13,7 @@ use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\UploadedPartialFile;
 use App\Model\Entity\AttachmentFile;
 use App\Helpers\TmpFilesHelper;
 use App\Exceptions\InvalidArgumentException;
@@ -32,6 +33,7 @@ class FileStorageManager
     use Nette\SmartObject;
 
     private const UPLOADS = 'uploads';
+    private const PARTIAL_UPLOADS = 'uploads/partial';
     private const ATTACHMENTS = 'attachments';
     private const SOLUTIONS = 'solutions';
     private const JOB_CONFIGS = 'job_configs';
@@ -43,7 +45,7 @@ class FileStorageManager
 
     /** @var IFileStorage */
     private $fileStorage;
-    
+
     /** @var IHashFileStorage */
     private $hashStorage;
 
@@ -81,6 +83,76 @@ class FileStorageManager
     }
 
     /**
+     * Stores raw request body into a file. The stream is stored into tmp file and then moved into storage atomically.
+     * @param string $path actual location in the storage where the file should be placed
+     * @return int size of the data stored into the file at $path
+     * @throws FileStorageException
+     */
+    private function saveRequestBodyAsFile(string $path): int
+    {
+        $fp = @fopen('php://input', 'rb');
+        if (!$fp) {
+            throw new FileStorageException("Unable to read request body.", 'php://input');
+        }
+
+        $tmpPath = "$path.tmpupload";
+
+        try {
+            $this->fileStorage->storeStream($fp, $tmpPath, true);
+            $this->fileStorage->move($tmpPath, $path, true);
+            return $this->fileStorage->fetchOrThrow($path)->getSize();
+        } finally {
+            fclose($fp);
+            $this->fileStorage->delete($tmpPath);
+        }
+    }
+
+    /**
+     * Get path to partial uploaded file chunk.
+     * (Partial uploads are stored in separate files and assembled whilst transformed into UploadFile.)
+     * @param UploadedPartialFile $file entity that keeps track about partial uploads of one file
+     * @param int $chunk sequential number (zero based) of the data chunk
+     * @return string path
+     */
+    private function getUploadedPartialFilePath(UploadedPartialFile $file, int $chunk): string
+    {
+        $dir = self::PARTIAL_UPLOADS;
+        $id = $file->getId();
+        $name = $file->getName();
+        return "$dir/${id}_${name}_$chunk";
+    }
+
+    /**
+     * Save request body as another chunk of partial file upload.
+     * The partial file record should increment the chunk counter after successful saving.
+     * @param UploadedPartialFile $file entity that keeps track about partial uploads of one file
+     * @return int size of the saved chunk
+     * @throws FileStorageException
+     */
+    public function storeUploadedPartialFileChunk(UploadedPartialFile $file): int
+    {
+        $path = $this->getUploadedPartialFilePath($file, $file->getChunks());
+        return $this->saveRequestBodyAsFile($path);
+    }
+
+    /**
+     * Remove all data chunks of a partial file upload.
+     * @param UploadedPartialFile $file entity that keeps track about partial uploads of one file
+     * @return int number of chunks removed
+     */
+    public function deleteUploadedPartialFileChunks(UploadedPartialFile $file): int
+    {
+        $removed = 0;
+        for ($i = 0; $i < $file->getChunks(); ++$i) {
+            $path = $this->getUploadedPartialFilePath($file, $i);
+            if ($this->fileStorage->delete($path)) {
+                ++$removed;
+            }
+        }
+        return $removed;
+    }
+
+    /**
      * Get path to temporary uploaded file.
      * @param UploadedFile $file uploaded file DB entity with file metadata
      * @return string path
@@ -108,6 +180,85 @@ class FileStorageManager
         }
 
         $this->fileStorage->storeFile($fileData->getTemporaryFile(), $path, false); // copy (moving may not be safe), no overwrite
+    }
+
+    /**
+     * Internal function used for concanenating partial file chunks.
+     * @param string $path file with next chunk to be appended
+     * @param resource $targetStream where the file should be appended
+     */
+    private function appendFileToStream(string $path, $targetStream)
+    {
+        $fp = null;
+        try {
+            $tmp = $this->tmpFilesHelper->createTmpFile('rexfsm');
+            $this->fileStorage->extract($path, $tmp, true);
+            $fp = @fopen($tmp, 'rb');
+            if (!$fp) {
+                throw new FileStorageException("Unable to open extracted partial upload file chunk for reading.");
+            }
+
+            if (!@stream_copy_to_stream($fp, $targetStream)) {
+                throw new FileStorageException("Append operation failed when assembling chunks of partial upload file.");
+            }
+        } finally {
+            if ($fp) {
+                @fclose($fp);
+            }
+        }
+    }
+
+    /**
+     * Concatenate all partial file chunks into a final result -- the uploaded file.
+     * @param UploadedPartialFile $file entity that keeps track about partial uploads of one file
+     * @param UploadedFile $file final uploaded file database entity
+     * @throws FileStorageException
+     */
+    public function assembleUploadedPartialFile(UploadedPartialFile $partFile, UploadedFile $file): void
+    {
+        if (!$partFile->isUploadComplete()) {
+            throw new FileStorageException("Unable to assemble partal file when the upload was not completed yet.");
+        }
+
+        $dstPath = $this->getUploadedFilePath($file);
+        if ($partFile->getTotalSize() === 0) {
+            // special case that we better handle separately
+            $this->fileStorage->storeContents("", $dstPath);
+            return;
+        }
+
+        $tmpFp = null;
+        try {
+            // extract the first chunk to local fs and open it for appending
+            $tmp = $this->tmpFilesHelper->createTmpFile('rexfsm');
+            $path = $this->getUploadedPartialFilePath($partFile, 0);
+            $this->fileStorage->extract($path, $tmp, true);
+
+            if ($partFile->getChunks() > 1) {
+                $tmpFp = @fopen($tmp, 'ab');
+                if (!$tmpFp) {
+                    throw new FileStorageException("Unable to append to partial file chunk extracted form file storage.");
+                }
+
+                // extract and append all remaining chunks to the first chunk
+                for ($i = 1; $i < $partFile->getChunks(); ++$i) {
+                    $path = $this->getUploadedPartialFilePath($partFile, $i);
+                    $this->appendFileToStream($path, $tmpFp);
+                }
+            }
+        } finally {
+            if ($tmpFp) {
+                fclose($tmpFp);
+            }
+        }
+
+        // verify the size of the assembled file
+        if (filesize($tmp) !== $partFile->getTotalSize()) {
+            throw new FileStorageException("Concatenation of partial file chunks failed, result file does not have the expected size.");
+        }
+
+        // move the tmp file to the right place
+        $this->fileStorage->storeFile($tmp, $dstPath);
     }
 
     /**
@@ -337,7 +488,7 @@ class FileStorageManager
             $this->fileStorage->copy($solutionArchive->getStoragePath(), $path);
             $this->fileStorage->copy($configFile->getStoragePath(), $path . '#' . self::JOB_CONFIG_FILENAME);
         }
-        
+
         return $this->fileStorage->fetch($path);
     }
 
@@ -356,24 +507,13 @@ class FileStorageManager
      * Saves file that has been sent over in request body into file storage as uploaded result archive.
      * @param string $type job type (reference/student)
      * @param string $submissionId
+     * @return int size of the data stored into the file at $path
      * @throws FileStorageException
      */
-    public function saveUploadedResultsArchive(string $type, string $submissionId): void
+    public function saveUploadedResultsArchive(string $type, string $submissionId): int
     {
-        $fp = fopen('php://input', 'rb');
-        if (!$fp) {
-            throw new FileStorageException("Unable to read request body.", 'php://input');
-        }
-
         $path = $this->getWorkerUploadResultsArchivePath($type, $submissionId);
-        $tmpPath = "$path.tmpupload";
-        try {
-            $this->fileStorage->storeStream($fp, $tmpPath, true);
-            $this->fileStorage->move($tmpPath, $path, true);
-        } finally {
-            fclose($fp);
-            $this->fileStorage->delete($tmpPath);
-        }
+        return $this->saveRequestBodyAsFile($path);
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\UploadedPartialFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
 use App\Security\Identity;
@@ -149,5 +150,15 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         }
 
         return false;
+    }
+
+    public function isStartedByCurrentUser(Identity $identity, UploadedPartialFile $file)
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        return $file->getUser() && $file->getUser()->getId() === $user->getId();
     }
 }

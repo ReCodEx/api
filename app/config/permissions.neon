@@ -617,6 +617,16 @@ permissions:
           - upload
 
     - allow: true
+      role: student
+      resource: uploadedFile
+      actions:
+          - appendPartial
+          - cancelPartial
+          - completePartial
+      conditions:
+          - file.isStartedByCurrentUser
+
+    - allow: true
       resource: uploadedFile
       actions:
           - download

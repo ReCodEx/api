@@ -14,12 +14,15 @@ use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\UploadedPartialFiles;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\UploadedPartialFile;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use ForceUTF8\Encoding;
 use Nette\Utils\Strings;
 use Nette\Http\IResponse;
+use Tracy\ILogger;
 use DateTime;
 use Exception;
 
@@ -35,6 +38,12 @@ class UploadedFilesPresenter extends BasePresenter
      * @inject
      */
     public $uploadedFiles;
+
+    /**
+     * @var UploadedPartialFiles
+     * @inject
+     */
+    public $uploadedPartialFiles;
 
     /**
      * @var FileStorageManager
@@ -65,6 +74,12 @@ class UploadedFilesPresenter extends BasePresenter
      * @inject
      */
     public $uploadsConfig;
+
+    /**
+     * @var ILogger
+     * @inject
+     */
+    public $logger;
 
     public function checkDetail(string $id)
     {
@@ -134,7 +149,7 @@ class UploadedFilesPresenter extends BasePresenter
 
         $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
         $contents = $file->getContents($sizeLimit);
-        
+
         // Remove UTF BOM prefix...
         $utf8bom = "\xef\xbb\xbf";
         $contents = Strings::replace($contents, "~^$utf8bom~");
@@ -205,10 +220,212 @@ class UploadedFilesPresenter extends BasePresenter
         } catch (Exception $e) {
             $this->uploadedFiles->remove($uploadedFile);
             $this->uploadedFiles->flush();
-            throw new InternalServerException("Cannot move uploaded file to internal server storage");
+            throw new InternalServerException(
+                "Cannot move uploaded file to internal server storage",
+                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+                null,
+                $e
+            );
         }
 
         $this->uploadedFiles->flush();
+        $this->sendSuccessResponse($uploadedFile);
+    }
+
+    public function checkStartPartial()
+    {
+        // actually, this is same as upload
+        if (!$this->uploadedFileAcl->canUpload()) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Start new upload per-partes. This process expects the file is uploaded as a sequence of PUT requests,
+     * each one carrying a chunk of data. Once all the chunks are in place, the complete request assembles
+     * them together in one file and transforms UploadPartialFile into UploadFile entity.
+     * @POST
+     * @Param(type="post", name="name", required=true, validation="string:1:255",
+     *        description="Name of the uploaded file.")
+     * @Param(type="post", name="size", required=true, validation="numericint", description="Total size in bytes.")
+     */
+    public function actionStartPartial()
+    {
+        $user = $this->getCurrentUser();
+        $name = $this->getRequest()->getPost("name");
+        $size = (int)$this->getRequest()->getPost("size");
+
+        if (!Strings::match($name, self::FILENAME_PATTERN)) {
+            throw new CannotReceiveUploadedFileException(
+                "File name '$name' contains invalid characters",
+                IResponse::S400_BAD_REQUEST,
+                FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
+                ["filename" => $name, "pattern" => self::FILENAME_PATTERN]
+            );
+        }
+
+        $maxSize = 1024 * 1024 * 1024;
+        if ($size < 0 || $size > $maxSize) {
+            // TODO: in the future, we might want to employ more sophisticated quota checking
+            throw new CannotReceiveUploadedFileException(
+                "Invalid declared file size ($size) for per-partes upload",
+                IResponse::S400_BAD_REQUEST,
+                FrontendErrorMappings::E400_004__UPLOADED_FILE_INVALID_SIZE,
+                ["size" => $size, "maximum" => $maxSize]
+            );
+        }
+
+        // create the partial file record in database
+        $partialFile = new UploadedPartialFile($name, $size, $user);
+        $this->uploadedPartialFiles->persist($partialFile);
+        $this->uploadedPartialFiles->flush();
+        $this->sendSuccessResponse($partialFile);
+    }
+
+    public function checkAppendPartial(string $id)
+    {
+        $file = $this->uploadedPartialFiles->findOrThrow($id);
+        if (!$this->uploadedFileAcl->canAppendPartial($file)) {
+            throw new ForbiddenRequestException("You cannot add chunks to a per-partes upload started by another user");
+        }
+    }
+
+    /**
+     * Add another chunk to partial upload.
+     * @PUT
+     * @param string $id Identifier of the file
+     * @throws InvalidArgumentException for files with invalid names
+     * @throws ForbiddenRequestException
+     * @throws BadRequestException
+     * @throws CannotReceiveUploadedFileException
+     * @throws InternalServerException
+     */
+    public function actionAppendPartial(string $id)
+    {
+        $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
+        try {
+            // the store function takes the chunk directly from request body
+            $size = $this->fileStorage->storeUploadedPartialFileChunk($partialFile);
+        } catch (Exception $e) {
+            throw new InternalServerException(
+                "Cannot save a data chunk of per-partes upload",
+                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+                null,
+                $e
+            );
+        }
+
+        if ($size > 0) {
+            $partialFile->addChunk($size);
+            $this->uploadedPartialFiles->persist($partialFile);
+            $this->uploadedPartialFiles->flush();
+        }
+
+        $this->sendSuccessResponse($partialFile);
+    }
+
+    public function checkCancelPartial(string $id)
+    {
+        $file = $this->uploadedPartialFiles->findOrThrow($id);
+        if (!$this->uploadedFileAcl->canCancelPartial($file)) {
+            throw new ForbiddenRequestException("You cannot cancel a per-partes upload started by another user");
+        }
+    }
+
+    /**
+     * Cancel partial upload and remove all uploaded chunks.
+     * @DELETE
+     */
+    public function actionCancelPartial(string $id)
+    {
+        $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
+        try {
+            $deletedFiles = $this->fileStorage->deleteUploadedPartialFileChunks($partialFile);
+        } catch (Exception $e) {
+            throw new InternalServerException(
+                "Cannot save a data chunk of per-partes upload",
+                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+                null,
+                $e
+            );
+        }
+
+        if ($deletedFiles !== $partialFile->getChunks()) {
+            $this->logger->log(
+                sprintf(
+                    "Per-partes upload was canceled, but only %d chunk files out of %d was deleted.",
+                    $deletedFiles,
+                    $partialFile->getChunks()
+                ),
+                ILogger::WARNING
+            );
+        }
+
+        $this->uploadedPartialFiles->remove($partialFile);
+        $this->uploadedPartialFiles->flush();
+        $this->sendSuccessResponse("OK");
+    }
+
+    public function checkCompletePartial(string $id)
+    {
+        $file = $this->uploadedPartialFiles->findOrThrow($id);
+        if (!$this->uploadedFileAcl->canCompletePartial($file)) {
+            throw new ForbiddenRequestException("You cannot complete a per-partes upload started by another user");
+        }
+    }
+
+    /**
+     * Finalize partial upload and convert the partial file into UploadFile.
+     * All data chunks are extracted from the store, assembled into one file, and is moved back into the store.
+     * @POST
+     */
+    public function actionCompletePartial(string $id)
+    {
+        $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
+        if (!$partialFile->isUploadComplete()) {
+            throw new CannotReceiveUploadedFileException(
+                "Unable to finalize incomplete per-partes upload.",
+                IResponse::S400_BAD_REQUEST,
+                FrontendErrorMappings::E400_004__UPLOADED_FILE_PARTIAL,
+                [
+                    "chunks" => $partialFile->getChunks(),
+                    "totalSize" => $partialFile->getTotalSize(),
+                    "uploadedSize" => $partialFile->getUploadedSize(),
+                ]
+            );
+        }
+
+        // create uploaded file entity from partial file data
+        $uploadedFile = new UploadedFile(
+            $partialFile->getName(),
+            new DateTime(),
+            $partialFile->getTotalSize(),
+            $partialFile->getUser()
+        );
+        $this->uploadedFiles->persist($uploadedFile);
+
+        // assemble chunks in file storage
+        try {
+            $this->fileStorage->assembleUploadedPartialFile($partialFile, $uploadedFile);
+        } catch (Exception $e) {
+            $this->uploadedFiles->remove($uploadedFile);
+            $this->uploadedFiles->flush();
+
+            $this->uploadedPartialFiles->remove($partialFile);
+            $this->uploadedPartialFiles->flush();
+            throw new InternalServerException(
+                "Cannot conncatenate data chunks of per-partes upload into uploaded file",
+                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+                null,
+                $e
+            );
+        }
+
+        // partial file no longer needed (and its file chunks has been removed)
+        $this->uploadedPartialFiles->remove($partialFile);
+
+        $this->uploadedFiles->flush();
+        $this->uploadedPartialFiles->flush();
         $this->sendSuccessResponse($uploadedFile);
     }
 
