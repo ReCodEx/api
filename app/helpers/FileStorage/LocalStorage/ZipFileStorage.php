@@ -4,6 +4,7 @@ namespace App\Helpers\FileStorage;
 
 use App\Helpers\TmpFilesHelper;
 use Nette\Utils\Arrays;
+use Nette\Utils\Strings;
 use Nette\SmartObject;
 use ZipArchive;
 use Exception;
@@ -388,6 +389,35 @@ class ZipFileStorage implements IFileStorage
     public function deleteOldFiles(string $glob, int $threshold): int
     {
         return 0;   // nop
+    }
+
+    public function deleteByFilter(callable $filter): int
+    {
+        // iterate over files and filter them
+        $toDelete = []; // we store the paths as a list first to avoid any iterator confusions
+        for ($i = 0; $i < $this->zip->numFiles; ++$i) {
+            $path = $this->zip->getNameIndex($i);
+            if (Strings::endsWith($path, '/')) {
+                continue; // skipping directories
+            }
+
+            $storagePath = ($this->archiveStoragePath ?? '') . '#' . $path;
+            $file = new ArchivedImmutableFile($this->archivePath, $path, $storagePath, $this->tmpFilesHelper);
+
+            if (!$filter($file)) {
+                $toDelete[] = $path;
+            }
+        }
+
+        // go through the list and try to delete the files
+        $actuallyDeleted = 0;
+        foreach ($toDelete as $path) {
+            if ($this->delete($path)) {
+                ++$actuallyDeleted;
+            }
+        }
+
+        return $actuallyDeleted;
     }
 
     public function flush(): void

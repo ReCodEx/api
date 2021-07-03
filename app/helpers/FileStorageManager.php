@@ -153,6 +153,27 @@ class FileStorageManager
     }
 
     /**
+     * Perform a maintenance cleanup on partial uploaded files.
+     * All files except those with existing ID prefixes are deleted.
+     * @param string[] $ids list of valid IDs
+     * @return int how many files were actually deleted
+     */
+    public function partialFileChunksCleanup(array $ids): int
+    {
+        // let's build an index from ids, since this operation may be time demanding
+        $idsIndex = [];
+        foreach ($ids as $id) {
+            $idsIndex[$id] = true;
+        }
+
+        // filter the files using the ids index
+        return $this->fileStorage->deleteByFilter(function ($file) use ($idsIndex) {
+            $id = substr($file->getName(), 0, 36); // get the uuid, which is the prefix of the file name
+            return array_key_exists($id, $idsIndex);
+        });
+    }
+
+    /**
      * Get path to temporary uploaded file.
      * @param UploadedFile $file uploaded file DB entity with file metadata
      * @return string path

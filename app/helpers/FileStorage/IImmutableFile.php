@@ -10,6 +10,12 @@ use ZipArchive;
 interface IImmutableFile
 {
     /**
+     * Get bare file name.
+     * @return string
+     */
+    public function getName(): string;
+
+    /**
      * Return a string that identifies the file within its file storage
      * (e.g., a relative path or a hash).
      * @return string
@@ -21,6 +27,12 @@ interface IImmutableFile
      * @return int
      */
     public function getSize(): int;
+
+    /**
+     * Return last modification time.
+     * @return int unix timestamp
+     */
+    public function getTime(): int;
 
     /**
      * Retrive the entire file contents as a (binary) string.

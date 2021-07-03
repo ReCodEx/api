@@ -31,6 +31,12 @@ class LocalImmutableFile implements IImmutableFile
     private $fileSize = null;
 
     /**
+     * @var int|null
+     * Internal cache for file modification timestamp.
+     */
+    private $fileTime = null;
+
+    /**
      * Initialize the object
      * @param string $realPath
      * @param string $storagePath
@@ -40,7 +46,7 @@ class LocalImmutableFile implements IImmutableFile
         $this->realPath = $realPath;
         $this->storagePath = $storagePath;
     }
-    
+
     private function checkExistence()
     {
         if (!file_exists($this->realPath) || !is_file($this->realPath)) {
@@ -56,6 +62,11 @@ class LocalImmutableFile implements IImmutableFile
      * IImmutableFile
      */
 
+    public function getName(): string
+    {
+        return basename($this->storagePath);
+    }
+
     public function getStoragePath(): string
     {
         return $this->storagePath;
@@ -66,10 +77,25 @@ class LocalImmutableFile implements IImmutableFile
         $this->checkExistence();
         if ($this->fileSize === null) {
             $this->fileSize = @filesize($this->realPath);
+            if ($this->fileSize === false) {
+                throw new FileStorageException("Unable to retrieve file size.", $this->realPath);
+            }
         }
-        return $this->fileSize;
+        return (int)$this->fileSize;
     }
-    
+
+    public function getTime(): int
+    {
+        $this->checkExistence();
+        if ($this->fileTime === null) {
+            $this->fileTime = @filemtime($this->realPath);
+            if ($this->fileTime === false) {
+                throw new FileStorageException("Unable to retrieve file modification time.", $this->realPath);
+            }
+        }
+        return (int)$this->fileTime;
+    }
+
     public function getContents(int $sizeLimit = 0): string
     {
         $this->checkExistence();
