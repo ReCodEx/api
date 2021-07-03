@@ -7,6 +7,9 @@ use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
 use Nette\SmartObject;
 use ZipArchive;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * File storage that stores immutable files organized in sub-directories.
@@ -462,6 +465,39 @@ class LocalFileStorage implements IFileStorage
         }
 
         return $deleted;
+    }
+
+    public function deleteByFilter(callable $filter): int
+    {
+        $rootDirLen = strlen($this->rootDirectory) + 1; // plus 1 for '/';
+        $dirIterator = new RecursiveDirectoryIterator(
+            $this->rootDirectory,
+            FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS
+        );
+        $recursiveIterator = new RecursiveIteratorIterator($dirIterator);
+
+        // iterate over files and filter them
+        $toDelete = []; // we store the paths as a list first to avoid any iterator confusions
+        foreach ($recursiveIterator as $realPath) {
+            if (!Strings::startsWith($realPath, $this->rootDirectory)) {
+                throw new FileStorageException("Iterator returned a file outside the root directory.", $realPath);
+            }
+            $path = substr($realPath, $rootDirLen); // get the suffix without the root directory
+            $file = new LocalImmutableFile($realPath, $path);
+            if (!$filter($file)) {
+                $toDelete[] = $path;
+            }
+        }
+
+        // go through the list and try to delete the files
+        $actuallyDeleted = 0;
+        foreach ($toDelete as $path) {
+            if ($this->delete($path)) {
+                ++$actuallyDeleted;
+            }
+        }
+
+        return $actuallyDeleted;
     }
 
     public function flush(): void

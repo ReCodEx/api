@@ -44,6 +44,7 @@ class TestCleanupUploads extends Tester\TestCase
 
         $lfs = Mockery::mock(LocalFileStorage::class);
         $lfs->shouldReceive("delete")->with(Mockery::any())->andReturn(true)->times(5);
+        $lfs->shouldReceive("deleteByFilter")->with(Mockery::any())->andReturn(0)->times(1);
 
         // patch container, since we cannot create actual file storage manarer
         $fsName = current($this->container->findByType(FileStorageManager::class));

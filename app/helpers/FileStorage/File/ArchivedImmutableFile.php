@@ -38,6 +38,12 @@ class ArchivedImmutableFile implements IImmutableFile
     private $fileSize = null;
 
     /**
+     * @var int|null
+     * Internal cache for file modification timestamp.
+     */
+    private $fileTime = null;
+
+    /**
      * @var TmpFilesHelper|null
      * Injected helper for handling tmp files.
      */
@@ -61,7 +67,7 @@ class ArchivedImmutableFile implements IImmutableFile
         $this->storagePath = $storagePath ?? "$archivePath#$entry";
         $this->tmpFilesHelper = $tmpFilesHelper;
     }
-    
+
     /**
      * Creates and opens corresponding ZIP archive as read-only.
      * @return ZipArchive
@@ -81,21 +87,46 @@ class ArchivedImmutableFile implements IImmutableFile
      * IImmutableFile
      */
 
+    public function getName(): string
+    {
+        return basename($this->entry);
+    }
+
     public function getStoragePath(): string
     {
         return $this->storagePath;
     }
 
-    public function getSize(): int
+    private function loadInternalStats(): void
     {
-        if ($this->fileSize === null) {
+        if ($this->fileSize === null || $this->fileTime === null) {
             $zip = $this->openZip();
-            $this->fileSize = ZipFileStorage::getZipEntrySize($zip, $this->archivePath, $this->entry);
+            $stats = $zip->statName($this->entry);
+            if (!$stats || !array_key_exists('size', $stats) || !array_key_exists('mtime', $stats)) {
+                throw new FileStorageException(
+                    "The ZIP archive is unable to give stats for entry '$this->entry'",
+                    $this->archivePath
+                );
+            }
+
+            $this->fileSize = (int)$stats['size'];
+            $this->fileTime = (int)$stats['mtime'];
             $zip->close();
         }
+    }
+
+    public function getSize(): int
+    {
+        $this->loadInternalStats();
         return $this->fileSize;
     }
-    
+
+    public function getTime(): int
+    {
+        $this->loadInternalStats();
+        return $this->fileTime;
+    }
+
     public function getContents(int $sizeLimit = 0): string
     {
         $zip = $this->openZip();
