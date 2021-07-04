@@ -663,6 +663,36 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
         Assert::count(1, $this->presenter->uploadedPartialFiles->findAll());
     }
+
+    public function testDigest()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->userLogin);
+        $contents = "ContentOfContentedFile";
+
+        // create new file upload
+        $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
+        $uploadedFile = new UploadedFile("file.ext", new DateTime(), strlen($contents), $user);
+        $this->presenter->uploadedFiles->persist($uploadedFile);
+        $this->presenter->uploadedFiles->flush();
+
+        // mock file storage
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFile->shouldReceive("getDigest")->andReturn(sha1($contents))->once();
+
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+
+        $response = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'PUT',
+            ['action' => 'digest', 'id' => $uploadedFile->getId()]
+        );
+
+        Assert::equal('sha1', $response['algorithm']);
+        Assert::equal(sha1($contents), $response['digest']);
+    }
 }
 
 $testCase = new TestUploadedFilesPresenter();

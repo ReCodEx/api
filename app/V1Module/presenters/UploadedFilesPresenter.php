@@ -172,6 +172,34 @@ class UploadedFilesPresenter extends BasePresenter
         );
     }
 
+    public function checkDigest(string $id)
+    {
+        $file = $this->uploadedFiles->findOrThrow($id);
+        if (!$this->uploadedFileAcl->canDownload($file)) {
+            throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
+        }
+    }
+
+    /**
+     * Compute a digest using a hashing algorithm. This feature is intended for upload checksums only.
+     * In the future, we might want to add algorithm selection via query parameter (default is SHA1).
+     * @GET
+     * @param string $id Identifier of the file
+     */
+    public function actionDigest(string $id)
+    {
+        $fileEntity = $this->uploadedFiles->findOrThrow($id);
+        $file = $fileEntity->getFile($this->fileStorage);
+        if (!$file) {
+            throw new NotFoundException("File not found in the storage");
+        }
+
+        $this->sendSuccessResponse([
+            'algorithm' => 'sha1',
+            'digest' => $file->getDigest(),
+        ]);
+    }
+
     public function checkUpload()
     {
         if (!$this->uploadedFileAcl->canUpload()) {

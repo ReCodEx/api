@@ -422,6 +422,7 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
         $router[] = new GetRoute("$prefix/<id>/download", "UploadedFiles:download");
         $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");
+        $router[] = new GetRoute("$prefix/<id>/digest", "UploadedFiles:digest");
         return $router;
     }
 
