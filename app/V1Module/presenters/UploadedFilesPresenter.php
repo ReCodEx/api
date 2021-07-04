@@ -329,15 +329,25 @@ class UploadedFilesPresenter extends BasePresenter
      * Add another chunk to partial upload.
      * @PUT
      * @param string $id Identifier of the file
-     * @throws InvalidArgumentException for files with invalid names
+     * @Param(type="query", name="offset", required="true", validation="numericint",
+     *        description="Offset of the chunk for verification")
+     * @throws InvalidArgumentException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws CannotReceiveUploadedFileException
      * @throws InternalServerException
      */
-    public function actionAppendPartial(string $id)
+    public function actionAppendPartial(string $id, int $offset)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
+
+        if ($partialFile->getUploadedSize() !== $offset) {
+            throw new InvalidArgumentException(
+                'offset',
+                "The offset must corresponds with the actual upload size of the partial file."
+            );
+        }
+
         try {
             // the store function takes the chunk directly from request body
             $size = $this->fileStorage->storeUploadedPartialFileChunk($partialFile);
@@ -449,7 +459,7 @@ class UploadedFilesPresenter extends BasePresenter
             $this->uploadedPartialFiles->remove($partialFile);
             $this->uploadedPartialFiles->flush();
             throw new InternalServerException(
-                "Cannot conncatenate data chunks of per-partes upload into uploaded file",
+                "Cannot concatenate data chunks of per-partes upload into uploaded file",
                 FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
                 null,
                 $e

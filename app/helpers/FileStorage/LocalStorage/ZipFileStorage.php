@@ -71,8 +71,12 @@ class ZipFileStorage implements IFileStorage
      * @param string $archiveStoragePath path to ZIP file within external storage (null if standalone)
      * @param bool $overwrite whether the OVERWRITE flag should be set when opening the archive
      */
-    public function __construct(TmpFilesHelper $tmpFilesHelper, string $archivePath, string $archiveStoragePath = null, bool $overwrite = false)
-    {
+    public function __construct(
+        TmpFilesHelper $tmpFilesHelper,
+        string $archivePath,
+        string $archiveStoragePath = null,
+        bool $overwrite = false
+    ) {
         $this->tmpFilesHelper = $tmpFilesHelper;
         $this->archivePath = $archivePath;
         $this->archiveStoragePath = $archiveStoragePath;
