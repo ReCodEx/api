@@ -113,7 +113,7 @@ class CleanupUploads extends Command
 
         $output->writeln("Removing unfinished partial uploaded files and their entities...");
         $unfinished = $this->uploadedPartialFiles->findUnfinished($now, $threshold);
-        $this->removeOldFiles($unfinished, $this->uploadedFiles, $output, function ($file) {
+        $this->removeOldFiles($unfinished, $this->uploadedPartialFiles, $output, function ($file) {
             $deleted = $this->fileStorage->deleteUploadedPartialFileChunks($file);
             if ($deleted !== $file->getChunks()) {
                 $this->logger->log(sprintf(

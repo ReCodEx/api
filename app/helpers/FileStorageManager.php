@@ -200,7 +200,8 @@ class FileStorageManager
             throw new InvalidArgumentException("fileData", "File was not uploaded successfully");
         }
 
-        $this->fileStorage->storeFile($fileData->getTemporaryFile(), $path, false); // copy (moving may not be safe), no overwrite
+        // copy (moving may not be safe), no overwrite
+        $this->fileStorage->storeFile($fileData->getTemporaryFile(), $path, false);
     }
 
     /**
@@ -220,7 +221,9 @@ class FileStorageManager
             }
 
             if (!@stream_copy_to_stream($fp, $targetStream)) {
-                throw new FileStorageException("Append operation failed when assembling chunks of partial upload file.");
+                throw new FileStorageException(
+                    "Append operation failed when assembling chunks of partial upload file."
+                );
             }
         } finally {
             if ($fp) {
@@ -258,7 +261,9 @@ class FileStorageManager
             if ($partFile->getChunks() > 1) {
                 $tmpFp = @fopen($tmp, 'ab');
                 if (!$tmpFp) {
-                    throw new FileStorageException("Unable to append to partial file chunk extracted form file storage.");
+                    throw new FileStorageException(
+                        "Unable to append to partial file chunk extracted form file storage."
+                    );
                 }
 
                 // extract and append all remaining chunks to the first chunk
@@ -275,7 +280,9 @@ class FileStorageManager
 
         // verify the size of the assembled file
         if (filesize($tmp) !== $partFile->getTotalSize()) {
-            throw new FileStorageException("Concatenation of partial file chunks failed, result file does not have the expected size.");
+            throw new FileStorageException(
+                "Concatenation of partial file chunks failed, result file does not have the expected size."
+            );
         }
 
         // move the tmp file to the right place

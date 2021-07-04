@@ -517,7 +517,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenter,
             $this->presenterPath,
             'PUT',
-            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+            ['action' => 'appendPartial', 'id' => $partialFile->getId(), 'offset' => 0]
         );
 
         Assert::type(UploadedPartialFile::class, $partialFile1);
@@ -531,7 +531,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenter,
             $this->presenterPath,
             'PUT',
-            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+            ['action' => 'appendPartial', 'id' => $partialFile->getId(), 'offset' => 8]
         );
 
         Assert::type(UploadedPartialFile::class, $partialFile2);
@@ -587,7 +587,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenter,
             $this->presenterPath,
             'PUT',
-            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+            ['action' => 'appendPartial', 'id' => $partialFile->getId(), 'offset' => 0]
         );
 
         Assert::type(UploadedPartialFile::class, $partialFile1);
@@ -638,7 +638,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenter,
             $this->presenterPath,
             'PUT',
-            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+            ['action' => 'appendPartial', 'id' => $partialFile->getId(), 'offset' => 0]
         );
 
         Assert::type(UploadedPartialFile::class, $partialFile1);
