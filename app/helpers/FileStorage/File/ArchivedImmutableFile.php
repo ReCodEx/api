@@ -143,6 +143,16 @@ class ArchivedImmutableFile implements IImmutableFile
         return $contents;
     }
 
+    public function getDigest(string $algorithm = IImmutableFile::DIGEST_ALGORITHM_SHA1): ?string
+    {
+        if ($algorithm === IImmutableFile::DIGEST_ALGORITHM_SHA1) {
+            $contents = $this->getContents();
+            return sha1($contents);
+        }
+
+        return null; // algorithm not implemented
+    }
+
     public function saveAs(string $path): void
     {
         $zip = $this->openZip();

@@ -9,6 +9,8 @@ use ZipArchive;
  */
 interface IImmutableFile
 {
+    public const DIGEST_ALGORITHM_SHA1 = 'sha1';
+
     /**
      * Get bare file name.
      * @return string
@@ -40,6 +42,14 @@ interface IImmutableFile
      * @return string
      */
     public function getContents(int $sizeLimit = 0): string;
+
+    /**
+     * Compute and return a digest (checksum) using given algorithm.
+     * @param string $algorithm which algorithm should be used for the digest
+     *                          (SHA1 is mandatory and default, must be implemented by all)
+     * @return string|null the digest or null if the requested algorithm is not implemented
+     */
+    public function getDigest(string $algorithm = self::DIGEST_ALGORITHM_SHA1): ?string;
 
     /**
      * Retrive the entire file and save it to local path.

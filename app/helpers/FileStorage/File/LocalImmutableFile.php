@@ -104,6 +104,15 @@ class LocalImmutableFile implements IImmutableFile
             : @file_get_contents($this->realPath);
     }
 
+    public function getDigest(string $algorithm = IImmutableFile::DIGEST_ALGORITHM_SHA1): ?string
+    {
+        if ($algorithm === IImmutableFile::DIGEST_ALGORITHM_SHA1) {
+            return sha1_file($this->realPath);
+        }
+
+        return null; // algorithm not implemented
+    }
+
     public function saveAs(string $path): void
     {
         $this->checkExistence();

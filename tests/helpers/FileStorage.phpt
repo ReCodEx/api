@@ -895,6 +895,22 @@ class TestFileStorage extends Tester\TestCase
         Assert::true(file_exists("$root/uploads/123_foo"));
         Assert::equal('AAABBCCCC', file_get_contents("$root/uploads/123_foo"));
     }
+
+    public function testFileDigest()
+    {
+        $contents1 = 'abcdefghijklmnopqrstuvwxyz';
+        $contents2 = '0123456789';
+        $storage = $this->prepareLocalStorage([
+            'foo.txt' => $contents1,
+            'bar.zip' => [ 'foo.txt' => $contents2 ],
+        ]);
+
+        $file1 = $storage->fetch('foo.txt');
+        Assert::equal(sha1($contents1), $file1->getDigest());
+
+        $file2 = $storage->fetch('bar.zip#foo.txt');
+        Assert::equal(sha1($contents2), $file2->getDigest());
+    }
 }
 
 (new TestFileStorage())->run();
