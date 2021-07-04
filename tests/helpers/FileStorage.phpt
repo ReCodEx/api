@@ -813,6 +813,54 @@ class TestFileStorage extends Tester\TestCase
         Assert::true(is_dir($root));
     }
 
+    public function testLocalFileStorageStoreDeleteByFilter()
+    {
+        $storage = $this->prepareLocalStorage([
+            'foo/bar/a.txt' => 'AA',
+            'foo/bar/b.txt' => 'BBBB',
+            'foo/bar/c.txt' => 'CCCCCC',
+            'x.txt' => 'XXXXX',
+        ]);
+        $root = $storage->getRootDirectory();
+
+        $deleted = $storage->deleteByFilter(function ($file) {
+            return !Strings::startsWith($file->getStoragePath(), 'foo')
+                || $file->getSize() < 3;
+        });
+
+        Assert::equal(2, $deleted);
+        Assert::true(file_exists("$root/foo/bar/a.txt"));
+        Assert::false(file_exists("$root/foo/bar/b.txt"));
+        Assert::false(file_exists("$root/foo/bar/c.txt"));
+        Assert::true(file_exists("$root/x.txt"));
+    }
+
+    public function testUploadPartialFileChunk()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+        $partialFile = new UploadedPartialFile("foo", 9, $user);
+        self::setPropertyOfObject($partialFile, 'id', '123');
+
+        $storage = $this->prepareLocalStorage([]);
+        $root = $storage->getRootDirectory();
+
+        $manager = new FileStorageManager(
+            $storage,
+            $this->prepareHashStorage(),
+            new TmpFilesHelper($this->tmpDir),
+            ""
+        );
+
+        $inputTmpFile = $this->createTmpFile('ABCDE');
+        PhpInputMock::init($inputTmpFile);
+
+        $savedSize = $manager->storeUploadedPartialFileChunk($partialFile);
+        Assert::equal(5, $savedSize);
+        Assert::true(file_exists("$root/uploads/partial/123_foo_0"));
+        Assert::equal('ABCDE', file_get_contents("$root/uploads/partial/123_foo_0"));
+    }
+
     public function testAssemblePartialUploadChunks()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);

@@ -5,10 +5,12 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Model\Entity\AttachmentFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\UploadedPartialFile;
 use App\Model\Repository\Logins;
 use App\Model\Repository\AssignmentSolutions;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
@@ -169,7 +171,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
         $this->presenter->fileStorage = $mockFileStorage;
-        
+
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
@@ -199,7 +201,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
         $this->presenter->fileStorage = $mockFileStorage;
-        
+
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
@@ -234,7 +236,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
         $this->presenter->fileStorage = $mockFileStorage;
-        
+
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
@@ -257,7 +259,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     public function testContentWeirdTooManyChars()
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
-    
+
         $size = 1024 * 1024;
         $contents = random_bytes($size);
 
@@ -274,7 +276,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("getUploadedFile")->withArgs([$uploadedFile])->andReturn($mockFile)->once();
         $this->presenter->fileStorage = $mockFileStorage;
-        
+
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
@@ -474,13 +476,192 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
-            'V1:UploadedFiles',
+            $this->presenterPath,
             'GET',
             ['action' => 'downloadSupplementaryFile', 'id' => $file->id]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal($file->getName(), $response->getName());
+    }
+
+    public function testUploadPerPartes()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+        // mock file storage
+        $partialId = null;
+        $argClosure = function ($arg) use (&$partialId) {
+            return $arg instanceof UploadedPartialFile && $arg->getId() === $partialId;
+        };
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("storeUploadedPartialFileChunk")->withArgs($argClosure)->andReturn(8, 7);
+        $mockFileStorage->shouldReceive("assembleUploadedPartialFile")->withArgs([Mockery::any(), Mockery::any()])->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+
+        $partialFile = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'startPartial'],
+            ['name' => 'foo.txt', 'size' => 15]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile);
+        Assert::equal('foo.txt', $partialFile->getName());
+        Assert::equal(15, $partialFile->getTotalSize());
+        $partialId = $partialFile->getId(); // so the mock tests work properly
+
+        // first chunk
+        $partialFile1 = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'PUT',
+            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile1);
+        Assert::equal($partialFile->getId(), $partialFile1->getId());
+        Assert::equal(8, $partialFile1->getUploadedSize());
+        Assert::equal(1, $partialFile1->getChunks());
+        Assert::false($partialFile1->isUploadComplete());
+
+        // second and last chunk
+        $partialFile2 = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'PUT',
+            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile2);
+        Assert::equal($partialFile->getId(), $partialFile2->getId());
+        Assert::equal(15, $partialFile2->getUploadedSize());
+        Assert::equal(2, $partialFile2->getChunks());
+        Assert::true($partialFile2->isUploadComplete());
+
+        // complete the upload
+        $uploadedFile = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'completePartial', 'id' => $partialFile->getId()]
+        );
+
+        Assert::type(UploadedFile::class, $uploadedFile);
+        Assert::equal('foo.txt', $uploadedFile->getName());
+        Assert::equal(15, $uploadedFile->getFileSize());
+
+        Assert::count(0, $this->presenter->uploadedPartialFiles->findAll());
+    }
+
+    public function testUploadPerPartesCanceled()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+        // mock file storage
+        $partialId = null;
+        $argClosure = function ($arg) use (&$partialId) {
+            return $arg instanceof UploadedPartialFile && $arg->getId() === $partialId;
+        };
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("storeUploadedPartialFileChunk")->withArgs($argClosure)->andReturn(8, 7);
+        $mockFileStorage->shouldReceive("deleteUploadedPartialFileChunks")->withArgs($argClosure)->andReturn(1)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+
+        $partialFile = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'startPartial'],
+            ['name' => 'foo.txt', 'size' => 15]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile);
+        Assert::equal('foo.txt', $partialFile->getName());
+        Assert::equal(15, $partialFile->getTotalSize());
+        $partialId = $partialFile->getId(); // so the mock tests work properly
+
+        // first chunk
+        $partialFile1 = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'PUT',
+            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile1);
+        Assert::equal($partialFile->getId(), $partialFile1->getId());
+        Assert::equal(8, $partialFile1->getUploadedSize());
+        Assert::equal(1, $partialFile1->getChunks());
+        Assert::false($partialFile1->isUploadComplete());
+
+        // cancel the upload
+        PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'DELETE',
+            ['action' => 'cancelPartial', 'id' => $partialFile->getId()]
+        );
+
+        Assert::count(0, $this->presenter->uploadedPartialFiles->findAll());
+    }
+
+    public function testUploadPerPartesFailIncomplete()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+        // mock file storage
+        $partialId = null;
+        $argClosure = function ($arg) use (&$partialId) {
+            return $arg instanceof UploadedPartialFile && $arg->getId() === $partialId;
+        };
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("storeUploadedPartialFileChunk")->withArgs($argClosure)->andReturn(8, 7);
+        $this->presenter->fileStorage = $mockFileStorage;
+
+        $partialFile = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'startPartial'],
+            ['name' => 'foo.txt', 'size' => 15]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile);
+        Assert::equal('foo.txt', $partialFile->getName());
+        Assert::equal(15, $partialFile->getTotalSize());
+        $partialId = $partialFile->getId(); // so the mock tests work properly
+
+        // first chunk
+        $partialFile1 = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'PUT',
+            ['action' => 'appendPartial', 'id' => $partialFile->getId()]
+        );
+
+        Assert::type(UploadedPartialFile::class, $partialFile1);
+        Assert::equal($partialFile->getId(), $partialFile1->getId());
+        Assert::equal(8, $partialFile1->getUploadedSize());
+        Assert::equal(1, $partialFile1->getChunks());
+        Assert::false($partialFile1->isUploadComplete());
+
+        // complete the upload
+        Assert::exception(
+            function () use ($partialFile) {
+                $uploadedFile = PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'POST',
+                    ['action' => 'completePartial', 'id' => $partialFile->getId()]
+                );
+            },
+            CannotReceiveUploadedFileException::class,
+            "Unable to finalize incomplete per-partes upload."
+        );
+
+        Assert::count(1, $this->presenter->uploadedPartialFiles->findAll());
     }
 }
 

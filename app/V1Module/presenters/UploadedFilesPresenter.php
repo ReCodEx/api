@@ -19,6 +19,7 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
+use App\Security\ACL\IUploadedPartialFilePermissions;
 use ForceUTF8\Encoding;
 use Nette\Utils\Strings;
 use Nette\Http\IResponse;
@@ -62,6 +63,12 @@ class UploadedFilesPresenter extends BasePresenter
      * @inject
      */
     public $uploadedFileAcl;
+
+    /**
+     * @var IUploadedPartialFilePermissions
+     * @inject
+     */
+    public $uploadedPartialFileAcl;
 
     /**
      * @var SupplementaryExerciseFiles
@@ -245,7 +252,7 @@ class UploadedFilesPresenter extends BasePresenter
      * each one carrying a chunk of data. Once all the chunks are in place, the complete request assembles
      * them together in one file and transforms UploadPartialFile into UploadFile entity.
      * @POST
-     * @Param(type="post", name="name", required=true, validation="string:1:255",
+     * @Param(type="post", name="name", required=true, validation="string:1..255",
      *        description="Name of the uploaded file.")
      * @Param(type="post", name="size", required=true, validation="numericint", description="Total size in bytes.")
      */
@@ -285,7 +292,7 @@ class UploadedFilesPresenter extends BasePresenter
     public function checkAppendPartial(string $id)
     {
         $file = $this->uploadedPartialFiles->findOrThrow($id);
-        if (!$this->uploadedFileAcl->canAppendPartial($file)) {
+        if (!$this->uploadedPartialFileAcl->canAppendPartial($file)) {
             throw new ForbiddenRequestException("You cannot add chunks to a per-partes upload started by another user");
         }
     }
@@ -327,7 +334,7 @@ class UploadedFilesPresenter extends BasePresenter
     public function checkCancelPartial(string $id)
     {
         $file = $this->uploadedPartialFiles->findOrThrow($id);
-        if (!$this->uploadedFileAcl->canCancelPartial($file)) {
+        if (!$this->uploadedPartialFileAcl->canCancelPartial($file)) {
             throw new ForbiddenRequestException("You cannot cancel a per-partes upload started by another user");
         }
     }
@@ -369,7 +376,7 @@ class UploadedFilesPresenter extends BasePresenter
     public function checkCompletePartial(string $id)
     {
         $file = $this->uploadedPartialFiles->findOrThrow($id);
-        if (!$this->uploadedFileAcl->canCompletePartial($file)) {
+        if (!$this->uploadedPartialFileAcl->canCompletePartial($file)) {
             throw new ForbiddenRequestException("You cannot complete a per-partes upload started by another user");
         }
     }
