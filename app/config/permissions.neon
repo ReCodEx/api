@@ -618,7 +618,7 @@ permissions:
 
     - allow: true
       role: student
-      resource: uploadedFile
+      resource: uploadedPartialFile
       actions:
           - appendPartial
           - cancelPartial

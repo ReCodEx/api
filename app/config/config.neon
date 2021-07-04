@@ -218,6 +218,7 @@ acl:
     submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
     assignmentSolution: App\Security\ACL\IAssignmentSolutionPermissions
     uploadedFile: App\Security\ACL\IUploadedFilePermissions
+    uploadedPartialFile: App\Security\ACL\IUploadedPartialFilePermissions
     pipeline: App\Security\ACL\IPipelinePermissions
     sis: App\Security\ACL\ISisPermissions
     email: App\Security\ACL\IEmailPermissions
@@ -235,6 +236,7 @@ acl:
     referenceExerciseSolution: App\Security\Policies\ReferenceExerciseSolutionPermissionPolicy
     assignmentSolution: App\Security\Policies\AssignmentSolutionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
+    uploadedPartialFile: App\Security\Policies\UploadedPartialFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
     sis: App\Security\Policies\SisPermissionPolicy
     course: App\Security\Policies\SisCoursePermissionPolicy
