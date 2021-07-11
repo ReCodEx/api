@@ -42,8 +42,6 @@ class BoxService
             MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
             FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,
             FetchFileBox::$FETCH_TYPE => FetchFileBox::class,
-            JavaRunBox::$JAVA_RUNNER_TYPE => JavaRunBox::class,
-            JavacCompilationBox::$JAVAC_TYPE => JavacCompilationBox::class,
             Python3RunBox::$BOX_TYPE => Python3RunBox::class,
             PhpRunBox::$PHP_RUN_TYPE => PhpRunBox::class,
             NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class,
