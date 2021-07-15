@@ -56,6 +56,26 @@ parameters:
 	param_config_pipelineConfig3:
 		"""
 			boxes:
+			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
+			    - { name: external-sources, type: fetch-files, portsIn: { remote: { type: 'remote-file[]', value: external-sources } }, portsOut: { input: { type: 'file[]', value: input-files } } }
+			    - { name: merge1, type: merge-files, portsIn: { in1: { type: 'file[]', value: input-files }, in2: { type: 'file[]', value: source-files } }, portsOut: { out: { type: 'file[]', value: source-files-merged } } }    
+			    - { name: compilation, type: custom-compilation, portsIn: { compiler-exec: { type: 'string', value: compiler-exec }, args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files-merged }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }
+			    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }
+			    - { name: binary, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }
+			variables:
+			    - { name: compiler-exec, type: 'string', value: /usr/bin/dotnet }
+			    - { name: args, type: 'string[]', value: ['publish', 'recodex.csproj', '-r', 'linux-x64', '-c', 'release', '-o', '.'] }
+			    - { name: external-sources, type: 'remote-file[]', value: [Reader.cs, Wrapper.cs, recodex.csproj] }
+			    - { name: input-files, type: 'file[]', value: [ReCodEx_Csharp_Reader.cs, ReCodEx_Csharp_Wrapper.cs, recodex.csproj] }
+			    - { name: source-files, type: 'file[]', value: {  } }
+			    - { name: source-files-merged, type: 'file[]', value: {  } }
+			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
+			    - { name: binary-file, type: file, value: recodex }
+			
+		"""
+	param_config_pipelineConfig4:
+		"""
+			boxes:
 			    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }
 			    - { name: out, type: file-out, portsIn: { output: { type: file, value: source-file } }, portsOut: {  } }
 			    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }
@@ -65,7 +85,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
 			
 		"""
-	param_config_pipelineConfig4:
+	param_config_pipelineConfig5:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -77,7 +97,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
 			
 		"""
-	param_config_pipelineConfig5:
+	param_config_pipelineConfig6:
 		"""
 			---
 			boxes:
@@ -210,7 +230,7 @@ parameters:
 			    type: string[]
 			    value: []
 		"""
-	param_config_pipelineConfig6:
+	param_config_pipelineConfig7:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -232,7 +252,7 @@ parameters:
 			    - { name: judge-args, type: 'string[]', value: $judge-args }
 			
 		"""
-	param_config_pipelineConfig7:
+	param_config_pipelineConfig8:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -254,7 +274,7 @@ parameters:
 			    - { name: judge-args, type: 'string[]', value: $judge-args }
 			
 		"""
-	param_config_pipelineConfig8:
+	param_config_pipelineConfig9:
 		"""
 			boxes:
 			    - { name: output, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }
@@ -268,7 +288,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
 			
 		"""
-	param_config_pipelineConfig9:
+	param_config_pipelineConfig10:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -282,7 +302,7 @@ parameters:
 			    - { name: binary-file, type: file, value: a.out }
 			
 		"""
-	param_config_pipelineConfig10:
+	param_config_pipelineConfig11:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -296,7 +316,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
 			
 		"""
-	param_config_pipelineConfig11:
+	param_config_pipelineConfig12:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -311,7 +331,7 @@ parameters:
 			    - { name: binary-file, type: file, value: a.out }
 			
 		"""
-	param_config_pipelineConfig12:
+	param_config_pipelineConfig13:
 		"""
 			---
 			boxes:
@@ -340,7 +360,7 @@ parameters:
 			    - { name: classpath, type: 'string[]', value: [ '/opt/groovy/groovy.jar' ] }
 			...
 		"""
-	param_config_pipelineConfig13:
+	param_config_pipelineConfig14:
 		"""
 			---
 			boxes:
@@ -369,7 +389,7 @@ parameters:
 			    - { name: classpath, type: 'string[]', value: [ '/opt/groovy/groovy.jar' ] }
 			...
 		"""
-	param_config_pipelineConfig14:
+	param_config_pipelineConfig15:
 		"""
 			---
 			boxes:
@@ -391,7 +411,7 @@ parameters:
 			    - { name: compiler-exec, type: 'string', value: '/usr/bin/groovyc' }
 			...
 		"""
-	param_config_pipelineConfig15:
+	param_config_pipelineConfig16:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -407,7 +427,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
 			
 		"""
-	param_config_pipelineConfig16:
+	param_config_pipelineConfig17:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -433,77 +453,402 @@ parameters:
 			    - { name: binary-file, type: 'file', value: '' }
 			
 		"""
-	param_config_pipelineConfig17:
-		"""
-			boxes:
-			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
-			    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }
-			    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }
-			    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }
-			    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }
-			    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }
-			    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }
-			    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }
-			    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }
-			variables:
-			    - { name: remote-runner, type: remote-file, value: javarun.class }
-			    - { name: judge-type, type: string, value: $judge-type }
-			    - { name: actual-output, type: file, value: $actual-output }
-			    - { name: expected-output, type: file, value: expected.out }
-			    - { name: runner-file, type: file, value: javarun.class }
-			    - { name: run-args, type: 'string[]', value: $run-args }
-			    - { name: stdin-file, type: file, value: '' }
-			    - { name: classes, type: 'file[]', value: '' }
-			    - { name: input-files, type: 'file[]', value: $actual-inputs }
-			    - { name: custom-judge, type: file, value: '' }
-			    - { name: judge-args, type: 'string[]', value: $judge-args }
-			    - { name: jar-files, type: 'file[]', value: {  } }
-			
-		"""
 	param_config_pipelineConfig18:
 		"""
+			---
 			boxes:
-			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
-			    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }
-			    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }
-			    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }
-			    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }
-			    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }
-			    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }
-			    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }
-			    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }
+			  - name: input
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: stdin-file
+			  - name: runner
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: runner-file
+			  - name: classes-dir
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: classes-dir
+			  - name: expected
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: expected-output
+			  - name: judge
+			    type: judge
+			    portsIn:
+			      judge-type:
+			        type: string
+			        value: judge-type
+			      actual-output:
+			        type: file
+			        value: actual-output
+			      expected-output:
+			        type: file
+			        value: expected-output
+			      args:
+			        type: 'string[]'
+			        value: judge-args
+			      custom-judge:
+			        type: file
+			        value: custom-judge
+			    portsOut: {}
+			  - name: run
+			    type: jvm-runner
+			    portsIn:
+			      runner-exec:
+			        type: string
+			        value: runner-exec
+			      runner:
+			        type: file
+			        value: runner-file
+			      args:
+			        type: 'string[]'
+			        value: run-args
+			      stdin:
+			        type: file
+			        value: stdin-file
+			      input-files:
+			        type: 'file[]'
+			        value: input-files
+			      class-files-dir:
+			        type: file
+			        value: classes-dir
+			      jar-files:
+			        type: 'file[]'
+			        value: jar-files
+			      classpath:
+			        type: 'string[]'
+			        value: classpath
+			    portsOut:
+			      stdout:
+			        type: file
+			        value: ''
+			      output-file:
+			        type: file
+			        value: actual-output
+			  - name: input-files
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: input-files
+			  - name: custom-judge
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: custom-judge
+			  - name: jars
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: jar-files
 			variables:
-			    - { name: remote-runner, type: remote-file, value: javarun.class }
-			    - { name: judge-type, type: string, value: $judge-type }
-			    - { name: actual-output, type: file, value: '' }
-			    - { name: expected-output, type: file, value: expected.out }
-			    - { name: runner-file, type: file, value: javarun.class }
-			    - { name: run-args, type: 'string[]', value: $run-args }
-			    - { name: stdin-file, type: file, value: '' }
-			    - { name: classes, type: 'file[]', value: '' }
-			    - { name: input-files, type: 'file[]', value: $actual-inputs }
-			    - { name: custom-judge, type: file, value: '' }
-			    - { name: judge-args, type: 'string[]', value: $judge-args }
-			    - { name: jar-files, type: 'file[]', value: {  } }
-			
+			  - name: judge-type
+			    type: string
+			    value: $judge-type
+			  - name: actual-output
+			    type: file
+			    value: $actual-output
+			  - name: expected-output
+			    type: file
+			    value: expected.out
+			  - name: runner-file
+			    type: file
+			    value: javarun.class
+			  - name: run-args
+			    type: 'string[]'
+			    value: $run-args
+			  - name: stdin-file
+			    type: file
+			    value: ''
+			  - name: classes-dir
+			    type: file
+			    value: ''
+			  - name: input-files
+			    type: 'file[]'
+			    value: $actual-inputs
+			  - name: custom-judge
+			    type: file
+			    value: ''
+			  - name: judge-args
+			    type: 'string[]'
+			    value: $judge-args
+			  - name: jar-files
+			    type: 'file[]'
+			    value: {}
+			  - name: runner-exec
+			    type: string
+			    value: /usr/bin/java
+			  - name: classpath
+			    type: 'string[]'
+			    value: {}
 		"""
 	param_config_pipelineConfig19:
 		"""
+			---
 			boxes:
-			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
-			    - { name: compilation, type: javac, portsIn: { args: { type: 'string[]', value: '' }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { class-files: { type: 'file[]', value: classes } } }
-			    - { name: classes, type: files-out, portsIn: { output: { type: 'file[]', value: classes } }, portsOut: {  } }
-			    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }
-			    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }
-			    - { name: jars-passed, type: files-out, portsIn: { output: { type: 'file[]', value: jar-files } }, portsOut: {  } }
+			  - name: input
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: stdin-file
+			  - name: runner
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: runner-file
+			  - name: classes-dir
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: classes-dir
+			  - name: expected
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: expected-output
+			  - name: judge
+			    type: judge
+			    portsIn:
+			      judge-type:
+			        type: string
+			        value: judge-type
+			      actual-output:
+			        type: file
+			        value: actual-output
+			      expected-output:
+			        type: file
+			        value: expected-output
+			      args:
+			        type: 'string[]'
+			        value: judge-args
+			      custom-judge:
+			        type: file
+			        value: custom-judge
+			    portsOut: {}
+			  - name: run
+			    type: jvm-runner
+			    portsIn:
+			      runner-exec:
+			        type: string
+			        value: runner-exec
+			      runner:
+			        type: file
+			        value: runner-file
+			      args:
+			        type: 'string[]'
+			        value: run-args
+			      stdin:
+			        type: file
+			        value: stdin-file
+			      input-files:
+			        type: 'file[]'
+			        value: input-files
+			      class-files-dir:
+			        type: file
+			        value: classes-dir
+			      jar-files:
+			        type: 'file[]'
+			        value: jar-files
+			      classpath:
+			        type: 'string[]'
+			        value: classpath
+			    portsOut:
+			      stdout:
+			        type: file
+			        value: actual-output
+			      output-file:
+			        type: file
+			        value: ''
+			  - name: input-files
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: input-files
+			  - name: custom-judge
+			    type: file-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: file
+			        value: custom-judge
+			  - name: jars
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: jar-files
 			variables:
-			    - { name: source-files, type: 'file[]', value: {  } }
-			    - { name: classes, type: 'file[]', value: {  } }
-			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
-			    - { name: jar-files, type: 'file[]', value: {  } }
-			
+			  - name: runner-file
+			    type: file
+			    value: javarun.class
+			  - name: judge-type
+			    type: string
+			    value: $judge-type
+			  - name: actual-output
+			    type: file
+			    value: ''
+			  - name: expected-output
+			    type: file
+			    value: expected.out
+			  - name: run-args
+			    type: 'string[]'
+			    value: $run-args
+			  - name: stdin-file
+			    type: file
+			    value: ''
+			  - name: classes-dir
+			    type: file
+			    value: ''
+			  - name: input-files
+			    type: 'file[]'
+			    value: $actual-inputs
+			  - name: custom-judge
+			    type: file
+			    value: ''
+			  - name: judge-args
+			    type: 'string[]'
+			    value: $judge-args
+			  - name: jar-files
+			    type: 'file[]'
+			    value: {}
+			  - name: runner-exec
+			    type: string
+			    value: /usr/bin/java
+			  - name: classpath
+			    type: 'string[]'
+			    value: {}
 		"""
 	param_config_pipelineConfig20:
+		"""
+			---
+			boxes:
+			  - name: runner-fetch
+			    type: fetch-file
+			    portsIn:
+			      remote:
+			        type: remote-file
+			        value: remote-runner
+			    portsOut:
+			      input:
+			        type: file
+			        value: runner-file
+			  - name: sources
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: source-files
+			  - name: compilation
+			    type: jvm-compilation
+			    portsIn:
+			      compiler-exec:
+			        type: string
+			        value: compiler-exec
+			      args:
+			        type: 'string[]'
+			        value: ''
+			      source-files:
+			        type: 'file[]'
+			        value: source-files
+			      extra-files:
+			        type: 'file[]'
+			        value: extra-files
+			      jar-files:
+			        type: 'file[]'
+			        value: jar-files
+			    portsOut:
+			      class-files-dir:
+			        type: file
+			        value: classes-dir
+			  - name: classes-dir
+			    type: file-out
+			    portsIn:
+			      output:
+			        type: file
+			        value: classes-dir
+			    portsOut: {}
+			  - name: extras
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: extra-files
+			  - name: jars
+			    type: files-in
+			    portsIn: {}
+			    portsOut:
+			      input:
+			        type: 'file[]'
+			        value: jar-files
+			  - name: jars-passed
+			    type: files-out
+			    portsIn:
+			      output:
+			        type: 'file[]'
+			        value: jar-files
+			    portsOut: {}
+			  - name: runner-passed
+			    type: file-out
+			    portsIn:
+			      output:
+			        type: file
+			        value: runner-file
+			    portsOut: {}
+			variables:
+			  - name: remote-runner
+			    type: remote-file
+			    value: javarun.class
+			  - name: runner-file
+			    type: file
+			    value: javarun.class
+			  - name: source-files
+			    type: 'file[]'
+			    value: {}
+			  - name: classes-dir
+			    type: file
+			    value: ''
+			  - name: extra-files
+			    type: 'file[]'
+			    value: $extra-file-names
+			  - name: jar-files
+			    type: 'file[]'
+			    value: {}
+			  - name: compiler-exec
+			    type: string
+			    value: /usr/bin/javac
+		"""
+	param_config_pipelineConfig21:
 		"""
 			---
 			boxes:
@@ -532,7 +877,7 @@ parameters:
 			    - { name: classpath, type: 'string[]', value: [ '/opt/kotlin/lib/kotlin-stdlib.jar', '/opt/kotlin/lib/kotlin-reflect.jar' ] }
 			...
 		"""
-	param_config_pipelineConfig21:
+	param_config_pipelineConfig22:
 		"""
 			---
 			boxes:
@@ -561,7 +906,7 @@ parameters:
 			    - { name: classpath, type: 'string[]', value: [ '/opt/kotlin/lib/kotlin-stdlib.jar', '/opt/kotlin/lib/kotlin-reflect.jar' ] }
 			...
 		"""
-	param_config_pipelineConfig22:
+	param_config_pipelineConfig23:
 		"""
 			---
 			boxes:
@@ -583,7 +928,7 @@ parameters:
 			    - { name: compiler-exec, type: 'string', value: '/usr/bin/kotlinc' }
 			...
 		"""
-	param_config_pipelineConfig23:
+	param_config_pipelineConfig24:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -600,7 +945,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: $extra-file-names }
 			
 		"""
-	param_config_pipelineConfig24:
+	param_config_pipelineConfig25:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -622,7 +967,7 @@ parameters:
 			    - { name: judge-args, type: 'string[]', value: $judge-args }
 			
 		"""
-	param_config_pipelineConfig25:
+	param_config_pipelineConfig26:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -644,7 +989,7 @@ parameters:
 			    - { name: judge-args, type: 'string[]', value: $judge-args }
 			
 		"""
-	param_config_pipelineConfig26:
+	param_config_pipelineConfig27:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -669,7 +1014,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: {  } }
 			
 		"""
-	param_config_pipelineConfig27:
+	param_config_pipelineConfig28:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -694,7 +1039,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: {  } }
 			
 		"""
-	param_config_pipelineConfig28:
+	param_config_pipelineConfig29:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -719,7 +1064,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: {  } }
 			
 		"""
-	param_config_pipelineConfig29:
+	param_config_pipelineConfig30:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -744,7 +1089,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: {  } }
 			
 		"""
-	param_config_pipelineConfig30:
+	param_config_pipelineConfig31:
 		"""
 			boxes:
 			    - { name: fetch-init, type: fetch-file, portsIn: { remote: { type: remote-file, value: init-filename } }, portsOut: { input: { type: file, value: init } } }
@@ -767,7 +1112,7 @@ parameters:
 			    - { name: runner-filename, type: remote-file, value: recodex-wrapper.pl }
 			
 		"""
-	param_config_pipelineConfig31:
+	param_config_pipelineConfig32:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -795,7 +1140,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: {  } }
 			
 		"""
-	param_config_pipelineConfig32:
+	param_config_pipelineConfig33:
 		"""
 			boxes:
 			    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }
@@ -823,7 +1168,7 @@ parameters:
 			    - { name: extra-files, type: 'file[]', value: {  } }
 			
 		"""
-	param_config_pipelineConfig33:
+	param_config_pipelineConfig34:
 		"""
 			boxes:
 			    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }
@@ -836,7 +1181,7 @@ parameters:
 			variables:
 			    - { name: compiler-exec, type: 'string', value: /usr/bin/rustc }
 			    - { name: merged-args, type: 'string[]', value: {  } }
-			    - { name: args, type: 'string[]', value: ['-o', 'a.out'] }
+			    - { name: args, type: 'string[]', value: ['-O', '-o', 'a.out'] }
 			    - { name: entry-point, type: 'file', value: $entry-point }
 			    - { name: entry-point-text, type: 'string', value: '' }
 			    - { name: entry-point-text-array, type: 'string[]', value: {  } }
@@ -845,7 +1190,7 @@ parameters:
 			    - { name: binary-file, type: file, value: a.out }
 			
 		"""
-	param_config_pipelineConfig34:
+	param_config_pipelineConfig35:
 		"""
 			---
 			boxes:
@@ -874,7 +1219,7 @@ parameters:
 			    - { name: classpath, type: 'string[]', value: {} }
 			...
 		"""
-	param_config_pipelineConfig35:
+	param_config_pipelineConfig36:
 		"""
 			---
 			boxes:
@@ -903,7 +1248,7 @@ parameters:
 			    - { name: classpath, type: 'string[]', value: {} }
 			...
 		"""
-	param_config_pipelineConfig36:
+	param_config_pipelineConfig37:
 		"""
 			---
 			boxes:
@@ -965,8 +1310,10 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline3: Compilation source file pass-through
-	param_description_pipeline3:
+	param_name_pipeline3: C# .NET Core Compilation
+	param_description_pipeline3: "Uses dotnet cli utility to create a release build of submitted *.cs files, ReCodEx main wrapper, and ReCodEx reader lib. A recodex-custom csproj is supplanted for the build."
+	param_name_pipeline4: Compilation source file pass-through
+	param_description_pipeline4:
 		"""
 			Single file pass-through pipeline for submitted source file and extra files given by exercise author.
 			
@@ -980,8 +1327,8 @@ parameters:
 			* source-file - single file which can be used in following pipelines
 			* extra-files - array of files which can be used in following pipelines
 		"""
-	param_name_pipeline4: Compilation source files pass-through
-	param_description_pipeline4:
+	param_name_pipeline5: Compilation source files pass-through
+	param_description_pipeline5:
 		"""
 			Multiple files pass-through pipeline for submitted source files and extra files given by exercise author.
 			
@@ -995,8 +1342,8 @@ parameters:
 			* source-file - array of files which can be used in following pipelines
 			* extra-files - array of files which can be used in following pipelines
 		"""
-	param_name_pipeline5: Data-only judging
-	param_description_pipeline5:
+	param_name_pipeline6: Data-only judging
+	param_description_pipeline6:
 		"""
 			Data-only pipeline which will only perform judging of given source files against provided custom judge.
 			
@@ -1008,8 +1355,8 @@ parameters:
 			* custom-judge - author of exercise has to provide file for judging either as binary or executable script
 			* run-args - array of strings which will be used as arguments for given custom judge
 		"""
-	param_name_pipeline6: "ELF execution & evaluation [outfile]"
-	param_description_pipeline6:
+	param_name_pipeline7: "ELF execution & evaluation [outfile]"
+	param_description_pipeline7:
 		"""
 			Executes given ELF binary and run judge on file outputted from execution.
 			
@@ -1026,8 +1373,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline7: "ELF execution & evaluation [stdout]"
-	param_description_pipeline7:
+	param_name_pipeline8: "ELF execution & evaluation [stdout]"
+	param_description_pipeline8:
 		"""
 			Executes given ELF binary and run judge on standard output outputted from execution.
 			
@@ -1043,8 +1390,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline8: FreePascal Compilation
-	param_description_pipeline8:
+	param_name_pipeline9: FreePascal Compilation
+	param_description_pipeline9:
 		"""
 			FreePascal compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `fpc` and default options are: `-O2`, `Sg`, `-Ci`, `-Cr`, `-Ct`.
 			
@@ -1058,8 +1405,8 @@ parameters:
 			
 			* binary-file - binary file outputted from compilation can be further processed in following pipelines
 		"""
-	param_name_pipeline9: G++ Compilation
-	param_description_pipeline9:
+	param_name_pipeline10: G++ Compilation
+	param_description_pipeline10:
 		"""
 			C++ compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `g++` and default options are: `-std=c++17`, `-O3`, `-lm`, `-pthread`.
 			
@@ -1073,8 +1420,8 @@ parameters:
 			
 			* binary-file - binary file outputted from compilation can be further processed in following pipelines
 		"""
-	param_name_pipeline10: GCC Compilation
-	param_description_pipeline10:
+	param_name_pipeline11: GCC Compilation
+	param_description_pipeline11:
 		"""
 			C compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `gcc` and default options are: `-std=gnu11`, `-O3`, `-lm`.
 			
@@ -1088,8 +1435,8 @@ parameters:
 			
 			* binary-file - binary file outputted from compilation can be further processed in following pipelines
 		"""
-	param_name_pipeline11: Go Compilation
-	param_description_pipeline11:
+	param_name_pipeline12: Go Compilation
+	param_description_pipeline12:
 		"""
 			Go compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `go` and there are no default options.
 			
@@ -1103,8 +1450,8 @@ parameters:
 			
 			* binary-file - binary file outputted from compilation can be further processed in following pipelines
 		"""
-	param_name_pipeline12: "Groovy execution & evaluation [outfile]"
-	param_description_pipeline12:
+	param_name_pipeline13: "Groovy execution & evaluation [outfile]"
+	param_description_pipeline13:
 		"""
 			Executes Groovy application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it. Groovy is executed using `java` JDK runtime with the addition of Groovy standard library `groovy-all.jar`.
 			
@@ -1123,8 +1470,8 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline13: "Groovy execution & evaluation [stdout]"
-	param_description_pipeline13:
+	param_name_pipeline14: "Groovy execution & evaluation [stdout]"
+	param_description_pipeline14:
 		"""
 			Executes Groovy application and run judge on standard output outputted from execution. Special `javarun.class` file is used as main entry point to the application. This class will try to find main class among submitted ones and execute it. Groovy is executed using `java` JDK runtime with the addition of Groovy standard library `groovy-all.jar`.
 			
@@ -1142,8 +1489,8 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline14: Groovyc compilation
-	param_description_pipeline14:
+	param_name_pipeline15: Groovyc compilation
+	param_description_pipeline15:
 		"""
 			Groovy compilation which compiles submitted files by user, provided extra files from exercise author and potentially JAR files provided by exercise author. Used compiler is `groovyc` which compiles sources to class files. Pipeline also fetches execution runner and sends it to execution pipeline.
 			
@@ -1161,8 +1508,8 @@ parameters:
 			* jar-files - jar files passed from compilation to execution
 			* runner-file - runner class file passed from compilation to execution
 		"""
-	param_name_pipeline15: Haskell Compilation
-	param_description_pipeline15:
+	param_name_pipeline16: Haskell Compilation
+	param_description_pipeline16:
 		"""
 			Haskell compilation using GHC which compiles submitted files by user and provided extra files from exercise author.
 			
@@ -1176,8 +1523,8 @@ parameters:
 			
 			* binary-file - pseudo-link from this compilation to Haskell execution
 		"""
-	param_name_pipeline16: "Haskell execution & evaluation [stdout]"
-	param_description_pipeline16:
+	param_name_pipeline17: "Haskell execution & evaluation [stdout]"
+	param_description_pipeline17:
 		"""
 			Executes Haskell application using GHCI and run judge on standard output outputted from execution.
 			
@@ -1194,14 +1541,15 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline17: "Java execution & evaluation [outfile]"
-	param_description_pipeline17:
+	param_name_pipeline18: "Java execution & evaluation [outfile]"
+	param_description_pipeline18:
 		"""
 			Executes Java application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.
 			
 			Input variables:
 			
-			* classes - Java class files which should be executed, main class is automatically found and executed
+			* runner-file - compiled class file which will serve as wrapper for execution
+			* classes-dir - directory containing JVM class files which should be executed, main class is automatically found and executed
 			* run-args - array of string arguments for execution (not for JVM)
 			* stdin-file - file which will be connected to standard input of execution
 			* input-files - array of files given by author of exercise, can be used during execution
@@ -1213,14 +1561,15 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline18: "Java execution & evaluation [stdout]"
-	param_description_pipeline18:
+	param_name_pipeline19: "Java execution & evaluation [stdout]"
+	param_description_pipeline19:
 		"""
 			Executes Java application and run judge on standard output outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.
 			
 			Input variables:
 			
-			* classes - Java class files which should be executed, main class is automatically found and executed
+			* runner-file - compiled class file which will serve as wrapper for execution
+			* classes-dir - directory containing JVM class files which should be executed, main class is automatically found and executed
 			* run-args - array of string arguments for execution (not for JVM)
 			* stdin-file - file which will be connected to standard input of execution
 			* input-files - array of files given by author of exercise, can be used during execution
@@ -1231,10 +1580,10 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline19: Javac Compilation
-	param_description_pipeline19:
+	param_name_pipeline20: Javac Compilation
+	param_description_pipeline20:
 		"""
-			Java compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `javac`.
+			Java compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `javac` which compiles sources to class files. Pipeline also fetches execution runner and sends it to execution pipeline.
 			
 			Input variables:
 			
@@ -1242,14 +1591,16 @@ parameters:
 			* extra-files - files given by exercise author, will be added to compilation
 			* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present
 			* jar-files - optional jar files which should be used during compilation and execution
+			* runner-file - mandatory runner class file which will be used as a wrapper executor
 			
 			Output variables:
 			
-			* classes - compiled files with bytecode which can be further processed in following pipelines
+			* classes-dir - compiled files with bytecode which can be further processed in following pipelines resides in this directory
 			* jar-files - jar files passed from compilation to execution
+			* runner-file - runner class file passed from compilation to execution
 		"""
-	param_name_pipeline20: "Kotlin execution & evaluation [outfile]"
-	param_description_pipeline20:
+	param_name_pipeline21: "Kotlin execution & evaluation [outfile]"
+	param_description_pipeline21:
 		"""
 			Executes Kotlin application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it. Kotlin is executed using `java` JDK runtime with the addition of Kotlin standard libraries, namely `kotlin-stdlib.jar` and `kotlin-reflect.jar`.
 			
@@ -1268,8 +1619,8 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline21: "Kotlin execution & evaluation [stdout]"
-	param_description_pipeline21:
+	param_name_pipeline22: "Kotlin execution & evaluation [stdout]"
+	param_description_pipeline22:
 		"""
 			Executes Kotlin application and run judge on standard output outputted from execution. Special `javarun.class` file is used as main entry point to the application. This class will try to find main class among submitted ones and execute it. Kotlin is executed using `java` JDK runtime with the addition of Kotlin standard libraries, namely `kotlin-stdlib.jar` and `kotlin-reflect.jar`.
 			
@@ -1287,8 +1638,8 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline22: Kotlinc compilation
-	param_description_pipeline22:
+	param_name_pipeline23: Kotlinc compilation
+	param_description_pipeline23:
 		"""
 			Kotlin compilation which compiles submitted files by user, provided extra files from exercise author and potentially JAR files provided by exercise author. Used compiler is `kotlinc` which compiles sources to class files. Pipeline also fetches execution runner and sends it to execution pipeline.
 			
@@ -1306,8 +1657,8 @@ parameters:
 			* jar-files - jar files passed from compilation to execution
 			* runner-file - runner class file passed from compilation to execution
 		"""
-	param_name_pipeline23: MCS Compilation
-	param_description_pipeline23:
+	param_name_pipeline24: MCS Compilation
+	param_description_pipeline24:
 		"""
 			C# compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `csc`. During compilation there are added special `CodEx.Reader` and `CodEx.Wrapper` classes. `CodEx.Wrapper` is marked as main class and is effectively entry point in resulting assembly.
 			
@@ -1321,8 +1672,8 @@ parameters:
 			
 			* assembly - compiled bytecode CLR assembly which can be further processed in following pipelines
 		"""
-	param_name_pipeline24: "Mono execution & evaluation [outfile]"
-	param_description_pipeline24:
+	param_name_pipeline25: "Mono execution & evaluation [outfile]"
+	param_description_pipeline25:
 		"""
 			Executes C# application and run judge on file outputted from execution.
 			
@@ -1339,8 +1690,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline25: "Mono execution & evaluation [stdout]"
-	param_description_pipeline25:
+	param_name_pipeline26: "Mono execution & evaluation [stdout]"
+	param_description_pipeline26:
 		"""
 			Executes C# application and run judge on standard output outputted from execution.
 			
@@ -1356,8 +1707,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline26: "Node.js execution & evaluation [outfile]"
-	param_description_pipeline26:
+	param_name_pipeline27: "Node.js execution & evaluation [outfile]"
+	param_description_pipeline27:
 		"""
 			Executes Node.js application and run judge on file outputted from execution.
 			
@@ -1376,8 +1727,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline27: "Node.js execution & evaluation [stdout]"
-	param_description_pipeline27:
+	param_name_pipeline28: "Node.js execution & evaluation [stdout]"
+	param_description_pipeline28:
 		"""
 			Executes Node.js application and run judge on standard output outputted from execution.
 			
@@ -1395,8 +1746,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline28: "PHP execution & evaluation [outfile]"
-	param_description_pipeline28:
+	param_name_pipeline29: "PHP execution & evaluation [outfile]"
+	param_description_pipeline29:
 		"""
 			Executes PHP application and run judge on file outputted from execution.
 			
@@ -1415,8 +1766,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline29: "PHP execution & evaluation [stdout]"
-	param_description_pipeline29:
+	param_name_pipeline30: "PHP execution & evaluation [stdout]"
+	param_description_pipeline30:
 		"""
 			Executes PHP application and run judge on standard output outputted from execution.
 			
@@ -1434,8 +1785,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline30: Prolog Compilation
-	param_description_pipeline30:
+	param_name_pipeline31: Prolog Compilation
+	param_description_pipeline31:
 		"""
 			Prolog compilation which compiles submitted files by user and provided extra files from exercise author. 
 			Special Prolog wrapper is added to solution, this wrapper reads a query from stdin, gather its solutions and print them to stdout. 
@@ -1451,8 +1802,8 @@ parameters:
 			
 			* binary-file - binary file outputted from compilation can be further processed in following pipelines
 		"""
-	param_name_pipeline31: "Python execution & evaluation [outfile]"
-	param_description_pipeline31:
+	param_name_pipeline32: "Python execution & evaluation [outfile]"
+	param_description_pipeline32:
 		"""
 			Executes Python application and run judge on file outputted from execution.
 			
@@ -1471,8 +1822,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline32: "Python execution & evaluation [stdout]"
-	param_description_pipeline32:
+	param_name_pipeline33: "Python execution & evaluation [stdout]"
+	param_description_pipeline33:
 		"""
 			Executes Python application and run judge on standard output outputted from execution.
 			
@@ -1491,8 +1842,8 @@ parameters:
 			* judge-args - array of strings which will be used as additional arguments for judge
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 		"""
-	param_name_pipeline33: Rust Compilation
-	param_description_pipeline33:
+	param_name_pipeline34: Rust Compilation
+	param_description_pipeline34:
 		"""
 			Rust compilation which compiles submitted files by user and provided extra files from exercise author. The entry point for `rustc` compiler has to be provided, either by exercise author or during submission of solution. Compiler is `rustc` and there are no default options.
 			
@@ -1507,8 +1858,8 @@ parameters:
 			
 			* binary-file - binary file outputted from compilation can be further processed in following pipelines
 		"""
-	param_name_pipeline34: "Scala execution & evaluation [outfile]"
-	param_description_pipeline34:
+	param_name_pipeline35: "Scala execution & evaluation [outfile]"
+	param_description_pipeline35:
 		"""
 			Executes Scala application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it. Scala is executed using `scala` JDK runtime.
 			
@@ -1527,8 +1878,8 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline35: "Scala execution & evaluation [stdout]"
-	param_description_pipeline35:
+	param_name_pipeline36: "Scala execution & evaluation [stdout]"
+	param_description_pipeline36:
 		"""
 			Executes Scala application and run judge on standard output outputted from execution. Special `javarun.class` file is used as main entry point to the application. This class will try to find main class among submitted ones and execute it. Scala is executed using `scala` JDK runtime.
 			
@@ -1546,8 +1897,8 @@ parameters:
 			* custom-judge - author of exercise can provide special file for judging either as binary or executable script
 			* jar-files - optional jar files which should be used during compilation and execution
 		"""
-	param_name_pipeline36: Scalac compilation
-	param_description_pipeline36:
+	param_name_pipeline37: Scalac compilation
+	param_description_pipeline37:
 		"""
 			Scala compilation which compiles submitted files by user, provided extra files from exercise author and potentially JAR files provided by exercise author. Used compiler is `scalac` which compiles sources to class files. Pipeline also fetches execution runner and sends it to execution pipeline.
 			
@@ -1747,6 +2098,11 @@ App\Model\Entity\PipelineConfig:
 			- "<{param_config_pipelineConfig36}>"
 			- @demoAdmin
 
+	pipelineConfig37:
+		__construct:
+			- "<{param_config_pipelineConfig37}>"
+			- @demoAdmin
+
 App\Model\Entity\Pipeline:
 	pipeline1:
 		__construct:
@@ -1778,7 +2134,8 @@ App\Model\Entity\Pipeline:
 		name: "<{param_name_pipeline3}>"
 		description: "<{param_description_pipeline3}>"
 		pipelineConfig: @pipelineConfig3
-		runtimeEnvironments: []
+		runtimeEnvironments:
+			- @cs-dotnet-core
 
 	pipeline4:
 		__construct:
@@ -1788,11 +2145,7 @@ App\Model\Entity\Pipeline:
 		name: "<{param_name_pipeline4}>"
 		description: "<{param_description_pipeline4}>"
 		pipelineConfig: @pipelineConfig4
-		runtimeEnvironments:
-			- @bash
-			- @node-linux
-			- @php-linux
-			- @python3
+		runtimeEnvironments: []
 
 	pipeline5:
 		__construct:
@@ -1803,7 +2156,10 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline5}>"
 		pipelineConfig: @pipelineConfig5
 		runtimeEnvironments:
-			- @data-linux
+			- @bash
+			- @node-linux
+			- @php-linux
+			- @python3
 
 	pipeline6:
 		__construct:
@@ -1814,11 +2170,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline6}>"
 		pipelineConfig: @pipelineConfig6
 		runtimeEnvironments:
-			- @c-gcc-linux
-			- @cxx-gcc-linux
-			- @freepascal-linux
-			- @go
-			- @rust
+			- @data-linux
 
 	pipeline7:
 		__construct:
@@ -1829,11 +2181,12 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline7}>"
 		pipelineConfig: @pipelineConfig7
 		runtimeEnvironments:
+			- @arduino-gcc
 			- @c-gcc-linux
+			- @cs-dotnet-core
 			- @cxx-gcc-linux
 			- @freepascal-linux
 			- @go
-			- @prolog
 			- @rust
 
 	pipeline8:
@@ -1845,7 +2198,14 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline8}>"
 		pipelineConfig: @pipelineConfig8
 		runtimeEnvironments:
+			- @arduino-gcc
+			- @c-gcc-linux
+			- @cs-dotnet-core
+			- @cxx-gcc-linux
 			- @freepascal-linux
+			- @go
+			- @prolog
+			- @rust
 
 	pipeline9:
 		__construct:
@@ -1856,7 +2216,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline9}>"
 		pipelineConfig: @pipelineConfig9
 		runtimeEnvironments:
-			- @cxx-gcc-linux
+			- @freepascal-linux
 
 	pipeline10:
 		__construct:
@@ -1867,7 +2227,8 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline10}>"
 		pipelineConfig: @pipelineConfig10
 		runtimeEnvironments:
-			- @c-gcc-linux
+			- @arduino-gcc
+			- @cxx-gcc-linux
 
 	pipeline11:
 		__construct:
@@ -1878,7 +2239,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline11}>"
 		pipelineConfig: @pipelineConfig11
 		runtimeEnvironments:
-			- @go
+			- @c-gcc-linux
 
 	pipeline12:
 		__construct:
@@ -1889,7 +2250,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline12}>"
 		pipelineConfig: @pipelineConfig12
 		runtimeEnvironments:
-			- @groovy
+			- @go
 
 	pipeline13:
 		__construct:
@@ -1922,7 +2283,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline15}>"
 		pipelineConfig: @pipelineConfig15
 		runtimeEnvironments:
-			- @haskell
+			- @groovy
 
 	pipeline16:
 		__construct:
@@ -1944,7 +2305,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline17}>"
 		pipelineConfig: @pipelineConfig17
 		runtimeEnvironments:
-			- @java
+			- @haskell
 
 	pipeline18:
 		__construct:
@@ -1977,7 +2338,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline20}>"
 		pipelineConfig: @pipelineConfig20
 		runtimeEnvironments:
-			- @kotlin
+			- @java
 
 	pipeline21:
 		__construct:
@@ -2010,7 +2371,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline23}>"
 		pipelineConfig: @pipelineConfig23
 		runtimeEnvironments:
-			- @mono
+			- @kotlin
 
 	pipeline24:
 		__construct:
@@ -2043,7 +2404,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline26}>"
 		pipelineConfig: @pipelineConfig26
 		runtimeEnvironments:
-			- @node-linux
+			- @mono
 
 	pipeline27:
 		__construct:
@@ -2065,7 +2426,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline28}>"
 		pipelineConfig: @pipelineConfig28
 		runtimeEnvironments:
-			- @php-linux
+			- @node-linux
 
 	pipeline29:
 		__construct:
@@ -2087,7 +2448,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline30}>"
 		pipelineConfig: @pipelineConfig30
 		runtimeEnvironments:
-			- @prolog
+			- @php-linux
 
 	pipeline31:
 		__construct:
@@ -2098,7 +2459,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline31}>"
 		pipelineConfig: @pipelineConfig31
 		runtimeEnvironments:
-			- @python3
+			- @prolog
 
 	pipeline32:
 		__construct:
@@ -2120,7 +2481,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline33}>"
 		pipelineConfig: @pipelineConfig33
 		runtimeEnvironments:
-			- @rust
+			- @python3
 
 	pipeline34:
 		__construct:
@@ -2131,7 +2492,7 @@ App\Model\Entity\Pipeline:
 		description: "<{param_description_pipeline34}>"
 		pipelineConfig: @pipelineConfig34
 		runtimeEnvironments:
-			- @scala
+			- @rust
 
 	pipeline35:
 		__construct:
@@ -2152,6 +2513,17 @@ App\Model\Entity\Pipeline:
 		name: "<{param_name_pipeline36}>"
 		description: "<{param_description_pipeline36}>"
 		pipelineConfig: @pipelineConfig36
+		runtimeEnvironments:
+			- @scala
+
+	pipeline37:
+		__construct:
+			create:
+				- null
+
+		name: "<{param_name_pipeline37}>"
+		description: "<{param_description_pipeline37}>"
+		pipelineConfig: @pipelineConfig37
 		runtimeEnvironments:
 			- @scala
 
@@ -2212,17 +2584,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline5_isExecutionPipeline:
+	pipeline5_isCompilationPipeline:
 		__construct:
 			- @pipeline5
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline5_judgeOnlyPipeline:
-		__construct:
-			- @pipeline5
-			- judgeOnlyPipeline
+			- isCompilationPipeline
 
 		value: true
 
@@ -2233,10 +2598,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline6_producesFiles:
+	pipeline6_judgeOnlyPipeline:
 		__construct:
 			- @pipeline6
-			- producesFiles
+			- judgeOnlyPipeline
 
 		value: true
 
@@ -2247,17 +2612,24 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline7_producesStdout:
+	pipeline7_producesFiles:
 		__construct:
 			- @pipeline7
-			- producesStdout
+			- producesFiles
 
 		value: true
 
-	pipeline8_isCompilationPipeline:
+	pipeline8_isExecutionPipeline:
 		__construct:
 			- @pipeline8
-			- isCompilationPipeline
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline8_producesStdout:
+		__construct:
+			- @pipeline8
+			- producesStdout
 
 		value: true
 
@@ -2282,17 +2654,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline12_isExecutionPipeline:
+	pipeline12_isCompilationPipeline:
 		__construct:
 			- @pipeline12
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline12_producesFiles:
-		__construct:
-			- @pipeline12
-			- producesFiles
+			- isCompilationPipeline
 
 		value: true
 
@@ -2303,24 +2668,24 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline13_producesStdout:
+	pipeline13_producesFiles:
 		__construct:
 			- @pipeline13
+			- producesFiles
+
+		value: true
+
+	pipeline14_isExecutionPipeline:
+		__construct:
+			- @pipeline14
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline14_producesStdout:
+		__construct:
+			- @pipeline14
 			- producesStdout
-
-		value: true
-
-	pipeline14_hasExtraFiles:
-		__construct:
-			- @pipeline14
-			- hasExtraFiles
-
-		value: true
-
-	pipeline14_isCompilationPipeline:
-		__construct:
-			- @pipeline14
-			- isCompilationPipeline
 
 		value: true
 
@@ -2338,24 +2703,17 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline16_isExecutionPipeline:
+	pipeline16_hasExtraFiles:
 		__construct:
 			- @pipeline16
-			- isExecutionPipeline
+			- hasExtraFiles
 
 		value: true
 
-	pipeline16_producesStdout:
+	pipeline16_isCompilationPipeline:
 		__construct:
 			- @pipeline16
-			- producesStdout
-
-		value: true
-
-	pipeline16_hasEntryPoint:
-		__construct:
-			- @pipeline16
-			- hasEntryPoint
+			- isCompilationPipeline
 
 		value: true
 
@@ -2366,10 +2724,17 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline17_producesFiles:
+	pipeline17_producesStdout:
 		__construct:
 			- @pipeline17
-			- producesFiles
+			- producesStdout
+
+		value: true
+
+	pipeline17_hasEntryPoint:
+		__construct:
+			- @pipeline17
+			- hasEntryPoint
 
 		value: true
 
@@ -2380,31 +2745,31 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline18_producesStdout:
+	pipeline18_producesFiles:
 		__construct:
 			- @pipeline18
-			- producesStdout
+			- producesFiles
 
 		value: true
 
-	pipeline19_isCompilationPipeline:
+	pipeline19_isExecutionPipeline:
 		__construct:
 			- @pipeline19
-			- isCompilationPipeline
-
-		value: true
-
-	pipeline20_isExecutionPipeline:
-		__construct:
-			- @pipeline20
 			- isExecutionPipeline
 
 		value: true
 
-	pipeline20_producesFiles:
+	pipeline19_producesStdout:
+		__construct:
+			- @pipeline19
+			- producesStdout
+
+		value: true
+
+	pipeline20_isCompilationPipeline:
 		__construct:
 			- @pipeline20
-			- producesFiles
+			- isCompilationPipeline
 
 		value: true
 
@@ -2415,24 +2780,31 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline21_producesStdout:
+	pipeline21_producesFiles:
 		__construct:
 			- @pipeline21
+			- producesFiles
+
+		value: true
+
+	pipeline22_isExecutionPipeline:
+		__construct:
+			- @pipeline22
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline22_producesStdout:
+		__construct:
+			- @pipeline22
 			- producesStdout
 
 		value: true
 
-	pipeline22_hasExtraFiles:
+	pipeline23_hasExtraFiles:
 		__construct:
-			- @pipeline22
+			- @pipeline23
 			- hasExtraFiles
-
-		value: true
-
-	pipeline22_isCompilationPipeline:
-		__construct:
-			- @pipeline22
-			- isCompilationPipeline
 
 		value: true
 
@@ -2443,17 +2815,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline24_isExecutionPipeline:
+	pipeline24_isCompilationPipeline:
 		__construct:
 			- @pipeline24
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline24_producesFiles:
-		__construct:
-			- @pipeline24
-			- producesFiles
+			- isCompilationPipeline
 
 		value: true
 
@@ -2464,17 +2829,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline25_producesStdout:
+	pipeline25_producesFiles:
 		__construct:
 			- @pipeline25
-			- producesStdout
-
-		value: true
-
-	pipeline26_hasEntryPoint:
-		__construct:
-			- @pipeline26
-			- hasEntryPoint
+			- producesFiles
 
 		value: true
 
@@ -2485,10 +2843,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline26_producesFiles:
+	pipeline26_producesStdout:
 		__construct:
 			- @pipeline26
-			- producesFiles
+			- producesStdout
 
 		value: true
 
@@ -2506,23 +2864,9 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline27_producesStdout:
+	pipeline27_producesFiles:
 		__construct:
 			- @pipeline27
-			- producesStdout
-
-		value: true
-
-	pipeline28_isExecutionPipeline:
-		__construct:
-			- @pipeline28
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline28_producesFiles:
-		__construct:
-			- @pipeline28
 			- producesFiles
 
 		value: true
@@ -2534,6 +2878,20 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
+	pipeline28_isExecutionPipeline:
+		__construct:
+			- @pipeline28
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline28_producesStdout:
+		__construct:
+			- @pipeline28
+			- producesStdout
+
+		value: true
+
 	pipeline29_isExecutionPipeline:
 		__construct:
 			- @pipeline29
@@ -2541,10 +2899,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline29_producesStdout:
+	pipeline29_producesFiles:
 		__construct:
 			- @pipeline29
-			- producesStdout
+			- producesFiles
 
 		value: true
 
@@ -2555,38 +2913,38 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline30_isCompilationPipeline:
+	pipeline30_isExecutionPipeline:
 		__construct:
 			- @pipeline30
-			- isCompilationPipeline
-
-		value: true
-
-	pipeline30_hasExtraFiles:
-		__construct:
-			- @pipeline30
-			- hasExtraFiles
-
-		value: true
-
-	pipeline31_isExecutionPipeline:
-		__construct:
-			- @pipeline31
 			- isExecutionPipeline
 
 		value: true
 
-	pipeline31_producesFiles:
+	pipeline30_producesStdout:
 		__construct:
-			- @pipeline31
-			- producesFiles
+			- @pipeline30
+			- producesStdout
 
 		value: true
 
-	pipeline31_hasEntryPoint:
+	pipeline30_hasEntryPoint:
+		__construct:
+			- @pipeline30
+			- hasEntryPoint
+
+		value: true
+
+	pipeline31_isCompilationPipeline:
 		__construct:
 			- @pipeline31
-			- hasEntryPoint
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline31_hasExtraFiles:
+		__construct:
+			- @pipeline31
+			- hasExtraFiles
 
 		value: true
 
@@ -2597,10 +2955,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline32_producesStdout:
+	pipeline32_producesFiles:
 		__construct:
 			- @pipeline32
-			- producesStdout
+			- producesFiles
 
 		value: true
 
@@ -2611,10 +2969,17 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline33_isCompilationPipeline:
+	pipeline33_isExecutionPipeline:
 		__construct:
 			- @pipeline33
-			- isCompilationPipeline
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline33_producesStdout:
+		__construct:
+			- @pipeline33
+			- producesStdout
 
 		value: true
 
@@ -2625,17 +2990,17 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline34_isExecutionPipeline:
+	pipeline34_isCompilationPipeline:
 		__construct:
 			- @pipeline34
-			- isExecutionPipeline
+			- isCompilationPipeline
 
 		value: true
 
-	pipeline34_producesFiles:
+	pipeline34_hasEntryPoint:
 		__construct:
 			- @pipeline34
-			- producesFiles
+			- hasEntryPoint
 
 		value: true
 
@@ -2646,23 +3011,37 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline35_producesStdout:
+	pipeline35_producesFiles:
 		__construct:
 			- @pipeline35
+			- producesFiles
+
+		value: true
+
+	pipeline36_isExecutionPipeline:
+		__construct:
+			- @pipeline36
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline36_producesStdout:
+		__construct:
+			- @pipeline36
 			- producesStdout
 
 		value: true
 
-	pipeline36_hasExtraFiles:
+	pipeline37_hasExtraFiles:
 		__construct:
-			- @pipeline36
+			- @pipeline37
 			- hasExtraFiles
 
 		value: true
 
-	pipeline36_isCompilationPipeline:
+	pipeline37_isCompilationPipeline:
 		__construct:
-			- @pipeline36
+			- @pipeline37
 			- isCompilationPipeline
 
 		value: true
