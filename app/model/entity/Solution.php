@@ -7,23 +7,16 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use DateTime;
 use App\Helpers\Yaml;
 
 /**
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="solution_created_at_idx", columns={"created_at"})})
- *
- * @method string getId()
- * @method Collection getFiles()
- * @method RuntimeEnvironment getRuntimeEnvironment()
- * @method DateTime getCreatedAt()
- * @method void setEvaluated(bool $evaluated)
  */
 class Solution implements JsonSerializable
 {
-    use MagicAccessors;
+    use CreateableEntity;
 
     /**
      * @ORM\Id
@@ -41,11 +34,6 @@ class Solution implements JsonSerializable
     {
         return $this->author->isDeleted() ? null : $this->author;
     }
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
 
     /**
      * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
@@ -134,5 +122,27 @@ class Solution implements JsonSerializable
     public function getSubdir(): ?string
     {
         return $this->subdir;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getFiles(): Collection
+    {
+        return $this->files;
+    }
+
+    public function getRuntimeEnvironment(): RuntimeEnvironment
+    {
+        return $this->runtimeEnvironment;
+    }
+
+    public function setEvaluated(bool $evaluated): void
+    {
+        $this->evaluated = $evaluated;
     }
 }

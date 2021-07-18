@@ -8,7 +8,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getStudentHint()
  */
 class LocalizedAssignment extends LocalizedEntity implements JsonSerializable
 {
@@ -54,5 +53,17 @@ class LocalizedAssignment extends LocalizedEntity implements JsonSerializable
             "locale" => $this->locale,
             "studentHint" => $this->studentHint
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getCreatedFrom(): ?LocalizedAssignment
+    {
+        return $this->createdFrom;
+    }
+
+    public function getStudentHint(): string
+    {
+        return $this->studentHint;
     }
 }

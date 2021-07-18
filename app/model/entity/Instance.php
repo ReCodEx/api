@@ -6,23 +6,14 @@ use App\Helpers\Localizations;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method Group getRootGroup()
- * @method bool getIsAllowed()
- * @method setAdmin(User $admin)
- * @method setIsOpen(bool $isOpen)
- * @method Collection getLicences()
  */
 class Instance
 {
-    use MagicAccessors;
     use UpdateableEntity;
     use DeleteableEntity;
     use CreateableEntity;
@@ -127,11 +118,6 @@ class Instance
         );
     }
 
-    public function isAllowed()
-    {
-        return $this->isAllowed;
-    }
-
     public function __construct()
     {
         $this->licences = new ArrayCollection();
@@ -173,5 +159,42 @@ class Instance
         }
 
         return $instance;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getRootGroup(): ?Group
+    {
+        return $this->rootGroup;
+    }
+
+    public function isAllowed(): bool
+    {
+        return $this->isAllowed;
+    }
+
+    public function setAdmin(User $admin): void
+    {
+        $this->admin = $admin;
+    }
+
+    public function setIsOpen(bool $isOpen): void
+    {
+        $this->isOpen = $isOpen;
+    }
+
+    public function getLicences(): Collection
+    {
+        return $this->licences;
+    }
+
+    public function setNeedsLicence(bool $needsLicence): void
+    {
+        $this->needsLicence = $needsLicence;
     }
 }

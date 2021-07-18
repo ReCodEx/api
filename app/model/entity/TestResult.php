@@ -8,29 +8,9 @@ use App\Model\View\Helpers\SubmissionViewOptions;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method string getTestName()
- * @method float getScore()
- * @method int getUsedMemory()
- * @method int getUsedMemoryLimit()
- * @method float getUsedWallTime()
- * @method float getUsedWallTimeLimit()
- * @method float getUsedCpuTime()
- * @method float getUsedCpuTimeLimit()
- * @method string getStatus()
- * @method string getMessage()
- * @method int getExitCode()
- * @method ?int getExitSignal()
- * @method bool getCpuTimeExceeded()
- * @method bool getWallTimeExceeded()
- * @method bool getMemoryExceeded()
- * @method SolutionEvaluation getSolutionEvaluation()
  */
 class TestResult
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     public function __construct(
         SolutionEvaluation $evaluation,
         ER\TestResult $result
@@ -220,5 +200,92 @@ class TestResult
             "judgeLogStdout" => $judgeLogStdout,
             "judgeLogStderr" => $judgeLogStderr,
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getTestName(): string
+    {
+        return $this->testName;
+    }
+
+    public function getScore(): float
+    {
+        return $this->score;
+    }
+
+    public function getUsedMemory(): int
+    {
+        return $this->usedMemory;
+    }
+
+    public function getUsedMemoryLimit(): int
+    {
+        return $this->usedMemoryLimit;
+    }
+
+    public function getUsedWallTime(): float
+    {
+        return $this->usedWallTime;
+    }
+
+    public function getUsedWallTimeLimit(): float
+    {
+        return $this->usedWallTimeLimit;
+    }
+
+    public function getUsedCpuTime(): float
+    {
+        return $this->usedCpuTime;
+    }
+
+    public function getUsedCpuTimeLimit(): float
+    {
+        return $this->usedCpuTimeLimit;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
+    public function getExitCode(): int
+    {
+        return $this->exitCode;
+    }
+
+    public function getExitSignal(): ?int
+    {
+        return $this->exitSignal;
+    }
+
+    public function getCpuTimeExceeded(): bool
+    {
+        return $this->cpuTimeExceeded;
+    }
+
+    public function getWallTimeExceeded(): bool
+    {
+        return $this->wallTimeExceeded;
+    }
+
+    public function getMemoryExceeded(): bool
+    {
+        return $this->memoryExceeded;
+    }
+
+    public function getSolutionEvaluation(): SolutionEvaluation
+    {
+        return $this->solutionEvaluation;
     }
 }

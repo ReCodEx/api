@@ -12,8 +12,6 @@ use DateTime;
 
 /**
  * @ORM\Entity
- *
- * @method string getHashName()
  */
 class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 {
@@ -135,5 +133,12 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     public function getFile(FileStorageManager $manager): ?IImmutableFile
     {
         return $manager->getSupplementaryFileByHash($this->getHashName());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getHashName(): string
+    {
+        return $this->hashName;
     }
 }

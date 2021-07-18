@@ -5,23 +5,12 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\Entity
- * @method int getYear();
- * @method int getTerm();
- * @method DateTime|null getBeginning()
- * @method void setBeginning(DateTime $beginning)
- * @method DateTime|null getEnd()
- * @method void setEnd(DateTime $end)
- * @method DateTime|null getAdvertiseUntil()
- * @method void setAdvertiseUntil(DateTime|null $advertiseUntil)
  */
 class SisValidTerm implements JsonSerializable
 {
-    use MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -94,5 +83,52 @@ class SisValidTerm implements JsonSerializable
             'end' => $this->end ? $this->end->getTimestamp() : null,
             'advertiseUntil' => $this->advertiseUntil ? $this->advertiseUntil->getTimestamp() : null
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getYear(): int
+    {
+        return $this->year;
+    }
+
+    public function getTerm(): int
+    {
+        return $this->term;
+    }
+
+    public function getBeginning(): ?DateTime
+    {
+        return $this->beginning;
+    }
+
+    public function setBeginning(DateTime $beginning): void
+    {
+        $this->beginning = $beginning;
+    }
+
+    public function getEnd(): ?DateTime
+    {
+        return $this->end;
+    }
+
+    public function setEnd(DateTime $end): void
+    {
+        $this->end = $end;
+    }
+
+    public function getAdvertiseUntil(): ?DateTime
+    {
+        return $this->advertiseUntil;
+    }
+
+    public function setAdvertiseUntil(?DateTime $advertiseUntil): void
+    {
+        $this->advertiseUntil = $advertiseUntil;
     }
 }

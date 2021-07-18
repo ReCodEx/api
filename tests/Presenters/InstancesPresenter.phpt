@@ -118,7 +118,7 @@ class TestInstancesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Instances',
             'POST',
-            ['action' => 'updateInstance', 'id' => $instance->id],
+            ['action' => 'updateInstance', 'id' => $instance->getId()],
             ['isOpen' => 'false']
         );
         $response = $this->presenter->run($request);
@@ -171,14 +171,14 @@ class TestInstancesPresenter extends Tester\TestCase
         $instance = array_pop($allInstances);
 
         $request = new Nette\Application\Request(
-            'V1:Instances', 'GET', ['action' => 'licences', 'id' => $instance->id]
+            'V1:Instances', 'GET', ['action' => 'licences', 'id' => $instance->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
-        Assert::equal($this->presenter->instances->get($instance->id)->getLicences()->getValues(), $result['payload']);
+        Assert::equal($this->presenter->instances->get($instance->getId())->getLicences()->getValues(), $result['payload']);
     }
 
     public function testCreateLicence()
@@ -192,7 +192,7 @@ class TestInstancesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Instances',
             'POST',
-            ['action' => 'createLicence', 'id' => $instance->id],
+            ['action' => 'createLicence', 'id' => $instance->getId()],
             ['note' => 'Another year', 'validUntil' => $validUntil->getTimestamp()]
         );
         $response = $this->presenter->run($request);
@@ -201,9 +201,9 @@ class TestInstancesPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $licence = $result['payload'];
-        Assert::equal($instance->id, $licence->instance->id);
-        Assert::equal('Another year', $licence->note);
-        Assert::equal($validUntil, $licence->validUntil);
+        Assert::equal($instance->getId(), $licence->getInstance()->getId());
+        Assert::equal('Another year', $licence->getNote());
+        Assert::equal($validUntil, $licence->getValidUntil());
     }
 
     public function testUpdateLicence()
@@ -220,7 +220,7 @@ class TestInstancesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Instances',
             'POST',
-            ['action' => 'updateLicence', 'licenceId' => $newLicence->id],
+            ['action' => 'updateLicence', 'licenceId' => $newLicence->getId()],
             ['note' => 'Changed description', 'validUntil' => '2020-01-01 13:02:56', 'isValid' => 'false']
         );
         $response = $this->presenter->run($request);
@@ -230,10 +230,10 @@ class TestInstancesPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $licence = $result['payload'];
-        Assert::equal('Changed description', $licence->note);
-        Assert::equal(new DateTime('2020-01-01 13:02:56'), $licence->validUntil);
-        Assert::false($licence->isValid);
-        Assert::equal($newLicence->note, $licence->note);
+        Assert::equal('Changed description', $licence->getNote());
+        Assert::equal(new DateTime('2020-01-01 13:02:56'), $licence->getValidUntil());
+        Assert::false($licence->isValid());
+        Assert::equal($newLicence->getNote(), $licence->getNote());
     }
 
     public function testRemoveLicence()
@@ -247,13 +247,13 @@ class TestInstancesPresenter extends Tester\TestCase
         $this->presenter->licences->persist($newLicence);
 
         // check there are two licences for this instance
-        Assert::equal(2, $instance->licences->count());
+        Assert::equal(2, $instance->getLicences()->count());
 
         // perform delete request
         $request = new Nette\Application\Request(
             'V1:Instances',
             'DELETE',
-            ['action' => 'deleteLicence', 'licenceId' => $newLicence->id]
+            ['action' => 'deleteLicence', 'licenceId' => $newLicence->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -262,7 +262,7 @@ class TestInstancesPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         Assert::equal("OK", $result['payload']);
-        Assert::equal(1, $instance->licences->count());
+        Assert::equal(1, $instance->getLicences()->count());
     }
 
 }

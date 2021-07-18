@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentCommentsEmailsSender;
 use App\Helpers\Notifications\SolutionCommentsEmailsSender;
+use App\Model\Entity\Comment;
 use App\V1Module\Presenters\CommentsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
@@ -73,8 +74,8 @@ class TestCommentsPresenter extends Tester\TestCase
             count(
                 array_filter(
                     $comments,
-                    function ($comment) {
-                        return $comment->getIsPrivate();
+                    function (Comment $comment) {
+                        return $comment->isPrivate();
                     }
                 )
             )
@@ -110,13 +111,14 @@ class TestCommentsPresenter extends Tester\TestCase
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
+        /** @var Comment $comment */
         $comment = $result['payload'];
-        Assert::false($comment->isPrivate);
-        Assert::equal("some comment text", $comment->text);
-        Assert::equal("mainThread", $comment->commentThread->id);
+        Assert::false($comment->isPrivate());
+        Assert::equal("some comment text", $comment->getText());
+        Assert::equal("mainThread", $comment->getCommentThread()->getId());
 
         // Make sure the assignment was persisted
-        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->getId()]), $result['payload']);
     }
 
     public function testAddCommentIntoExistingAssignmentSolutionThread()
@@ -140,13 +142,14 @@ class TestCommentsPresenter extends Tester\TestCase
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
+        /** @var Comment $comment */
         $comment = $result['payload'];
-        Assert::false($comment->isPrivate);
-        Assert::equal("some comment text", $comment->text);
-        Assert::equal($assignmentSolution->getId(), $comment->commentThread->id);
+        Assert::false($comment->isPrivate());
+        Assert::equal("some comment text", $comment->getText());
+        Assert::equal($assignmentSolution->getId(), $comment->getCommentThread()->getId());
 
         // Make sure the assignment was persisted
-        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->getId()]), $result['payload']);
     }
 
     public function testAddCommentIntoExistingReferenceSolutionThread()
@@ -171,12 +174,12 @@ class TestCommentsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $comment = $result['payload'];
-        Assert::false($comment->isPrivate);
-        Assert::equal("some comment text", $comment->text);
-        Assert::equal($referenceSolution->getId(), $comment->commentThread->id);
+        Assert::false($comment->isPrivate());
+        Assert::equal("some comment text", $comment->getText());
+        Assert::equal($referenceSolution->getId(), $comment->getCommentThread()->getId());
 
         // Make sure the assignment was persisted
-        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->getId()]), $result['payload']);
     }
 
     public function testAddAssignmentCommentAndCreateThread()
@@ -201,12 +204,12 @@ class TestCommentsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $comment = $result['payload'];
-        Assert::false($comment->isPrivate);
-        Assert::equal("some comment text", $comment->text);
-        Assert::equal($assignment->getId(), $comment->commentThread->id);
+        Assert::false($comment->isPrivate());
+        Assert::equal("some comment text", $comment->getText());
+        Assert::equal($assignment->getId(), $comment->getCommentThread()->getId());
 
         // Make sure the assignment was persisted
-        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->getId()]), $result['payload']);
     }
 
     public function testAddCommentIntoNonexistingThread()
@@ -225,7 +228,7 @@ class TestCommentsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $comment = $result['payload'];
-        Assert::equal("dummyThreadId", $comment->commentThread->id);
+        Assert::equal("dummyThreadId", $comment->getCommentThread()->getId());
     }
 
     public function testTogglePrivate()
@@ -234,13 +237,13 @@ class TestCommentsPresenter extends Tester\TestCase
 
         $comments = $this->presenter->comments->findAll();
         $exampleComment = array_pop($comments);
-        $oldPrivateFlag = $exampleComment->isPrivate;
-        $oldId = $exampleComment->id;
+        $oldPrivateFlag = $exampleComment->isPrivate();
+        $oldId = $exampleComment->getId();
 
         $request = new Nette\Application\Request(
             'V1:Comments',
             'POST',
-            ['action' => 'togglePrivate', 'threadId' => 'mainThread', 'commentId' => $exampleComment->id]
+            ['action' => 'togglePrivate', 'threadId' => 'mainThread', 'commentId' => $exampleComment->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -248,8 +251,8 @@ class TestCommentsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $comment = $result['payload'];
-        Assert::equal($comment->id, $oldId);
-        Assert::true($comment->isPrivate !== $oldPrivateFlag);
+        Assert::equal($comment->getId(), $oldId);
+        Assert::true($comment->isPrivate() !== $oldPrivateFlag);
     }
 }
 

@@ -401,7 +401,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             'GET',
             [
             'action' => 'download',
-            'id' => $file->id
+            'id' => $file->getId()
             ]
         );
         $response = $this->presenter->run($request);
@@ -427,7 +427,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             'GET',
             [
             'action' => 'download',
-            'id' => $file->id
+            'id' => $file->getId()
             ]
         );
         $response = $this->presenter->run($request);
@@ -452,7 +452,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             'GET',
             [
             'action' => 'download',
-            'id' => $file->id
+            'id' => $file->getId()
             ]
         );
 
@@ -478,7 +478,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
-            ['action' => 'downloadSupplementaryFile', 'id' => $file->id]
+            ['action' => 'downloadSupplementaryFile', 'id' => $file->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);

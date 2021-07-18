@@ -4,41 +4,12 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\Entity
- *
- * @method bool getDarkTheme()
- * @method bool getVimMode()
- * @method bool getOpenedSidebar()
- * @method bool getUseGravatar()
- * @method string|null getDefaultPage()
- * @method string|null getDefaultLanguage()
- * @method bool getNewAssignmentEmails()
- * @method bool getAssignmentDeadlineEmails()
- * @method bool getSubmissionEvaluatedEmails()
- * @method bool getSolutionCommentsEmails()
- * @method bool getAssignmentCommentsEmails()
- * @method bool getPointsChangedEmails()
- * @method bool getAssignmentSubmitAfterAcceptedEmails()
- * @method setDarkTheme(bool $darkTheme)
- * @method setVimMode(bool $vimMode)
- * @method setOpenedSidebar(bool $opened)
- * @method setUseGravatar(bool $use)
- * @method setDefaultPage(?string $page)
- * @method setDefaultLanguage(string $language)
- * @method setNewAssignmentEmails(bool $flag)
- * @method setAssignmentDeadlineEmails(bool $flag)
- * @method setSubmissionEvaluatedEmails(bool $flag)
- * @method setSolutionCommentsEmails(bool $flag)
- * @method setAssignmentCommentsEmails(bool $flag)
- * @method setPointsChangedEmails(bool $flag)
- * @method setAssignmentSubmitAfterAcceptedEmails(bool $flag)
  */
 class UserSettings implements JsonSerializable
 {
-    use MagicAccessors;
     use FlagAccessor;
 
     public function __construct(
@@ -167,5 +138,147 @@ class UserSettings implements JsonSerializable
             "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
             "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getDarkTheme(): bool
+    {
+        return $this->darkTheme;
+    }
+
+    public function setDarkTheme(bool $darkTheme): void
+    {
+        $this->darkTheme = $darkTheme;
+    }
+
+    public function getVimMode(): bool
+    {
+        return $this->vimMode;
+    }
+
+    public function setVimMode(bool $vimMode): void
+    {
+        $this->vimMode = $vimMode;
+    }
+
+    public function getOpenedSidebar(): bool
+    {
+        return $this->openedSidebar;
+    }
+
+    public function setOpenedSidebar(bool $openedSidebar): void
+    {
+        $this->openedSidebar = $openedSidebar;
+    }
+
+    public function getUseGravatar(): bool
+    {
+        return $this->useGravatar;
+    }
+
+    public function setUseGravatar(bool $useGravatar): void
+    {
+        $this->useGravatar = $useGravatar;
+    }
+
+    public function getDefaultPage(): ?string
+    {
+        return $this->defaultPage;
+    }
+
+    public function setDefaultPage(?string $defaultPage): void
+    {
+        $this->defaultPage = $defaultPage;
+    }
+
+    public function getDefaultLanguage(): string
+    {
+        return $this->defaultLanguage;
+    }
+
+    public function setDefaultLanguage(string $defaultLanguage): void
+    {
+        $this->defaultLanguage = $defaultLanguage;
+    }
+
+    public function getNewAssignmentEmails(): bool
+    {
+        return $this->newAssignmentEmails;
+    }
+
+    public function setNewAssignmentEmails(bool $newAssignmentEmails): void
+    {
+        $this->newAssignmentEmails = $newAssignmentEmails;
+    }
+
+    public function getAssignmentDeadlineEmails(): bool
+    {
+        return $this->assignmentDeadlineEmails;
+    }
+
+    public function setAssignmentDeadlineEmails(bool $assignmentDeadlineEmails): void
+    {
+        $this->assignmentDeadlineEmails = $assignmentDeadlineEmails;
+    }
+
+    public function getSubmissionEvaluatedEmails(): bool
+    {
+        return $this->submissionEvaluatedEmails;
+    }
+
+    public function setSubmissionEvaluatedEmails(bool $submissionEvaluatedEmails): void
+    {
+        $this->submissionEvaluatedEmails = $submissionEvaluatedEmails;
+    }
+
+    public function getSolutionCommentsEmails(): bool
+    {
+        return $this->solutionCommentsEmails;
+    }
+
+    public function setSolutionCommentsEmails(bool $solutionCommentsEmails): void
+    {
+        $this->solutionCommentsEmails = $solutionCommentsEmails;
+    }
+
+    public function getAssignmentCommentsEmails(): bool
+    {
+        return $this->assignmentCommentsEmails;
+    }
+
+    public function setAssignmentCommentsEmails(bool $assignmentCommentsEmails): void
+    {
+        $this->assignmentCommentsEmails = $assignmentCommentsEmails;
+    }
+
+    public function getPointsChangedEmails(): bool
+    {
+        return $this->pointsChangedEmails;
+    }
+
+    public function setPointsChangedEmails(bool $pointsChangedEmails): void
+    {
+        $this->pointsChangedEmails = $pointsChangedEmails;
+    }
+
+    public function getAssignmentSubmitAfterAcceptedEmails(): bool
+    {
+        return $this->assignmentSubmitAfterAcceptedEmails;
+    }
+
+    public function setAssignmentSubmitAfterAcceptedEmails(bool $assignmentSubmitAfterAcceptedEmails): void
+    {
+        $this->assignmentSubmitAfterAcceptedEmails = $assignmentSubmitAfterAcceptedEmails;
+    }
+
+    public function getAssignmentSubmitAfterReviewedEmails(): bool
+    {
+        return $this->assignmentSubmitAfterReviewedEmails;
+    }
+
+    public function setAssignmentSubmitAfterReviewedEmails(bool $assignmentSubmitAfterReviewedEmails): void
+    {
+        $this->assignmentSubmitAfterReviewedEmails = $assignmentSubmitAfterReviewedEmails;
     }
 }

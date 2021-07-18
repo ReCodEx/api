@@ -13,6 +13,8 @@ use JsonSerializable;
  */
 class ExerciseScoreConfig implements JsonSerializable
 {
+    use CreateableEntity;
+
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -23,7 +25,7 @@ class ExerciseScoreConfig implements JsonSerializable
     /**
      * @return string
      */
-    public function getId(): string
+    public function getId(): ?string
     {
         return $this->id;
     }
@@ -67,16 +69,6 @@ class ExerciseScoreConfig implements JsonSerializable
     {
         $serializd = $config !== null ? Yaml::dump($config) : null;
         return $serializd === $this->config;
-    }
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
-
-    public function getCreatedAt(): DateTime
-    {
-        return $this->createdAt;
     }
 
     /**

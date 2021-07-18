@@ -345,7 +345,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $allExercises = $this->presenter->exercises->findAll();
         $exercise = array_pop($allExercises);
 
-        $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'detail', 'id' => $exercise->id]);
+        $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'detail', 'id' => $exercise->getId()]);
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -364,7 +364,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Exercises',
             'POST',
-            ['action' => 'updateDetail', 'id' => $exercise->id],
+            ['action' => 'updateDetail', 'id' => $exercise->getId()],
             [
                 'version' => 1,
                 'difficulty' => 'super hard',
@@ -391,10 +391,10 @@ class TestExercisesPresenter extends Tester\TestCase
         Assert::equal(false, $result['payload']['isPublic']);
 
         $updatedLocalizedTexts = $result['payload']['localizedTexts'];
-        Assert::count(count($exercise->localizedTexts), $updatedLocalizedTexts);
+        Assert::count(count($exercise->getLocalizedTexts()), $updatedLocalizedTexts);
 
         /** @var LocalizedExercise $localized */
-        foreach ($exercise->localizedTexts as $localized) {
+        foreach ($exercise->getLocalizedTexts() as $localized) {
             Assert::count(
                 1,
                 array_filter(

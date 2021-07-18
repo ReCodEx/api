@@ -198,11 +198,12 @@ class TestPipelinesPresenter extends Tester\TestCase
     public function testRemovePipeline()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
+        /** @var Pipeline $pipeline */
         $pipeline = current($this->presenter->pipelines->findAll());
 
         $request = new Nette\Application\Request(
             'V1:Pipelines', 'DELETE',
-            ['action' => 'removePipeline', 'id' => $pipeline->id]
+            ['action' => 'removePipeline', 'id' => $pipeline->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -399,7 +400,7 @@ class TestPipelinesPresenter extends Tester\TestCase
             new Nette\Application\Request(
                 "V1:Pipelines", "POST", [
                 "action" => 'uploadSupplementaryFiles',
-                'id' => $pipeline->id
+                'id' => $pipeline->getId()
             ], [
                     'files' => $files
                 ]

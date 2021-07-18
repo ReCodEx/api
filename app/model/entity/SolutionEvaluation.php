@@ -11,19 +11,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method DateTime getEvaluatedAt()
- * @method bool getEvaluationFailed()
- * @method int getPoints()
- * @method setPoints(int $points)
- * @method Collection getTestResults()
- * @method bool getInitFailed()
  */
 class SolutionEvaluation
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -126,5 +116,57 @@ class SolutionEvaluation
             $testResult = new TestResult($this, $result);
             $this->testResults->add($testResult);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getEvaluatedAt(): DateTime
+    {
+        return $this->evaluatedAt;
+    }
+
+    public function setEvaluatedAt(DateTime $evaluatedAt): void
+    {
+        $this->evaluatedAt = $evaluatedAt;
+    }
+
+    public function getPoints(): int
+    {
+        return $this->points;
+    }
+
+    public function setPoints(int $points): void
+    {
+        $this->points = $points;
+    }
+
+    public function getTestResults(): Collection
+    {
+        return $this->testResults;
+    }
+
+    public function getInitFailed(): bool
+    {
+        return $this->initFailed;
+    }
+
+    public function setInitFailed(bool $initFailed): void
+    {
+        $this->initFailed = $initFailed;
+    }
+
+    public function setScoreConfig(?ExerciseScoreConfig $scoreConfig): void
+    {
+        $this->scoreConfig = $scoreConfig;
+    }
+
+    public function setInitiationOutputs(string $initiationOutputs): void
+    {
+        $this->initiationOutputs = $initiationOutputs;
     }
 }

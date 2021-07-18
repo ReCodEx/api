@@ -102,7 +102,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
         $request = new Request(
             "V1:BrokerReports", "POST", [
             "action" => "jobStatus",
-            "jobId" => AssignmentSolution::JOB_TYPE . '_' . $submission->id
+            "jobId" => AssignmentSolution::JOB_TYPE . '_' . $submission->getId()
         ], [
                 "status" => "FAILED",
                 "message" => "whatever"
@@ -126,7 +126,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
         $request = new Request(
             "V1:BrokerReports", "POST", [
             "action" => "jobStatus",
-            "jobId" => ReferenceSolutionSubmission::JOB_TYPE . '_' . $submission->id
+            "jobId" => ReferenceSolutionSubmission::JOB_TYPE . '_' . $submission->getId()
         ], [
                 "status" => "FAILED",
                 "message" => "whatever"

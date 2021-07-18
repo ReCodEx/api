@@ -122,7 +122,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                 "POST",
                 [
                 "action" => 'uploadSupplementaryFiles',
-                'id' => $exercise->id
+                'id' => $exercise->getId()
                 ],
                 [
                     'files' => $files
@@ -184,7 +184,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                         "POST",
                         [
                         "action" => 'uploadSupplementaryFiles',
-                        'id' => $exercise->id
+                        'id' => $exercise->getId()
                         ],
                         [
                             'files' => $files
@@ -240,7 +240,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                         "POST",
                         [
                         "action" => 'uploadSupplementaryFiles',
-                        'id' => $exercise->id
+                        'id' => $exercise->getId()
                         ],
                         [
                             'files' => $files
@@ -499,7 +499,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                 "POST",
                 [
                 "action" => 'uploadAttachmentFiles',
-                'id' => $exercise->id
+                'id' => $exercise->getId()
                 ],
                 [ 'files' => $files ]
             )

@@ -3,9 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Helpers\Evaluation\IExercise;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use App\Helpers\EvaluationStatus as ES;
 use App\Helpers\EvaluationResults as ER;
@@ -14,15 +12,9 @@ use App\Model\View\Helpers\SubmissionViewOptions;
 /**
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="ref_solution_submission_submitted_at_idx", columns={"submitted_at"})})
- *
- * @method ReferenceExerciseSolution getReferenceSolution()
- * @method ?SubmissionFailure getFailure()
- * @method setFailure(SubmissionFailure $failure)
  */
 class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     public const JOB_TYPE = "reference";
 
     /**
@@ -90,6 +82,23 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
         $this->hwGroup = $hwGroup;
 
         $referenceSolution->addSubmission($this);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getReferenceSolution(): ReferenceExerciseSolution
+    {
+        return $this->referenceSolution;
+    }
+
+    public function getFailure(): ?SubmissionFailure
+    {
+        return $this->failure;
+    }
+
+    public function setFailure(SubmissionFailure $failure): void
+    {
+        $this->failure = $failure;
     }
 
     public function isFailed(): bool

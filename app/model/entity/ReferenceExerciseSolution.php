@@ -5,20 +5,12 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use JsonSerializable;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method string getDescription()
- * @method Solution getSolution()
- * @method Collection getSubmissions()
  */
 class ReferenceExerciseSolution
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -66,5 +58,27 @@ class ReferenceExerciseSolution
         $this->description = $description;
         $this->solution = new Solution($user, $runtime);
         $this->submissions = new ArrayCollection();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getSolution(): Solution
+    {
+        return $this->solution;
+    }
+
+    public function getSubmissions(): Collection
+    {
+        return $this->submissions;
     }
 }

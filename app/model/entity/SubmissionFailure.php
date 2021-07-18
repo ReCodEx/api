@@ -5,20 +5,13 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\Entity
- *
- * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
- * @method string getDescription()
- * @method DateTime getCreatedAt()
- * @method string|null getResolutionNote()
- * @method string getType()
  */
 class SubmissionFailure implements JsonSerializable
 {
-    use MagicAccessors;
+    use CreateableEntity;
 
     /**
      * Broker rejected the submission. This happens when there is no worker who can evaluate it.
@@ -73,11 +66,6 @@ class SubmissionFailure implements JsonSerializable
     protected $referenceSolutionSubmission;
 
     /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
-
-    /**
      * @ORM\Column(type="datetime", nullable=true)
      * @var ?DateTime
      */
@@ -106,10 +94,37 @@ class SubmissionFailure implements JsonSerializable
         return new SubmissionFailure($type, $description, $createdAt);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
     public function resolve(string $note, DateTime $resolvedAt = null)
     {
         $this->resolvedAt = $resolvedAt ?: new DateTime();
         $this->resolutionNote = $note;
+    }
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function getResolvedAt(): ?DateTime
+    {
+        return $this->resolvedAt;
+    }
+
+    public function getResolutionNote(): ?string
+    {
+        return $this->resolutionNote;
     }
 
     public function getSubmission(): Submission
@@ -117,10 +132,17 @@ class SubmissionFailure implements JsonSerializable
         return $this->assignmentSolutionSubmission ?? $this->referenceSolutionSubmission;
     }
 
+    public function getAssignmentSolutionSubmission(): ?AssignmentSolutionSubmission
+    {
+        return $this->assignmentSolutionSubmission;
+    }
+
     public function isConfigErrorFailure(): bool
     {
         return $this->type === self::TYPE_CONFIG_ERROR || $this->type === self::TYPE_SOFT_CONFIG_ERROR;
     }
+
+    ////////////////////////////////////////////////////////////////////////////
 
     public function toSimpleArray()
     {

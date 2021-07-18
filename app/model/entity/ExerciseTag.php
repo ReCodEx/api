@@ -7,13 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"name", "exercise_id"})})
- *
- * @method int getId()
- * @method string getName()
  */
 class ExerciseTag
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
     use CreateableEntity;
 
     /**
@@ -55,5 +51,17 @@ class ExerciseTag
         $this->author = $author;
         $this->exercise = $exercise;
         $this->createdNow();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

@@ -3,25 +3,15 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use DateTime;
 
 /**
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"shadow_assignment_id", "awardee_id"})})
- *
- * @method string getId()
- * @method string getNote()
- * @method int getPoints()
- * @method DateTime getCreatedAt()
- * @method ?DateTime getAwardedAt()
- * @method setPoints(int $points)
- * @method setNote(string $note)
- * @method void setAwardedAt(?DateTime $awardedAt)
  */
 class ShadowAssignmentPoints
 {
-    use MagicAccessors;
+    use CreateableEntity;
     use UpdateableEntity;
 
     public function __construct(
@@ -93,12 +83,44 @@ class ShadowAssignmentPoints
     }
 
     /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
-
-    /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     protected $awardedAt;
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getNote(): string
+    {
+        return $this->note;
+    }
+
+    public function setNote(string $note): void
+    {
+        $this->note = $note;
+    }
+
+    public function getPoints(): int
+    {
+        return $this->points;
+    }
+
+    public function setPoints(int $points): void
+    {
+        $this->points = $points;
+    }
+
+    public function getAwardedAt(): ?DateTime
+    {
+        return $this->awardedAt;
+    }
+
+    public function setAwardedAt(?DateTime $awardedAt): void
+    {
+        $this->awardedAt = $awardedAt;
+    }
 }

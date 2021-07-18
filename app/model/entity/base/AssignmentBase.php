@@ -2,21 +2,15 @@
 
 namespace App\Model\Entity;
 
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\MappedSuperclass
- *
- * @method DateTime getCreatedAt()
- * @method setIsPublic(bool $public)
- * @method setIsBonus(bool $bonus)
  */
 abstract class AssignmentBase
 {
-    use MagicAccessors;
+    use CreateableEntity;
     use VersionableEntity;
     use UpdateableEntity;
     use DeleteableEntity;
@@ -28,11 +22,6 @@ abstract class AssignmentBase
     abstract function getLocalizedTexts(): Collection;
 
     abstract function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
 
     /**
      * @ORM\Column(type="boolean")
@@ -68,5 +57,17 @@ abstract class AssignmentBase
         } else {
             return $this->getMaxPoints();
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function setIsPublic(bool $isPublic)
+    {
+        $this->isPublic = $isPublic;
+    }
+
+    public function setIsBonus(bool $isBonus)
+    {
+        $this->isBonus = $isBonus;
     }
 }

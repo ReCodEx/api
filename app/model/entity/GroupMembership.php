@@ -10,18 +10,9 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method Group getGroup()
- * @method ?DateTime getRejectedAt()
- * @method ?DateTime getJoinedAt()
- * @method ?DateTime getRequestedAt()
- * @method ?DateTime getStudentSince()
- * @method ?DateTime getSupervisorSince()
- * @method User getUser()
  */
 class GroupMembership implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     const STATUS_REQUESTED = "requested";
     const STATUS_ACTIVE = "active";
     const STATUS_REJECTED = "rejected";
@@ -144,5 +135,57 @@ class GroupMembership implements JsonSerializable
             "studentSince" => $this->studentSince ? $this->studentSince->getTimestamp() : null,
             "supervisorSince" => $this->supervisorSince ? $this->supervisorSince->getTimestamp() : null,
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getGroup(): Group
+    {
+        return $this->group;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function getRejectedAt(): ?DateTime
+    {
+        return $this->rejectedAt;
+    }
+
+    public function getJoinedAt(): ?DateTime
+    {
+        return $this->joinedAt;
+    }
+
+    public function getRequestedAt(): ?DateTime
+    {
+        return $this->requestedAt;
+    }
+
+    public function getStudentSince(): ?DateTime
+    {
+        return $this->studentSince;
+    }
+
+    public function getSupervisorSince(): ?DateTime
+    {
+        return $this->supervisorSince;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 }

@@ -5,25 +5,12 @@ namespace App\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\Entity
- *
- * @method string|null getId()
- * @method Solution getSolution()
- * @method bool getAccepted()
- * @method int getBonusPoints()
- * @method setBonusPoints(int $points)
- * @method int|null getOverriddenPoints()
- * @method setOverriddenPoints(?int $points)
- * @method Collection getSubmissions()
- * @method AssignmentSolutionSubmission|null getLastSubmission()
- * @method setLastSubmission(?AssignmentSolutionSubmission $submission)
  */
 class AssignmentSolution
 {
-    use MagicAccessors;
     use FlagAccessor;
 
     const JOB_TYPE = "student";
@@ -190,6 +177,11 @@ class AssignmentSolution
     /// GETTERS AND SETTERS
     ///
 
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
     public function isAccepted(): bool
     {
         return $this->accepted;
@@ -218,5 +210,45 @@ class AssignmentSolution
     public function setNote(?string $note): void
     {
         $this->note = $note;
+    }
+
+    public function getSolution(): Solution
+    {
+        return $this->solution;
+    }
+
+    public function getBonusPoints(): int
+    {
+        return $this->bonusPoints;
+    }
+
+    public function setBonusPoints(int $bonusPoints): void
+    {
+        $this->bonusPoints = $bonusPoints;
+    }
+
+    public function getOverriddenPoints(): ?int
+    {
+        return $this->overriddenPoints;
+    }
+
+    public function setOverriddenPoints(?int $overriddenPoints): void
+    {
+        $this->overriddenPoints = $overriddenPoints;
+    }
+
+    public function getSubmissions(): Collection
+    {
+        return $this->submissions;
+    }
+
+    public function getLastSubmission(): ?AssignmentSolutionSubmission
+    {
+        return $this->lastSubmission;
+    }
+
+    public function setLastSubmission(?AssignmentSolutionSubmission $lastSubmission): void
+    {
+        $this->lastSubmission = $lastSubmission;
     }
 }

@@ -5,22 +5,15 @@ namespace App\Model\Entity;
 use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Helpers\YamlException;
 use App\Helpers\Yaml;
 use DateTime;
 
 /**
  * @ORM\Entity
- * @method string getId()
- * @method string getLimits()
- * @method RuntimeEnvironment getRuntimeEnvironment()
- * @method HardwareGroup getHardwareGroup()
  */
 class ExerciseLimits implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -126,5 +119,27 @@ class ExerciseLimits implements JsonSerializable
         } catch (ExerciseConfigException $exception) {
             return false;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getLimits(): string
+    {
+        return $this->limits;
+    }
+
+    public function getRuntimeEnvironment(): RuntimeEnvironment
+    {
+        return $this->runtimeEnvironment;
+    }
+
+    public function getHardwareGroup(): HardwareGroup
+    {
+        return $this->hardwareGroup;
     }
 }

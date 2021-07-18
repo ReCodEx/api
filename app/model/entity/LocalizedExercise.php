@@ -9,9 +9,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getName()
- * @method string getDescription()
- * @method string getAssignmentText()
  */
 class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 {
@@ -101,5 +98,22 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
             "description" => $this->description,
             "createdAt" => $this->createdAt->getTimestamp(),
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getAssignmentText(): string
+    {
+        return $this->assignmentText;
     }
 }

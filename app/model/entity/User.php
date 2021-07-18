@@ -15,34 +15,10 @@ use App\Exceptions\ApiException;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method string getEmail()
- * @method string getRole()
- * @method string|null getAvatarUrl()
- * @method ArrayCollection getInstances()
- * @method Collection getExercises()
- * @method UserSettings getSettings()
- * @method setUsername(string $username)
- * @method setFirstName(string $firstName)
- * @method getFirstName()
- * @method setLastName(string $lastName)
- * @method getLastName()
- * @method setEmail(string $email)
- * @method setDegreesBeforeName(string $degrees)
- * @method setDegreesAfterName(string $degrees)
- * @method setRole(string $role)
- * @method setIsAllowed(bool $isAllowed)
- * @method Login|null getLogin()
- * @method setLogin(Login $login)
- * @method Collection getExternalLogins()
- * @method setTokenValidityThreshold(DateTime $threshold)
- * @method DateTime|null getTokenValidityThreshold()
- * @method DateTime|null getLastAuthenticationAt()
  */
 class User
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use CreateableEntity;
     use DeleteableEntity;
 
     public function __construct(
@@ -159,11 +135,6 @@ class User
     {
         return $this->isAllowed;
     }
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
 
     /**
      * @ORM\ManyToMany(targetEntity="Instance", inversedBy="members")
@@ -408,16 +379,6 @@ class User
     }
 
     /**
-     * Return date and time when the user was created.
-     * @return DateTime
-     */
-    public function getCreatedAt(): DateTime
-    {
-        return $this->createdAt;
-    }
-
-
-    /**
      * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
      * When the last authentication or token renewal occurred.
@@ -451,5 +412,117 @@ class User
     public function setUiData(?UserUiData $uiData)
     {
         $this->uiData = $uiData;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+    public function getAvatarUrl(): ?string
+    {
+        return $this->avatarUrl;
+    }
+
+    public function getInstances(): Collection
+    {
+        return $this->instances;
+    }
+
+    public function getExercises(): Collection
+    {
+        return $this->exercises;
+    }
+
+    public function getSettings(): UserSettings
+    {
+        return $this->settings;
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): void
+    {
+        $this->firstName = $firstName;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): void
+    {
+        $this->lastName = $lastName;
+    }
+
+    public function setDegreesBeforeName(string $degreesBeforeName): void
+    {
+        $this->degreesBeforeName = $degreesBeforeName;
+    }
+
+    public function setDegreesAfterName(string $degreesAfterName): void
+    {
+        $this->degreesAfterName = $degreesAfterName;
+    }
+
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
+    }
+
+    public function setIsAllowed(bool $isAllowed): void
+    {
+        $this->isAllowed = $isAllowed;
+    }
+
+    public function getLogin(): ?Login
+    {
+        return $this->login;
+    }
+
+    public function setLogin(?Login $login): void
+    {
+        $this->login = $login;
+    }
+
+    public function getExternalLogins(): Collection
+    {
+        return $this->externalLogins;
+    }
+
+    public function getTokenValidityThreshold(): ?DateTime
+    {
+        return $this->tokenValidityThreshold;
+    }
+
+    public function setTokenValidityThreshold(DateTime $tokenValidityThreshold): void
+    {
+        $this->tokenValidityThreshold = $tokenValidityThreshold;
+    }
+
+    public function getLastAuthenticationAt(): ?DateTime
+    {
+        return $this->lastAuthenticationAt;
     }
 }

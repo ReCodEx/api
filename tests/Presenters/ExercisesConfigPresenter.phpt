@@ -72,7 +72,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:ExercisesConfig',
             'GET',
-            ['action' => 'getEnvironmentConfigs', 'id' => $exercise->id]
+            ['action' => 'getEnvironmentConfigs', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -123,7 +123,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:ExercisesConfig',
             'POST',
-            ['action' => 'updateEnvironmentConfigs', 'id' => $exercise->id],
+            ['action' => 'updateEnvironmentConfigs', 'id' => $exercise->getId()],
             ['environmentConfigs' => $testEnvironmentConfigs]
         );
         $response = $this->presenter->run($request);

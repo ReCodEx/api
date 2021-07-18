@@ -2,16 +2,14 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
  */
 class ReportedErrors
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -49,7 +47,7 @@ class ReportedErrors
         $this->type = $type;
         $this->recipients = $recipients;
         $this->subject = $subject;
-        $this->sentAt = new \DateTime();
+        $this->sentAt = new DateTime();
         $this->description = $description;
     }
 }

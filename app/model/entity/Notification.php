@@ -12,19 +12,10 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method DateTime getCreatedAt()
- * @method DateTime getVisibleFrom()
- * @method DateTime getVisibleTo()
- * @method string getRole()
- * @method string getType()
- * @method void setVisibleFrom(DateTime $visibleFrom)
- * @method void setVisibleTo(DateTime $visibleTo)
- * @method void setRole(string $role)
- * @method void setType(string $type)
  */
 class Notification implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use CreateableEntity;
 
     /**
      * @ORM\Id
@@ -43,12 +34,6 @@ class Notification implements JsonSerializable
     {
         return $this->author->isDeleted() ? null : $this->author;
     }
-
-    /**
-     * @var DateTime
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
 
     /**
      * @var DateTime
@@ -164,5 +149,52 @@ class Notification implements JsonSerializable
             "role" => $this->role,
             "type" => $this->type
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getVisibleFrom(): DateTime
+    {
+        return $this->visibleFrom;
+    }
+
+    public function setVisibleFrom(DateTime $visibleFrom): void
+    {
+        $this->visibleFrom = $visibleFrom;
+    }
+
+    public function getVisibleTo(): DateTime
+    {
+        return $this->visibleTo;
+    }
+
+    public function setVisibleTo(DateTime $visibleTo): void
+    {
+        $this->visibleTo = $visibleTo;
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): void
+    {
+        $this->type = $type;
     }
 }

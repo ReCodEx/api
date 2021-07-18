@@ -48,7 +48,6 @@
         "nettrine/dbal": "^0.7.0",
         "nettrine/migrations": "^0.7.0",
         "nettrine/extensions-atlantic18": "^0.5.0",
-        "kdyby/doctrine-magic-accessors": "*",
         "guzzlehttp/guzzle": "~6.5",
         "symfony/process": "^5.2",
         "firebase/php-jwt": "^5.2",
