@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Exceptions\ExerciseConfigException;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\YamlException;
@@ -10,14 +11,9 @@ use App\Helpers\Yaml;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method RuntimeEnvironment getRuntimeEnvironment()
  */
 class ExerciseEnvironmentConfig
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -75,7 +71,7 @@ class ExerciseEnvironmentConfig
         $this->runtimeEnvironment = $runtimeEnvironment;
         $this->variablesTable = $variablesTable;
         $this->createdFrom = $createdFrom;
-        $this->createdAt = new \DateTime();
+        $this->createdAt = new DateTime();
         $this->author = $author;
     }
 
@@ -104,5 +100,17 @@ class ExerciseEnvironmentConfig
         } catch (ExerciseConfigException $e) {
             return false;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getRuntimeEnvironment(): RuntimeEnvironment
+    {
+        return $this->runtimeEnvironment;
     }
 }

@@ -8,14 +8,9 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getId()
- * @method string getName()
- * @method string getDescription()
  */
 class HardwareGroup implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=32)
@@ -68,5 +63,22 @@ class HardwareGroup implements JsonSerializable
             "description" => $this->description,
             "metadata" => $this->getMetadata()->toArray()
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
     }
 }

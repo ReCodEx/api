@@ -13,16 +13,9 @@ use DateTime;
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn("discriminator")
  * @ORM\Table(name="`uploaded_file`")
- *
- * @method string getId()
- * @method string getName()
- * @method DateTime getUploadedAt()
- * @method int getFileSize()
  */
 class UploadedFile implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -121,5 +114,27 @@ class UploadedFile implements JsonSerializable
     public function getFile(FileStorageManager $manager): ?IImmutableFile
     {
         return $manager->getUploadedFile($this);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getUploadedAt(): DateTime
+    {
+        return $this->uploadedAt;
+    }
+
+    public function getFileSize(): int
+    {
+        return $this->fileSize;
     }
 }

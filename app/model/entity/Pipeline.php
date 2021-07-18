@@ -13,21 +13,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method string getName()
- * @method string getDescription()
- * @method PipelineConfig getPipelineConfig()
- * @method setName(string $name)
- * @method setDescription(string $description)
- * @method setPipelineConfig($config)
- * @method Collection getParameters()
- * @method Collection getRuntimeEnvironments()
- * @method DateTime getCreatedAt()
  */
 class Pipeline
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use CreateableEntity;
     use UpdateableEntity;
     use DeleteableEntity;
     use VersionableEntity;
@@ -63,11 +52,6 @@ class Pipeline
     {
         return $this->author && $this->author->isDeleted() ? null : $this->author;
     }
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="Pipeline")
@@ -325,5 +309,57 @@ class Pipeline
                 unset($this->parameters[$key]);
             }
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
+    }
+
+    public function getPipelineConfig(): PipelineConfig
+    {
+        return $this->pipelineConfig;
+    }
+
+    public function setPipelineConfig(PipelineConfig $pipelineConfig): void
+    {
+        $this->pipelineConfig = $pipelineConfig;
+    }
+
+    public function getParameters(): Collection
+    {
+        return $this->parameters;
+    }
+
+    public function getRuntimeEnvironments(): Collection
+    {
+        return $this->runtimeEnvironments;
     }
 }

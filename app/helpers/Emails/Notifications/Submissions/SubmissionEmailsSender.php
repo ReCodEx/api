@@ -145,7 +145,7 @@ class SubmissionEmailsSender
             $solution->getAssignment()->getGroup(),
             "assignmentSubmitAfterAcceptedEmails"
         );
-        if ($best->getAccepted() && count($recipients) > 0) {
+        if ($best->isAccepted() && count($recipients) > 0) {
             return $this->localizationHelper->sendLocalizedEmail(
                 $recipients,
                 function ($toUsers, $emails, $locale) use ($solution, $submission) {

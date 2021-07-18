@@ -7,7 +7,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getText()
  */
 class LocalizedNotification extends LocalizedEntity implements JsonSerializable
 {
@@ -53,5 +52,17 @@ class LocalizedNotification extends LocalizedEntity implements JsonSerializable
             "text" => $this->text,
             "createdAt" => $this->createdAt->getTimestamp(),
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getCreatedFrom(): ?LocalizedNotification
+    {
+        return $this->createdFrom;
+    }
+
+    public function getText(): string
+    {
+        return $this->text;
     }
 }

@@ -9,17 +9,9 @@ use Nette\Utils\Validators;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method string getUsername()
- * @method setUsername(string $username)
- * @method setPasswordHash(string $hash)
- * @method User getUser()
  */
 class Login
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -156,5 +148,37 @@ class Login
 
         $user->setLogin($login);
         return $login;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): void
+    {
+        $this->username = $username;
+    }
+
+    public function getPasswordHash(): ?string
+    {
+        return $this->passwordHash;
+    }
+
+    public function setPasswordHash(?string $passwordHash): void
+    {
+        $this->passwordHash = $passwordHash;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 }

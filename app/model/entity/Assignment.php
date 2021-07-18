@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Gedmo\Mapping\Annotation as Gedmo;
 use DateTime;
 
@@ -17,36 +16,9 @@ use DateTime;
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="first_deadline_idx", columns={"first_deadline"}), @ORM\Index(name="second_deadline_idx", columns={"second_deadline"})})
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method float getPointsPercentualThreshold()
- * @method int getSubmissionsCountLimit()
- * @method Collection getAssignmentSolutions()
- * @method bool getCanViewLimitRatios()
- * @method DateTime getFirstDeadline()
- * @method bool getAllowSecondDeadline()
- * @method DateTime getSecondDeadline()
- * @method int getMaxPointsBeforeFirstDeadline()
- * @method int getMaxPointsBeforeSecondDeadline()
- * @method DateTime|null getVisibleFrom()
- * @method bool getCanViewJudgeStdout()
- * @method bool getCanViewJudgeStderr()
- * @method bool getMergeJudgeLogs()
- * @method setFirstDeadline(DateTime $deadline)
- * @method setSecondDeadline(DateTime $deadline)
- * @method setMaxPointsBeforeFirstDeadline(int $points)
- * @method setMaxPointsBeforeSecondDeadline(int $points)
- * @method setSubmissionsCountLimit(int $limit)
- * @method setAllowSecondDeadline(bool $allow)
- * @method setCanViewLimitRatios(bool $canView)
- * @method setPointsPercentualThreshold(float $threshold)
- * @method setVisibleFrom(?DateTime $visibleFrom)
- * @method setCanViewJudgeStdout(bool $canView)
- * @method setCanViewJudgeStderr(bool $canView)
  */
 class Assignment extends AssignmentBase implements IExercise
 {
-    use MagicAccessors;
     use ExerciseData;
 
     private function __construct(
@@ -512,5 +484,132 @@ class Assignment extends AssignmentBase implements IExercise
         foreach ($exercise->getRuntimeEnvironments() as $env) {
             $this->runtimeEnvironments->add($env);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getPointsPercentualThreshold(): float
+    {
+        return $this->pointsPercentualThreshold;
+    }
+
+    public function setPointsPercentualThreshold($pointsPercentualThreshold): void
+    {
+        $this->pointsPercentualThreshold = $pointsPercentualThreshold;
+    }
+
+    public function getSubmissionsCountLimit(): int
+    {
+        return $this->submissionsCountLimit;
+    }
+
+    public function setSubmissionsCountLimit(int $submissionsCountLimit): void
+    {
+        $this->submissionsCountLimit = $submissionsCountLimit;
+    }
+
+    public function getAssignmentSolutions(): Collection
+    {
+        return $this->assignmentSolutions;
+    }
+
+    public function getCanViewLimitRatios(): bool
+    {
+        return $this->canViewLimitRatios;
+    }
+
+    public function setCanViewLimitRatios(bool $canViewLimitRatios): void
+    {
+        $this->canViewLimitRatios = $canViewLimitRatios;
+    }
+
+    public function getFirstDeadline(): DateTime
+    {
+        return $this->firstDeadline;
+    }
+
+    public function setFirstDeadline(DateTime $firstDeadline): void
+    {
+        $this->firstDeadline = $firstDeadline;
+    }
+
+    public function getAllowSecondDeadline(): bool
+    {
+        return $this->allowSecondDeadline;
+    }
+
+    public function setAllowSecondDeadline(bool $allowSecondDeadline): void
+    {
+        $this->allowSecondDeadline = $allowSecondDeadline;
+    }
+
+    public function getSecondDeadline(): ?DateTime
+    {
+        return $this->secondDeadline;
+    }
+
+    public function setSecondDeadline(?DateTime $secondDeadline): void
+    {
+        $this->secondDeadline = $secondDeadline;
+    }
+
+    public function getMaxPointsBeforeFirstDeadline(): int
+    {
+        return $this->maxPointsBeforeFirstDeadline;
+    }
+
+    public function setMaxPointsBeforeFirstDeadline(int $maxPointsBeforeFirstDeadline): void
+    {
+        $this->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
+    }
+
+    public function getMaxPointsBeforeSecondDeadline(): int
+    {
+        return $this->maxPointsBeforeSecondDeadline;
+    }
+
+    public function setMaxPointsBeforeSecondDeadline(int $maxPointsBeforeSecondDeadline): void
+    {
+        $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
+    }
+
+    public function getVisibleFrom(): ?DateTime
+    {
+        return $this->visibleFrom;
+    }
+
+    public function setVisibleFrom(?DateTime $visibleFrom): void
+    {
+        $this->visibleFrom = $visibleFrom;
+    }
+
+    public function getCanViewJudgeStdout(): bool
+    {
+        return $this->canViewJudgeStdout;
+    }
+
+    public function setCanViewJudgeStdout(bool $canViewJudgeStdout): void
+    {
+        $this->canViewJudgeStdout = $canViewJudgeStdout;
+    }
+
+    public function getCanViewJudgeStderr(): bool
+    {
+        return $this->canViewJudgeStderr;
+    }
+
+    public function setCanViewJudgeStderr(bool $canViewJudgeStderr): void
+    {
+        $this->canViewJudgeStderr = $canViewJudgeStderr;
+    }
+
+    public function getMergeJudgeLogs(): bool
+    {
+        return $this->mergeJudgeLogs;
     }
 }

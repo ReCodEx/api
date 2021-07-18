@@ -8,8 +8,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getName()
- * @method string getAssignmentText()
  */
 class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializable
 {
@@ -78,5 +76,17 @@ class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializa
             "link" => $this->externalAssignmentLink ?? "",
             "createdAt" => $this->createdAt->getTimestamp(),
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getAssignmentText(): string
+    {
+        return $this->assignmentText;
     }
 }

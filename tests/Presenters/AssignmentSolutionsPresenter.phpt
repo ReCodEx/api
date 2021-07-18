@@ -77,7 +77,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'GET',
-            ['action' => 'solution', 'id' => $solution->id]
+            ['action' => 'solution', 'id' => $solution->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
@@ -97,11 +97,11 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             $this->presenter,
             'V1:AssignmentSolutions',
             'POST',
-            ['action' => 'updateSolution', 'id' => $solution->id],
+            ['action' => 'updateSolution', 'id' => $solution->getId()],
             ['note' => 'changed note of the solution']
         );
 
-        $solution = $this->presenter->assignmentSolutions->get($solution->id);
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
         Assert::equal('changed note of the solution', $result['note']);
         Assert::equal('changed note of the solution', $solution->getNote());
     }
@@ -140,7 +140,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter, 'V1:AssignmentSolutions', 'GET',
-            ['action' => 'submission', 'submissionId' => $submission->id]
+            ['action' => 'submission', 'submissionId' => $submission->getId()]
         );
         Assert::same($submission->getId(), $payload['id']);
     }
@@ -158,7 +158,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter, 'V1:AssignmentSolutions', 'GET',
-            ['action' => 'evaluationScoreConfig', 'submissionId' => $submission->id ]
+            ['action' => 'evaluationScoreConfig', 'submissionId' => $submission->getId() ]
         );
         Assert::same('weighted', $payload->getCalculator());
         Assert::truthy($payload->getConfig());
@@ -213,7 +213,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'POST',
-            ['action' => 'setBonusPoints', 'id' => $solution->id],
+            ['action' => 'setBonusPoints', 'id' => $solution->getId()],
             ['bonusPoints' => 4, 'overriddenPoints' => 857]
         );
         $response = $this->presenter->run($request);
@@ -224,7 +224,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
         Assert::equal("OK", $result['payload']);
 
-        $solution = $this->presenter->assignmentSolutions->get($solution->id);
+        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
         Assert::equal(4, $solution->getBonusPoints());
         Assert::equal(857, $solution->getOverriddenPoints());
     }
@@ -265,7 +265,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         // set accepted flag
         $solution->setAccepted(true);
         $this->presenter->assignmentSolutions->flush();
-        Assert::true($solution->getAccepted());
+        Assert::true($solution->isAccepted());
 
         $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
         Assert::notSame(null, $user);
@@ -378,7 +378,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         // set accepted flag
         $solution->setAccepted(true);
         $this->presenter->assignmentSolutions->flush();
-        Assert::true($solution->getAccepted());
+        Assert::true($solution->isAccepted());
 
         $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
         Assert::notSame(null, $user);
@@ -411,7 +411,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'GET',
-            ['action' => 'downloadSolutionArchive', 'id' => $solution->id]
+            ['action' => 'downloadSolutionArchive', 'id' => $solution->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
@@ -432,7 +432,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'GET',
-            ['action' => 'downloadResultArchive', 'submissionId' => $submission->id]
+            ['action' => 'downloadResultArchive', 'submissionId' => $submission->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);

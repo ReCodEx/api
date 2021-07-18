@@ -9,17 +9,10 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method int getId()
- * @method setId(int $id)
- * @method string getName()
- * @method string getDescription()
- * @method DateTime getCreatedAt()
- * @method string setName(string $name)
- * @method string setDescription(string $description)
  */
 class ExerciseTest implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use CreateableEntity;
     use UpdateableEntity;
 
     /**
@@ -50,11 +43,6 @@ class ExerciseTest implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
-
-    /**
      * ExerciseTest constructor.
      * @param string $name
      * @param string $description
@@ -77,5 +65,37 @@ class ExerciseTest implements JsonSerializable
             "name" => $this->name,
             "description" => $this->description
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
     }
 }

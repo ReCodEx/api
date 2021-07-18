@@ -15,29 +15,11 @@ use App\Helpers\ExercisesConfig;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method Collection getExerciseLimits()
- * @method Collection getExerciseEnvironmentConfigs()
- * @method DateTime getCreatedAt()
- * @method string getDifficulty()
- * @method Collection getReferenceSolutions()
- * @method Collection getExerciseTests()
- * @method Collection getTags()
- * @method void setScoreConfig(ExerciseScoreConfig $scoreConfig)
- * @method void setDifficulty(string $difficulty)
- * @method void setIsPublic(bool $isPublic)
- * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
- * @method setConfigurationType($type)
- * @method void addGroup(Group $group)
- * @method void addTag(ExerciseTag $tag)
- * @method void removeTag(ExerciseTag $tag)
- * @method void removeGroup(Group $group)
  */
 class Exercise implements IExercise
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
     use ExerciseData;
+    use CreateableEntity;
     use UpdateableEntity;
     use DeleteableEntity;
     use VersionableEntity;
@@ -48,11 +30,6 @@ class Exercise implements IExercise
      * @ORM\GeneratedValue(strategy="UUID")
      */
     protected $id;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
 
     /**
      * @ORM\Column(type="string")
@@ -461,5 +438,92 @@ class Exercise implements IExercise
             }
         }
         return false;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getExerciseLimits(): Collection
+    {
+        return $this->exerciseLimits;
+    }
+
+    public function getExerciseEnvironmentConfigs(): Collection
+    {
+        return $this->exerciseEnvironmentConfigs;
+    }
+
+    public function getDifficulty(): string
+    {
+        return $this->difficulty;
+    }
+
+    public function setDifficulty(string $difficulty): void
+    {
+        $this->difficulty = $difficulty;
+    }
+
+    public function setScoreConfig(ExerciseScoreConfig $scoreConfig): void
+    {
+        $this->scoreConfig = $scoreConfig;
+    }
+
+    public function getReferenceSolutions(): Collection
+    {
+        return $this->referenceSolutions;
+    }
+
+    public function getExerciseTests(): Collection
+    {
+        return $this->exerciseTests;
+    }
+
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(ExerciseTag $tag): void
+    {
+        $this->tags->add($tag);
+    }
+
+    public function removeTag(ExerciseTag $tag): void
+    {
+        $this->tags->removeElement($tag);
+    }
+
+    public function setIsPublic(bool $isPublic): void
+    {
+        $this->isPublic = $isPublic;
+    }
+
+    public function setExerciseConfig(ExerciseConfig $exerciseConfig): void
+    {
+        $this->exerciseConfig = $exerciseConfig;
+    }
+
+    public function setConfigurationType(string $configurationType): void
+    {
+        $this->configurationType = $configurationType;
+    }
+
+    public function addGroup(Group $group): void
+    {
+        $this->groups->add($group);
+    }
+
+    public function removeGroup(Group $group): void
+    {
+        $this->groups->removeElement($group);
+    }
+
+    public function setIsLocked(bool $isLocked): void
+    {
+        $this->isLocked = $isLocked;
     }
 }

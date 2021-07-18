@@ -9,17 +9,9 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- *
- * @method string getNote()
- * @method setNote(string $note)
- * @method DateTime getValidUntil()
- * @method setValidUntil(DateTime $validUntil)
- * @method setIsValid(bool $isValid)
  */
 class Licence implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -56,10 +48,10 @@ class Licence implements JsonSerializable
      * @param DateTime $when When the licence should have been valid.
      * @return bool
      */
-    public function isValid(\DateTime $when = null)
+    public function isValid(DateTime $when = null)
     {
         if ($when === null) {
-            $when = new \DateTime();
+            $when = new DateTime();
         }
         return $this->isValid && $this->validUntil >= $when;
     }
@@ -80,7 +72,7 @@ class Licence implements JsonSerializable
         ];
     }
 
-    public static function createLicence(string $note, \DateTime $validUntil, Instance $instance, bool $isValid = true)
+    public static function createLicence(string $note, DateTime $validUntil, Instance $instance, bool $isValid = true)
     {
         $licence = new Licence();
         $licence->note = $note;
@@ -89,5 +81,37 @@ class Licence implements JsonSerializable
         $licence->instance = $instance;
         $instance->addLicence($licence);
         return $licence;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): void
+    {
+        $this->note = $note;
+    }
+
+    public function getValidUntil(): DateTime
+    {
+        return $this->validUntil;
+    }
+
+    public function setValidUntil(DateTime $validUntil): void
+    {
+        $this->validUntil = $validUntil;
+    }
+
+    public function setIsValid(bool $isValid): void
+    {
+        $this->isValid = $isValid;
     }
 }

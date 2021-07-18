@@ -130,7 +130,7 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
             'V1:ShadowAssignments',
             'POST',
             ['action' => 'create'],
-            ['groupId' => $group->id]
+            ['groupId' => $group->getId()]
         );
 
         $response = $this->presenter->run($request);

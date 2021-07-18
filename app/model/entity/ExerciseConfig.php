@@ -11,12 +11,9 @@ use DateTime;
 
 /**
  * @ORM\Entity
- * @method string getId()
  */
 class ExerciseConfig
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -93,5 +90,12 @@ class ExerciseConfig
         } catch (ExerciseConfigException $exception) {
             return false;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
     }
 }

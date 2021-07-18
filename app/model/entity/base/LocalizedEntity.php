@@ -4,18 +4,12 @@ namespace App\Model\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\MappedSuperclass
- * @method string getId()
- * @method string getLocale()
- * @method DateTime getCreatedAt()
  */
 abstract class LocalizedEntity
 {
-    use MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -42,4 +36,21 @@ abstract class LocalizedEntity
     abstract public function equals(LocalizedEntity $entity): bool;
 
     abstract public function setCreatedFrom(LocalizedEntity $entity);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
 }

@@ -4,23 +4,15 @@ namespace App\Model\Entity;
 
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\EvaluationPointsLoader;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Helpers\EvaluationStatus as ES;
 
 /**
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="assignment_solution_submission_submitted_at_idx", columns={"submitted_at"})})
- *
- * @method AssignmentSolution|null getAssignmentSolution()
- * @method SubmissionFailure|null getFailure()
- * @method setFailure(SubmissionFailure $failure)
  */
 class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     public const JOB_TYPE = "student";
 
     /**
@@ -42,6 +34,23 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
     ) {
         parent::__construct($submittedBy, $isDebug);
         $this->assignmentSolution = $assignmentSolution;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getAssignmentSolution(): ?AssignmentSolution
+    {
+        return $this->assignmentSolution;
+    }
+
+    public function getFailure(): ?SubmissionFailure
+    {
+        return $this->failure;
+    }
+
+    public function setFailure(SubmissionFailure $failure): void
+    {
+        $this->failure = $failure;
     }
 
     public function isFailed(): bool

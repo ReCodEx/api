@@ -9,15 +9,9 @@ use Nette\Utils\Validators;
 /**
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"auth_service", "external_id"})})
- *
- * @method string getExternalId()
- * @method string getAuthService()
- * @method User getUser()
  */
 class ExternalLogin
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -45,5 +39,27 @@ class ExternalLogin
         $this->user = $user;
         $this->authService = $authService;
         $this->externalId = $externalId;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getAuthService(): string
+    {
+        return $this->authService;
+    }
+
+    public function getExternalId(): string
+    {
+        return $this->externalId;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 }

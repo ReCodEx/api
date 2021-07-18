@@ -68,7 +68,7 @@ class TestSubmissionFailures extends Tester\TestCase
     public function testDetail()
     {
         $failure = current($this->presenter->submissionFailures->findAll());
-        $request = new Request("V1:SubmissionFailures", "GET", ["action" => "detail", "id" => $failure->id], []);
+        $request = new Request("V1:SubmissionFailures", "GET", ["action" => "detail", "id" => $failure->getId()], []);
         $response = $this->presenter->run($request);
         Assert::type(JsonResponse::class, $response);
         $result = $response->getPayload();
@@ -85,7 +85,7 @@ class TestSubmissionFailures extends Tester\TestCase
         $request = new Request(
             "V1:SubmissionFailures",
             "POST",
-            ["action" => "resolve", "id" => $failure->id],
+            ["action" => "resolve", "id" => $failure->getId()],
             ["note" => "bla", "sendEmail" => false]
         );
         $response = $this->presenter->run($request);
@@ -93,8 +93,8 @@ class TestSubmissionFailures extends Tester\TestCase
         $result = $response->getPayload();
         Assert::same(200, $result["code"]);
         Assert::same($failure, $result["payload"]);
-        Assert::same("bla", $failure->resolutionNote);
-        Assert::notSame(null, $failure->resolvedAt);
+        Assert::same("bla", $failure->getResolutionNote());
+        Assert::notSame(null, $failure->getResolvedAt());
     }
 
     public function testResolveWithEmail()
@@ -107,7 +107,7 @@ class TestSubmissionFailures extends Tester\TestCase
         $request = new Request(
             "V1:SubmissionFailures",
             "POST",
-            ["action" => "resolve", "id" => $failure->id],
+            ["action" => "resolve", "id" => $failure->getId()],
             ["note" => "bla", "sendEmail" => true]
         );
         $response = $this->presenter->run($request);
@@ -115,8 +115,8 @@ class TestSubmissionFailures extends Tester\TestCase
         $result = $response->getPayload();
         Assert::same(200, $result["code"]);
         Assert::same($failure, $result["payload"]);
-        Assert::same("bla", $failure->resolutionNote);
-        Assert::notSame(null, $failure->resolvedAt);
+        Assert::same("bla", $failure->getResolutionNote());
+        Assert::notSame(null, $failure->getResolvedAt());
     }
 }
 

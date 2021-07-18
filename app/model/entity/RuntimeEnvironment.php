@@ -10,19 +10,9 @@ use App\Exceptions\ParseException as AppParseException;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method string getName()
- * @method string getLongName()
- * @method string getExtensions()
- * @method string getPlatform()
- * @method string getDescription()
- * @method string getDefaultVariables()
  */
 class RuntimeEnvironment implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=32)
@@ -121,5 +111,42 @@ class RuntimeEnvironment implements JsonSerializable
             "description" => $this->description,
             "defaultVariables" => $this->getParsedVariables()
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getLongName(): string
+    {
+        return $this->longName;
+    }
+
+    public function getExtensions(): string
+    {
+        return $this->extensions;
+    }
+
+    public function getPlatform(): string
+    {
+        return $this->platform;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getDefaultVariables(): string
+    {
+        return $this->defaultVariables;
     }
 }

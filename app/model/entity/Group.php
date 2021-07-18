@@ -13,24 +13,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity
  * @ORM\Table(name="`group`")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method addAssignment(Assignment $assignment)
- * @method addShadowAssignment(ShadowAssignment $assignment)
- * @method addChildGroup(Group $group)
- * @method removeChildGroup(Group $group)
- * @method ?string getExternalId()
- * @method string getDescription()
- * @method float|null getThreshold()
- * @method setExternalId(string $id)
- * @method bool getPublicStats()
- * @method setPublicStats(bool $areStatsPublic)
- * @method setIsPublic(bool $isGroupPublic)
- * @method setThreshold(float $threshold)
  */
 class Group
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
     use DeleteableEntity;
 
     public function __construct(
@@ -693,5 +678,67 @@ class Group
             $this->parentGroup = $newParent;
             $newParent->addChildGroup($this);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getExternalId(): ?string
+    {
+        return $this->externalId;
+    }
+
+    public function setExternalId(string $externalId): void
+    {
+        $this->externalId = $externalId;
+    }
+
+    public function getThreshold(): ?float
+    {
+        return $this->threshold;
+    }
+
+    public function setThreshold(?float $threshold): void
+    {
+        $this->threshold = $threshold;
+    }
+
+    public function getPublicStats(): bool
+    {
+        return $this->publicStats;
+    }
+
+    public function setPublicStats(bool $publicStats): void
+    {
+        $this->publicStats = $publicStats;
+    }
+
+    public function setIsPublic(bool $isPublic): void
+    {
+        $this->isPublic = $isPublic;
+    }
+
+    public function addChildGroup(Group $group): void
+    {
+        $this->childGroups->add($group);
+    }
+
+    public function removeChildGroup(Group $group): void
+    {
+        $this->childGroups->removeElement($group);
+    }
+
+    public function addAssignment(Assignment $assignment): void
+    {
+        $this->assignments->add($assignment);
+    }
+
+    public function addShadowAssignment(ShadowAssignment $shadowAssignment): void
+    {
+        $this->shadowAssignments->add($shadowAssignment);
     }
 }

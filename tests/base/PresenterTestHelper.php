@@ -219,8 +219,8 @@ class PresenterTestHelper
             if (is_array($item) && !empty($item['id'])) {
                 $res[$item['id']] = true;
             } else {
-                if (is_object($item) && !empty($item->id)) {
-                    $res[$item->id] = true;
+                if (is_object($item) && !empty($item->getId())) {
+                    $res[$item->getId()] = true;
                 } else {
                     Tester\Assert::match('#^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$#', $item);
                     $res[(string)$item->id] = true;

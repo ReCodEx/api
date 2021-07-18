@@ -2,27 +2,19 @@
 
 namespace App\Model\Entity;
 
-use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @method string getId()
- * @method Collection getShadowAssignmentPointsCollection()
- * @method setMaxPoints(int $points)
  */
 class ShadowAssignment extends AssignmentBase
 {
-    use MagicAccessors;
-
     private function __construct(
         int $maxPoints,
         Group $group,
@@ -118,5 +110,22 @@ class ShadowAssignment extends AssignmentBase
         $criteria = Criteria::create()->where(Criteria::expr()->eq("awardee", $user));
         $first = $this->shadowAssignmentPointsCollection->matching($criteria)->first();
         return $first === false ? null : $first;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getShadowAssignmentPointsCollection(): Collection
+    {
+        return $this->shadowAssignmentPointsCollection;
+    }
+
+    public function setMaxPoints(int $maxPoints): void
+    {
+        $this->maxPoints = $maxPoints;
     }
 }

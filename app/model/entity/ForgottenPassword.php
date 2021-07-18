@@ -10,8 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ForgottenPassword
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     public function __construct(
         User $user,
         string $sentTo,
@@ -61,4 +59,31 @@ class ForgottenPassword
      * @ORM\Column(type="string")
      */
     protected $IPaddress;
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getRequestedAt(): DateTime
+    {
+        return $this->requestedAt;
+    }
+
+    public function getSentTo(): string
+    {
+        return $this->sentTo;
+    }
+
+    public function getRedirectUrl(): string
+    {
+        return $this->redirectUrl;
+    }
+
+    public function getIPaddress(): string
+    {
+        return $this->IPaddress;
+    }
 }

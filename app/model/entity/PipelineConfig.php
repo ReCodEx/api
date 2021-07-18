@@ -12,14 +12,9 @@ use DateTime;
 
 /**
  * @ORM\Entity
- *
- * @method string getId()
- * @method string getPipelineConfig()
  */
 class PipelineConfig
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -90,5 +85,17 @@ class PipelineConfig
         } catch (YamlException $e) {
             throw new ExerciseConfigException("Pipeline is not a valid YAML and it cannot be parsed.");
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getPipelineConfig(): string
+    {
+        return $this->pipelineConfig;
     }
 }

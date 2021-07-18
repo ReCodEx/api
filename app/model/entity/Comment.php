@@ -8,14 +8,9 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method CommentThread getCommentThread()
- * @method DateTime getPostedAt()
- * @method string getText()
  */
 class Comment implements JsonSerializable
 {
-    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -104,5 +99,27 @@ class Comment implements JsonSerializable
         $comment->isPrivate = $isPrivate;
         $thread->addComment($comment);
         return $comment;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getCommentThread(): CommentThread
+    {
+        return $this->commentThread;
+    }
+
+    public function getPostedAt(): DateTime
+    {
+        return $this->postedAt;
+    }
+
+    public function getText(): string
+    {
+        return $this->text;
     }
 }

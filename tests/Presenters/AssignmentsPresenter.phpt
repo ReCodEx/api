@@ -361,14 +361,16 @@ class TestAssignmentsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
+        /** @var Exercise $exercise */
         $exercise = $this->presenter->exercises->findAll()[0];
+        /** @var Group $group */
         $group = $this->presenter->groups->findAll()[0];
 
         $request = new Nette\Application\Request(
             'V1:Assignments',
             'POST',
             ['action' => 'create'],
-            ['exerciseId' => $exercise->id, 'groupId' => $group->id]
+            ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
         );
 
         $response = $this->presenter->run($request);
@@ -393,6 +395,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         /** @var Exercise $exercise */
         $exercise = $this->presenter->exercises->findAll()[0];
+        /** @var Group $group */
         $group = $this->presenter->groups->findAll()[0];
 
         $exercise->setLocked(true);
@@ -402,7 +405,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             'V1:Assignments',
             'POST',
             ['action' => 'create'],
-            ['exerciseId' => $exercise->id, 'groupId' => $group->id]
+            ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
         );
 
         Assert::exception(
@@ -447,10 +450,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         /** @var RuntimeEnvironment $environment */
         $environment = $this->runtimeEnvironments->findAll()[0];
-
         /** @var HardwareGroup $hwGroup */
         $hwGroup = $this->hardwareGroups->findAll()[0];
-
         /** @var Group $group */
         $group = $this->presenter->groups->findAll()[0];
 

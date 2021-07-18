@@ -114,7 +114,7 @@ class AssignmentSolutionViewFactory
             "solution" => $solution->getSolution(),
             "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
             "maxPoints" => $solution->getMaxPoints(),
-            "accepted" => $solution->getAccepted(),
+            "accepted" => $solution->isAccepted(),
             "reviewed" => $solution->isReviewed(),
             "isBestSolution" => $isBestSolution,
             "actualPoints" => $solution->getPoints(),

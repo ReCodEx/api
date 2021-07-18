@@ -7,8 +7,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getName()
- * @method string getDescription()
  */
 class LocalizedGroup extends LocalizedEntity implements JsonSerializable
 {
@@ -75,5 +73,22 @@ class LocalizedGroup extends LocalizedEntity implements JsonSerializable
             "description" => $this->description,
             "createdAt" => $this->createdAt->getTimestamp(),
         ];
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getCreatedFrom(): ?LocalizedGroup
+    {
+        return $this->createdFrom;
     }
 }

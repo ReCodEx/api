@@ -230,7 +230,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
         $group = $user->getInstances()->first()->getGroups()->filter(
             function (Group $group) {
-                return !$group->isPublic;
+                return !$group->isPublic();
             }
         )->first();
 
@@ -239,8 +239,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'POST',
             [
             'action' => 'addStudent',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -301,8 +301,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'DELETE',
             [
             'action' => 'removeStudent',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -334,8 +334,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'DELETE',
             [
             'action' => 'removeStudent',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -370,8 +370,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'DELETE',
             [
             'action' => 'removeStudent',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -894,8 +894,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'POST',
             [
             'action' => 'addSupervisor',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -926,8 +926,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'POST',
             [
             'action' => 'addSupervisor',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -956,8 +956,8 @@ class TestGroupsPresenter extends Tester\TestCase
             'DELETE',
             [
             'action' => 'removeSupervisor',
-            'id' => $group->id,
-            'userId' => $user->id
+            'id' => $group->getId(),
+            'userId' => $user->getId()
             ]
         );
 
@@ -1320,7 +1320,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Groups',
             'DELETE',
-            ['action' => 'removeAdmin', 'id' => $group->id, 'userId' => $user->getId()]
+            ['action' => 'removeAdmin', 'id' => $group->getId(), 'userId' => $user->getId()]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */

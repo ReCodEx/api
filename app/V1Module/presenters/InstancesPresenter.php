@@ -195,7 +195,7 @@ class InstancesPresenter extends BasePresenter
             throw new ForbiddenRequestException();
         }
 
-        if (!$instance->getIsAllowed()) {
+        if (!$instance->isAllowed()) {
             throw new BadRequestException("This instance is not allowed.");
         }
     }

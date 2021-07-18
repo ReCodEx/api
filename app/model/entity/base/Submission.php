@@ -6,18 +6,12 @@ use App\Helpers\Evaluation\IExercise;
 use App\Helpers\EvaluationStatus\IEvaluable;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\MappedSuperclass
- *
- * @method string getId()
- * @method DateTime getSubmittedAt()
  */
 abstract class Submission implements IEvaluable
 {
-    use MagicAccessors;
-
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -65,6 +59,18 @@ abstract class Submission implements IEvaluable
         $this->submittedBy = $submittedBy;
         $this->isDebug = $isDebug;
         $this->subdir = $this->submittedAt->format('Y-m');
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getSubmittedAt(): DateTime
+    {
+        return $this->submittedAt;
     }
 
     public function hasEvaluation(): bool

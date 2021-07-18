@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "33bf21687ba34ae5a5a1bb1d6a82d4b2",
+    "content-hash": "c0113153e5efcff6750ae33d65787788",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -2038,137 +2038,6 @@
                 "source": "https://github.com/guzzle/psr7/tree/1.7.0"
             },
             "time": "2020-09-30T07:37:11+00:00"
-        },
-        {
-            "name": "kdyby/doctrine-collections-readonly",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Kdyby/DoctrineCollectionsReadonly.git",
-                "reference": "4713400841b8288f80487023c154cc55b7cb4d68"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/DoctrineCollectionsReadonly/zipball/4713400841b8288f80487023c154cc55b7cb4d68",
-                "reference": "4713400841b8288f80487023c154cc55b7cb4d68",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/collections": "~1.1",
-                "php": "^5.6 || ^7.0"
-            },
-            "require-dev": {
-                "nette/tester": "~1.7"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Kdyby\\Doctrine\\Collections\\Readonly\\": "src/"
-                },
-                "classmap": [
-                    "src/exceptions.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause",
-                "GPL-2.0",
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Filip Procházka",
-                    "email": "filip@prochazka.su",
-                    "homepage": "http://filip-prochazka.com"
-                }
-            ],
-            "description": "Read-only collection wrapper for easier work with Doctrine entity collections",
-            "homepage": "http://kdyby.org",
-            "keywords": [
-                "Read-Only",
-                "collection",
-                "doctrine",
-                "entity",
-                "kdyby",
-                "orm",
-                "readonly"
-            ],
-            "support": {
-                "email": "filip@prochazka.su",
-                "issues": "https://github.com/Kdyby/DoctrineCollectionsReadonly/issues",
-                "source": "https://github.com/Kdyby/DoctrineCollectionsReadonly/tree/v1.0.0"
-            },
-            "time": "2017-05-18T20:11:35+00:00"
-        },
-        {
-            "name": "kdyby/doctrine-magic-accessors",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Kdyby/DoctrineMagicAccessors.git",
-                "reference": "e7132d024fa233b02fa0080bd7a13012be79bc42"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/DoctrineMagicAccessors/zipball/e7132d024fa233b02fa0080bd7a13012be79bc42",
-                "reference": "e7132d024fa233b02fa0080bd7a13012be79bc42",
-                "shasum": ""
-            },
-            "require": {
-                "kdyby/doctrine-collections-readonly": "^1.0@dev",
-                "php": "^5.6 || ^7.0"
-            },
-            "require-dev": {
-                "nette/tester": "~1.7"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Kdyby\\Doctrine\\MagicAccessors\\": "src/"
-                },
-                "classmap": [
-                    "src/exceptions.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause",
-                "GPL-2.0",
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Filip Procházka",
-                    "email": "filip@prochazka.su",
-                    "homepage": "http://filip-prochazka.com"
-                }
-            ],
-            "description": "Fast-prototyping magic accessors trait for Doctrine entities",
-            "homepage": "http://kdyby.org",
-            "keywords": [
-                "accessors",
-                "dbal",
-                "doctrine",
-                "kdyby",
-                "magic",
-                "orm"
-            ],
-            "support": {
-                "email": "filip@prochazka.su",
-                "issues": "https://github.com/Kdyby/DoctrineMagicAccessors/issues",
-                "source": "https://github.com/Kdyby/DoctrineMagicAccessors/tree/v1.0.0"
-            },
-            "time": "2017-05-18T23:05:24+00:00"
         },
         {
             "name": "laminas/laminas-code",
