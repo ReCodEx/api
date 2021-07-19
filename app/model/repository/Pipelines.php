@@ -8,8 +8,7 @@ use App\Model\Helpers\PaginationDbHelper;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method Pipeline findOrThrow($id)
- * @method Pipeline get($id)
+ * @extends BaseSoftDeleteRepository<Pipeline>
  */
 class Pipelines extends BaseSoftDeleteRepository
 {

@@ -6,7 +6,7 @@ use App\Model\Entity\SubmissionFailure;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method SubmissionFailure findOrThrow($id)
+ * @extends BaseRepository<SubmissionFailure>
  */
 class SubmissionFailures extends BaseRepository
 {
@@ -15,6 +15,9 @@ class SubmissionFailures extends BaseRepository
         parent::__construct($em, SubmissionFailure::class);
     }
 
+    /**
+     * @return SubmissionFailure[]
+     */
     public function findUnresolved()
     {
         return $this->findBy(

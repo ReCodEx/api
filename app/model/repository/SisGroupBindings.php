@@ -7,6 +7,9 @@ use App\Model\Entity\Group;
 use App\Model\Entity\SisGroupBinding;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<SisGroupBinding>
+ */
 class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
 {
     public function __construct(EntityManagerInterface $em)

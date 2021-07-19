@@ -8,7 +8,7 @@ use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method ShadowAssignmentPoints findOrThrow($id)
+ * @extends BaseRepository<ShadowAssignmentPoints>
  */
 class ShadowAssignmentPointsRepository extends BaseRepository
 {

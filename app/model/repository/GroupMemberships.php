@@ -5,6 +5,9 @@ namespace App\Model\Repository;
 use App\Model\Entity\GroupMembership;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<GroupMembership>
+ */
 class GroupMemberships extends BaseRepository
 {
 

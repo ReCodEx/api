@@ -155,6 +155,7 @@ class PaginationDbHelper
      * Apply collation patches on the query yileded from the builder and fetch the results.
      * @param QueryBuilder $qb Query builder holding the final query.
      * @param Pagination $pagination Pagination object which holds the filter and order by parameters.
+     * @return array
      */
     public function getResult(QueryBuilder $qb, Pagination $pagination)
     {

@@ -8,6 +8,9 @@ use App\Exceptions\NotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Security\Passwords;
 
+/**
+ * @extends BaseRepository<Login>
+ */
 class Logins extends BaseRepository
 {
 

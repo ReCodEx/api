@@ -12,7 +12,7 @@ use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
 
 /**
- * @method Exercise findOrThrow($id)
+ * @extends BaseSoftDeleteRepository<Exercise>
  */
 class Exercises extends BaseSoftDeleteRepository
 {
@@ -28,7 +28,7 @@ class Exercises extends BaseSoftDeleteRepository
      * @param array $configs configurations which will be placed to exercise
      * @param bool $flush if true then all changes will be flush at the end
      */
-    public function replaceEnvironmentConfigs(Exercise $exercise, array $configs, bool $flush = true)
+    public function replaceEnvironmentConfigs(Exercise $exercise, array $configs, bool $flush = true): void
     {
         $originalConfigs = $exercise->getExerciseEnvironmentConfigs()->toArray();
         foreach ($configs as $config) {
@@ -72,7 +72,7 @@ class Exercises extends BaseSoftDeleteRepository
      * @param mixed $groupsIds Value of the filter
      * @param Groups $groups Doctrine groups repository
      */
-    private function getPreparedForPaginationGroupsFilter(QueryBuilder $qb, $groupsIds, Groups $groups)
+    private function getPreparedForPaginationGroupsFilter(QueryBuilder $qb, $groupsIds, Groups $groups): void
     {
         if (!is_array($groupsIds)) {
             $groupsIds = [$groupsIds];
@@ -94,7 +94,7 @@ class Exercises extends BaseSoftDeleteRepository
      * @param QueryBuilder $qb
      * @param mixed $envs
      */
-    private function getPreparedForPaginationEnvsFilter(QueryBuilder $qb, $envs)
+    private function getPreparedForPaginationEnvsFilter(QueryBuilder $qb, $envs): void
     {
         if (!is_array($envs)) {
             $envs = [$envs];
@@ -194,12 +194,13 @@ class Exercises extends BaseSoftDeleteRepository
 
     /**
      * Get distinct authors of all exercises.
-     * @param string $instanceId ID of an instance from which the authors are selected.
+     * @param string|null $instanceId ID of an instance from which the authors are selected.
      * @param string|null $groupId A group which restricts the exercies.
      *                             Only exercises attached to that group (or any ancestral group) are considered.
+     * @param Groups $groups groups repository
      * @return User[] List of exercises authors.
      */
-    public function getAuthors(string $instanceId = null, string $groupId = null, Groups $groups)
+    public function getAuthors(?string $instanceId, ?string $groupId, Groups $groups)
     {
         $qb = $this->em->createQueryBuilder()->select("a")->from(User::class, "a");
         if ($instanceId) {

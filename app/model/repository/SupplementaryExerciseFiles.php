@@ -6,7 +6,7 @@ use App\Model\Entity\SupplementaryExerciseFile;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method SupplementaryExerciseFile findOrThrow($id)
+ * @extends BaseRepository<SupplementaryExerciseFile>
  */
 class SupplementaryExerciseFiles extends BaseRepository
 {

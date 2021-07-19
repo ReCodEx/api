@@ -6,6 +6,9 @@ use App\Model\Entity\Notification;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<Notification>
+ */
 class Notifications extends BaseRepository
 {
 

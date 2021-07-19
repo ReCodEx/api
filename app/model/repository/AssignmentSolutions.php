@@ -9,8 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
 
 /**
- * @method AssignmentSolution findOrThrow($id)
- * @method AssignmentSolution|null get($id)
+ * @extends BaseRepository<AssignmentSolution>
  */
 class AssignmentSolutions extends BaseRepository
 {

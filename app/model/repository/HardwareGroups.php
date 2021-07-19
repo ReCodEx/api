@@ -5,6 +5,9 @@ namespace App\Model\Repository;
 use App\Model\Entity\HardwareGroup;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<HardwareGroup>
+ */
 class HardwareGroups extends BaseRepository
 {
 

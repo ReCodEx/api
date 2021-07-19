@@ -6,6 +6,9 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<ExerciseTag>
+ */
 class ExerciseTags extends BaseRepository
 {
 
@@ -65,7 +68,7 @@ class ExerciseTags extends BaseRepository
      * Rename tag globally (possibly merge two tags).
      * @param string $oldName Tag to be renamed
      * @param string $newName
-     * @return mixed Number of rows affected
+     * @return int Number of rows affected
      */
     public function renameTag(string $oldName, string $newName)
     {
@@ -78,7 +81,7 @@ class ExerciseTags extends BaseRepository
     /**
      * Remove tag globally (from all exercises).
      * @param string $name
-     * @return mixed Number of rows removed
+     * @return int Number of rows removed
      */
     public function removeTag(string $name)
     {

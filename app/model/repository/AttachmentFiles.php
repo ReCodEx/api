@@ -5,6 +5,9 @@ namespace App\Model\Repository;
 use App\Model\Entity\AttachmentFile;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<AttachmentFile>
+ */
 class AttachmentFiles extends BaseRepository
 {
     public function __construct(EntityManagerInterface $em)

@@ -6,7 +6,7 @@ use App\Model\Entity\Licence;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method Licence findOrThrow($id)
+ * @extends BaseRepository<Licence>
  */
 class Licences extends BaseRepository
 {
