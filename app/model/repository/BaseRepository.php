@@ -36,7 +36,7 @@ class BaseRepository
     }
 
     /**
-     * @param object $id
+     * @param mixed $id
      * @return T|null
      */
     public function get($id)
