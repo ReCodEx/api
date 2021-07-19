@@ -4,11 +4,16 @@ namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
 use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Nette;
 
+/**
+ * @template T
+ */
 class BaseRepository
 {
     use Nette\SmartObject;
@@ -30,31 +35,51 @@ class BaseRepository
         $this->repository = $repository;
     }
 
+    /**
+     * @param object $id
+     * @return T|null
+     */
     public function get($id)
     {
+        // @phpstan-ignore-next-line
         return $this->repository->find($id);
     }
 
-    public function getTotalCount()
+    public function getTotalCount(): int
     {
         return $this->repository->count([]);
     }
 
+    /**
+     * @return T[]
+     */
     public function findAll()
     {
         return $this->repository->findAll();
     }
 
+    /**
+     * @return T[]
+     */
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
         return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
     }
 
+    /**
+     * @param array $criteria
+     * @return T|null
+     */
     public function findOneBy(array $criteria)
     {
+        // @phpstan-ignore-next-line
         return $this->repository->findOneBy($criteria);
     }
 
+    /**
+     * @param array $ids
+     * @return T[]
+     */
     public function findByIds(array $ids)
     {
         return $this->findBy(["id" => $ids]);
@@ -63,7 +88,7 @@ class BaseRepository
     /**
      * Find an entity by id and throw an exception if no such entity exists
      * @param mixed $id
-     * @return mixed
+     * @return T
      * @throws NotFoundException
      */
     public function findOrThrow($id)
@@ -81,6 +106,7 @@ class BaseRepository
      * @param DateTime|null $since Only entities created after this date are returned.
      * @param DateTime|null $until Only entities created before this date are returned.
      * @param string $column Name of the column used for filtering.
+     * @return T[]
      */
     protected function findByDateTimeColumn(?DateTime $since, ?DateTime $until, $column = 'createdAt')
     {
@@ -98,13 +124,14 @@ class BaseRepository
      * Find all entities created in given time interval.
      * @param DateTime|null $since Only entities created after this date are returned.
      * @param DateTime|null $until Only entities created before this date are returned.
+     * @return T[]
      */
     public function findByCreatedAt(?DateTime $since, ?DateTime $until)
     {
         return $this->findByDateTimeColumn($since, $until);
     }
 
-    public function persist($entity, $autoFlush = true)
+    public function persist($entity, $autoFlush = true): void
     {
         $this->em->persist($entity);
         if ($autoFlush === true) {
@@ -112,7 +139,7 @@ class BaseRepository
         }
     }
 
-    public function remove($entity, $autoFlush = true)
+    public function remove($entity, $autoFlush = true): void
     {
         $this->em->remove($entity);
         if ($autoFlush === true) {
@@ -120,21 +147,31 @@ class BaseRepository
         }
     }
 
-    public function flush()
+    public function flush(): void
     {
         $this->em->flush();
     }
 
-    public function refresh($entity)
+    public function refresh($entity): void
     {
         $this->em->refresh($entity);
     }
 
+    /**
+     * @param Criteria $params
+     * @return Collection<T>
+     */
     public function matching(Criteria $params)
     {
         return $this->repository->matching($params);
     }
 
+    /**
+     * Create query builder for entity related to this repository
+     * @param string $alias
+     * @param string|null $indexBy
+     * @return QueryBuilder
+     */
     protected function createQueryBuilder(string $alias, string $indexBy = null)
     {
         return $this->repository->createQueryBuilder($alias, $indexBy);
@@ -144,7 +181,7 @@ class BaseRepository
      * Internal simple search of repository based on given string.
      * @param array $columns
      * @param string|null $search
-     * @return array
+     * @return T[]
      */
     protected function search(array $columns, string $search = null): array
     {
@@ -163,7 +200,7 @@ class BaseRepository
      * Search repository based on given search string within given columns.
      * @param array $columns
      * @param null|string $search
-     * @return array
+     * @return T[]
      */
     protected function searchBy(array $columns, string $search = null): array
     {
@@ -175,6 +212,11 @@ class BaseRepository
         );
     }
 
+    /**
+     * @param string|null $search
+     * @param callable $searchFunction
+     * @return T[]
+     */
     protected function searchHelper(?string $search, $searchFunction)
     {
         /** @var array $filtered */
@@ -204,17 +246,17 @@ class BaseRepository
      * Repositories provide access to low-level transaction control.
      */
 
-    public function beginTransaction()
+    public function beginTransaction(): void
     {
         $this->em->getConnection()->beginTransaction();
     }
 
-    public function commit()
+    public function commit(): void
     {
         $this->em->getConnection()->commit();
     }
 
-    public function rollBack()
+    public function rollBack(): void
     {
         $this->em->getConnection()->rollBack();
     }

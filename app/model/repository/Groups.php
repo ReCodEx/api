@@ -13,7 +13,7 @@ use App\Model\Helpers\PaginationDbHelper;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method Group findOrThrow($id)
+ * @extends BaseSoftDeleteRepository<Group>
  */
 class Groups extends BaseSoftDeleteRepository
 {
@@ -26,13 +26,16 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * Find all groups belonging to specified instance.
      * @param Instance $instance
-     * @return array
+     * @return Group[]
      */
     public function findAllByInstance(Instance $instance)
     {
         return $this->findBy(['instance' => $instance->getId()]);
     }
 
+    /**
+     * @return Group[]
+     */
     public function findUnarchived()
     {
         return $this->repository->findBy(
@@ -58,6 +61,7 @@ class Groups extends BaseSoftDeleteRepository
 
     /**
      * Check if the name of the group is free within group and instance.
+     * @return Group[]
      */
     public function findByName(string $locale, string $name, Instance $instance, ?Group $parentGroup = null)
     {
@@ -245,6 +249,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param bool $onlyArchived Automatically implies $archived flag and returns only archived groups.
      * @param int|null $archivedAgeLimit Restricting included archived groups by how long they have been archived.
      *  Groups archived before $archivedAgeLimit days (or more) are not included in the result.
+     * @return Group[]
      */
     public function findFiltered(
         User $user = null,
@@ -298,6 +303,7 @@ class Groups extends BaseSoftDeleteRepository
      * Gets an initial set of groups and produces a set of groups which have the
      * original set as a subset and every group has its parent in the set as well.
      * @param Group[] $groups Initial set of groups
+     * @return Group[]
      */
     public function groupsAncestralClosure(array $groups)
     {
@@ -321,6 +327,7 @@ class Groups extends BaseSoftDeleteRepository
      * Gets a set of group IDs and produces a set of group IDs which have the
      * original set as a subset and every group has its parent in the set as well.
      * @param string[] $groupIds Initial set of group IDs
+     * @return string[]
      */
     public function groupsIdsAncestralClosure(array $groupIds)
     {

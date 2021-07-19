@@ -6,7 +6,7 @@ use App\Model\Entity\SisValidTerm;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method SisValidTerm findOrThrow(string $id)
+ * @extends BaseRepository<SisValidTerm>
  */
 class SisValidTerms extends BaseRepository
 {
@@ -15,6 +15,11 @@ class SisValidTerms extends BaseRepository
         parent::__construct($em, SisValidTerm::class);
     }
 
+    /**
+     * @param int $year
+     * @param int $term
+     * @return SisValidTerm|null
+     */
     public function isValid($year, $term)
     {
         return $this->findOneBy(
@@ -25,6 +30,9 @@ class SisValidTerms extends BaseRepository
         );
     }
 
+    /**
+     * @return SisValidTerm[]
+     */
     public function findAll()
     {
         return $this->repository->findBy(

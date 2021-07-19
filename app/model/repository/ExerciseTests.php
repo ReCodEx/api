@@ -6,7 +6,7 @@ use App\Model\Entity\ExerciseTest;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method ExerciseTest findOrThrow($id)
+ * @extends BaseRepository<ExerciseTest>
  */
 class ExerciseTests extends BaseRepository
 {

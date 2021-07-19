@@ -6,8 +6,7 @@ use App\Model\Entity\ReferenceExerciseSolution;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method ReferenceExerciseSolution findOrThrow($solutionId)
- * @method ReferenceExerciseSolution|null get($id)
+ * @extends BaseRepository<ReferenceExerciseSolution>
  */
 class ReferenceExerciseSolutions extends BaseRepository
 {

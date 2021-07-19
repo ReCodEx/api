@@ -8,7 +8,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method AssignmentSolutionSubmission findOrThrow($id)
+ * @extends BaseRepository<AssignmentSolutionSubmission>
  */
 class AssignmentSolutionSubmissions extends BaseRepository
 {
@@ -22,6 +22,7 @@ class AssignmentSolutionSubmissions extends BaseRepository
      * Find all submissions created in given time interval.
      * @param DateTime|null $since Only submissions created after this date are returned.
      * @param DateTime|null $until Only submissions created before this date are returned.
+     * @return AssignmentSolutionSubmission[]
      */
     public function findByCreatedAt(?DateTime $since, ?DateTime $until)
     {
@@ -34,6 +35,7 @@ class AssignmentSolutionSubmissions extends BaseRepository
      * @param AssignmentSolutionSubmission|null $omitThisSubmission If set, given solution will be ignored
      *  (as if it is not present on the list). That might be useful when looking for new last submission
      *  whilst a submission is being deleted.
+     * @return AssignmentSolutionSubmission|null
      */
     public function getLastSubmission(
         AssignmentSolution $solution,

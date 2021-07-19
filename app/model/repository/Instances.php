@@ -6,7 +6,7 @@ use App\Model\Entity\Instance;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method Instance findOrThrow($id)
+ * @extends BaseSoftDeleteRepository<Instance>
  */
 class Instances extends BaseSoftDeleteRepository
 {

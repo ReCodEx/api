@@ -9,7 +9,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method User findOrThrow(string $id)
+ * @extends BaseSoftDeleteRepository<User>
  */
 class Users extends BaseSoftDeleteRepository
 {
@@ -27,6 +27,7 @@ class Users extends BaseSoftDeleteRepository
      * Fetch users for pagination endpoint (filtered and sorted).
      * @param Pagination $pagination The object holding pagination metadata.
      * @param int $totalCount Referenced variable, into which the total amount of items is returned.
+     * @return User[]
      */
     public function getPaginated(Pagination $pagination, &$totalCount)
     {
@@ -83,6 +84,10 @@ class Users extends BaseSoftDeleteRepository
         return $this->searchBy(["firstName", "lastName"], $search);
     }
 
+    /**
+     * @param string ...$roles
+     * @return User[]
+     */
     public function findByRoles(string ...$roles): array
     {
         return $this->findBy(["role" => $roles]);
@@ -94,6 +99,7 @@ class Users extends BaseSoftDeleteRepository
      * $before value and no (not null) $after value.
      * @param DateTime|null $before Only users with last activity before given date (i.e., not active after given date) are returned.
      * @param DateTime|null $after Only users with last activity after given date (i.e., have been active after give date) are returned.
+     * @return User[]
      */
     public function findByLastAuthentication(?DateTime $before, ?DateTime $after = null)
     {

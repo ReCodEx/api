@@ -10,6 +10,9 @@ use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
 use App\Model\Entity\User;
 
+/**
+ * @extends BaseRepository<Comment>
+ */
 class Comments extends BaseRepository
 {
 
@@ -89,7 +92,7 @@ class Comments extends BaseRepository
      * the authorship of comments directly as a performance optimization (we need only the last entity, not all entities).
      * @param CommentThread $thread
      * @param User $user
-     * @return mixed
+     * @return Comment|null
      */
     public function getThreadLastComment(CommentThread $thread, User $user)
     {

@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use DateTime;
 
 /**
- * @method UploadedPartialFile findOrThrow($id)
+ * @extends BaseRepository<UploadedPartialFile>
  */
 class UploadedPartialFiles extends BaseRepository
 {

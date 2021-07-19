@@ -9,7 +9,7 @@ use App\Model\Entity\UploadedFile;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method UploadedFile findOrThrow($id)
+ * @extends BaseRepository<UploadedFile>
  */
 class UploadedFiles extends BaseRepository
 {
@@ -19,6 +19,10 @@ class UploadedFiles extends BaseRepository
         parent::__construct($em, UploadedFile::class);
     }
 
+    /**
+     * @param string[] $ids
+     * @return UploadedFile[]
+     */
     public function findAllById($ids)
     {
         return $this->findBy(["id" => $ids]);

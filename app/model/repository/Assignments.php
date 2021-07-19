@@ -10,7 +10,7 @@ use App\Model\Entity\Assignment;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method Assignment findOrThrow($id)
+ * @extends BaseSoftDeleteRepository<Assignment>
  */
 class Assignments extends BaseSoftDeleteRepository
 {
@@ -42,7 +42,7 @@ class Assignments extends BaseSoftDeleteRepository
      * Find assignments with deadlines within the bounds given by the parameters
      * @param DateTime $from
      * @param DateTime $to
-     * @return array
+     * @return Assignment[]
      */
     public function findByDeadline(DateTime $from, DateTime $to)
     {

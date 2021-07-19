@@ -6,6 +6,9 @@ use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @extends BaseRepository<ExternalLogin>
+ */
 class ExternalLogins extends BaseRepository
 {
 

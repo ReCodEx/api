@@ -6,7 +6,7 @@ use App\Model\Entity\ShadowAssignment;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @method ShadowAssignment findOrThrow($id)
+ * @extends BaseSoftDeleteRepository<ShadowAssignment>
  */
 class ShadowAssignments extends BaseSoftDeleteRepository
 {

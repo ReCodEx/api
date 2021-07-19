@@ -9,6 +9,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use DateTime;
 
+/**
+ * @extends BaseRepository<AsyncJob>
+ */
 class AsyncJobs extends BaseRepository
 {
     public function __construct(EntityManagerInterface $em)
