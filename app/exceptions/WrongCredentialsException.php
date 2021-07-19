@@ -14,7 +14,7 @@ class WrongCredentialsException extends ApiException
      * Creates instance with optional further description.
      * @param string $msg description
      * @param string $frontendErrorCode
-     * @param null $frontendErrorParams
+     * @param array|null $frontendErrorParams
      */
     public function __construct(
         string $msg = "Invalid credentials",

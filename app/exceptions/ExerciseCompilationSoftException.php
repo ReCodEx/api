@@ -15,7 +15,7 @@ class ExerciseCompilationSoftException extends ExerciseCompilationException
      * Constructor.
      * @param string $msg description
      * @param string $frontendErrorCode
-     * @param null $frontendErrorParams
+     * @param array|null $frontendErrorParams
      */
     public function __construct(
         string $msg = 'Please, check the exercise instructions',

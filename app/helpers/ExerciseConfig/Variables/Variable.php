@@ -303,7 +303,7 @@ class Variable implements JsonSerializable
 
     /**
      * Set value of this variable.
-     * @param array|string $value
+     * @param array|string|null $value
      * @return Variable
      * @throws ExerciseConfigException
      */

@@ -16,7 +16,7 @@ class ApiException extends Exception
 
     /** @var string */
     private $frontendErrorCode;
-    /** @var mixed */
+    /** @var array|null */
     private $frontendErrorParams;
 
     /**
@@ -24,7 +24,7 @@ class ApiException extends Exception
      * @param string $msg Error message
      * @param int $code Error code
      * @param string $frontendErrorCode
-     * @param null $frontendErrorParams
+     * @param array|null $frontendErrorParams
      * @param Exception $previous Previous exception
      */
     public function __construct(

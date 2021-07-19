@@ -13,7 +13,6 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\NotFoundException;
 use App\Model\Repository\AssignmentSolutionSubmissions;
-use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Responses\StorageFileResponse;
 

@@ -15,7 +15,7 @@ class BadRequestException extends ApiException
      * Create instance with textual description.
      * @param string $msg description
      * @param string $frontendErrorCode
-     * @param null $frontendErrorParams
+     * @param array|null $frontendErrorParams
      */
     public function __construct(
         string $msg = 'one or more parameters are missing',

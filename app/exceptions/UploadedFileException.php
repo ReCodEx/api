@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Exception;
 use Nette\Http\IResponse;
 
 /**
@@ -12,9 +13,9 @@ class UploadedFileException extends ApiException
     /**
      * Creates instance with further description.
      * @param string $msg description
-     * @param null $previous
+     * @param Exception|null $previous
      * @param string $frontendErrorCode
-     * @param null $frontendErrorParams
+     * @param array|null $frontendErrorParams
      */
     public function __construct(
         $msg,
