@@ -137,7 +137,7 @@ class PresenterTestHelper
         $names = $container->findByType($class);
         $name = reset($names);
 
-        /** @var $presenter Nette\Application\UI\Presenter */
+        /** @var Nette\Application\UI\Presenter $presenter */
         $presenter = $container->createService($name);
         $presenter->autoCanonicalize = false;
 
