@@ -29,7 +29,7 @@ class Users extends BaseSoftDeleteRepository
      * @param int $totalCount Referenced variable, into which the total amount of items is returned.
      * @return User[]
      */
-    public function getPaginated(Pagination $pagination, &$totalCount)
+    public function getPaginated(Pagination $pagination, &$totalCount): array
     {
         $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
 
@@ -101,7 +101,7 @@ class Users extends BaseSoftDeleteRepository
      * @param DateTime|null $after Only users with last activity after given date (i.e., have been active after give date) are returned.
      * @return User[]
      */
-    public function findByLastAuthentication(?DateTime $before, ?DateTime $after = null)
+    public function findByLastAuthentication(?DateTime $before, ?DateTime $after = null): array
     {
         $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
         if ($before) {

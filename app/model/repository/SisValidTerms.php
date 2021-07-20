@@ -20,7 +20,7 @@ class SisValidTerms extends BaseRepository
      * @param int $term
      * @return SisValidTerm|null
      */
-    public function isValid($year, $term)
+    public function isValid($year, $term): ?SisValidTerm
     {
         return $this->findOneBy(
             [
@@ -33,7 +33,7 @@ class SisValidTerms extends BaseRepository
     /**
      * @return SisValidTerm[]
      */
-    public function findAll()
+    public function findAll(): array
     {
         return $this->repository->findBy(
             [],

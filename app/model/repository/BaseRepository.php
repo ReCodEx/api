@@ -53,7 +53,7 @@ class BaseRepository
     /**
      * @return T[]
      */
-    public function findAll()
+    public function findAll(): array
     {
         return $this->repository->findAll();
     }
@@ -61,7 +61,7 @@ class BaseRepository
     /**
      * @return T[]
      */
-    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null): array
     {
         return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
     }
@@ -80,7 +80,7 @@ class BaseRepository
      * @param array $ids
      * @return T[]
      */
-    public function findByIds(array $ids)
+    public function findByIds(array $ids): array
     {
         return $this->findBy(["id" => $ids]);
     }
@@ -108,7 +108,7 @@ class BaseRepository
      * @param string $column Name of the column used for filtering.
      * @return T[]
      */
-    protected function findByDateTimeColumn(?DateTime $since, ?DateTime $until, $column = 'createdAt')
+    protected function findByDateTimeColumn(?DateTime $since, ?DateTime $until, $column = 'createdAt'): array
     {
         $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
         if ($since) {
@@ -126,7 +126,7 @@ class BaseRepository
      * @param DateTime|null $until Only entities created before this date are returned.
      * @return T[]
      */
-    public function findByCreatedAt(?DateTime $since, ?DateTime $until)
+    public function findByCreatedAt(?DateTime $since, ?DateTime $until): array
     {
         return $this->findByDateTimeColumn($since, $until);
     }
@@ -161,7 +161,7 @@ class BaseRepository
      * @param Criteria $params
      * @return Collection<T>
      */
-    public function matching(Criteria $params)
+    public function matching(Criteria $params): Collection
     {
         return $this->repository->matching($params);
     }
@@ -172,7 +172,7 @@ class BaseRepository
      * @param string|null $indexBy
      * @return QueryBuilder
      */
-    protected function createQueryBuilder(string $alias, string $indexBy = null)
+    protected function createQueryBuilder(string $alias, string $indexBy = null): QueryBuilder
     {
         return $this->repository->createQueryBuilder($alias, $indexBy);
     }
@@ -217,7 +217,7 @@ class BaseRepository
      * @param callable $searchFunction
      * @return T[]
      */
-    protected function searchHelper(?string $search, $searchFunction)
+    protected function searchHelper(?string $search, $searchFunction): array
     {
         /** @var array $filtered */
         $filtered = $searchFunction($search);

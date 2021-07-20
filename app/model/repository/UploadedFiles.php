@@ -23,7 +23,7 @@ class UploadedFiles extends BaseRepository
      * @param string[] $ids
      * @return UploadedFile[]
      */
-    public function findAllById($ids)
+    public function findAllById($ids): array
     {
         return $this->findBy(["id" => $ids]);
     }
@@ -33,7 +33,7 @@ class UploadedFiles extends BaseRepository
      * @param UploadedFile $file
      * @return Group|null
      */
-    public function findGroupForSolutionFile(UploadedFile $file)
+    public function findGroupForSolutionFile(UploadedFile $file): ?Group
     {
         if (!($file instanceof SolutionFile)) {
             return null;
@@ -59,7 +59,7 @@ class UploadedFiles extends BaseRepository
      * @param UploadedFile $file
      * @return Group[]
      */
-    public function findGroupsForReferenceSolutionFile(UploadedFile $file)
+    public function findGroupsForReferenceSolutionFile(UploadedFile $file): array
     {
         if (!($file instanceof SolutionFile)) {
             return [];
@@ -87,7 +87,7 @@ class UploadedFiles extends BaseRepository
      *                          (in a form acceptable by DateTime::modify after prefixing with a "-" sign)
      * @return UploadedFile[]
      */
-    public function findUnused(DateTime $now, string $threshold)
+    public function findUnused(DateTime $now, string $threshold): array
     {
         $thresholdDate = clone $now;
         $thresholdDate->modify("-" . $threshold);
