@@ -7,6 +7,7 @@ use Nette\Reflection\ClassType;
 use Nette\Reflection\Method;
 use Nette\StaticClass;
 use Nette\Utils\Strings;
+use ReflectionNamedType;
 
 class PermissionHints
 {
@@ -24,8 +25,8 @@ class PermissionHints
     {
         foreach (static::getAclMethods($aclModule) as $method) {
             $parameter = $method->getParameters()[0];
-            /** @var ?ClassType $classObj */
-            $classObj = $parameter->getClass();
+            /** @var ?ReflectionNamedType $classObj */
+            $classObj = $parameter->getType();
             $className = $classObj ? $classObj->getName() : null;
             if ($className !== null && $subject instanceof $className) {
                 yield lcfirst(substr($method->getName(), 3)) => $method->invoke($aclModule, $subject);

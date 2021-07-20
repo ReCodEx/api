@@ -41,7 +41,6 @@ class BaseRepository
      */
     public function get($id)
     {
-        // @phpstan-ignore-next-line
         return $this->repository->find($id);
     }
 
@@ -72,7 +71,6 @@ class BaseRepository
      */
     public function findOneBy(array $criteria)
     {
-        // @phpstan-ignore-next-line
         return $this->repository->findOneBy($criteria);
     }
 
