@@ -18,7 +18,7 @@ class SubmissionFailures extends BaseRepository
     /**
      * @return SubmissionFailure[]
      */
-    public function findUnresolved()
+    public function findUnresolved(): array
     {
         return $this->findBy(
             [

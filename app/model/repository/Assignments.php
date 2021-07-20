@@ -44,7 +44,7 @@ class Assignments extends BaseSoftDeleteRepository
      * @param DateTime $to
      * @return Assignment[]
      */
-    public function findByDeadline(DateTime $from, DateTime $to)
+    public function findByDeadline(DateTime $from, DateTime $to): array
     {
         $qb = $this->createQueryBuilder("a");
 

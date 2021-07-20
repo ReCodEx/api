@@ -34,7 +34,7 @@ class BaseSoftDeleteRepository extends BaseRepository
     /**
      * @return T[]
      */
-    public function findAll()
+    public function findAll(): array
     {
         return $this->repository->findBy(
             [
@@ -46,7 +46,7 @@ class BaseSoftDeleteRepository extends BaseRepository
     /**
      * @return T[]
      */
-    public function findAllAndIReallyMeanAllOkay()
+    public function findAllAndIReallyMeanAllOkay(): array
     {
         return $this->repository->findAll();
     }
@@ -58,7 +58,7 @@ class BaseSoftDeleteRepository extends BaseRepository
      * @param null $offset
      * @return T[]
      */
-    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null): array
     {
         return $this->repository->findBy(
             array_merge(
@@ -118,7 +118,7 @@ class BaseSoftDeleteRepository extends BaseRepository
      * @param Criteria $params
      * @return Collection<T>
      */
-    public function matching(Criteria $params)
+    public function matching(Criteria $params): Collection
     {
         $params->andWhere(Criteria::expr()->isNull($this->softDeleteColumn));
         return $this->repository->matching($params);
@@ -129,7 +129,7 @@ class BaseSoftDeleteRepository extends BaseRepository
      * @param string|null $indexBy
      * @return QueryBuilder
      */
-    public function createQueryBuilder(string $alias, string $indexBy = null)
+    public function createQueryBuilder(string $alias, string $indexBy = null): QueryBuilder
     {
         $qb = $this->repository->createQueryBuilder($alias, $indexBy);
         $softDeleteColumn = $alias ? "$alias.$this->softDeleteColumn" : $this->softDeleteColumn;

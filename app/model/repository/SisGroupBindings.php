@@ -18,10 +18,10 @@ class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
     }
 
     /**
-     * @param ?string $code
+     * @param string|null $code
      * @return SisGroupBinding[]
      */
-    public function findByCode($code)
+    public function findByCode($code): array
     {
         $qb = $this->createQueryBuilder("sis");
         $qb->leftJoin("sis.group", "gr")
@@ -33,10 +33,10 @@ class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
 
     /**
      * @param Group $group
-     * @param ?string $code
+     * @param string|null $code
      * @return SisGroupBinding|null
      */
-    public function findByGroupAndCode(Group $group, $code)
+    public function findByGroupAndCode(Group $group, $code): ?SisGroupBinding
     {
         return $this->findOneBy(
             [
@@ -56,7 +56,7 @@ class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
 
     /**
      * @param Group $group
-     * @return array all entities bound to the group (they must have __toString() implemented)
+     * @return SisGroupBinding[] all entities bound to the group (they must have __toString() implemented)
      */
     public function findGroupBindings(Group $group): array
     {

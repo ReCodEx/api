@@ -24,7 +24,7 @@ class AssignmentSolutionSubmissions extends BaseRepository
      * @param DateTime|null $until Only submissions created before this date are returned.
      * @return AssignmentSolutionSubmission[]
      */
-    public function findByCreatedAt(?DateTime $since, ?DateTime $until)
+    public function findByCreatedAt(?DateTime $since, ?DateTime $until): array
     {
         return $this->findByDateTimeColumn($since, $until, 'submittedAt');
     }
@@ -40,7 +40,7 @@ class AssignmentSolutionSubmissions extends BaseRepository
     public function getLastSubmission(
         AssignmentSolution $solution,
         ?AssignmentSolutionSubmission $omitThisSubmission = null
-    ) {
+    ): ?AssignmentSolutionSubmission {
         $submissions = $this->findBy(
             [
                 "assignmentSolution" => $solution

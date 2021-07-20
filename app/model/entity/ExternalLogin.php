@@ -43,7 +43,7 @@ class ExternalLogin
 
     ////////////////////////////////////////////////////////////////////////////
 
-    public function getId()
+    public function getId(): ?string
     {
         return $this->id;
     }

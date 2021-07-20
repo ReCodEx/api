@@ -28,7 +28,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param Instance $instance
      * @return Group[]
      */
-    public function findAllByInstance(Instance $instance)
+    public function findAllByInstance(Instance $instance): array
     {
         return $this->findBy(['instance' => $instance->getId()]);
     }
@@ -36,7 +36,7 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * @return Group[]
      */
-    public function findUnarchived()
+    public function findUnarchived(): array
     {
         return $this->repository->findBy(
             [
@@ -49,7 +49,7 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * @return Group[]
      */
-    public function findArchived()
+    public function findArchived(): array
     {
         $qb = $this->em->createQueryBuilder();
         $qb->select("g")
@@ -63,7 +63,7 @@ class Groups extends BaseSoftDeleteRepository
      * Check if the name of the group is free within group and instance.
      * @return Group[]
      */
-    public function findByName(string $locale, string $name, Instance $instance, ?Group $parentGroup = null)
+    public function findByName(string $locale, string $name, Instance $instance, ?Group $parentGroup = null): array
     {
         $textsQb = $this->em->createQueryBuilder();
         $textsQb->addSelect("l")->from(LocalizedGroup::class, "l");
@@ -130,7 +130,7 @@ class Groups extends BaseSoftDeleteRepository
         User $user,
         string $type = GroupMembership::TYPE_ALL,
         bool $onlyActive = true
-    ) {
+    ): array {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
         $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");
         $sub->andWhere($sub->expr()->eq('gm.group', 'g'));
@@ -155,7 +155,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param User $user The user whos admin rights are considered.
      * @return Group[] Array indexed by group IDs.
      */
-    private function fetchGroupsByPrimaryAdminOf(User $user)
+    private function fetchGroupsByPrimaryAdminOf(User $user): array
     {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
         $qb->andWhere(":user MEMBER OF g.primaryAdmins")->setParameter('user', $user->getId());
@@ -174,7 +174,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param Group[] $groups List of groups to be filtered.
      * @return Group[]
      */
-    private function filterGroupsByUser(User $user, array $groups)
+    private function filterGroupsByUser(User $user, array $groups): array
     {
         $memberOf = $this->fetchGroupsByMembership($user);
         $adminOf = $this->fetchGroupsByPrimaryAdminOf($user);
@@ -209,7 +209,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param Group[] $groups Groups to be filtered.
      * @return Group[]
      */
-    private function filterGroupsNonArchived(array $groups)
+    private function filterGroupsNonArchived(array $groups): array
     {
         return array_filter(
             $groups,
@@ -227,7 +227,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param Group[] $groups Groups to be filtered.
      * @return Group[]
      */
-    private function filterGroupsArchived(array $groups, bool $onlyArchived, ?DateTime $minDate = null)
+    private function filterGroupsArchived(array $groups, bool $onlyArchived, ?DateTime $minDate = null): array
     {
         return array_filter(
             $groups,
@@ -258,7 +258,7 @@ class Groups extends BaseSoftDeleteRepository
         bool $archived = false,
         bool $onlyArchived = false,
         int $archivedAgeLimit = null
-    ) {
+    ): array {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
 
         // Filter by instance ID...
@@ -305,7 +305,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param Group[] $groups Initial set of groups
      * @return Group[]
      */
-    public function groupsAncestralClosure(array $groups)
+    public function groupsAncestralClosure(array $groups): array
     {
         $res = [];
         foreach ($groups as $group) {
@@ -329,7 +329,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param string[] $groupIds Initial set of group IDs
      * @return string[]
      */
-    public function groupsIdsAncestralClosure(array $groupIds)
+    public function groupsIdsAncestralClosure(array $groupIds): array
     {
         $res = [];
         foreach ($groupIds as $groupId) {

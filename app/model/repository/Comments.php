@@ -42,7 +42,7 @@ class Comments extends BaseRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function getCommentsCount(CommentThread $thread, User $user, bool $allVisible)
+    private function getCommentsCount(CommentThread $thread, User $user, bool $allVisible): int
     {
         $qb = $this->comments->createQueryBuilder('tc')
             ->select('COUNT(tc.id)')
@@ -70,7 +70,7 @@ class Comments extends BaseRepository
      * @param User $user
      * @return int
      */
-    public function getThreadCommentsCount(CommentThread $thread, User $user)
+    public function getThreadCommentsCount(CommentThread $thread, User $user): int
     {
         return $this->getCommentsCount($thread, $user, true);
     }
@@ -81,7 +81,7 @@ class Comments extends BaseRepository
      * @param User $user
      * @return int
      */
-    public function getAuthoredCommentsCount(CommentThread $thread, User $user)
+    public function getAuthoredCommentsCount(CommentThread $thread, User $user): int
     {
         return $this->getCommentsCount($thread, $user, false);
     }
@@ -94,7 +94,7 @@ class Comments extends BaseRepository
      * @param User $user
      * @return Comment|null
      */
-    public function getThreadLastComment(CommentThread $thread, User $user)
+    public function getThreadLastComment(CommentThread $thread, User $user): ?Comment
     {
         return $this->comments->matching(
             Criteria::create()

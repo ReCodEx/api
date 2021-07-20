@@ -23,7 +23,7 @@ class ReferenceSolutionSubmissions extends BaseRepository
      * @param DateTime|null $until Only submissions created before this date are returned.
      * @return ReferenceSolutionSubmission[]
      */
-    public function findByCreatedAt(?DateTime $since, ?DateTime $until)
+    public function findByCreatedAt(?DateTime $since, ?DateTime $until): array
     {
         return $this->findByDateTimeColumn($since, $until, 'submittedAt');
     }

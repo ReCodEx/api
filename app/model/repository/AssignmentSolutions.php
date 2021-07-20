@@ -24,7 +24,7 @@ class AssignmentSolutions extends BaseRepository
      * @param User $user
      * @return AssignmentSolution[]
      */
-    public function findSolutions(Assignment $assignment, User $user)
+    public function findSolutions(Assignment $assignment, User $user): array
     {
         $qb = $this->createQueryBuilder("asol");
         $qb->leftJoin("asol.solution", "sol")
@@ -42,7 +42,7 @@ class AssignmentSolutions extends BaseRepository
      * @param User $user
      * @return AssignmentSolution[]
      */
-    public function findValidSolutions(Assignment $assignment, User $user)
+    public function findValidSolutions(Assignment $assignment, User $user): array
     {
         return $this->findValidSolutionsForAssignments([$assignment], $user);
     }
@@ -93,7 +93,7 @@ class AssignmentSolutions extends BaseRepository
      * @param User|null $user If null, solutions of all users are returned
      * @return AssignmentSolution[]
      */
-    private function findValidSolutionsForAssignments(array $assignments, ?User $user = null)
+    private function findValidSolutionsForAssignments(array $assignments, ?User $user = null): array
     {
         if (!$assignments) {
             return []; // this shortcut also prevents assembling wrong DQL
@@ -124,7 +124,7 @@ class AssignmentSolutions extends BaseRepository
      * @param AssignmentSolution $solution Solution to be compared with the best solution
      * @return AssignmentSolution Better of the two given solutions
      */
-    private static function compareBestSolution(?AssignmentSolution $best, AssignmentSolution $solution)
+    private static function compareBestSolution(?AssignmentSolution $best, AssignmentSolution $solution): AssignmentSolution
     {
         if ($best === null) {
             return $solution;
@@ -220,7 +220,7 @@ class AssignmentSolutions extends BaseRepository
      * @param AssignmentSolution[] $solutions
      * @return AssignmentSolution[]
      */
-    public function filterBestSolutions(array $solutions)
+    public function filterBestSolutions(array $solutions): array
     {
         $result = [];
         $validSolutions = self::filterValidSolutions($solutions);

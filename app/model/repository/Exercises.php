@@ -117,7 +117,7 @@ class Exercises extends BaseSoftDeleteRepository
      * @param Groups $groups Doctrine groups repository
      * @return Exercise[]
      */
-    public function getPreparedForPagination(Pagination $pagination, Groups $groups)
+    public function getPreparedForPagination(Pagination $pagination, Groups $groups): array
     {
         // Welcome to Doctrine HELL! Put your sickbags on standby!
 
@@ -200,7 +200,7 @@ class Exercises extends BaseSoftDeleteRepository
      * @param Groups $groups groups repository
      * @return User[] List of exercises authors.
      */
-    public function getAuthors(?string $instanceId, ?string $groupId, Groups $groups)
+    public function getAuthors(?string $instanceId, ?string $groupId, Groups $groups): array
     {
         $qb = $this->em->createQueryBuilder()->select("a")->from(User::class, "a");
         if ($instanceId) {

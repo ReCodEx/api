@@ -70,7 +70,7 @@ class ExerciseTags extends BaseRepository
      * @param string $newName
      * @return int Number of rows affected
      */
-    public function renameTag(string $oldName, string $newName)
+    public function renameTag(string $oldName, string $newName): int
     {
         $qb = $this->createQueryBuilder('et');
         $qb->update(ExerciseTag::class, 'et')->set('et.name', ':newName')->where('et.name = :oldName')
@@ -83,7 +83,7 @@ class ExerciseTags extends BaseRepository
      * @param string $name
      * @return int Number of rows removed
      */
-    public function removeTag(string $name)
+    public function removeTag(string $name): int
     {
         $qb = $this->createQueryBuilder('et');
         $qb->delete(ExerciseTag::class, 'et')->where('et.name = :name')->setParameter('name', $name);

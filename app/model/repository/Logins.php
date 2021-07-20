@@ -24,7 +24,7 @@ class Logins extends BaseRepository
      * @param string $userId ID of the user
      * @return  Login|null
      */
-    public function findByUserId($userId)
+    public function findByUserId($userId): ?Login
     {
         return $this->findOneBy(["user" => $userId]);
     }
@@ -86,7 +86,7 @@ class Logins extends BaseRepository
      * Clear password of given user.
      * @param User $user
      */
-    public function clearUserPassword(User $user)
+    public function clearUserPassword(User $user): void
     {
         $login = $this->findByUserId($user->getId());
         if ($login) {
