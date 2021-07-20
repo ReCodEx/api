@@ -5,7 +5,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Helpers\FileStorage\IHashFileStorage;
 use App\Helpers\FileStorage\IFileStorage;
 use App\Helpers\FileStorage\IImmutableFile;
-use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\FileStorage\ArchivedImmutableFile;
 use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Helpers\FileStorage\LocalFileStorage;

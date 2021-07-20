@@ -79,7 +79,6 @@ class BaseSoftDeleteRepository extends BaseRepository
      */
     public function findOneBy(array $criteria)
     {
-        // @phpstan-ignore-next-line
         return $this->repository->findOneBy(
             array_merge(
                 $criteria,
@@ -96,7 +95,6 @@ class BaseSoftDeleteRepository extends BaseRepository
      */
     public function findOneByEvenIfDeleted(array $params)
     {
-        // @phpstan-ignore-next-line
         return $this->repository->findOneBy($params);
     }
 
