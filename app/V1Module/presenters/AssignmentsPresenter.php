@@ -173,24 +173,43 @@ class AssignmentsPresenter extends BasePresenter
      * Update details of an assignment
      * @POST
      * @Param(type="post", name="version", validation="numericint", description="Version of the edited assignment")
-     * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
+     * @Param(type="post", name="isPublic", validation="bool",
+     *        description="Is the assignment ready to be displayed to students?")
      * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
-     * @Param(type="post", name="firstDeadline", validation="timestamp", description="First deadline for submission of the assignment")
-     * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
-     * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
-     * @Param(type="post", name="solutionFilesLimit", validation="numericint|null", description="Maximal number of files in a solution being submitted")
-     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null", description="Maximal size (bytes) of all files in a solution being submitted")
-     * @Param(type="post", name="allowSecondDeadline", validation="bool", description="Should there be a second deadline for students who didn't make the first one?")
-     * @Param(type="post", name="visibleFrom", validation="timestamp", required=false, description="Date from which this assignment will be visible to students")
-     * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can all users view ratio of theirs solution memory and time usages and assignment limits?")
-     * @Param(type="post", name="canViewJudgeStdout", validation="bool", description="Can all users view judge primary log (stdout) of theirs solution?")
-     * @Param(type="post", name="canViewJudgeStderr", validation="bool", description="Can all users view judge secondary log (stderr) of theirs solution?")
-     * @Param(type="post", name="secondDeadline", validation="timestamp", required=false, description="A second deadline for submission of the assignment (with different point award)")
-     * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
-     * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
-     * @Param(type="post", name="pointsPercentualThreshold", validation="numeric", required=false, description="A minimum percentage of points needed to gain point from assignment")
-     * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
-     * @Param(type="post", name="sendNotification", required=false, validation="bool", description="If email notification should be sent")
+     * @Param(type="post", name="firstDeadline", validation="timestamp",
+     *        description="First deadline for submission of the assignment")
+     * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint",
+     *        description="A maximum of points that can be awarded for a submission before first deadline")
+     * @Param(type="post", name="submissionsCountLimit", validation="numericint",
+     *        description="A maximum amount of submissions by a student for the assignment")
+     * @Param(type="post", name="solutionFilesLimit", validation="numericint|null",
+     *        description="Maximal number of files in a solution being submitted")
+     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
+     *        description="Maximal size (bytes) of all files in a solution being submitted")
+     * @Param(type="post", name="allowSecondDeadline", validation="bool",
+     *        description="Should there be a second deadline for students who didn't make the first one?")
+     * @Param(type="post", name="visibleFrom", validation="timestamp", required=false,
+     *        description="Date from which this assignment will be visible to students")
+     * @Param(type="post", name="canViewLimitRatios", validation="bool",
+     *        description="Can all users view ratio of theirs solution memory and time usages and assignment limits?")
+     * @Param(type="post", name="canViewJudgeStdout", validation="bool",
+     *        description="Can all users view judge primary log (stdout) of theirs solution?")
+     * @Param(type="post", name="canViewJudgeStderr", validation="bool",
+     *        description="Can all users view judge secondary log (stderr) of theirs solution?")
+     * @Param(type="post", name="secondDeadline", validation="timestamp", required=false,
+     *        description="A second deadline for submission of the assignment (with different point award)")
+     * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false,
+     *        description="A maximum of points that can be awarded for a late submission")
+     * @Param(type="post", name="maxPointsDeadlineInterpolation", validation="bool",
+     *        description="Use linear interpolation for max. points between 1st and 2nd deadline")
+     * @Param(type="post", name="isBonus", validation="bool",
+     *        description="If true, points from this exercise will not be included in overall score of group")
+     * @Param(type="post", name="pointsPercentualThreshold", validation="numeric", required=false,
+     *        description="A minimum percentage of points needed to gain point from assignment")
+     * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false,
+     *        description="Identifiers of runtime environments that should not be used for student submissions")
+     * @Param(type="post", name="sendNotification", required=false, validation="bool",
+     *        description="If email notification should be sent")
      * @param string $id Identifier of the updated assignment
      * @throws BadRequestException
      * @throws InvalidArgumentException
@@ -251,13 +270,35 @@ class AssignmentsPresenter extends BasePresenter
         $oldFirstDeadlineTimestamp = $assignment->getFirstDeadline()->getTimestamp();
         $firstDeadlineTimestamp = (int)$req->getPost("firstDeadline");
         $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
+        $allowSecondDeadline = filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN);
         $secondDeadlineTimestamp = (int)$req->getPost("secondDeadline") ?: 0;
         $oldVisibleFromTimestamp = $assignment->getVisibleFrom() ? $assignment->getVisibleFrom()->getTimestamp() : null;
         $visibleFromTimestamp = (int)$req->getPost("visibleFrom");
         $visibleFrom = $visibleFromTimestamp ? DateTime::createFromFormat('U', $visibleFromTimestamp) : null;
+        $maxPointsDeadlineInterpolation = filter_var(
+            $req->getPost("maxPointsDeadlineInterpolation"),
+            FILTER_VALIDATE_BOOLEAN
+        );
+        $oldMaxPointsDeadlineInterpolation = $assignment->getMaxPointsDeadlineInterpolation();
 
         $sendNotification = $req->getPost("sendNotification");
         $sendNotification = $sendNotification !== null ? filter_var($sendNotification, FILTER_VALIDATE_BOOLEAN) : true;
+
+        // basic constrain checks and sanitizations
+        if (!$allowSecondDeadline) {
+            $secondDeadlineTimestamp = 0;
+        }
+        if ($secondDeadlineTimestamp === 0) {
+            $allowSecondDeadline = false;
+        }
+        if (!$allowSecondDeadline) {
+            $maxPointsDeadlineInterpolation = false;
+        }
+        if ($allowSecondDeadline && $firstDeadlineTimestamp >= $secondDeadlineTimestamp) {
+            throw new InvalidArgumentException(
+                "When the second deadline is allowed, it must be after the first deadline."
+            );
+        }
 
         $assignment->incrementVersion();
         $assignment->updatedNow();
@@ -268,7 +309,8 @@ class AssignmentsPresenter extends BasePresenter
         $assignment->setMaxPointsBeforeSecondDeadline($secondDeadlinePoints);
         $assignment->setVisibleFrom($visibleFrom);
         $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
-        $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
+        $assignment->setAllowSecondDeadline($allowSecondDeadline);
+        $assignment->setMaxPointsDeadlineInterpolation($maxPointsDeadlineInterpolation);
         $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setCanViewJudgeStdout(filter_var($req->getPost("canViewJudgeStdout"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setCanViewJudgeStderr(filter_var($req->getPost("canViewJudgeStderr"), FILTER_VALIDATE_BOOLEAN));
@@ -284,7 +326,8 @@ class AssignmentsPresenter extends BasePresenter
             $oldSecondDeadlinePoints != $secondDeadlinePoints ||
             $oldThreshold != $threshold ||
             $oldFirstDeadlineTimestamp !== $firstDeadlineTimestamp ||
-            $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp
+            $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp ||
+            $oldMaxPointsDeadlineInterpolation !== $maxPointsDeadlineInterpolation
         ) {
             foreach ($assignment->getAssignmentSolutions() as $solution) {
                 foreach ($solution->getSubmissions() as $submission) {

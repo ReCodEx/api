@@ -15,13 +15,13 @@ abstract class AssignmentBase
     use UpdateableEntity;
     use DeleteableEntity;
 
-    abstract function getGroup(): ?Group;
+    abstract public function getGroup(): ?Group;
 
-    abstract function getMaxPoints(): int;
+    abstract public function getMaxPoints(): int;
 
-    abstract function getLocalizedTexts(): Collection;
+    abstract public function getLocalizedTexts(): Collection;
 
-    abstract function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
+    abstract public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
 
     /**
      * @ORM\Column(type="boolean")
