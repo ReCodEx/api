@@ -9,9 +9,8 @@ use App\Exceptions\ParseException;
  */
 class SubmitVariable
 {
-
-    const NAME_KEY = "name";
-    const VALUE_KEY = "value";
+    public const NAME_KEY = "name";
+    public const VALUE_KEY = "value";
 
     /**
      * @var string

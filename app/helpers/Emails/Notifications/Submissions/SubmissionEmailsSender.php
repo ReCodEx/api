@@ -86,7 +86,7 @@ class SubmissionEmailsSender
 
         // Handle evaluation notifications...
         $resultSubmissionEvaluated = $this->handleSubmissionEvaluated($solution, $submission, $user, $isResubmit);
-        
+
         if ($isResubmit) {
             // no other notifications in case of resubmits
             return $resultSubmissionEvaluated;
@@ -280,7 +280,7 @@ class SubmissionEmailsSender
                 "date" => $submission->getEvaluation()->getEvaluatedAt(),
                 "status" => $submission->isCorrect() === true ? "success" : "failure",
                 "points" => $submission->getEvaluation()->getPoints(),
-                "maxPoints" => $assignment->getMaxPoints($submission->getEvaluation()->getEvaluatedAt()),
+                "maxPoints" => $submission->getAssignmentSolution()->getMaxPoints(),
                 "link" => EmailLinkHelper::getLink(
                     $this->solutionRedirectUrl,
                     [

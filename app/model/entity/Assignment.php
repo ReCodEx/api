@@ -14,7 +14,8 @@ use DateTime;
 
 /**
  * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="first_deadline_idx", columns={"first_deadline"}), @ORM\Index(name="second_deadline_idx", columns={"second_deadline"})})
+ * @ORM\Table(indexes={@ORM\Index(name="first_deadline_idx", columns={"first_deadline"}),
+ *                                @ORM\Index(name="second_deadline_idx", columns={"second_deadline"})})
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  */
 class Assignment extends AssignmentBase implements IExercise
@@ -198,13 +199,32 @@ class Assignment extends AssignmentBase implements IExercise
      */
     protected $maxPointsBeforeSecondDeadline;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $maxPointsDeadlineInterpolation = false;
+
     public function getMaxPoints(DateTime $time = null): int
     {
         if ($time === null || $time < $this->firstDeadline) {
             return $this->maxPointsBeforeFirstDeadline;
         } else {
             if ($this->allowSecondDeadline && $time < $this->secondDeadline) {
-                return $this->maxPointsBeforeSecondDeadline;
+                if ($this->maxPointsDeadlineInterpolation) {
+                    // get timestamps of first deadline, second deadline, and current time
+                    $ts1 = $this->firstDeadline->getTimestamp();
+                    $ts2 = $this->secondDeadline->getTimestamp();
+                    $ts = $time->getTimestamp();
+
+                    $deltaP = $this->maxPointsBeforeFirstDeadline - $this->maxPointsBeforeSecondDeadline;
+                    $sign = ($deltaP > 0) - ($deltaP < 0); // neat way of getting signum of $deltaP
+
+                    // linear interpolation: how many points are subtracted from first max at $ts time
+                    $sub = $sign * (int)ceil((float)($ts - $ts1) * abs($deltaP) / (float)($ts2 - $ts1));
+                    return $this->maxPointsBeforeFirstDeadline - $sub;
+                } else {
+                    return $this->maxPointsBeforeSecondDeadline;
+                }
             } else {
                 return 0;
             }
@@ -611,5 +631,15 @@ class Assignment extends AssignmentBase implements IExercise
     public function getMergeJudgeLogs(): bool
     {
         return $this->mergeJudgeLogs;
+    }
+
+    public function getMaxPointsDeadlineInterpolation(): bool
+    {
+        return $this->maxPointsDeadlineInterpolation;
+    }
+
+    public function setMaxPointsDeadlineInterpolation(bool $interpolation = true): void
+    {
+        $this->maxPointsDeadlineInterpolation = $interpolation;
     }
 }

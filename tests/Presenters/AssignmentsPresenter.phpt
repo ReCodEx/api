@@ -114,7 +114,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $assignment = array_pop($assignments);
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'GET',
+            'V1:Assignments',
+            'GET',
             ['action' => 'detail', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -153,7 +154,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $canViewLimitRatios = false;
         $canViewJudgeStdout = true;
         $canViewJudgeStderr = false;
-        $secondDeadline = (new \DateTime())->getTimestamp();
+        $secondDeadline = (new \DateTime())->getTimestamp() + 10;
         $maxPointsBeforeSecondDeadline = 543;
         $visibleFrom = (new \DateTime())->getTimestamp();
         $isBonus = true;
@@ -162,7 +163,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $solutionSizeLimit = null;
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'POST',
+            'V1:Assignments',
+            'POST',
             ['action' => 'updateDetail', 'id' => $assignment->getId()],
             [
                 'isPublic' => $isPublic,
@@ -172,6 +174,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
                 'submissionsCountLimit' => $submissionsCountLimit,
                 'allowSecondDeadline' => $allowSecondDeadline,
+                'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => $canViewLimitRatios,
                 'canViewJudgeStdout' => $canViewJudgeStdout,
                 'canViewJudgeStderr' => $canViewJudgeStderr,
@@ -236,7 +239,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->presenter->solutionEvaluations = $mockEvaluations;
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'POST',
+            'V1:Assignments',
+            'POST',
             ['action' => 'updateDetail', 'id' => $assignment->getId()],
             [
                 'isPublic' => true,
@@ -249,6 +253,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'maxPointsBeforeFirstDeadline' => 42,
                 'submissionsCountLimit' => 10,
                 'allowSecondDeadline' => false,
+                'maxPointsDeadlineInterpolation' => true,
                 'canViewLimitRatios' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
@@ -268,6 +273,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         /** @var Assignment $updatedAssignment */
         $updatedAssignment = $result['payload'];
         Assert::true($updatedAssignment["isPublic"]);
+        Assert::false($updatedAssignment["maxPointsDeadlineInterpolation"]);
         Assert::equal(null, $updatedAssignment["solutionFilesLimit"]);
         Assert::equal(42, $updatedAssignment["solutionSizeLimit"]);
     }
@@ -282,7 +288,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $disabledEnv = $assignment->getRuntimeEnvironments()->first();
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'POST',
+            'V1:Assignments',
+            'POST',
             ['action' => 'updateDetail', 'id' => $assignment->getId()],
             [
                 'isPublic' => true,
@@ -294,10 +301,11 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
                 'allowSecondDeadline' => true,
+                'maxPointsDeadlineInterpolation' => true,
                 'canViewLimitRatios' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
-                'secondDeadline' => (new \DateTime())->getTimestamp(),
+                'secondDeadline' => (new \DateTime())->getTimestamp() + 10,
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
                 'pointsPercentualThreshold' => 90.0,
@@ -312,6 +320,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::count(1, $updatedAssignment["localizedTexts"]);
         Assert::equal("locA", $updatedAssignment["localizedTexts"][0]["locale"]);
         Assert::equal("Try hard", $updatedAssignment["localizedTexts"][0]["studentHint"]);
+        Assert::true($updatedAssignment["maxPointsDeadlineInterpolation"]);
     }
 
     public function testDisableRuntimeEnvironments()
@@ -325,7 +334,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $disabledEnv = $assignment->getRuntimeEnvironments()->first();
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'POST',
+            'V1:Assignments',
+            'POST',
             ['action' => 'updateDetail', 'id' => $assignment->getId()],
             [
                 'isPublic' => true,
@@ -337,10 +347,11 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
                 'allowSecondDeadline' => true,
+                'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
-                'secondDeadline' => (new \DateTime())->getTimestamp(),
+                'secondDeadline' => (new \DateTime())->getTimestamp() + 10,
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
                 'pointsPercentualThreshold' => 90.0,
@@ -484,7 +495,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->em->flush();
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'POST',
+            'V1:Assignments',
+            'POST',
             ['action' => 'syncWithExercise', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -503,7 +515,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $assignment = current($this->assignments->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'DELETE',
+            'V1:Assignments',
+            'DELETE',
             ['action' => 'remove', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -535,7 +548,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         );
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'GET',
+            'V1:Assignments',
+            'GET',
             ['action' => 'solutions', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -563,7 +577,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         );
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'GET',
+            'V1:Assignments',
+            'GET',
             ['action' => 'userSolutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
         );
         $response = $this->presenter->run($request);
@@ -586,7 +601,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 $best = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
 
                 $request = new Nette\Application\Request(
-                    'V1:Assignments', 'GET',
+                    'V1:Assignments',
+                    'GET',
                     ['action' => 'bestSolution', 'id' => $assignment->getId(), 'userId' => $user->getId()]
                 );
                 $response = $this->presenter->run($request);
@@ -613,7 +629,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $users = $assignment->getGroup()->getStudents();
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'GET',
+            'V1:Assignments',
+            'GET',
             ['action' => 'bestSolutions', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -637,7 +654,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            'V1:Assignments', 'GET',
+            'V1:Assignments',
+            'GET',
             ['action' => 'downloadBestSolutionsArchive', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -646,7 +664,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
         // Check invariants
         Assert::equal("assignment-" . $assignment->getId() . '.zip', $response->getName());
     }
-
 }
 
 $testCase = new TestAssignmentsPresenter();

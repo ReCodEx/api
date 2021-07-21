@@ -282,8 +282,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Set new amount of bonus points for a solution
      * @POST
-     * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
-     * @Param(type="post", name="overriddenPoints", required=false, description="Overrides points assigned to solution by the system")
+     * @Param(type="post", name="bonusPoints", validation="numericint",
+     *        description="New amount of bonus points, can be negative number")
+     * @Param(type="post", name="overriddenPoints", required=false,
+     *        description="Overrides points assigned to solution by the system")
      * @param string $id Identifier of the solution
      * @throws NotFoundException
      * @throws InvalidArgumentException
@@ -300,8 +302,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
 
         $solution->setBonusPoints($newBonusPoints);
 
-        // TODO: validations 'null|numericint' for overridenPoints cannot be used, because null is converted to empty string,
-        // TODO: which immediately breaks stated validation... in the future, this behaviour has to change
+        // TODO: validations 'null|numericint' for overridenPoints cannot be used, because null is converted to empty
+        // TODO: string which immediately breaks stated validation... in the future, this behaviour has to change
         // TODO: lucky third TODO
         if (Validators::isNumericInt($overriddenPoints)) {
             $solution->setOverriddenPoints($overriddenPoints);
@@ -337,7 +339,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @POST
      * @param string $id identifier of the solution
      * @param string $flag name of the flag which should to be changed
-     * @Param(type="post", name="value", required=true, validation=boolean, description="True or false which should be set to given flag name")
+     * @Param(type="post", name="value", required=true, validation=boolean,
+     *        description="True or false which should be set to given flag name")
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      * @throws \Exception
