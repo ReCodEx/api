@@ -41,7 +41,7 @@ class Groups extends BaseSoftDeleteRepository
         return $this->repository->findBy(
             [
                 $this->softDeleteColumn => null,
-                "archivationDate" => null
+                "archivedAt" => null
             ]
         );
     }
@@ -55,7 +55,7 @@ class Groups extends BaseSoftDeleteRepository
         $qb->select("g")
             ->from(Group::class, "g")
             ->where($qb->expr()->isNull("g." . $this->softDeleteColumn))
-            ->andWhere($qb->expr()->isNotNull("archivationDate"));
+            ->andWhere($qb->expr()->isNotNull("archivedAt"));
         return $qb->getQuery()->getArrayResult();
     }
 
@@ -232,9 +232,9 @@ class Groups extends BaseSoftDeleteRepository
         return array_filter(
             $groups,
             function (Group $group) use ($onlyArchived, $minDate) {
-                $archivationDate = $group->getArchivationDate();
-                return (!$onlyArchived || $archivationDate !== null) &&
-                    ($minDate === null || $archivationDate === null || $minDate <= $archivationDate);
+                $archivedAt = $group->getArchivedAt();
+                return (!$onlyArchived || $archivedAt !== null) &&
+                    ($minDate === null || $archivedAt === null || $minDate <= $archivedAt);
             }
         );
     }

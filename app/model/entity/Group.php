@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
+use LogicException;
 
 /**
  * @ORM\Entity
@@ -112,17 +113,48 @@ class Group
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $archivationDate;
+    protected $archivedAt = null;
+
+    /**
+     * Flag that helps determine whether a group has been archived explicitly.
+     * That affects the modifications (moving and excavating group to/from archive).
+     * @ORM\Column(type="boolean")
+     */
+    protected $directlyArchived = false;
+
+    /**
+     * Recursively modifies the archived date to simulate inheritance of this state.
+     * If any descendant group is marked as directly archived, it is not modified (along with the entire subtree).
+     * @param DateTime|null $date new value set to archivedAt property
+     */
+    private function setArchivingStatus(?DateTime $date)
+    {
+        $this->archivedAt = $date;
+        foreach ($this->getChildGroups() as $childGroup) {
+            if (!$childGroup->isDirectlyArchived()) {
+                $childGroup->setArchivingStatus($date);
+            }
+        }
+    }
 
     public function archive(DateTime $date = null)
     {
         $date = $date ?? new DateTime();
-        $this->archivationDate = $date;
+        $this->setArchivingStatus($date);
+        $this->directlyArchived = true;
     }
 
-    public function undoArchivation()
+    public function undoArchiving()
     {
-        $this->archivationDate = null;
+        if (!$this->isDirectlyArchived()) {
+            throw new LogicException("Only on directly archived groups can undo the archiving status.");
+        }
+        $this->directlyArchived = false;
+
+        $parent = $this->getParentGroup();
+        if (!$parent || !$parent->isArchived()) {
+            $this->setArchivingStatus(null);
+        }
     }
 
     /**
@@ -131,17 +163,7 @@ class Group
      */
     public function isArchived(): bool
     {
-        $group = $this;
-
-        while ($group !== null) {
-            if ($group->isDirectlyArchived()) {
-                return true;
-            }
-
-            $group = $group->getParentGroup();
-        }
-
-        return false;
+        return $this->archivedAt !== null;
     }
 
 
@@ -150,27 +172,18 @@ class Group
      * If the group is not archived, null is returned.
      * @return DateTime|null
      */
-    public function getArchivationDate(): ?DateTime
+    public function getArchivedAt(): ?DateTime
     {
-        $group = $this;
-
-        while ($group !== null) {
-            if ($group->isDirectlyArchived()) {
-                return $group->archivationDate;
-            }
-
-            $group = $group->getParentGroup();
-        }
-
-        return null;
+        return $this->archivedAt;
     }
 
     /**
-     * @return bool true only if the group itself (and not its parent) was marked as archived
+     * @return bool true only if the group itself was explicitly marked as archived
+     * (If a group has archived date but is not directly archived, then it was archived transitionally.)
      */
     public function isDirectlyArchived(): bool
     {
-        return $this->archivationDate !== null;
+        return $this->directlyArchived;
     }
 
     /**
@@ -671,6 +684,11 @@ class Group
     public function setParentGroup(Group $newParent)
     {
         if ($this->parentGroup !== $newParent) {
+            if ($this->parentGroup->isArchived() !== $newParent->isArchived() && !$this->isDirectlyArchived()) {
+                // archived state changes, we need to fix it
+                $this->setArchivingStatus($newParent->getArchivedAt());
+            }
+
             if ($this->parentGroup) {
                 $this->parentGroup->removeChildGroup($this);
             }
