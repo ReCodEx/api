@@ -383,7 +383,7 @@ class GroupsPresenter extends BasePresenter
         if ($archive) {
             $group->archive(new DateTime());
         } else {
-            $group->undoArchivation();
+            $group->undoArchiving();
         }
 
         $this->groups->persist($group);
