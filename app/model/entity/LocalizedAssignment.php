@@ -55,7 +55,9 @@ class LocalizedAssignment extends LocalizedEntity implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getCreatedFrom(): ?LocalizedAssignment
     {

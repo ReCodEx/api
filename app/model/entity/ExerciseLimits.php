@@ -121,7 +121,9 @@ class ExerciseLimits implements JsonSerializable
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

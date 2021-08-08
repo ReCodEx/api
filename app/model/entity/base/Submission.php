@@ -61,7 +61,9 @@ abstract class Submission implements IEvaluable
         $this->subdir = $this->submittedAt->format('Y-m');
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

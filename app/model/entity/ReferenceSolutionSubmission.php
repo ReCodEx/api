@@ -84,7 +84,9 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
         $referenceSolution->addSubmission($this);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getReferenceSolution(): ReferenceExerciseSolution
     {

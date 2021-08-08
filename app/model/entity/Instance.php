@@ -161,7 +161,9 @@ class Instance
         return $instance;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

@@ -31,7 +31,6 @@ class Group
     ) {
         $this->externalId = $externalId;
         $this->memberships = new ArrayCollection();
-        $this->primaryAdmins = new ArrayCollection();
         $this->instance = $instance;
         $this->publicStats = $publicStats;
         $this->isPublic = $isPublic;
@@ -42,7 +41,7 @@ class Group
         $this->localizedTexts = new ArrayCollection();
 
         if ($admin !== null) {
-            $this->primaryAdmins->add($admin);
+            $this->addPrimaryAdmin($admin);
             $admin->makeSupervisorOf($this);
         }
 
@@ -276,91 +275,98 @@ class Group
      */
     protected $memberships;
 
-    protected function getMemberships()
+    /**
+     * Get the membership enetity for this group and given user (null is returned if no membership exists).
+     * @param User $user
+     * @return GroupMembership|null
+     */
+    protected function getMembershipOfUser(User $user): ?GroupMembership
     {
-        return $this->memberships->filter(
+        $memberships = $this->memberships->filter(
+            function (GroupMembership $membership) use ($user) {
+                return $membership->getUser()->getId() === $user->getId();
+            }
+        );
+
+        return $memberships->isEmpty() ? null : $memberships->first();
+    }
+
+    /**
+     * Return all members depending on specified type
+     * @param string[] ...$types
+     * @return Collection
+     */
+    protected function getMemberships(...$types)
+    {
+        $memberships = $this->memberships->filter(
             function (GroupMembership $membership) {
                 return $membership->getUser()->getDeletedAt() === null;
             }
         );
+
+        if ($types) {
+            $orTypes = array_map(function ($type) {
+                return Criteria::expr()->eq("type", $type);
+            }, $types);
+            $filter = Criteria::create()->where(Criteria::expr()->orX(...$orTypes));
+            $memberships = $memberships->matching($filter);
+        }
+
+        return $memberships;
     }
 
-    public function addMembership(GroupMembership $membership)
+    public function addMembership(GroupMembership $membership): void
     {
         $this->memberships->add($membership);
     }
 
-    public function removeMembership(GroupMembership $membership)
+    public function removeMembership(GroupMembership $membership): bool
     {
-        $this->getMemberships()->removeElement($membership);
-    }
-
-    protected function getActiveMemberships()
-    {
-        $filter = Criteria::create()
-            ->where(Criteria::expr()->eq("status", GroupMembership::STATUS_ACTIVE));
-
-        return $this->getMemberships()->matching($filter);
+        return $this->memberships->removeElement($membership);
     }
 
     /**
-     * Return all active members depending on specified type
-     * @param string $type
-     * @return Collection|static
+     * Get all members of the group of given type
+     * @param string[] ...$types
+     * @return ArrayCollection|Collection
      */
-    protected function getActiveMembers(string $type)
+    public function getMembers(...$types)
     {
-        if ($type == GroupMembership::TYPE_ALL) {
-            $members = $this->getActiveMemberships();
-        } else {
-            $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
-            $members = $this->getActiveMemberships()->matching($filter);
-        }
-
+        $members = $this->getMemberships(...$types);
         return $members->map(
             function (GroupMembership $membership) {
                 return $membership->getUser();
             }
-        );
-    }
-
-    /**
-     * Get all members of the group.
-     * @return ArrayCollection|Collection
-     */
-    public function getMembers()
-    {
-        $members = $this->getActiveMemberships();
-        return $members->map(
-            function (GroupMembership $membership) {
-                return $membership->getUser();
+        )->filter(
+            function (User $user) {
+                return $user->getDeletedAt() === null;
             }
         );
     }
 
     public function getStudents()
     {
-        return $this->getActiveMembers(GroupMembership::TYPE_STUDENT);
+        return $this->getMembers(GroupMembership::TYPE_STUDENT);
     }
 
-    public function isStudentOf(User $user)
+    public function isStudentOf(User $user): bool
     {
         return $this->getStudents()->contains($user);
     }
 
     public function getSupervisors()
     {
-        return $this->getActiveMembers(GroupMembership::TYPE_SUPERVISOR);
+        return $this->getMembers(GroupMembership::TYPE_SUPERVISOR);
     }
 
-    public function isSupervisorOf(User $user)
+    public function isSupervisorOf(User $user): bool
     {
         return $this->getSupervisors()->contains($user);
     }
 
-    public function isMemberOf(User $user)
+    public function isMemberOf(User $user): bool
     {
-        return $this->getActiveMembers(GroupMembership::TYPE_ALL)->contains($user);
+        return $this->getMembers()->contains($user);
     }
 
     /**
@@ -369,9 +375,9 @@ class Group
      * @param User $user
      * @return bool
      */
-    public function isMemberOfSubgroup(User $user)
+    public function isMemberOfSubgroup(User $user): bool
     {
-        if ($this->isAdminOf($user) || $this->isMemberOf($user)) {
+        if ($this->isMemberOf($user) || $this->isAdminOf($user)) {
             return true;
         }
 
@@ -385,20 +391,11 @@ class Group
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="User")
-     */
-    protected $primaryAdmins;
-
-    /**
      * @return Collection
      */
-    public function getPrimaryAdmins()
+    public function getPrimaryAdmins(): Collection
     {
-        return $this->primaryAdmins->filter(
-            function (User $admin) {
-                return $admin->getDeletedAt() === null;
-            }
-        );
+        return $this->getMembers(GroupMembership::TYPE_ADMIN);
     }
 
     /**
@@ -406,7 +403,7 @@ class Group
      * @param User $user
      * @return bool
      */
-    public function isPrimaryAdminOf(User $user)
+    public function isPrimaryAdminOf(User $user): bool
     {
         $admins = $this->getPrimaryAdminsIds();
         return array_search($user->getId(), $admins, true) !== false;
@@ -415,24 +412,35 @@ class Group
     /**
      * @param User $user
      */
-    public function addPrimaryAdmin(User $user)
+    public function addPrimaryAdmin(User $user): void
     {
-        $this->primaryAdmins->add($user);
+        $membership = $this->getMembershipOfUser($user);
+        if ($membership === null) {
+            $membership = new GroupMembership($this, $user, GroupMembership::TYPE_ADMIN);
+            $this->addMembership($membership);
+        } elseif ($membership->getType() !== GroupMembership::TYPE_ADMIN) {
+            $membership->setType(GroupMembership::TYPE_ADMIN);
+        }
     }
 
     /**
      * @param User $user
      * @return bool
      */
-    public function removePrimaryAdmin(User $user)
+    public function removePrimaryAdmin(User $user): bool
     {
-        return $this->primaryAdmins->removeElement($user);
+        $membership = $this->getMembershipOfUser($user);
+        if ($membership !== null && $membership->getType() === GroupMembership::TYPE_ADMIN) {
+            return $this->removeMembership($membership);
+        } else {
+            return false;
+        }
     }
 
     /**
-     * @return array
+     * @return string[]
      */
-    public function getPrimaryAdminsIds()
+    public function getPrimaryAdminsIds(): array
     {
         return $this->getPrimaryAdmins()->map(
             function (User $admin) {
@@ -442,9 +450,9 @@ class Group
     }
 
     /**
-     * @return array
+     * @return User[]
      */
-    public function getAdmins()
+    public function getAdmins(): array
     {
         $group = $this;
         $admins = [];
@@ -457,9 +465,9 @@ class Group
     }
 
     /**
-     * @return array
+     * @return string[]
      */
-    public function getAdminsIds()
+    public function getAdminsIds(): array
     {
         $group = $this;
         $admins = [];
@@ -476,7 +484,7 @@ class Group
      * @param User $user
      * @return bool
      */
-    public function isAdminOf(User $user)
+    public function isAdminOf(User $user): bool
     {
         $admins = $this->getAdminsIds();
         return array_search($user->getId(), $admins, true) !== false;
@@ -698,7 +706,9 @@ class Group
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

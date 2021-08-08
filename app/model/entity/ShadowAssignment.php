@@ -112,7 +112,9 @@ class ShadowAssignment extends AssignmentBase
         return $first === false ? null : $first;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

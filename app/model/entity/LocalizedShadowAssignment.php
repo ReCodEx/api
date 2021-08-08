@@ -78,7 +78,9 @@ class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializa
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getName(): string
     {

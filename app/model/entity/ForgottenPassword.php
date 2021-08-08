@@ -2,7 +2,7 @@
 
 namespace App\Model\Entity;
 
-use \DateTime;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -60,7 +60,9 @@ class ForgottenPassword
      */
     protected $IPaddress;
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

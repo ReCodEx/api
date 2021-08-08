@@ -53,7 +53,9 @@ class ExerciseTag
         $this->createdNow();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?int
     {

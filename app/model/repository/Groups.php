@@ -120,45 +120,22 @@ class Groups extends BaseSoftDeleteRepository
     }
 
     /**
-     * Fetch all groups in which the given user has membership.
+     * Fetch all groups in which the given user has membership (all relations except admin).
      * @param User $user The user whos memberships are considered.
-     * @param string $type Type of the membership (GroupMembership::TYPE_*).
-     * @param bool $onlyActive Only active memberships are considered (no requests nor rejections).
+     * @param bool $admins If true, only admin relations are used. If false, all but admin relations are used.
+     *                     This way, the admined groups can be handled separately.
      * @return Group[] Array indexed by group IDs.
      */
-    private function fetchGroupsByMembership(
-        User $user,
-        string $type = GroupMembership::TYPE_ALL,
-        bool $onlyActive = true
-    ): array {
+    private function fetchGroupsByMembership(User $user, bool $admins): array
+    {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
         $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");
         $sub->andWhere($sub->expr()->eq('gm.group', 'g'));
         $sub->andWhere($sub->expr()->eq('gm.user', $sub->expr()->literal($user->getId())));
-        if ($onlyActive) {
-            $sub->andWhere($sub->expr()->eq('gm.status', $sub->expr()->literal(GroupMembership::STATUS_ACTIVE)));
-        }
-        if ($type !== GroupMembership::TYPE_ALL) {
-            $sub->andWhere($sub->expr()->eq('gm.type', $sub->expr()->literal($type)));
-        }
+        // admins are handled separately...
+        $adminExpr = $sub->expr()->literal(GroupMembership::TYPE_ADMIN);
+        $sub->andWhere($admins ? $sub->expr()->eq('gm.type', $adminExpr) : $sub->expr()->neq('gm.type', $adminExpr));
         $qb->andWhere($qb->expr()->exists($sub->getDQL()));
-
-        $res = [];
-        foreach ($qb->getQuery()->getResult() as $group) {
-            $res[$group->getId()] = $group;
-        }
-        return $res;
-    }
-
-    /**
-     * Fetch all groups of which the given user is (primary) admin.
-     * @param User $user The user whos admin rights are considered.
-     * @return Group[] Array indexed by group IDs.
-     */
-    private function fetchGroupsByPrimaryAdminOf(User $user): array
-    {
-        $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
-        $qb->andWhere(":user MEMBER OF g.primaryAdmins")->setParameter('user', $user->getId());
 
         $res = [];
         foreach ($qb->getQuery()->getResult() as $group) {
@@ -176,8 +153,8 @@ class Groups extends BaseSoftDeleteRepository
      */
     private function filterGroupsByUser(User $user, array $groups): array
     {
-        $memberOf = $this->fetchGroupsByMembership($user);
-        $adminOf = $this->fetchGroupsByPrimaryAdminOf($user);
+        $memberOf = $this->fetchGroupsByMembership($user, false); // not admins
+        $adminOf = $this->fetchGroupsByMembership($user, true); // only admines
 
         return array_filter(
             $groups,

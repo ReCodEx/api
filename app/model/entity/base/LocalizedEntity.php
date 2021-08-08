@@ -37,7 +37,9 @@ abstract class LocalizedEntity
 
     abstract public function setCreatedFrom(LocalizedEntity $entity);
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

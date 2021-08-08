@@ -230,7 +230,7 @@ class User
 
     protected function addMembership(Group $group, string $type)
     {
-        $membership = new GroupMembership($group, $this, $type, GroupMembership::STATUS_ACTIVE);
+        $membership = new GroupMembership($group, $this, $type);
         $this->memberships->add($membership);
         $group->addMembership($membership);
     }
@@ -242,7 +242,6 @@ class User
             $this->addMembership($group, $type);
         } else {
             $membership->setType($type);
-            $membership->setStatus(GroupMembership::STATUS_ACTIVE);
         }
     }
 
@@ -414,7 +413,9 @@ class User
         $this->uiData = $uiData;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

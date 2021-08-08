@@ -67,7 +67,9 @@ class ExerciseTest implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?int
     {

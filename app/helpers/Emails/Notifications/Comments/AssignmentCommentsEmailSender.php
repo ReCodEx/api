@@ -71,9 +71,6 @@ class AssignmentCommentsEmailsSender
         foreach ($group->getMembers() as $user) {
             $recipients[$user->getEmail()] = $user;
         }
-        foreach ($group->getPrimaryAdmins() as $user) {
-            $recipients[$user->getEmail()] = $user;
-        }
 
         // filter out the author of the comment, it is pointless to send email to that user
         unset($recipients[$comment->getUser()->getEmail()]);

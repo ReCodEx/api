@@ -59,7 +59,9 @@ abstract class AssignmentBase
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function setIsPublic(bool $isPublic)
     {
