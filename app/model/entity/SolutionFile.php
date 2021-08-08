@@ -42,7 +42,9 @@ class SolutionFile extends UploadedFile implements JsonSerializable
         return $manager->getSolutionFile($this->getSolution(), $this->getName());
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getSolution(): Solution
     {

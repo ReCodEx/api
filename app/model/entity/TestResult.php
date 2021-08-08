@@ -31,7 +31,7 @@ class TestResult
         $this->usedCpuTimeLimit = $result->getUsedCpuTimeLimit();
         $this->cpuTimeExceeded = !$result->isCpuTimeOK();
         $this->message = substr($result->getMessage(), 0, 255);  // maximal size of varchar
-        
+
         // log sizes are limited by the size of the text column
         $this->judgeStdout = substr($result->getJudgeStdout(), 0, 65536);
         $this->judgeStderr = substr($result->getJudgeStderr(), 0, 65536);
@@ -202,7 +202,9 @@ class TestResult
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?int
     {

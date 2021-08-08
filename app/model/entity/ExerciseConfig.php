@@ -92,7 +92,9 @@ class ExerciseConfig
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

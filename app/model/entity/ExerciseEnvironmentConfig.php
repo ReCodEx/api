@@ -102,7 +102,9 @@ class ExerciseEnvironmentConfig
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

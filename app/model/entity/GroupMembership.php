@@ -3,30 +3,42 @@
 namespace App\Model\Entity;
 
 use App\Exceptions\InvalidMembershipException;
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
+use DateTime;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"user_id", "group_id", "inherited_from_id"})})
  */
 class GroupMembership implements JsonSerializable
 {
-    const STATUS_REQUESTED = "requested";
-    const STATUS_ACTIVE = "active";
-    const STATUS_REJECTED = "rejected";
+    public const TYPE_ADMIN = "admin";
+    public const TYPE_STUDENT = "student";
+    public const TYPE_SUPERVISOR = "supervisor";
 
-    const TYPE_STUDENT = "student";
-    const TYPE_SUPERVISOR = "supervisor";
-    const TYPE_ALL = "*";
+    // all declared types
+    public const KNOWN_TYPES = [
+        self::TYPE_STUDENT,
+        self::TYPE_SUPERVISOR,
+        self::TYPE_ADMIN,
+    ];
 
-    public function __construct(Group $group, User $user, string $type, string $status)
+    // membership types that are inherited from parent groups
+    public const INHERITABLE_TYPES = [
+        self::TYPE_ADMIN,
+    ];
+
+    public const TYPE_ALL = "*";
+
+    public function __construct(Group $group, User $user, string $type, Group $inheritedFrom = null)
     {
         $this->group = $group;
         $this->user = $user;
         $this->setType($type);
-        $this->setStatus($status);
+        $this->createdAt = new DateTime();
+        $this->inheritedFrom = $inheritedFrom;
     }
 
     /**
@@ -49,78 +61,34 @@ class GroupMembership implements JsonSerializable
     /**
      * @ORM\Column(type="string")
      */
-    protected $status;
-
-    public function setStatus(string $status)
-    {
-        if ($this->status === $status) {
-            return; // nothing changes
-        }
-
-        switch ($status) {
-            case self::STATUS_REQUESTED:
-                $this->requestedAt = new \DateTime();
-                break;
-            case self::STATUS_ACTIVE:
-                $this->joinedAt = new \DateTime();
-                break;
-            case self::STATUS_REJECTED:
-                $this->rejectedAt = new \DateTime();
-                break;
-            default:
-                throw new InvalidMembershipException("Unsupported membership status '$status'");
-        }
-        $this->status = $status;
-    }
+    protected $type;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="datetime")
      */
-    protected $type;
+    protected $createdAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Group")
+     * When not null, it indicates the membership was inherited from ancestral group (id of which it holds).
+     * Inheritance applies only for selected types of memberships (e.g., admin).
+     * At present, explicit inherited memberships are used to capture inherited admin privileges
+     * which are in place at the moment when a sub-groups are being placed to archive.
+     * In the futue, this technique may be used for performance optimizations as well.
+     */
+    protected $inheritedFrom = null;
 
     public function setType(string $type)
     {
-        if ($this->type === $type) {
-            return; // nothing changes
+        if (!in_array($type, self::KNOWN_TYPES)) {
+            throw new InvalidMembershipException("Unsuported membership type '$type'");
         }
 
-        switch ($type) {
-            case self::TYPE_STUDENT:
-                $this->studentSince = new \DateTime();
-                break;
-            case self::TYPE_SUPERVISOR:
-                $this->supervisorSince = new \DateTime();
-                break;
-            default:
-                throw new InvalidMembershipException("Unsuported membership type '$type'");
+        if ($this->type !== $type) {
+            $this->type = $type;
+            $this->createdAt = new DateTime();
         }
-        $this->type = $type;
     }
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $requestedAt;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $joinedAt;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $rejectedAt;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $studentSince;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    protected $supervisorSince;
 
     public function jsonSerialize()
     {
@@ -128,20 +96,24 @@ class GroupMembership implements JsonSerializable
             "id" => $this->id,
             "userId" => $this->user->getId(),
             "groupId" => $this->group->getId(),
-            "status" => $this->status,
-            "requestedAt" => $this->requestedAt ? $this->requestedAt->getTimestamp() : null,
-            "joinedAt" => $this->joinedAt ? $this->joinedAt->getTimestamp() : null,
-            "rejectedAt" => $this->rejectedAt ? $this->rejectedAt->getTimestamp() : null,
-            "studentSince" => $this->studentSince ? $this->studentSince->getTimestamp() : null,
-            "supervisorSince" => $this->supervisorSince ? $this->supervisorSince->getTimestamp() : null,
+            "type" => $this->type,
+            "createdAt" => $this->createdAt->getTimestamp(),
+            "inheritedFrom" => $this->inheritedFrom ? $this->inheritedFrom->getId() : null,
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {
         return $this->id;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 
     public function getGroup(): Group
@@ -154,38 +126,18 @@ class GroupMembership implements JsonSerializable
         return $this->type;
     }
 
-    public function getStatus(): string
+    public function getCreatedAt(): DateTime
     {
-        return $this->status;
+        return $this->createdAt;
     }
 
-    public function getRejectedAt(): ?DateTime
+    public function isInherited(): bool
     {
-        return $this->rejectedAt;
+        return $this->inheritedFrom !== null;
     }
 
-    public function getJoinedAt(): ?DateTime
+    public function getInheritedFrom(): Group
     {
-        return $this->joinedAt;
-    }
-
-    public function getRequestedAt(): ?DateTime
-    {
-        return $this->requestedAt;
-    }
-
-    public function getStudentSince(): ?DateTime
-    {
-        return $this->studentSince;
-    }
-
-    public function getSupervisorSince(): ?DateTime
-    {
-        return $this->supervisorSince;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
+        return $this->inheritedFrom;
     }
 }

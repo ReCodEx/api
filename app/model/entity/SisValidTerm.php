@@ -85,7 +85,9 @@ class SisValidTerm implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

@@ -124,7 +124,9 @@ class Solution implements JsonSerializable
         return $this->subdir;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

@@ -60,7 +60,9 @@ class ReferenceExerciseSolution
         $this->submissions = new ArrayCollection();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

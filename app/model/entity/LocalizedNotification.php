@@ -54,7 +54,9 @@ class LocalizedNotification extends LocalizedEntity implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getCreatedFrom(): ?LocalizedNotification
     {

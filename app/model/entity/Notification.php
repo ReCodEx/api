@@ -151,7 +151,9 @@ class Notification implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

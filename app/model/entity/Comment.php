@@ -101,7 +101,9 @@ class Comment implements JsonSerializable
         return $comment;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

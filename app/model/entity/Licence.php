@@ -83,7 +83,9 @@ class Licence implements JsonSerializable
         return $licence;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

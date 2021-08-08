@@ -75,7 +75,9 @@ class LocalizedGroup extends LocalizedEntity implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getName(): string
     {

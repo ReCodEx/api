@@ -287,8 +287,11 @@ class TestBaseCompiler extends Tester\TestCase
         $boxesCompiler = new BoxesCompiler();
         $directoriesResolver = new DirectoriesResolver();
         $this->compiler = new BaseCompiler(
-            $pipelinesMerger, $boxesSorter,
-            $boxesOptimizer, $boxesCompiler, $directoriesResolver
+            $pipelinesMerger,
+            $boxesSorter,
+            $boxesOptimizer,
+            $boxesCompiler,
+            $directoriesResolver
         );
     }
 
@@ -322,7 +325,9 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
         Assert::equal(20, $jobConfig->getTasksCount());
 
-        ////////////////////////////////////////////////////////////////////////////
+        /*
+     * Accessors
+     */
         // check order of all tasks and right attributes
         //
         $it = 0;
@@ -705,7 +710,6 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal("testB", $testBJudgeTask->getSandboxConfig()->getWorkingDirectory());
         Assert::count(0, $testBJudgeTask->getSandboxConfig()->getLimitsArray());
     }
-
 }
 
 # Testing methods run

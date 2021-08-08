@@ -113,7 +113,9 @@ class RuntimeEnvironment implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

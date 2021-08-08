@@ -132,14 +132,18 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
         $submissionsWithEval = array_filter(
             $this->presenter->assignmentSolutionSubmissions->findAll(),
-            function($submission) { return $submission->getEvaluation() !== null; }
+            function ($submission) {
+                return $submission->getEvaluation() !== null;
+            }
         );
         $submission = array_pop($submissionsWithEval);
         $evaluation = $submission->getEvaluation();
         Assert::truthy($evaluation);
 
         $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter, 'V1:AssignmentSolutions', 'GET',
+            $this->presenter,
+            'V1:AssignmentSolutions',
+            'GET',
             ['action' => 'submission', 'submissionId' => $submission->getId()]
         );
         Assert::same($submission->getId(), $payload['id']);
@@ -150,14 +154,18 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
         $submissionsWithEval = array_filter(
             $this->presenter->assignmentSolutionSubmissions->findAll(),
-            function($submission) { return $submission->getEvaluation() !== null; }
+            function ($submission) {
+                return $submission->getEvaluation() !== null;
+            }
         );
         $submission = array_pop($submissionsWithEval);
         $evaluation = $submission->getEvaluation();
         Assert::truthy($evaluation);
 
         $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter, 'V1:AssignmentSolutions', 'GET',
+            $this->presenter,
+            'V1:AssignmentSolutions',
+            'GET',
             ['action' => 'evaluationScoreConfig', 'submissionId' => $submission->getId() ]
         );
         Assert::same('weighted', $payload->getCalculator());
@@ -422,7 +430,9 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $submissions = $this->presenter->assignmentSolutionSubmissions->findAll();
-        $submission = current(array_filter($submissions, function (AssignmentSolutionSubmission $sub) { return $sub->hasEvaluation(); }));
+        $submission = current(array_filter($submissions, function (AssignmentSolutionSubmission $sub) {
+            return $sub->hasEvaluation();
+        }));
 
         $mockFile = Mockery::mock(LocalImmutableFile::class);
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
@@ -451,16 +461,18 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $submissions = $solution->getSubmissions()->getValues();
         foreach ($submissions as $submission) {
             $mockFileStorage->shouldReceive("deleteResultsArchive")->with($submission)->once();
-            $mockFileStorage->shouldReceive("deleteJobConfig")->with($submission)->once();    
+            $mockFileStorage->shouldReceive("deleteJobConfig")->with($submission)->once();
         }
         $mockFileStorage->shouldReceive("deleteSolutionArchive")->with($solution->getSolution())->once();
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
-            'V1:AssignmentSolutions', 'DELETE', [
+            'V1:AssignmentSolutions',
+            'DELETE',
+            [
             'action' => 'deleteSolution',
             'id' => $solution->getId()
-        ]
+            ]
         );
 
         $response = $this->presenter->run($request);
@@ -478,7 +490,9 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         );
     }
 
-    //////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     private function getSupervisorWhoIsNotAuthorOrSuperadmin(Assignment $assignment, AssignmentSolution $solution)
     {
@@ -488,7 +502,6 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             }
         )->first();
     }
-
 }
 
 (new TestAssignmentSolutionsPresenter())->run();

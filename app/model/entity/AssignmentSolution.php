@@ -173,7 +173,9 @@ class AssignmentSolution
         return $entity;
     }
 
-    //////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
     /// GETTERS AND SETTERS
     ///
 

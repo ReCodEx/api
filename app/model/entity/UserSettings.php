@@ -140,7 +140,9 @@ class UserSettings implements JsonSerializable
         ];
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getDarkTheme(): bool
     {

@@ -506,7 +506,9 @@ class Assignment extends AssignmentBase implements IExercise
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

@@ -41,7 +41,9 @@ class ExternalLogin
         $this->externalId = $externalId;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

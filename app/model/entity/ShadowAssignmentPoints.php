@@ -87,7 +87,9 @@ class ShadowAssignmentPoints
      */
     protected $awardedAt;
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

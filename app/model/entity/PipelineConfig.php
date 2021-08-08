@@ -87,7 +87,9 @@ class PipelineConfig
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

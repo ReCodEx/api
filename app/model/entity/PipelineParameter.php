@@ -44,7 +44,9 @@ abstract class PipelineParameter implements JsonSerializable
         return $this->getValue();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

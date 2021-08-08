@@ -36,7 +36,9 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
         $this->assignmentSolution = $assignmentSolution;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getAssignmentSolution(): ?AssignmentSolution
     {

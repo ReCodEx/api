@@ -116,7 +116,9 @@ class UploadedFile implements JsonSerializable
         return $manager->getUploadedFile($this);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

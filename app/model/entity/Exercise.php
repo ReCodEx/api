@@ -440,7 +440,9 @@ class Exercise implements IExercise
         return false;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

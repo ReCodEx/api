@@ -118,7 +118,9 @@ class SolutionEvaluation
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

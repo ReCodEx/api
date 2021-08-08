@@ -64,7 +64,9 @@ class CommentThread implements JsonSerializable
         return $thread;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getId(): ?string
     {

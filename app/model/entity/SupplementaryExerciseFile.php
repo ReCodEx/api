@@ -135,7 +135,9 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
         return $manager->getSupplementaryFileByHash($this->getHashName());
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function getHashName(): string
     {

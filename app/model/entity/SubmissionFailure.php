@@ -16,27 +16,27 @@ class SubmissionFailure implements JsonSerializable
     /**
      * Broker rejected the submission. This happens when there is no worker who can evaluate it.
      */
-    const TYPE_BROKER_REJECT = "broker_reject";
+    public const TYPE_BROKER_REJECT = "broker_reject";
 
     /**
      * Evaluation failed after the job has been accepted.
      */
-    const TYPE_EVALUATION_FAILURE = "evaluation_failure";
+    public const TYPE_EVALUATION_FAILURE = "evaluation_failure";
 
     /**
      * Evaluation finished, but its results could not be loaded
      */
-    const TYPE_LOADING_FAILURE = "loading_failure";
+    public const TYPE_LOADING_FAILURE = "loading_failure";
 
     /**
      * The exercise configuration is invalid and it cannot be compiled
      */
-    const TYPE_CONFIG_ERROR = "config_error";
+    public const TYPE_CONFIG_ERROR = "config_error";
 
     /**
      * The exercise configuration is invalid and it cannot be compiled, due to user error
      */
-    const TYPE_SOFT_CONFIG_ERROR = "soft_config_error";
+    public const TYPE_SOFT_CONFIG_ERROR = "soft_config_error";
 
     /**
      * @ORM\Id
@@ -94,7 +94,9 @@ class SubmissionFailure implements JsonSerializable
         return new SubmissionFailure($type, $description, $createdAt);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function resolve(string $note, DateTime $resolvedAt = null)
     {
@@ -142,7 +144,9 @@ class SubmissionFailure implements JsonSerializable
         return $this->type === self::TYPE_CONFIG_ERROR || $this->type === self::TYPE_SOFT_CONFIG_ERROR;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*
+     * Accessors
+     */
 
     public function toSimpleArray()
     {
@@ -156,11 +160,11 @@ class SubmissionFailure implements JsonSerializable
 
     public function jsonSerialize()
     {
-        $assignmentSolution = $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution(
-        ) : null;
+        $assignmentSolution = $this->assignmentSolutionSubmission
+            ? $this->assignmentSolutionSubmission->getAssignmentSolution() : null;
         $assignment = $assignmentSolution ? $assignmentSolution->getAssignment() : null;
-        $referenceSolution = $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution(
-        ) : null;
+        $referenceSolution = $this->referenceSolutionSubmission
+            ? $this->referenceSolutionSubmission->getReferenceSolution() : null;
         $exercise = $referenceSolution ? $referenceSolution->getExercise() : null;
 
         return [
