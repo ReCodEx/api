@@ -15,17 +15,18 @@ use DateTime;
 class GroupMembership implements JsonSerializable
 {
     public const TYPE_ADMIN = "admin";
-    public const TYPE_STUDENT = "student";
     public const TYPE_SUPERVISOR = "supervisor";
+    public const TYPE_STUDENT = "student";
 
     // all declared types
     public const KNOWN_TYPES = [
-        self::TYPE_STUDENT,
-        self::TYPE_SUPERVISOR,
         self::TYPE_ADMIN,
+        self::TYPE_SUPERVISOR,
+        self::TYPE_STUDENT,
     ];
 
     // membership types that are inherited from parent groups
+    // in the order of priorities (e.g., admin must be first as it supress other relations)
     public const INHERITABLE_TYPES = [
         self::TYPE_ADMIN,
     ];
@@ -136,7 +137,7 @@ class GroupMembership implements JsonSerializable
         return $this->inheritedFrom !== null;
     }
 
-    public function getInheritedFrom(): Group
+    public function getInheritedFrom(): ?Group
     {
         return $this->inheritedFrom;
     }

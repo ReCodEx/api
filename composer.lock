@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99fb586a3457efcfa1426ba35994613e",
+    "content-hash": "7e43dffb7f4f947c07ea7e3f4dd6e0f1",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -325,18 +325,19 @@
         },
         {
             "name": "dg/adminer-custom",
-            "version": "v1.28.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/adminer-custom.git",
-                "reference": "e4cc472b1bef36d89a5ddd515e368fb3fcb7ca5b"
+                "reference": "4564b4e0a71d0d9d47568ddb97ae35407400fafd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/e4cc472b1bef36d89a5ddd515e368fb3fcb7ca5b",
-                "reference": "e4cc472b1bef36d89a5ddd515e368fb3fcb7ca5b",
+                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/4564b4e0a71d0d9d47568ddb97ae35407400fafd",
+                "reference": "4564b4e0a71d0d9d47568ddb97ae35407400fafd",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "library",
             "notification-url": "https://packagist.org/downloads/",
             "description": "Customization for Adminer, the best database management tool written in PHP.",
@@ -351,9 +352,9 @@
                 "sqlite"
             ],
             "support": {
-                "source": "https://github.com/dg/adminer-custom/tree/v1.28.0"
+                "source": "https://github.com/dg/adminer-custom/tree/master"
             },
-            "time": "2021-06-17T17:06:33+00:00"
+            "time": "2021-07-21T09:33:27+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -6693,6 +6694,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "dg/adminer-custom": 20,
         "mockery/mockery": 0,
         "mikey179/vfsstream": 0
     },
@@ -6708,5 +6710,5 @@
     "platform-overrides": {
         "php": "7.3.29"
     },
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.0.0"
 }

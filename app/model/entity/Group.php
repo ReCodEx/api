@@ -42,7 +42,6 @@ class Group
 
         if ($admin !== null) {
             $this->addPrimaryAdmin($admin);
-            $admin->makeSupervisorOf($this);
         }
 
         // If no parent group is given, the group is connected right under the root group
@@ -280,11 +279,11 @@ class Group
      * @param User $user
      * @return GroupMembership|null
      */
-    protected function getMembershipOfUser(User $user): ?GroupMembership
+    public function getMembershipOfUser(User $user): ?GroupMembership
     {
         $memberships = $this->memberships->filter(
             function (GroupMembership $membership) use ($user) {
-                return $membership->getUser()->getId() === $user->getId();
+                return !$membership->isInherited() && $membership->getUser()->getId() === $user->getId();
             }
         );
 
@@ -292,11 +291,12 @@ class Group
     }
 
     /**
-     * Return all members depending on specified type
-     * @param string[] ...$types
+     * @param string[] $types allowed membership types (empty array = all)
+     * @param bool|null $inherited flag indicating how to filter inherited memberships
+     *                  (null = no filter, true = only inherited, false = only direct)
      * @return Collection
      */
-    protected function getMemberships(...$types)
+    private function getMembershipsInternal(array $types, ?bool $inherited = null)
     {
         $memberships = $this->memberships->filter(
             function (GroupMembership $membership) {
@@ -304,20 +304,62 @@ class Group
             }
         );
 
+        $filters = [];
         if ($types) {
             $orTypes = array_map(function ($type) {
                 return Criteria::expr()->eq("type", $type);
             }, $types);
-            $filter = Criteria::create()->where(Criteria::expr()->orX(...$orTypes));
+            $filters[] = Criteria::expr()->orX(...$orTypes);
+        }
+
+        if ($inherited !== null) {
+            $filters[] = $inherited ? Criteria::expr()->neq("inheritedFrom", null)
+                : Criteria::expr()->isNull("inheritedFrom");
+        }
+
+        if ($filters) {
+            $filter = Criteria::create()->where(Criteria::expr()->andX(...$filters));
             $memberships = $memberships->matching($filter);
         }
 
         return $memberships;
     }
 
+    /**
+     * Return all direct members depending on specified type
+     * @param string[] ...$types
+     * @return Collection
+     */
+    public function getMemberships(...$types)
+    {
+        return $this->getMembershipsInternal($types, false); // false = exclude inherited
+    }
+
+    /**
+     * Return all inherited members depending on specified type
+     * @param string[] ...$types
+     * @return Collection
+     */
+    public function getInheritedMemberships(...$types)
+    {
+        return $this->getMembershipsInternal($types, true); // true = only inherited
+    }
+
     public function addMembership(GroupMembership $membership): void
     {
         $this->memberships->add($membership);
+    }
+
+    public function inheritMembership(GroupMembership $membership): GroupMembership
+    {
+        $inheritedMembership = new GroupMembership(
+            $this, // this group is the new membership group
+            $membership->getUser(),
+            $membership->getType(),
+            $membership->getGroup() // old group is recorded in "inherited from"
+        );
+        $this->addMembership($inheritedMembership);
+        return $inheritedMembership;
     }
 
     public function removeMembership(GroupMembership $membership): bool
@@ -440,43 +482,37 @@ class Group
     /**
      * @return string[]
      */
-    public function getPrimaryAdminsIds(): array
-    {
-        return $this->getPrimaryAdmins()->map(
-            function (User $admin) {
-                return $admin->getId();
-            }
-        )->getValues();
-    }
-
-    /**
-     * @return User[]
-     */
-    public function getAdmins(): array
+    private function getAdminIdsInternal(bool $inherited): array
     {
         $group = $this;
-        $admins = [];
+        $admins = []; // key is user ID, value is true
         while ($group !== null) {
-            $admins = array_merge($admins, $group->getPrimaryAdmins()->getValues());
-            $group = $group->getParentGroup();
+            $directAdmins = $this->getMembershipsInternal([ GroupMembership::TYPE_ADMIN ], $inherited);
+            foreach ($directAdmins as $membership) {
+                $admins[$membership->getUser()->getId()] = true;
+            }
+            $group = $inherited ? $group->getParentGroup() : null;
         }
 
-        return array_values(array_unique($admins));
+        return array_keys($admins);
     }
 
     /**
+     * Return IDs of users which are explicitly listed as direct admins of this group.
+     * @return string[]
+     */
+    public function getPrimaryAdminsIds(): array
+    {
+        return $this->getAdminIdsInternal(false);
+    }
+
+    /**
+     * Return IDs of all users that have admin privileges to this group (including inherited).
      * @return string[]
      */
     public function getAdminsIds(): array
     {
-        $group = $this;
-        $admins = [];
-        while ($group !== null) {
-            $admins = array_merge($admins, $group->getPrimaryAdminsIds());
-            $group = $group->getParentGroup();
-        }
-
-        return array_values(array_unique($admins));
+        return $this->getAdminIdsInternal(true);
     }
 
     /**
@@ -486,8 +522,8 @@ class Group
      */
     public function isAdminOf(User $user): bool
     {
-        $admins = $this->getAdminsIds();
-        return array_search($user->getId(), $admins, true) !== false;
+        $admins = $this->getAdminIdsInternal(true);
+        return array_key_exists($user->getId(), $admins);
     }
 
     /**

@@ -266,11 +266,7 @@ class GroupViewFactory
             "public" => $group->isPublic(),
             "directlyArchived" => $group->isDirectlyArchived(),
             "localizedTexts" => $group->getLocalizedTexts()->getValues(),
-            "primaryAdminsIds" => $group->getPrimaryAdmins()->map(
-                function (User $user) {
-                    return $user->getId();
-                }
-            )->getValues(),
+            "primaryAdminsIds" => $group->getPrimaryAdminsIds(),
             "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
             "parentGroupsIds" => $group->getParentGroupsIds(),
             "childGroups" => $childGroups->map(

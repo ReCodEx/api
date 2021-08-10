@@ -47,7 +47,7 @@
         "nette/neon": "^3.2",
         "latte/latte": "^2.10",
         "tracy/tracy": "^2.8",
-        "dg/adminer-custom": "^1.28",
+        "dg/adminer-custom": "dev-master#4564b4e0a71d0d9d47568ddb97ae35407400fafd",
         "contributte/console": "^0.9.0",
         "nettrine/orm": "^0.8.0",
         "nettrine/dbal": "^0.7.0",
