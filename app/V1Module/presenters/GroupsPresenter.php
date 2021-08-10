@@ -14,6 +14,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
+use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
@@ -382,8 +383,46 @@ class GroupsPresenter extends BasePresenter
 
         if ($archive) {
             $group->archive(new DateTime());
+
+            // snapshot the inherited membership-relations
+            $typePriorities = array_flip(GroupMembership::INHERITABLE_TYPES);
+            $membershipsToInherit = []; // aggregated memberships from all ancestors, key is user ID
+
+            // scan ancestors and aggregate memberships by priorities
+            $g = $group; // current group is included as well to remove redundant relations
+            while ($g !== null) {
+                $memberships = $g->getMemberships(...GroupMembership::INHERITABLE_TYPES);
+                foreach ($memberships as $membership) {
+                    $userId = $membership->getUser()->getId();
+                    if (
+                        !empty($membershipsToInherit[$userId])
+                        && $typePriorities[$membershipsToInherit[$userId]->getType()]
+                        > $typePriorities[$membership->getType()] // lower value = higher priority
+                    ) {
+                        continue; // existing membership with higher priority is already recorded
+                    }
+
+                    $membershipsToInherit[$userId] = $membership;
+                }
+                $g = $g->getParentGroup();
+            }
+
+            // create inherited membership records in the database
+            foreach ($membershipsToInherit as $membership) {
+                // direct memberships are ignored, they were just used to remove redundant relations
+                if ($membership->getGroup()->getId() !== $group->getId()) {
+                    $group->inheritMembership($membership);
+                }
+            }
         } else {
             $group->undoArchiving();
+
+            // remove inherited memberships what so ever
+            $memberships = $group->getInheritedMemberships(...GroupMembership::INHERITABLE_TYPES);
+            foreach ($memberships as $membership) {
+                $group->removeMembership($membership);
+                $this->groupMemberships->remove($membership);
+            }
         }
 
         $this->groups->persist($group);
@@ -827,7 +866,7 @@ class GroupsPresenter extends BasePresenter
         if ($group->isStudentOf($user) === true) {
             $membership = $user->findMembershipAsStudent($group);
             if ($membership) {
-                $this->groups->remove($membership);
+                $this->groupMemberships->remove($membership);
                 $this->groups->flush();
             }
         }

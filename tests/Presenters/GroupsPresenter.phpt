@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
+use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Users;
 use App\V1Module\Presenters\GroupsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -1144,6 +1145,15 @@ class TestGroupsPresenter extends Tester\TestCase
 
         $group = reset($groupsLvl2);
         $parent = $group->getParentGroup();
+        $grandpa = $parent->getParentGroup();
+        $newAdmins = array_filter($this->presenter->users->findAll(), function ($user) use ($grandpa, $parent) {
+            return !$grandpa->getMembers()->contains($user) && !$parent->getMembers()->contains($user);
+        });
+        Assert::true(count($newAdmins) > 0);
+        foreach ($newAdmins as $newAdmin) {
+            $grandpa->addPrimaryAdmin($newAdmin);
+        }
+        $this->presenter->groups->persist($grandpa);
 
         PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -1158,6 +1168,9 @@ class TestGroupsPresenter extends Tester\TestCase
 
         Assert::true($parent->isArchived());
         Assert::true($group->isArchived());
+
+        $memberships = $parent->getInheritedMemberships();
+        Assert::count(count($newAdmins), $memberships);
     }
 
     public function testUnsetArchived()
@@ -1174,6 +1187,18 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::true(count($archivedGroups) > 0);
         $group = reset($archivedGroups);
         Assert::true($group->isArchived());
+        $parent = $group->getParentGroup();
+
+        $inherited = array_filter($this->presenter->users->findAll(), function ($user) use ($group, $parent) {
+            return !$group->getMembers()->contains($user) && !$parent->getMembers()->contains($user);
+        });
+        Assert::true(count($inherited) > 0);
+        $user = reset($inherited);
+        $parent->addPrimaryAdmin($user);
+        $group->inheritMembership($parent->getMembershipOfUser($user));
+        $this->presenter->groups->persist($group);
+        $this->presenter->groups->persist($parent);
+        Assert::count(1, $group->getInheritedMemberships());
 
         PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -1185,6 +1210,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
         $this->presenter->groups->refresh($group);
         Assert::false($group->isArchived());
+        Assert::count(0, $group->getInheritedMemberships());
     }
 
     public function testRelocate()

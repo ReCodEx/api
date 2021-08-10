@@ -180,7 +180,7 @@ class EmailsPresenter extends BasePresenter
             $users = array_merge($users, $group->getSupervisors()->getValues());
         }
         if ($toAdmins) {
-            $users = array_merge($users, $group->getAdmins());
+            $users = array_merge($users, $group->getPrimaryAdmins()->getValues());
         }
 
         // user requested copy of the email to his/hers email address
