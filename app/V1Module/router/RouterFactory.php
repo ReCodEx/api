@@ -244,7 +244,6 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>", "Groups:updateGroup");
         $router[] = new DeleteRoute("$prefix/<id>", "Groups:removeGroup");
         $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
-        $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
 
         $router[] = new PostRoute("$prefix/<id>/organizational", "Groups:setOrganizational");
         $router[] = new PostRoute("$prefix/<id>/archived", "Groups:setArchived");
@@ -256,13 +255,18 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/students/<userId>", "Groups:addStudent");
         $router[] = new DeleteRoute("$prefix/<id>/students/<userId>", "Groups:removeStudent");
 
-        $router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
-        $router[] = new PostRoute("$prefix/<id>/supervisors/<userId>", "Groups:addSupervisor");
-        $router[] = new DeleteRoute("$prefix/<id>/supervisors/<userId>", "Groups:removeSupervisor");
+        // members = all other types of memberships except students
+        $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
+        $router[] = new PostRoute("$prefix/<id>/members/<userId>", "Groups:addMember");
+        $router[] = new DeleteRoute("$prefix/<id>/members/<userId>", "Groups:removeMember");
 
-        $router[] = new GetRoute("$prefix/<id>/admin", "Groups:admins");
-        $router[] = new PostRoute("$prefix/<id>/admin", "Groups:addAdmin");
-        $router[] = new DeleteRoute("$prefix/<id>/admin/<userId>", "Groups:removeAdmin");
+        // TODO - delete
+        //$router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
+        //$router[] = new PostRoute("$prefix/<id>/supervisors/<userId>", "Groups:addSupervisor");
+        //$router[] = new DeleteRoute("$prefix/<id>/supervisors/<userId>", "Groups:removeSupervisor");
+        //$router[] = new GetRoute("$prefix/<id>/admin", "Groups:admins");
+        //$router[] = new PostRoute("$prefix/<id>/admin", "Groups:addAdmin");
+        //$router[] = new DeleteRoute("$prefix/<id>/admin/<userId>", "Groups:removeAdmin");
 
         $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
         $router[] = new GetRoute("$prefix/<id>/shadow-assignments", "Groups:shadowAssignments");

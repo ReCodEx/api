@@ -61,9 +61,8 @@ permissions:
           - viewPublicDetail
           - viewDetail
           - viewSubgroups
-          - viewSupervisors
+          - viewMembers
           - viewStudents
-          - viewAdmin
           - viewStudentStats
           - viewStats
           - viewAll
@@ -81,8 +80,7 @@ permissions:
           - viewStudents
           - viewDetail
           - viewSubgroups
-          - viewSupervisors
-          - viewAdmin
+          - viewMembers
       conditions:
           - or:
               - group.isAdmin
@@ -157,7 +155,7 @@ permissions:
           - update
           - remove
           - addSubgroup
-          - removeSupervisor
+          - removeMember
           - sendEmail
       conditions: group.isAdmin
 
@@ -165,15 +163,14 @@ permissions:
       resource: group
       role: supervisor
       actions:
-          - addSupervisor  # requires permissions to read all users' private data
-          - setAdmin
+          - addMember  # requires permissions to read all users' private data
       conditions: group.isAdmin
 
     - allow: true
       resource: group
       role: supervisor-student
       actions:
-          - becomeSupervisor
+          - becomeMember # other than student
 
     - allow: true
       resource: group

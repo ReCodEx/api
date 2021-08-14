@@ -18,19 +18,15 @@ interface IGroupPermissions
 
     public function canViewStudents(Group $group): bool;
 
-    public function canViewSupervisors(Group $group): bool;
+    public function canViewMembers(Group $group): bool;
 
-    public function canViewAdmin(Group $group): bool;
-
-    public function canSetAdmin(Group $group): bool;
+    public function canAddMember(Group $group, User $supervisor): bool;
 
     public function canAddStudent(Group $group, User $student): bool;
 
+    public function canRemoveMember(Group $group, User $supervisor): bool;
+
     public function canRemoveStudent(Group $group, User $student): bool;
-
-    public function canAddSupervisor(Group $group, User $supervisor): bool;
-
-    public function canRemoveSupervisor(Group $group, User $supervisor): bool;
 
     public function canViewStats(Group $group): bool;
 
@@ -58,7 +54,7 @@ interface IGroupPermissions
 
     public function canAddStudentToArchivedGroup($group, $user): bool;
 
-    public function canBecomeSupervisor(Group $group): bool;
+    public function canBecomeMember(Group $group): bool;
 
     public function canSendEmail(Group $group): bool;
 }

@@ -578,8 +578,7 @@ class GroupsPresenter extends BasePresenter
     public function checkMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-
-        if (!($this->groupAcl->canViewStudents($group) && $this->groupAcl->canViewSupervisors($group))) {
+        if (!$this->groupAcl->canViewMembers($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -592,33 +591,126 @@ class GroupsPresenter extends BasePresenter
     public function actionMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-
         $this->sendSuccessResponse(
             [
+                "admins" => $this->userViewFactory->getUsers($group->getPrimaryAdmins()->getValues()),
                 "supervisors" => $this->userViewFactory->getUsers($group->getSupervisors()->getValues()),
-                "students" => $this->userViewFactory->getUsers($group->getStudents()->getValues())
             ]
         );
     }
 
-    public function checkSupervisors(string $id)
+    public function checkAddMember(string $id, string $userId)
     {
+        $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
-        if (!$this->groupAcl->canViewSupervisors($group)) {
+
+        /** @var IGroupPermissions $userAcl */
+        $userAcl = $this->aclLoader->loadACLModule(
+            IGroupPermissions::class,
+            $this->authorizator,
+            new Identity($user, null)
+        );
+
+        if (!$this->groupAcl->canAddMember($group, $user) || !$userAcl->canBecomeMember($group)) {
             throw new ForbiddenRequestException();
         }
     }
 
     /**
-     * Get a list of supervisors in a group
-     * @GET
+     * Add/update a membership (other than student) for given user
+     * @POST
+     * @Param(type="post", name="type", validation="string:1..", required=true,
+     *        description="Identifier of membership type (admin, supervisor, ...)")
      * @param string $id Identifier of the group
+     * @param string $userId Identifier of the supervisor
      */
-    public function actionSupervisors(string $id)
+    public function actionAddMember(string $id, string $userId)
     {
+        $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
-        $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getSupervisors()->getValues()));
+
+        $type = $this->getRequest()->getPost("type");
+        if ($type === GroupMembership::TYPE_STUDENT || !in_array($type, GroupMembership::KNOWN_TYPES)) {
+            throw new InvalidArgumentException("Unknown membership type '$type'");
+        }
+
+        $membership = $group->getMembershipOfUser($user);
+        if ($membership) {
+            // update type of existing membership (if it is not a student)
+            if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
+                throw new InvalidArgumentException(
+                    "The user is a student of the group and students cannot be made also members"
+                );
+            }
+            $membership->setType($type);
+        } else {
+            // create new membership
+            $membership = new GroupMembership($group, $user, $type);
+            $group->addMembership($membership);
+        }
+        $this->groupMemberships->persist($membership);
+
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
+
+    public function checkRemoveMember(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+        $group = $this->groups->findOrThrow($id);
+
+        if (!$this->groupAcl->canRemoveMember($group, $user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Remove a member (other than student) from a group
+     * @DELETE
+     * @param string $id Identifier of the group
+     * @param string $userId Identifier of the supervisor
+     */
+    public function actionRemoveMember(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+        $group = $this->groups->findOrThrow($id);
+
+        $membership = $group->getMembershipOfUser($user);
+        if (!$membership) {
+            throw new InvalidArgumentException("The user is not a member of the group");
+        }
+        if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
+            throw new InvalidArgumentException(
+                "The user is a student of the group and students must be removed by separate endpoint"
+            );
+        }
+
+        $group->removeMembership($membership);
+        $this->groupMemberships->remove($membership);
+        $this->groupMemberships->flush();
+
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+
+// TODO remove
+//    public function checkSupervisors(string $id)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//        if (!$this->groupAcl->canViewSupervisors($group)) {
+//            throw new ForbiddenRequestException();
+//        }
+//    }
+//
+//    /**
+//     * Get a list of supervisors in a group
+//     * @GET
+//     * @param string $id Identifier of the group
+//     */
+//    public function actionSupervisors(string $id)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//        $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getSupervisors()->getValues()));
+//    }
 
     public function checkStudents(string $id)
     {
@@ -874,155 +966,156 @@ class GroupsPresenter extends BasePresenter
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
 
-    public function checkAddSupervisor(string $id, string $userId)
-    {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        /** @var IGroupPermissions $userAcl */
-        $userAcl = $this->aclLoader->loadACLModule(
-            IGroupPermissions::class,
-            $this->authorizator,
-            new Identity($user, null)
-        );
-
-        if (!$this->groupAcl->canAddSupervisor($group, $user) || !$userAcl->canBecomeSupervisor($group)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Add a supervisor to a group
-     * @POST
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the supervisor
-     */
-    public function actionAddSupervisor(string $id, string $userId)
-    {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        // make sure that the user is not already supervisor of the group
-        if ($group->isSupervisorOf($user) === false) {
-            $user->makeSupervisorOf($group);
-            $this->users->flush();
-            $this->groups->flush();
-        }
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
-    }
-
-    public function checkRemoveSupervisor(string $id, string $userId)
-    {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        if (!$this->groupAcl->canRemoveSupervisor($group, $user)) {
-            throw new ForbiddenRequestException();
-        }
-
-        // if supervisor is also admin, do not allow to remove his/hers supervisor privileges
-        if ($group->isPrimaryAdminOf($user) === true) {
-            throw new ForbiddenRequestException(
-                "Supervisor is admin of group and thus cannot be removed as supervisor."
-            );
-        }
-    }
-
-    /**
-     * Remove a supervisor from a group
-     * @DELETE
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the supervisor
-     */
-    public function actionRemoveSupervisor(string $id, string $userId)
-    {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        // make sure that the user is really supervisor of the group
-        if ($group->isSupervisorOf($user) === true) {
-            $membership = $user->findMembershipAsSupervisor($group); // should be always there
-            $this->groupMemberships->remove($membership);
-            $this->groupMemberships->flush();
-        }
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
-    }
-
-    public function checkAdmins($id)
-    {
-        $group = $this->groups->findOrThrow($id);
-        if (!$this->groupAcl->canViewAdmin($group)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Get identifiers of administrators of a group
-     * @GET
-     * @param string $id Identifier of the group
-     */
-    public function actionAdmins($id)
-    {
-        $group = $this->groups->findOrThrow($id);
-        $this->sendSuccessResponse($group->getAdminsIds());
-    }
-
-    /**
-     * Make a user an administrator of a group
-     * @POST
-     * @Param(type="post", name="userId", description="Identifier of a user to be made administrator")
-     * @param string $id Identifier of the group
-     * @throws ForbiddenRequestException
-     */
-    public function actionAddAdmin(string $id)
-    {
-        $userId = $this->getRequest()->getPost("userId");
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        if (!$this->groupAcl->canSetAdmin($group)) {
-            throw new ForbiddenRequestException();
-        }
-
-        // user has to be supervisor first
-        if ($group->isSupervisorOf($user) === false) {
-            throw new ForbiddenRequestException("User has to be supervisor before assigning as an admin");
-        }
-
-        // make user admin of the group
-        $group->removePrimaryAdmin($user);
-        $group->addPrimaryAdmin($user);
-        $this->groups->flush();
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
-    }
-
-    public function checkRemoveAdmin(string $id, string $userId)
-    {
-        $group = $this->groups->findOrThrow($id);
-
-        if (!$this->groupAcl->canSetAdmin($group)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Remove user as an administrator of a group
-     * @DELETE
-     * @param string $id Identifier of the group
-     * @param string $userId identifier of admin
-     */
-    public function actionRemoveAdmin(string $id, string $userId)
-    {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        // delete admin and flush changes
-        $group->removePrimaryAdmin($user);
-        $this->groups->flush();
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
-    }
+// TODO remove
+//    public function checkAddSupervisor(string $id, string $userId)
+//    {
+//        $user = $this->users->findOrThrow($userId);
+//        $group = $this->groups->findOrThrow($id);
+//
+//        /** @var IGroupPermissions $userAcl */
+//        $userAcl = $this->aclLoader->loadACLModule(
+//            IGroupPermissions::class,
+//            $this->authorizator,
+//            new Identity($user, null)
+//        );
+//
+//        if (!$this->groupAcl->canAddSupervisor($group, $user) || !$userAcl->canBecomeSupervisor($group)) {
+//            throw new ForbiddenRequestException();
+//        }
+//    }
+//
+//    /**
+//     * Add a supervisor to a group
+//     * @POST
+//     * @param string $id Identifier of the group
+//     * @param string $userId Identifier of the supervisor
+//     */
+//    public function actionAddSupervisor(string $id, string $userId)
+//    {
+//        $user = $this->users->findOrThrow($userId);
+//        $group = $this->groups->findOrThrow($id);
+//
+//        // make sure that the user is not already supervisor of the group
+//        if ($group->isSupervisorOf($user) === false) {
+//            $user->makeSupervisorOf($group);
+//            $this->users->flush();
+//            $this->groups->flush();
+//        }
+//
+//        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+//    }
+//
+//    public function checkRemoveSupervisor(string $id, string $userId)
+//    {
+//        $user = $this->users->findOrThrow($userId);
+//        $group = $this->groups->findOrThrow($id);
+//
+//        if (!$this->groupAcl->canRemoveSupervisor($group, $user)) {
+//            throw new ForbiddenRequestException();
+//        }
+//
+//        // if supervisor is also admin, do not allow to remove his/hers supervisor privileges
+//        if ($group->isPrimaryAdminOf($user) === true) {
+//            throw new ForbiddenRequestException(
+//                "Supervisor is admin of group and thus cannot be removed as supervisor."
+//            );
+//        }
+//    }
+//
+//    /**
+//     * Remove a supervisor from a group
+//     * @DELETE
+//     * @param string $id Identifier of the group
+//     * @param string $userId Identifier of the supervisor
+//     */
+//    public function actionRemoveSupervisor(string $id, string $userId)
+//    {
+//        $user = $this->users->findOrThrow($userId);
+//        $group = $this->groups->findOrThrow($id);
+//
+//        // make sure that the user is really supervisor of the group
+//        if ($group->isSupervisorOf($user) === true) {
+//            $membership = $user->findMembershipAsSupervisor($group); // should be always there
+//            $this->groupMemberships->remove($membership);
+//            $this->groupMemberships->flush();
+//        }
+//
+//        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+//    }
+//
+//    public function checkAdmins($id)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//        if (!$this->groupAcl->canViewAdmin($group)) {
+//            throw new ForbiddenRequestException();
+//        }
+//    }
+//
+//    /**
+//     * Get identifiers of administrators of a group
+//     * @GET
+//     * @param string $id Identifier of the group
+//     */
+//    public function actionAdmins($id)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//        $this->sendSuccessResponse($group->getAdminsIds());
+//    }
+//
+//    /**
+//     * Make a user an administrator of a group
+//     * @POST
+//     * @Param(type="post", name="userId", description="Identifier of a user to be made administrator")
+//     * @param string $id Identifier of the group
+//     * @throws ForbiddenRequestException
+//     */
+//    public function actionAddAdmin(string $id)
+//    {
+//        $userId = $this->getRequest()->getPost("userId");
+//        $user = $this->users->findOrThrow($userId);
+//        $group = $this->groups->findOrThrow($id);
+//
+//        if (!$this->groupAcl->canSetAdmin($group)) {
+//            throw new ForbiddenRequestException();
+//        }
+//
+//        // user has to be supervisor first
+//        if ($group->isSupervisorOf($user) === false) {
+//            throw new ForbiddenRequestException("User has to be supervisor before assigning as an admin");
+//        }
+//
+//        // make user admin of the group
+//        $group->removePrimaryAdmin($user);
+//        $group->addPrimaryAdmin($user);
+//        $this->groups->flush();
+//        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+//    }
+//
+//    public function checkRemoveAdmin(string $id, string $userId)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//
+//        if (!$this->groupAcl->canSetAdmin($group)) {
+//            throw new ForbiddenRequestException();
+//        }
+//    }
+//
+//    /**
+//     * Remove user as an administrator of a group
+//     * @DELETE
+//     * @param string $id Identifier of the group
+//     * @param string $userId identifier of admin
+//     */
+//    public function actionRemoveAdmin(string $id, string $userId)
+//    {
+//        $user = $this->users->findOrThrow($userId);
+//        $group = $this->groups->findOrThrow($id);
+//
+//        // delete admin and flush changes
+//        $group->removePrimaryAdmin($user);
+//        $this->groups->flush();
+//        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+//    }
 
     /**
      * @param Request $req

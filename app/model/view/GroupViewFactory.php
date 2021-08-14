@@ -215,16 +215,8 @@ class GroupViewFactory
         if ($canView) {
             $privateData = [
                 "admins" => $group->getAdminsIds(),
-                "supervisors" => $group->getSupervisors()->map(
-                    function (User $s) {
-                        return $s->getId();
-                    }
-                )->getValues(),
-                "students" => $group->getStudents()->map(
-                    function (User $s) {
-                        return $s->getId();
-                    }
-                )->getValues(),
+                "supervisors" => $group->getSupervisorsIds(),
+                "students" => $group->getStudentsIds(),
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
                 "hasValidLicence" => $group->hasValidLicence(),
                 "assignments" => $group->getAssignments()->filter(
