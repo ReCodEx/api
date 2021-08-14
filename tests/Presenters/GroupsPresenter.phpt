@@ -696,36 +696,15 @@ class TestGroupsPresenter extends Tester\TestCase
         $payload = $result['payload'];
         Assert::equal(200, $result['code']);
 
+        Assert::count(2, $payload);
         Assert::equal(
             $this->presenter->userViewFactory->getUsers($group->getSupervisors()->getValues()),
             $payload["supervisors"]
         );
         Assert::equal(
-            $this->presenter->userViewFactory->getUsers($group->getStudents()->getValues()),
-            $payload["students"]
+            $this->presenter->userViewFactory->getUsers($group->getPrimaryAdmins()->getValues()),
+            $payload["admins"]
         );
-    }
-
-    public function testSupervisors()
-    {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
-        $groups = $this->presenter->groups->findAll();
-        $group = array_pop($groups);
-
-        $request = new Nette\Application\Request(
-            'V1:Groups',
-            'GET',
-            ['action' => 'supervisors', 'id' => $group->getId()]
-        );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        $payload = $result['payload'];
-        Assert::equal(200, $result['code']);
-
-        Assert::equal($this->presenter->userViewFactory->getUsers($group->getSupervisors()->getValues()), $payload);
     }
 
     public function testStudents()
@@ -894,10 +873,11 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             [
-            'action' => 'addSupervisor',
+            'action' => 'addMember',
             'id' => $group->getId(),
             'userId' => $user->getId()
-            ]
+            ],
+            [ 'type' => 'supervisor' ]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -926,10 +906,11 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             [
-            'action' => 'addSupervisor',
+            'action' => 'addMember',
             'id' => $group->getId(),
             'userId' => $user->getId()
-            ]
+            ],
+            [ 'type' => 'supervisor' ]
         );
 
         Assert::exception(
@@ -956,7 +937,7 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'DELETE',
             [
-            'action' => 'removeSupervisor',
+            'action' => 'removeMember',
             'id' => $group->getId(),
             'userId' => $user->getId()
             ]
@@ -973,47 +954,23 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::false(in_array($user->getId(), $payload["privateData"]["supervisors"]));
     }
 
-    public function testGetAdmins()
-    {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
-        $groups = $this->presenter->groups->findAll();
-        $group = array_pop($groups);
-
-        $request = new Nette\Application\Request(
-            'V1:Groups',
-            'GET',
-            ['action' => 'admins', 'id' => $group->getId()]
-        );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        $payload = $result['payload'];
-        Assert::equal(200, $result['code']);
-
-        Assert::equal($group->getAdminsIds(), $payload);
-    }
-
     public function testAddAdmin()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $group = $this->presenter->groups->findAll()[0];
-        $user = $this->presenter->users->getByEmail($this->userLogin);
-
-        // initial checks
-        Assert::equal(false, $group->isAdminOf($user));
-
-        // initial setup
-        $user->makeSupervisorOf($group);
-        $this->presenter->groups->flush();
+        $users = $this->presenter->users->findAll();
+        $users = array_filter($users, function ($user) use ($group) {
+            return $user->getRole() === 'supervisor' && $group->getMembershipOfUser($user) === null;
+        });
+        Assert::truthy($users);
+        $user = reset($users);
 
         $request = new Nette\Application\Request(
             'V1:Groups',
             'POST',
-            ['action' => 'addAdmin', 'id' => $group->getId()],
-            ['userId' => $user->getId()]
+            ['action' => 'addMember', 'id' => $group->getId(), 'userId' => $user->getId()],
+            ['type' => 'admin']
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -1346,7 +1303,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Groups',
             'DELETE',
-            ['action' => 'removeAdmin', 'id' => $group->getId(), 'userId' => $user->getId()]
+            ['action' => 'removeMember', 'id' => $group->getId(), 'userId' => $user->getId()]
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */

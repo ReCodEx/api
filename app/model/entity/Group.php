@@ -386,9 +386,29 @@ class Group
         );
     }
 
+    /**
+     * This version is optimized for fetching IDs only (as we often need only IDs).
+     * @param string[] ...$types
+     * @return string[] ids
+     */
+    private function getMembersIds(...$types): array
+    {
+        $memberships = $this->getMemberships(...$types);
+        return $memberships->map(
+            function (GroupMembership $membership) {
+                return $membership->getUser()->getId();
+            }
+        )->getValues();
+    }
+
     public function getStudents()
     {
         return $this->getMembers(GroupMembership::TYPE_STUDENT);
+    }
+
+    public function getStudentsIds()
+    {
+        return $this->getMembersIds(GroupMembership::TYPE_STUDENT);
     }
 
     public function isStudentOf(User $user): bool
@@ -399,6 +419,11 @@ class Group
     public function getSupervisors()
     {
         return $this->getMembers(GroupMembership::TYPE_SUPERVISOR);
+    }
+
+    public function getSupervisorsIds()
+    {
+        return $this->getMembersIds(GroupMembership::TYPE_SUPERVISOR);
     }
 
     public function isSupervisorOf(User $user): bool
