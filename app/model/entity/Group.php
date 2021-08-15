@@ -313,7 +313,8 @@ class Group
         }
 
         if ($inherited !== null) {
-            $filters[] = $inherited ? Criteria::expr()->neq("inheritedFrom", null)
+            $filters[] = $inherited
+                ? Criteria::expr()->neq("inheritedFrom", null)
                 : Criteria::expr()->isNull("inheritedFrom");
         }
 
@@ -505,21 +506,22 @@ class Group
     }
 
     /**
-     * @return string[]
+     * @return array keys are user IDs, values are all true
      */
     private function getAdminIdsInternal(bool $inherited): array
     {
         $group = $this;
         $admins = []; // key is user ID, value is true
         while ($group !== null) {
-            $directAdmins = $this->getMembershipsInternal([ GroupMembership::TYPE_ADMIN ], $inherited);
+            // getMembershipsInternal inherited flag goes: true = only inherited, false = only direct, null = all
+            $directAdmins = $group->getMembershipsInternal([ GroupMembership::TYPE_ADMIN ], $inherited ? null : false);
             foreach ($directAdmins as $membership) {
                 $admins[$membership->getUser()->getId()] = true;
             }
             $group = $inherited ? $group->getParentGroup() : null;
         }
 
-        return array_keys($admins);
+        return $admins;
     }
 
     /**
@@ -528,7 +530,7 @@ class Group
      */
     public function getPrimaryAdminsIds(): array
     {
-        return $this->getAdminIdsInternal(false);
+        return array_keys($this->getAdminIdsInternal(false));
     }
 
     /**
@@ -537,7 +539,7 @@ class Group
      */
     public function getAdminsIds(): array
     {
-        return $this->getAdminIdsInternal(true);
+        return array_keys($this->getAdminIdsInternal(true));
     }
 
     /**

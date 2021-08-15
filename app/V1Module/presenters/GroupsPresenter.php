@@ -141,19 +141,16 @@ class GroupsPresenter extends BasePresenter
      *  a substring of their names are returned.
      * @param bool $archived Include also archived groups in the result.
      * @param bool $onlyArchived Automatically implies $archived flag and returns only archived groups.
-     * @param int|null $archivedAgeLimit Only works in combination with archived;
-     *  restricts maximal age (how long the groups have been in archive) in days.
      */
     public function actionDefault(
         string $instanceId = null,
         bool $ancestors = false,
         string $search = null,
         bool $archived = false,
-        bool $onlyArchived = false,
-        int $archivedAgeLimit = null
+        bool $onlyArchived = false
     ) {
         $user = $this->groupAcl->canViewAll() ? null : $this->getCurrentUser(); // user for membership restriction
-        $groups = $this->groups->findFiltered($user, $instanceId, $search, $archived, $onlyArchived, $archivedAgeLimit);
+        $groups = $this->groups->findFiltered($user, $instanceId, $search, $archived, $onlyArchived);
         if ($ancestors) {
             $groups = $this->groups->groupsAncestralClosure($groups);
         }
@@ -712,24 +709,24 @@ class GroupsPresenter extends BasePresenter
 //        $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getSupervisors()->getValues()));
 //    }
 
-    public function checkStudents(string $id)
-    {
-        $group = $this->groups->findOrThrow($id);
-        if (!$this->groupAcl->canViewStudents($group)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Get a list of students in a group
-     * @GET
-     * @param string $id Identifier of the group
-     */
-    public function actionStudents(string $id)
-    {
-        $group = $this->groups->findOrThrow($id);
-        $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getStudents()->getValues()));
-    }
+//    public function checkStudents(string $id)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//        if (!$this->groupAcl->canViewStudents($group)) {
+//            throw new ForbiddenRequestException();
+//        }
+//    }
+//
+//    /**
+//     * Get a list of students in a group
+//     * @GET
+//     * @param string $id Identifier of the group
+//     */
+//    public function actionStudents(string $id)
+//    {
+//        $group = $this->groups->findOrThrow($id);
+//        $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getStudents()->getValues()));
+//    }
 
     public function checkAssignments(string $id)
     {

@@ -170,48 +170,14 @@ class Groups extends BaseSoftDeleteRepository
                 $parent = $group->getParentGroup();
                 while ($parent) {
                     if (array_key_exists($parent->getId(), $adminOf)) {
-                        $groups[$id] = true;  // marker that this group has inherited admin rights (performance optimization)
+                        // marker that this group has inherited admin rights (performance optimization)
+                        $adminOf[$id] = true;
                         return true;
                     }
                     $parent = $parent->getParentGroup();
                 }
 
                 return false; // this group should be filtered out
-            }
-        );
-    }
-
-    /**
-     * Filter the groups so that only non-archived groups remain.
-     * @param Group[] $groups Groups to be filtered.
-     * @return Group[]
-     */
-    private function filterGroupsNonArchived(array $groups): array
-    {
-        return array_filter(
-            $groups,
-            function (Group $group) {
-                return !$group->isArchived();
-            }
-        );
-    }
-
-    /**
-     * Filter the archived groups according to given flags.
-     * @param bool $onlyArchived If true, only archived groups are allowed to remain in the result.
-     * @param DateTime|null $minDate If set, archived groups are tested against their date of archiving.
-     *   If the date is older than $minDate, the group will not apear in the result.
-     * @param Group[] $groups Groups to be filtered.
-     * @return Group[]
-     */
-    private function filterGroupsArchived(array $groups, bool $onlyArchived, ?DateTime $minDate = null): array
-    {
-        return array_filter(
-            $groups,
-            function (Group $group) use ($onlyArchived, $minDate) {
-                $archivedAt = $group->getArchivedAt();
-                return (!$onlyArchived || $archivedAt !== null) &&
-                    ($minDate === null || $archivedAt === null || $minDate <= $archivedAt);
             }
         );
     }
@@ -224,8 +190,6 @@ class Groups extends BaseSoftDeleteRepository
      * @param string|null $search Search query.
      * @param bool $archived Whether to include archived groups.
      * @param bool $onlyArchived Automatically implies $archived flag and returns only archived groups.
-     * @param int|null $archivedAgeLimit Restricting included archived groups by how long they have been archived.
-     *  Groups archived before $archivedAgeLimit days (or more) are not included in the result.
      * @return Group[]
      */
     public function findFiltered(
@@ -233,8 +197,7 @@ class Groups extends BaseSoftDeleteRepository
         string $instanceId = null,
         string $search = null,
         bool $archived = false,
-        bool $onlyArchived = false,
-        int $archivedAgeLimit = null
+        bool $onlyArchived = false
     ): array {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
 
@@ -242,6 +205,13 @@ class Groups extends BaseSoftDeleteRepository
         $instanceId = trim($instanceId);
         if ($instanceId) {
             $qb->andWhere(':instanceId = g.instance')->setParameter('instanceId', $instanceId);
+        }
+
+        if ($onlyArchived) {
+            // this must go first, since onlyArchived overrides archived flag
+            $qb->andWhere('g.archivedAt IS NOT NULL');
+        } elseif (!$archived) {
+            $qb->andWhere('g.archivedAt IS NULL');
         }
 
         // Filter by search string...
@@ -255,22 +225,6 @@ class Groups extends BaseSoftDeleteRepository
         // Filter by user membership...
         if ($user) {
             $groups = $this->filterGroupsByUser($user, $groups);
-        }
-
-        // Filtering by archived flags...
-        $archived = $archived || $onlyArchived;
-        if (!$archived) {
-            $groups = $this->filterGroupsNonArchived($groups);
-        } else {
-            if ($onlyArchived || $archivedAgeLimit) {
-                if ($archivedAgeLimit) {
-                    $minDate = new DateTime();
-                    $minDate->sub(DateInterval::createFromDateString("$archivedAgeLimit days"));
-                } else {
-                    $minDate = null;
-                }
-                $groups = $this->filterGroupsArchived($groups, $onlyArchived, $minDate);
-            }
         }
 
         return array_values($groups);
@@ -327,7 +281,9 @@ class Groups extends BaseSoftDeleteRepository
      */
     public function getArchivedCount(): int
     {
-        $groups = $this->findAll();
-        return count($this->filterGroupsArchived($groups, true));
+        $qb = $this->createQueryBuilder('g')
+            ->select('COUNT(g.id)')
+            ->where('g.archivedAt IS NOT NULL');
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
 }

@@ -209,21 +209,6 @@ class TestGroupsPresenter extends Tester\TestCase
         }
     }
 
-    public function testListGroupOnlyArchivedButNotLongAgo()
-    {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:Groups',
-            'GET',
-            ['action' => 'default', 'onlyArchived' => true, 'archivedAgeLimit' => 365]
-        ); // no longer than year ago
-        Assert::equal(1, count($payload));
-        foreach ($payload as $group) {
-            Assert::truthy($group["archived"]);
-        }
-    }
-
     public function testUserCannotJoinPrivateGroup()
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
@@ -705,28 +690,6 @@ class TestGroupsPresenter extends Tester\TestCase
             $this->presenter->userViewFactory->getUsers($group->getPrimaryAdmins()->getValues()),
             $payload["admins"]
         );
-    }
-
-    public function testStudents()
-    {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
-        $groups = $this->presenter->groups->findAll();
-        $group = array_pop($groups);
-
-        $request = new Nette\Application\Request(
-            'V1:Groups',
-            'GET',
-            ['action' => 'students', 'id' => $group->getId()]
-        );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        $payload = $result['payload'];
-        Assert::equal(200, $result['code']);
-
-        Assert::equal($group->getStudents()->getValues(), $payload);
     }
 
     public function testAssignments()
