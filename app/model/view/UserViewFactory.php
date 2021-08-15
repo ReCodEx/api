@@ -75,35 +75,11 @@ class UserViewFactory
             $login = $this->logins->findByUserId($user->getId());
             $emptyLocalPassword = $login ? $login->isPasswordEmpty() : true;
 
-            $studentOf = $user->getGroupsAsStudent()->filter(
-                function (Group $group) {
-                    return !$group->isArchived();
-                }
-            );
-
-            $supervisorOf = $user->getGroupsAsSupervisor()->filter(
-                function (Group $group) {
-                    return !$group->isArchived();
-                }
-            );
-
             $privateData = [
                 "email" => $user->getEmail(),
                 "createdAt" => $user->getCreatedAt()->getTimestamp(),
                 "instancesIds" => $user->getInstancesIds(),
                 "role" => $user->getRole(),
-                "groups" => [
-                    "studentOf" => $studentOf->map(
-                        function (Group $group) {
-                            return $group->getId();
-                        }
-                    )->getValues(),
-                    "supervisorOf" => $supervisorOf->map(
-                        function (Group $group) {
-                            return $group->getId();
-                        }
-                    )->getValues()
-                ],
                 "emptyLocalPassword" => $emptyLocalPassword,
                 "isLocal" => $user->hasLocalAccount(),
                 "isExternal" => $user->hasExternalAccounts(),
@@ -111,6 +87,7 @@ class UserViewFactory
                 "externalIds" => $this->getExternalIds($user, $reallyShowEverything),
             ];
 
+            // really show everything should be used only for user, who is just logging/signing in
             if ($reallyShowEverything || $this->isUserLoggedInUser($user)) {
                 $uiData = $user->getUiData();
                 $privateData["uiData"] = $uiData ? $uiData->getData() : null;
