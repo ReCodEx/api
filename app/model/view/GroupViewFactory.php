@@ -216,6 +216,7 @@ class GroupViewFactory
             $privateData = [
                 "admins" => $group->getAdminsIds(),
                 "supervisors" => $group->getSupervisorsIds(),
+                "observers" => $group->getObserversIds(),
                 "students" => $group->getStudentsIds(),
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
                 "hasValidLicence" => $group->hasValidLicence(),

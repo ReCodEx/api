@@ -16,12 +16,14 @@ class GroupMembership implements JsonSerializable
 {
     public const TYPE_ADMIN = "admin";
     public const TYPE_SUPERVISOR = "supervisor";
+    public const TYPE_OBSERVER = "observer";
     public const TYPE_STUDENT = "student";
 
     // all declared types
     public const KNOWN_TYPES = [
         self::TYPE_ADMIN,
         self::TYPE_SUPERVISOR,
+        self::TYPE_OBSERVER,
         self::TYPE_STUDENT,
     ];
 

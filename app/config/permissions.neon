@@ -138,7 +138,10 @@ permissions:
           - viewStats
           - viewStudentStats
           - viewPublicDetail
-      conditions: group.isSupervisor
+      conditions:
+          or:
+              - group.isSupervisor
+              - group.isObserver
 
     - allow: true
       resource: group
@@ -170,7 +173,7 @@ permissions:
       resource: group
       role: supervisor-student
       actions:
-          - becomeMember # other than student
+          - becomeMember  # other than student
 
     - allow: true
       resource: group
