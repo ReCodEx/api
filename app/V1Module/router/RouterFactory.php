@@ -249,8 +249,6 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/archived", "Groups:setArchived");
         $router[] = new PostRoute("$prefix/<id>/relocate/<newParentId>", "Groups:relocate");
 
-        // TODO -- remove action method and delete
-        // $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
         $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");
         $router[] = new GetRoute("$prefix/<id>/students/<userId>", "Groups:studentsStats");
         $router[] = new PostRoute("$prefix/<id>/students/<userId>", "Groups:addStudent");
@@ -260,14 +258,6 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
         $router[] = new PostRoute("$prefix/<id>/members/<userId>", "Groups:addMember");
         $router[] = new DeleteRoute("$prefix/<id>/members/<userId>", "Groups:removeMember");
-
-        // TODO - delete
-        //$router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
-        //$router[] = new PostRoute("$prefix/<id>/supervisors/<userId>", "Groups:addSupervisor");
-        //$router[] = new DeleteRoute("$prefix/<id>/supervisors/<userId>", "Groups:removeSupervisor");
-        //$router[] = new GetRoute("$prefix/<id>/admin", "Groups:admins");
-        //$router[] = new PostRoute("$prefix/<id>/admin", "Groups:addAdmin");
-        //$router[] = new DeleteRoute("$prefix/<id>/admin/<userId>", "Groups:removeAdmin");
 
         $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
         $router[] = new GetRoute("$prefix/<id>/shadow-assignments", "Groups:shadowAssignments");

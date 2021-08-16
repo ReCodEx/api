@@ -21,7 +21,7 @@ class GroupPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        return $group->isMemberOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user);
+        return $group->isMemberOf($user) || $group->isAdminOf($user);
     }
 
     public function isSupervisor(Identity $identity, Group $group): bool
@@ -32,6 +32,16 @@ class GroupPermissionPolicy implements IPermissionPolicy
         }
 
         return $group->isSupervisorOf($user) || $group->isAdminOf($user);
+    }
+
+    public function isObserver(Identity $identity, Group $group): bool
+    {
+        $user = $identity->getUserData();
+        if (!$user) {
+            return false;
+        }
+
+        return $group->isObserverOf($user);
     }
 
     public function isAdmin(Identity $identity, Group $group): bool

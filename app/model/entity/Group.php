@@ -432,6 +432,21 @@ class Group
         return $this->getSupervisors()->contains($user);
     }
 
+    public function getObservers()
+    {
+        return $this->getMembers(GroupMembership::TYPE_OBSERVER);
+    }
+
+    public function getObserversIds()
+    {
+        return $this->getMembersIds(GroupMembership::TYPE_OBSERVER);
+    }
+
+    public function isObserverOf(User $user): bool
+    {
+        return $this->getObservers()->contains($user);
+    }
+
     public function isMemberOf(User $user): bool
     {
         return $this->getMembers()->contains($user);
