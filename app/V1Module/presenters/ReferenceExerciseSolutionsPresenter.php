@@ -394,31 +394,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
         }
 
-        $uploadedFiles = $this->files->findAllById($req->getPost("files"));
-        if (count($uploadedFiles) === 0) {
-            throw new SubmissionEvaluationFailedException("No files were uploaded");
-        }
-
-        // check all files are actually uploaded files
-        foreach ($uploadedFiles as $file) {
-            if (!($file instanceof UploadedFile)) {
-                throw new ForbiddenRequestException(
-                    "File {$file->getId()} was already used in a different submission."
-                );
-            }
-        }
+        // get all uploaded files based on given ID list and verify them
+        $uploadedFiles = $this->submissionHelper->getUploadedFiles($req->getPost("files"));
 
         // create reference solution
         $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment);
         $referenceSolution->getSolution()->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
         $this->referenceSolutions->persist($referenceSolution);
 
-        foreach ($uploadedFiles as $file) {
-            $this->fileStorage->storeUploadedSolutionFile($referenceSolution->getSolution(), $file);
-            $solutionFile = SolutionFile::fromUploadedFile($file, $referenceSolution->getSolution());
-            $this->files->persist($solutionFile, false);
-            $this->files->remove($file, false);
-        }
+        // convert uploaded files into solutions files and manage them in the storage correctly
+        $this->submissionHelper->prepareUploadedFilesForSubmit($uploadedFiles, $referenceSolution->getSolution());
 
         $this->sendSuccessResponse($this->finishSubmission($referenceSolution));
     }

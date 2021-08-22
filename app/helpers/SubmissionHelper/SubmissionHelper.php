@@ -10,6 +10,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\FileStorageException;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
@@ -64,6 +65,12 @@ class SubmissionHelper
     /** @var JobConfigGenerator */
     private $jobConfigGenerator;
 
+    /** @var FileStorageManager */
+    public $fileStorage;
+
+    /** @var UploadedFiles */
+    public $uploadedFiles;
+
     /**
      * SubmissionHelper constructor.
      * @param BackendSubmitHelper $backendSubmitHelper
@@ -75,7 +82,9 @@ class SubmissionHelper
         ReferenceSolutionSubmissions $referenceSubmissions,
         SubmissionFailures $submissionFailures,
         FailureHelper $failureHelper,
-        JobConfigGenerator $jobConfigGenerator
+        JobConfigGenerator $jobConfigGenerator,
+        FileStorageManager $fileStorage,
+        UploadedFiles $uploadedFiles
     ) {
         $this->backendSubmitHelper = $backendSubmitHelper;
         $this->assignmentSolutions = $assignmentSolutions;
@@ -84,6 +93,8 @@ class SubmissionHelper
         $this->submissionFailures = $submissionFailures;
         $this->failureHelper = $failureHelper;
         $this->jobConfigGenerator = $jobConfigGenerator;
+        $this->fileStorage = $fileStorage;
+        $this->uploadedFiles = $uploadedFiles;
     }
 
     /**
@@ -144,6 +155,77 @@ class SubmissionHelper
             $this->failureHelper->report($reportType, $reportMessage);
         }
         throw $exception; // rethrow
+    }
+
+    /**
+     * Compute total size of all uploaded files.
+     * @param UploadedFile[] $uploadedFiles
+     * @return int
+     */
+    public function getFilesSize(array $uploadedFiles): int
+    {
+        $size = 0;
+        foreach ($uploadedFiles as $uploadedFile) {
+            $size += $uploadedFile->getFileSize();
+        }
+        return $size;
+    }
+
+    /**
+     * Retrieve uploaded files and verify, they can be used for submission.
+     * @param string[] $ids
+     * @param string $reqArgumentName arg name for InvalidArgumentException if the IDs are not valid
+     *                                (so we do not have to catch and re-throw an exception)
+     * @return UploadedFile[]
+     * @throws InvalidArgumentException
+     * @throws ForbiddenRequestException
+     */
+    public function getUploadedFiles(
+        array $ids,
+        ?int $countLimit = null,
+        ?int $sizeLimit = null,
+        string $reqArgumentName = "files"
+    ): array {
+        // retrieve and check uploaded files
+        $files = $this->uploadedFiles->findAllById($ids);
+        if (count($files) === 0) {
+            throw new InvalidArgumentException($reqArgumentName, "No files were uploaded");
+        }
+
+        // preform basic checks on uploaded files
+        foreach ($files as $file) {
+            if ($file instanceof SolutionFile) {
+                throw new ForbiddenRequestException(
+                    "File {$file->getId()} was already used in a different submission."
+                );
+            }
+        }
+
+        // perform size/count limits checks on submitted files
+        if ($countLimit !== null && count($files) > $countLimit) {
+            throw new InvalidArgumentException($reqArgumentName, "Number of uploaded files exceeds assignment limits");
+        }
+
+        if ($sizeLimit !== null && $this->getFilesSize($files) > $sizeLimit) {
+            throw new InvalidArgumentException($reqArgumentName, "Total size of uploaded files exceeds assignment limits");
+        }
+
+        return $files;
+    }
+
+    /**
+     * Convert uploaded files into solution files and make sure they are stored in one ZIP archive at the end.
+     * @param UploadedFile[] $files to be saved as solution files
+     * @param Solution $solution under which the files are stored
+     */
+    public function prepareUploadedFilesForSubmit(array $files, Solution $solution)
+    {
+        foreach ($files as $file) {
+            $this->fileStorage->storeUploadedSolutionFile($solution, $file);
+            $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
+            $this->uploadedFiles->persist($solutionFile, false);
+            $this->uploadedFiles->remove($file, false);
+        }
     }
 
     /**
