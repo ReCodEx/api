@@ -52,6 +52,12 @@ interface IImmutableFile
     public function getDigest(string $algorithm = self::DIGEST_ALGORITHM_SHA1): ?string;
 
     /**
+     * Check whether given file is actually a valid ZIP archive.
+     * @return bool
+     */
+    public function isZipArchive(): bool;
+
+    /**
      * Retrive the entire file and save it to local path.
      * @param string $path
      */

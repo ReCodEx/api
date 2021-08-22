@@ -113,6 +113,17 @@ class LocalImmutableFile implements IImmutableFile
         return null; // algorithm not implemented
     }
 
+    public function isZipArchive(): bool
+    {
+        $zip = new ZipArchive();
+        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
+        $res = $zip->open($this->realPath);
+        if ($res === true) {
+            $zip->close();
+        }
+        return $res === true;
+    }
+
     public function saveAs(string $path): void
     {
         $this->checkExistence();

@@ -23,6 +23,7 @@ use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\Solution;
 use App\Model\Entity\SolutionFile;
+use App\Model\Entity\SolutionZipFile;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
@@ -34,9 +35,10 @@ use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
+use Nette\Http\IResponse;
+use Nette\Utils\Strings;
 use ZMQSocketException;
 use Exception;
-use Nette\Http\IResponse;
 
 /**
  * Class which should create submission, generate job configuration,
@@ -207,11 +209,35 @@ class SubmissionHelper
         }
 
         if ($sizeLimit !== null && $this->getFilesSize($files) > $sizeLimit) {
-            throw new InvalidArgumentException($reqArgumentName, "Total size of uploaded files exceeds assignment limits");
+            throw new InvalidArgumentException(
+                $reqArgumentName,
+                "Total size of uploaded files exceeds assignment limits"
+            );
         }
 
         return $files;
     }
+
+    /**
+     * Test whether the file list comprise only single ZIP archive.
+     * @param UploadedFile[] $files
+     * @return bool
+     */
+    private function isSingleZipFile(array $files): bool
+    {
+        if (count($files) !== 1) {
+            return false; // not a single file
+        }
+
+        $file = reset($files);
+        if (!Strings::endsWith(Strings::lower($file->getName()), '.zip')) {
+            return false; // not zip extension
+        }
+
+        $immutableFile = $this->fileStorage->getUploadedFile($file);
+        return $immutableFile && $immutableFile->isZipArchive();
+    }
+
 
     /**
      * Convert uploaded files into solution files and make sure they are stored in one ZIP archive at the end.
@@ -220,11 +246,21 @@ class SubmissionHelper
      */
     public function prepareUploadedFilesForSubmit(array $files, Solution $solution)
     {
-        foreach ($files as $file) {
-            $this->fileStorage->storeUploadedSolutionFile($solution, $file);
-            $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
+        if ($this->isSingleZipFile($files)) {
+            // special optimized case, the solution has one ZIP archive (no need to put it into another ZIP)
+            $file = reset($files);
+            $this->fileStorage->storeUploadedSolutionZipArchive($solution, $file);
+            $solutionFile = SolutionZipFile::fromUploadedFile($file, $solution); // special class for this case
             $this->uploadedFiles->persist($solutionFile, false);
             $this->uploadedFiles->remove($file, false);
+        } else {
+            // regular processing -> put all files into one ZIP archive
+            foreach ($files as $file) {
+                $this->fileStorage->storeUploadedSolutionFile($solution, $file);
+                $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
+                $this->uploadedFiles->persist($solutionFile, false);
+                $this->uploadedFiles->remove($file, false);
+            }
         }
     }
 

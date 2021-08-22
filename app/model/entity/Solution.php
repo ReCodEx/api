@@ -124,6 +124,16 @@ class Solution implements JsonSerializable
         return $this->subdir;
     }
 
+    /**
+     * Specialized getter that checks whether the solution has a single ZIP archive as a file and returns it.
+     * @return SolutionZipFile|null null is returned if the solution does not have single archive
+     */
+    public function getSolutionZipFile(): ?SolutionZipFile
+    {
+        return (count($this->files) === 1 && $this->files->first() instanceof SolutionZipFile)
+            ? $this->files->first() : null;
+    }
+
     /*
      * Accessors
      */
