@@ -72,6 +72,8 @@ class TestSubmitPresenter extends Tester\TestCase
             $this->container->getByType(App\Model\Repository\SubmissionFailures::class),
             $this->container->getByType(App\Helpers\FailureHelper::class),
             $mockGenerator ?? $this->container->getByType(App\Helpers\JobConfig\Generator::class),
+            $mockFileStorage,
+            $this->container->getByType(App\Model\Repository\UploadedFiles::class),
         );
     }
 
@@ -486,7 +488,6 @@ class TestSubmitPresenter extends Tester\TestCase
         )->andReturn($evaluationStarted = true)->times($solutionCount);
 
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
-        $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("getWorkerSubmissionExternalUrl")->withArgs(["student", $jobId])->andReturn($archiveUrl)->atLeast(1)
             ->shouldReceive("getWorkerResultExternalUrl")->withArgs(["student", $jobId])->andReturn($resultsUrl)->atLeast(1);
 
@@ -540,6 +541,10 @@ class TestSubmitPresenter extends Tester\TestCase
         $environment = $assignment->getRuntimeEnvironments()->first();
         $ext = current($environment->getExtensionsList());
 
+        $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage);
+
         // save fake files into db
         $file1 = new UploadedFile("file1.$ext", new \DateTime(), 20, $user);
         $file2 = new UploadedFile("file2.$ext", new \DateTime(), 22, $user);
@@ -576,6 +581,10 @@ class TestSubmitPresenter extends Tester\TestCase
         $environment = $assignment->getRuntimeEnvironments()->first();
         $ext = current($environment->getExtensionsList());
 
+        $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage);
+
         // save fake files into db
         $file1 = new UploadedFile("file1.$ext", new \DateTime(), 0, $user);
         $file2 = new UploadedFile("file2.$ext", new \DateTime(), 0, $user);
@@ -605,6 +614,10 @@ class TestSubmitPresenter extends Tester\TestCase
         $assignment->setSolutionSizeLimit(42);
         $environment = $assignment->getRuntimeEnvironments()->first();
         $ext = current($environment->getExtensionsList());
+
+        $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBrokerProxy, $mockFileStorage);
 
         // save fake files into db
         $file1 = new UploadedFile("file1.$ext", new \DateTime(), 40000, $user);

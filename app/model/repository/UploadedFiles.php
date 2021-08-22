@@ -23,7 +23,7 @@ class UploadedFiles extends BaseRepository
      * @param string[] $ids
      * @return UploadedFile[]
      */
-    public function findAllById($ids): array
+    public function findAllById(array $ids): array
     {
         return $this->findBy(["id" => $ids]);
     }

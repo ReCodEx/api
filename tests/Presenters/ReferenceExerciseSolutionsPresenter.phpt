@@ -70,7 +70,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         ));
     }
 
-    private function createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator = null)
+    private function createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator = null, $mockFileStorage = null)
     {
         return new SubmissionHelper(
             $mockBackendSubmitHelper,
@@ -80,6 +80,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
             $this->container->getByType(App\Model\Repository\SubmissionFailures::class),
             $this->container->getByType(App\Helpers\FailureHelper::class),
             $mockGenerator ?? $this->container->getByType(App\Helpers\JobConfig\Generator::class),
+            $mockFileStorage ?? $this->container->getByType(App\Helpers\FileStorageManager::class),
+            $this->container->getByType(App\Model\Repository\UploadedFiles::class),
         );
     }
 
@@ -433,12 +435,12 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $mockBackendSubmitHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
         $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withAnyArgs()->once()->andReturn("resultUrl1");
         $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withAnyArgs()->once()->andReturn("resultUrl2");
-        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator);
 
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file1])->once()
             ->shouldReceive("storeUploadedSolutionFile")->withArgs([Mockery::any(), $file2])->once();
         $this->presenter->fileStorage = $mockFileStorage;
+        $this->presenter->submissionHelper = $this->createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator, $mockFileStorage);
 
         $request = new Nette\Application\Request(
             'V1:ReferenceExerciseSolutions',
