@@ -451,6 +451,18 @@ class FileStorageManager
     }
 
     /**
+     * Move uploaded ZIP archive to persistent storage directly (special case if the solution has only one file).
+     * @param Solution $solution
+     * @param UploadedFile $file
+     */
+    public function storeUploadedSolutionZipArchive(Solution $solution, UploadedFile $file): void
+    {
+        $oldPath = $this->getUploadedFilePath($file);
+        $newPath = $this->getSolutionArchivePath($solution);
+        $this->fileStorage->move($oldPath, $newPath);
+    }
+
+    /**
      * Retrieve a solution file or the entire archive.
      * @param Solution $solution
      * @param string|null $file name of the file to be retrieved; entire archive is retrievd if null
@@ -512,8 +524,15 @@ class FileStorageManager
                 return null;
             }
 
-            // copy the archive with source codes and inject the yaml config inside
-            $this->fileStorage->copy($solutionArchive->getStoragePath(), $path);
+            $solutionZipFile = $submission->getSolution()->getSolutionZipFile();
+            if ($solutionZipFile) {
+                // special case -> the zip is optimized, so we need to re-pack it for submission
+                $name = $solutionZipFile->getName();
+                $this->fileStorage->copy($solutionArchive->getStoragePath(), "$path#$name");
+            } else {
+                // copy the archive with source codes and inject the yaml config inside
+                $this->fileStorage->copy($solutionArchive->getStoragePath(), $path);
+            }
             $this->fileStorage->copy($configFile->getStoragePath(), $path . '#' . self::JOB_CONFIG_FILENAME);
         }
 

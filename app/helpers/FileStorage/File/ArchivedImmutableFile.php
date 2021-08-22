@@ -153,6 +153,21 @@ class ArchivedImmutableFile implements IImmutableFile
         return null; // algorithm not implemented
     }
 
+    public function isZipArchive(): bool
+    {
+        $sourceZip = $this->openZip();
+        $path = $this->tmpFilesHelper->createTmpFile('aif');
+        ZipFileStorage::extractZipEntryToFile($sourceZip, $this->archivePath, $this->entry, $path);
+
+        $zip = new ZipArchive();
+        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
+        $res = $zip->open($path);
+        if ($res === true) {
+            $zip->close();
+        }
+        return $res === true;
+    }
+
     public function saveAs(string $path): void
     {
         $zip = $this->openZip();
