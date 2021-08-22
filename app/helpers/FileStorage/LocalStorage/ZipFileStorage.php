@@ -66,6 +66,20 @@ class ZipFileStorage implements IFileStorage
     }
 
     /**
+     * Sets compression level for given entry. Most files use default level, nested ZIP archives are just stored.
+     * @param string $storagePath entry name
+     * @param int|null $level a ZipArchive::CM_* constant or null, if the level should be determined automatically
+     */
+    private function setCompressionLevel(string $storagePath, ?int $level = null): void
+    {
+        if ($level === null) {
+            $level = Strings::endsWith(Strings::lower($storagePath), '.zip')
+                ? ZipArchive::CM_STORE : ZipArchive::CM_DEFAULT;
+        }
+        $this->zip->setCompressionName($storagePath, $level);
+    }
+
+    /**
      * Constructor
      * @param string $archivePath path to the actual ZIP file
      * @param string $archiveStoragePath path to ZIP file within external storage (null if standalone)
@@ -259,6 +273,8 @@ class ZipFileStorage implements IFileStorage
         if (!$this->zip->addFile($localPath, $storagePath)) {
             throw new FileStorageException("Unable to add file into ZIP archive.", $localPath);
         }
+        $this->setCompressionLevel($storagePath); // make sure proper compression level is selected
+
         if ($move) {
             $this->flush(); // we need to save the file before we unlink it
             unlink($localPath); // cannot actually move, but we can delete afterwards
@@ -281,6 +297,8 @@ class ZipFileStorage implements IFileStorage
         if (!$this->zip->addFromString($storagePath, $contents)) {
             throw new FileStorageException("Unable to add contents into ZIP archive.", $this->archivePath);
         }
+
+        $this->setCompressionLevel($storagePath); // make sure proper compression level is selected
     }
 
     /**
@@ -366,6 +384,7 @@ class ZipFileStorage implements IFileStorage
                 $this->archivePath
             );
         }
+        $this->setCompressionLevel($dst); // make sure proper compression level is selected
     }
 
     public function extract(string $storagePath, string $localPath, bool $overwrite = false): void
