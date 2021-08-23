@@ -45,6 +45,27 @@ class ExercisePermissionPolicy implements IPermissionPolicy
         return false;
     }
 
+    public function isSubGroupMember(Identity $identity, Exercise $exercise)
+    {
+        $user = $identity->getUserData();
+
+        if (
+            $user === null || $exercise->getGroups()->isEmpty() ||
+            $exercise->isPublic() === false
+        ) {
+            return false;
+        }
+
+        /** @var Group $group */
+        foreach ($exercise->getGroups() as $group) {
+            if ($group->isMemberOfSubgroup($user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isSuperGroupAdmin(Identity $identity, Exercise $exercise)
     {
         $user = $identity->getUserData();

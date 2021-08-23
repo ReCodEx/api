@@ -497,7 +497,7 @@ permissions:
       conditions:
           or:
             - exercise.isAuthor
-            - exercise.isSubGroupSupervisor
+            - exercise.isSubGroupMember
             - exercise.isSuperGroupAdmin
 
     - allow: true # Admin of the group of an exercise has most of the rights to the exercise

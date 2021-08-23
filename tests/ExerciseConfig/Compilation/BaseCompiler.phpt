@@ -326,10 +326,8 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(20, $jobConfig->getTasksCount());
 
         /*
-     * Accessors
-     */
-        // check order of all tasks and right attributes
-        //
+         * check order of all tasks and right attributes
+         */
         $it = 0;
 
         $initiationMkdir = $jobConfig->getTasks()[0];

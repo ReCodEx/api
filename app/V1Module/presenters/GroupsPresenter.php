@@ -769,6 +769,7 @@ class GroupsPresenter extends BasePresenter
      * Get all exercises for a group
      * @GET
      * @param string $id Identifier of the group
+     * @DEPRECATED
      */
     public function actionExercises(string $id)
     {
