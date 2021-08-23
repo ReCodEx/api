@@ -11,7 +11,7 @@ use DateTime;
 /**
  * @ORM\Entity
  */
-class SolutionFile extends UploadedFile implements JsonSerializable
+class SolutionFile extends UploadedFile
 {
     /**
      * @ORM\ManyToOne(targetEntity="Solution")

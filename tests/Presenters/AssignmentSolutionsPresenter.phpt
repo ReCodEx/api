@@ -490,10 +490,6 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         );
     }
 
-    /*
-     * Accessors
-     */
-
     private function getSupervisorWhoIsNotAuthorOrSuperadmin(Assignment $assignment, AssignmentSolution $solution)
     {
         return $assignment->getGroup()->getSupervisors()->filter(
