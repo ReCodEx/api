@@ -14,7 +14,7 @@ use App\Helpers\Yaml;
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="solution_created_at_idx", columns={"created_at"})})
  */
-class Solution implements JsonSerializable
+class Solution
 {
     use CreateableEntity;
 
@@ -29,11 +29,6 @@ class Solution implements JsonSerializable
      * @ORM\ManyToOne(targetEntity="User")
      */
     protected $author;
-
-    public function getAuthor(): ?User
-    {
-        return $this->author->isDeleted() ? null : $this->author;
-    }
 
     /**
      * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
@@ -61,18 +56,6 @@ class Solution implements JsonSerializable
      * The subdir names are typically time-related (e.g., YYYY-MM) to optimize backup management.
      */
     protected $subdir;
-
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        return [
-            "userId" => $this->author->getId(),
-            "createdAt" => $this->createdAt->getTimestamp(),
-            "files" => $this->files->getValues()
-        ];
-    }
 
     /**
      * Constructor
@@ -141,6 +124,16 @@ class Solution implements JsonSerializable
     public function getId(): ?string
     {
         return $this->id;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author->isDeleted() ? null : $this->author;
+    }
+
+    public function getAuthorId(): ?string
+    {
+        return $this->author->isDeleted() ? null : $this->author->getId();
     }
 
     public function getFiles(): Collection
