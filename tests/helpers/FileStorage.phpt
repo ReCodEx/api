@@ -927,6 +927,35 @@ class TestFileStorage extends Tester\TestCase
         Assert::false($storage->fetch('bar.zip#foo.txt')->isZipArchive());
         Assert::true($storage->fetch('bar.zip#inner.zip')->isZipArchive());
     }
+
+    public function testGetZipEntries()
+    {
+        $storage = $this->prepareLocalStorage([
+            'bad.zip' => 'abc',
+            'foo.zip' => [ 'foo.txt' => 'abcde', 'bar.txt' => 'xyz' ],
+            'inner.zip' => [ 'foo.txt' => 'abcde', 'bar.txt' => 'xyz' ],
+        ]);
+        $storage->move('inner.zip', 'bar.zip#inner.zip');
+
+        Assert::equal([
+            [ 'name' => 'foo.txt', 'size' => 5 ],
+            [ 'name' => 'bar.txt', 'size' => 3 ],
+        ], $storage->fetch('foo.zip')->getZipEntries());
+
+        Assert::exception(
+            function () use ($storage) {
+                $storage->fetch('bar.zip#inner.zip')->getZipEntries();
+            },
+            FileStorageException::class
+        );
+
+        Assert::exception(
+            function () use ($storage) {
+                $storage->fetch('bad.zip')->getZipEntries();
+            },
+            FileStorageException::class
+        );
+    }
 }
 
 (new TestFileStorage())->run();

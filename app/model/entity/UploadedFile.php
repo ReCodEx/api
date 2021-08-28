@@ -89,6 +89,16 @@ class UploadedFile implements JsonSerializable
         $this->isPublic = $isPublic;
     }
 
+    /**
+     * Allows the entity to load extra data (via file manager) for extended serialization.
+     * Every entity must be serializable witout prior call to this method (at least in limitted way).
+     * @param FileStorageManager $manager the storage that retrieves the file
+     */
+    public function prepareExtendedSerializationData(FileStorageManager $manager): void
+    {
+        // intentionally empty, may be overriden by derived classes
+    }
+
     public function jsonSerialize()
     {
         return [

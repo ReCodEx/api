@@ -58,6 +58,12 @@ interface IImmutableFile
     public function isZipArchive(): bool;
 
     /**
+     * Returns the contents of a ZIP archive.
+     * @return array[] list of entries, each entry is an array with 'name' and 'size'.
+     */
+    public function getZipEntries(): array;
+
+    /**
      * Retrive the entire file and save it to local path.
      * @param string $path
      */

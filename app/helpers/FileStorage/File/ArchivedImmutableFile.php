@@ -168,6 +168,11 @@ class ArchivedImmutableFile implements IImmutableFile
         return $res === true;
     }
 
+    public function getZipEntries(): array
+    {
+        throw new FileStorageException("Nested ZIP files cannot be listed for entries.", $this->archivePath);
+    }
+
     public function saveAs(string $path): void
     {
         $zip = $this->openZip();

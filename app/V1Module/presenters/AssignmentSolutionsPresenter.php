@@ -520,6 +520,30 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $this->sendResponse(new StorageFileResponse($zipFile, "solution-{$id}.zip", "application/zip"));
     }
 
+    public function checkFiles(string $id)
+    {
+        $solution = $this->assignmentSolutions->findOrThrow($id);
+        if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+            throw new ForbiddenRequestException("You cannot access the solution files metadata");
+        }
+    }
+
+    /**
+     * Get the list of submitted files of the solution.
+     * @GET
+     * @param string $id of assignment solution
+     * @throws ForbiddenRequestException
+     * @throws NotFoundException
+     */
+    public function actionFiles(string $id)
+    {
+        $files = $this->assignmentSolutions->findOrThrow($id)->getSolution()->getFiles();
+        foreach ($files as $file) {
+            $file->prepareExtendedSerializationData($this->fileStorage);
+        }
+        $this->sendSuccessResponse($files);
+    }
+
     public function checkDownloadResultArchive(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);

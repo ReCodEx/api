@@ -306,6 +306,7 @@ class RouterFactory
         $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
         $router[] = new PostRoute("$prefix/<id>/resubmit", "ReferenceExerciseSolutions:resubmit");
         $router[] = new GetRoute("$prefix/<solutionId>/submissions", "ReferenceExerciseSolutions:submissions");
+        $router[] = new GetRoute("$prefix/<id>/files", "ReferenceExerciseSolutions:files");
         $router[] = new GetRoute(
             "$prefix/<solutionId>/download-solution",
             "ReferenceExerciseSolutions:downloadSolutionArchive"
@@ -342,6 +343,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAccepted");
         $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAccepted");
         $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
+        $router[] = new GetRoute("$prefix/<id>/files", "AssignmentSolutions:files");
         $router[] = new GetRoute("$prefix/<id>/download-solution", "AssignmentSolutions:downloadSolutionArchive");
 
         $router[] = new GetRoute("$prefix/submission/<submissionId>", "AssignmentSolutions:submission");

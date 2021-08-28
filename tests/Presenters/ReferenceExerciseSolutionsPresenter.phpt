@@ -582,6 +582,21 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal("results-" . $submission->getId() . '.zip', $response->getName());
     }
+
+    public function testGetSolutionFiles()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $solution = current($this->presenter->referenceSolutions->findAll());
+
+        $result = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            ['action' => 'files', 'id' => $solution->getId()]
+        );
+
+        Assert::same($solution->getSolution()->getFiles(), $result);
+    }
 }
 
 $testCase = new TestReferenceExerciseSolutionsPresenter();

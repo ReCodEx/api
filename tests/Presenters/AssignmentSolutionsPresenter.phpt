@@ -88,6 +88,21 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::same($solution->getId(), $result['payload']['id']);
     }
 
+    public function testGetSolutionFiles()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $solution = current($this->presenter->assignmentSolutions->findAll());
+
+        $result = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'files', 'id' => $solution->getId()]
+        );
+
+        Assert::same($solution->getSolution()->getFiles(), $result);
+    }
+
     public function testUpdateSolution()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
