@@ -124,6 +124,36 @@ class LocalImmutableFile implements IImmutableFile
         return $res === true;
     }
 
+    public function getZipEntries(): array
+    {
+        $zip = new ZipArchive();
+        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
+        $res = $zip->open($this->realPath);
+        if ($res !== true) {
+            throw new FileStorageException(
+                "Cannot list entries from a file which is not a ZIP archive.",
+                $this->realPath
+            );
+        }
+
+        // extract entries using the old fashion for-loop
+        $entries = [];
+        $count = $zip->count();
+        for ($i = 0; $i < $count; ++$i) {
+            $stat = $zip->statIndex($i);
+            if (!$stat) {
+                continue;
+            }
+            $entries[] = [
+                'name' => $stat['name'],
+                'size' => $stat['size'],
+            ];
+        }
+
+        $zip->close();
+        return $entries;
+    }
+
     public function saveAs(string $path): void
     {
         $this->checkExistence();

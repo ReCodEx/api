@@ -567,6 +567,30 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $this->sendResponse(new StorageFileResponse($zipFile, "reference-solution-{$solutionId}.zip", "application/zip"));
     }
 
+    public function checkFiles(string $id)
+    {
+        $solution = $this->referenceSolutions->findOrThrow($id);
+        if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
+            throw new ForbiddenRequestException("You cannot access the reference solution files metadata");
+        }
+    }
+
+    /**
+     * Get the list of submitted files of the solution.
+     * @GET
+     * @param string $id of reference solution
+     * @throws ForbiddenRequestException
+     * @throws NotFoundException
+     */
+    public function actionFiles(string $id)
+    {
+        $files = $this->referenceSolutions->findOrThrow($id)->getSolution()->getFiles();
+        foreach ($files as $file) {
+            $file->prepareExtendedSerializationData($this->fileStorage);
+        }
+        $this->sendSuccessResponse($files);
+    }
+
     public function checkDownloadResultArchive(string $submissionId)
     {
         /** @var ReferenceSolutionSubmission $submission */

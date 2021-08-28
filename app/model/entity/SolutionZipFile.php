@@ -13,7 +13,7 @@ use DateTime;
  * A special case of solution file which is used when the user submits single ZIP archive.
  * In such case it would be impractical to put it into another ZIP archive.
  */
-class SolutionZipFile extends SolutionFile
+class SolutionZipFile extends SolutionFile implements JsonSerializable
 {
     public function __construct($name, DateTime $uploadedAt, $fileSize, ?User $user, Solution $solution)
     {
@@ -34,5 +34,27 @@ class SolutionZipFile extends SolutionFile
     public function getFile(FileStorageManager $manager): ?IImmutableFile
     {
         return $manager->getSolutionFile($this->getSolution()); // this will return entire archive
+    }
+
+    private $zipEntries = null;
+
+    public function prepareExtendedSerializationData(FileStorageManager $manager): void
+    {
+        $file = $this->getFile($manager);
+        if ($file) {
+            $this->zipEntries = $file->getZipEntries();
+        }
+    }
+
+    /**
+     * Includes entries of the ZIP file (since the user might want to access them).
+     */
+    public function jsonSerialize()
+    {
+        $json = parent::jsonSerialize();
+        if ($this->zipEntries) {
+            $json['zipEntries'] = $this->zipEntries;
+        }
+        return $json;
     }
 }
