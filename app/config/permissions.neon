@@ -272,7 +272,7 @@ permissions:
       resource: user
       actions:
         - viewDetail
-      conditions: user.isSupervisorOfJoinedGroup
+      conditions: user.isReaderOfJoinedGroup
 
     - allow: true
       role: supervisor
@@ -317,14 +317,20 @@ permissions:
       actions:
           - viewDetail
           - viewDescription
+          - viewSubmissions
+          - viewAssignmentSolutions
+      conditions:
+          - assignment.isObserverOrBetter
+
+    - allow: true
+      resource: assignment
+      actions:
           - update
           - remove
           - submit
-          - viewSubmissions
           - resubmitSubmissions
-          - viewAssignmentSolutions
       conditions:
-          - assignment.isSupervisor
+          - assignment.isSupervisorOrAdmin
 
     - allow: true
       resource: group
@@ -399,16 +405,22 @@ permissions:
           - viewEvaluation
           - viewEvaluationDetails
           - viewEvaluationValues
-          - deleteEvaluation
           - viewResubmissions
+          - downloadResultArchive
+      conditions:
+          - assignmentSolution.isObserverOrBetter
+
+    - allow: true
+      resource: assignmentSolution
+      actions:
+          - deleteEvaluation
           - update
           - delete
           - setBonusPoints
           - setAccepted
           - setFlag
-          - downloadResultArchive
       conditions:
-          - assignmentSolution.isSupervisor
+          - assignmentSolution.isSupervisorOrAdmin
 
     - allow: true
       resource: assignmentSolution
@@ -416,7 +428,7 @@ permissions:
           - viewEvaluationJudgeStdout
       conditions:
           or:
-              - assignmentSolution.isSupervisor
+              - assignmentSolution.isObserverOrBetter
               - assignmentSolution.areJudgeStdoutsPublic
 
     - allow: true
@@ -425,7 +437,7 @@ permissions:
           - viewEvaluationJudgeStderr
       conditions:
           or:
-              - assignmentSolution.isSupervisor
+              - assignmentSolution.isObserverOrBetter
               - assignmentSolution.areJudgeStderrsPublic
 
     #######################
@@ -633,8 +645,8 @@ permissions:
           - viewDetail
       conditions:
           or:
-            - file.isSolutionInSupervisedGroup
-            - file.isReferenceSolutionInSupervisedSubGroup
+            - file.isSolutionInSupervisedOrObservedGroup
+            - file.isReferenceSolutionInSupervisedOrObserverdSubGroup
             - file.isPublic
             - file.isOwner
             - file.isRelatedToAssignment

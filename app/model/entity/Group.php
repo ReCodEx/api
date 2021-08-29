@@ -589,6 +589,26 @@ class Group
     }
 
     /**
+     * User is admin, supervisor, or observer of this group or any subgroup.
+     * @param User $user
+     * @return bool
+     */
+    public function isNonStudentMemberOfSubgroup(User $user): bool
+    {
+        if ($this->isAdminOf($user) || $this->isSupervisorOf($user) || $this->isObserverOf($user)) {
+            return true;
+        }
+
+        foreach ($this->getChildGroups() as $childGroup) {
+            if ($childGroup->isNonStudentMemberOfSubgroup($user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @ORM\OneToMany(targetEntity="Assignment", mappedBy="group")
      */
     protected $assignments;
