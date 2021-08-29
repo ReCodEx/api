@@ -36,6 +36,11 @@ class SolutionZipFile extends SolutionFile implements JsonSerializable
         return $manager->getSolutionFile($this->getSolution()); // this will return entire archive
     }
 
+    public function getNestedFile(FileStorageManager $manager, string $entryName): ?IImmutableFile
+    {
+        return $manager->getSolutionFile($this->getSolution(), $entryName);
+    }
+
     private $zipEntries = null;
 
     public function prepareExtendedSerializationData(FileStorageManager $manager): void

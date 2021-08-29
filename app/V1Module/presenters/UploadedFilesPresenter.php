@@ -9,6 +9,7 @@ use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\FrontendErrorMappings;
+use App\Helpers\FileStorage\FileStorageException;
 use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
@@ -17,6 +18,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\UploadedPartialFiles;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
+use App\Model\Entity\SolutionZipFile;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use App\Security\ACL\IUploadedPartialFilePermissions;
@@ -120,17 +122,34 @@ class UploadedFilesPresenter extends BasePresenter
      * Download a file
      * @GET
      * @param string $id Identifier of the file
+     * @Param(type="query", name="entry", required=false, validation="string:1..",
+     *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
      * @throws \Nette\Application\AbortException
      * @throws \Nette\Application\BadRequestException
      */
-    public function actionDownload(string $id)
+    public function actionDownload(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
-        $file = $fileEntity->getFile($this->fileStorage);
+        if ($entry && $fileEntity instanceof SolutionZipFile) {
+            try {
+                $file = $fileEntity->getNestedFile($this->fileStorage, $entry);
+                $name = basename($entry);
+            } catch (FileStorageException $ex) {
+                throw new NotFoundException(
+                    "File not found in the storage",
+                    FrontendErrorMappings::E404_000__NOT_FOUND,
+                    [ 'entry' => $entry ],
+                    $ex
+                );
+            }
+        } else {
+            $file = $fileEntity->getFile($this->fileStorage);
+            $name = $fileEntity->getName();
+        }
         if (!$file) {
             throw new NotFoundException("File not found in the storage");
         }
-        $this->sendResponse(new StorageFileResponse($file, $fileEntity->getName()));
+        $this->sendResponse(new StorageFileResponse($file, $name));
     }
 
     public function checkContent(string $id)
@@ -145,11 +164,28 @@ class UploadedFilesPresenter extends BasePresenter
      * Get the contents of a file
      * @GET
      * @param string $id Identifier of the file
+     * @Param(type="query", name="entry", required=false, validation="string:1..",
+     *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
      */
-    public function actionContent(string $id)
+    public function actionContent(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
-        $file = $fileEntity->getFile($this->fileStorage);
+        if ($entry && $fileEntity instanceof SolutionZipFile) {
+            try {
+                $file = $fileEntity->getNestedFile($this->fileStorage, $entry);
+                $size = $file->getSize();
+            } catch (FileStorageException $ex) {
+                throw new NotFoundException(
+                    "File not found in the storage",
+                    FrontendErrorMappings::E404_000__NOT_FOUND,
+                    [ 'entry' => $entry ],
+                    $ex
+                );
+            }
+        } else {
+            $file = $fileEntity->getFile($this->fileStorage);
+            $size = $fileEntity->getFileSize();
+        }
         if (!$file) {
             throw new NotFoundException("File not found in the storage");
         }
@@ -167,7 +203,7 @@ class UploadedFilesPresenter extends BasePresenter
             [
                 "content" => $fixedContents,
                 "malformedCharacters" => $fixedContents !== $contents,
-                "tooLarge" => $fileEntity->getFileSize() > $sizeLimit,
+                "tooLarge" => $size > $sizeLimit,
             ]
         );
     }
