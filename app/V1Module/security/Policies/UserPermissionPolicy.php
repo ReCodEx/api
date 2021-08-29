@@ -55,9 +55,9 @@ class UserPermissionPolicy implements IPermissionPolicy
     }
 
     /**
-     * Logged user is supervisor of any group of which the tested user is member.
+     * Logged user is supervisor, observer, or admin of any group of which the tested user is member.
      */
-    public function isSupervisorOfJoinedGroup(Identity $identity, User $user): bool
+    public function isReaderOfJoinedGroup(Identity $identity, User $user): bool
     {
         $currentUser = $identity->getUserData();
         if ($currentUser === null) {
@@ -65,7 +65,7 @@ class UserPermissionPolicy implements IPermissionPolicy
         }
 
         foreach ($user->getGroupsAsStudent() as $group) {
-            if ($group->isSupervisorOf($currentUser) || $group->isAdminOf($currentUser)) {
+            if ($group->isSupervisorOf($currentUser) || $group->isObserverOf($currentUser) || $group->isAdminOf($currentUser)) {
                 return true;
             }
         }

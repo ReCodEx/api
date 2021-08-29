@@ -595,7 +595,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
             ['action' => 'files', 'id' => $solution->getId()]
         );
 
-        Assert::same($solution->getSolution()->getFiles(), $result);
+        Assert::same($solution->getSolution()->getFiles()->toArray(), $result);
     }
 }
 

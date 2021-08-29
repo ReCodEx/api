@@ -103,7 +103,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         return $file->getUser() && $file->getUser()->getId() === $user->getId();
     }
 
-    public function isReferenceSolutionInSupervisedSubGroup(Identity $identity, UploadedFile $file)
+    public function isReferenceSolutionInSupervisedOrObserverdSubGroup(Identity $identity, UploadedFile $file)
     {
         $user = $identity->getUserData();
         if ($user === null) {
@@ -112,7 +112,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
 
         $groups = $this->files->findGroupsForReferenceSolutionFile($file);
         foreach ($groups as $group) {
-            if ($group->isAdminOrSupervisorOfSubgroup($user)) {
+            if ($group->isNonStudentMemberOfSubgroup($user)) {
                 return true;
             }
         }
@@ -120,7 +120,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         return false;
     }
 
-    public function isSolutionInSupervisedGroup(Identity $identity, UploadedFile $file)
+    public function isSolutionInSupervisedOrObservedGroup(Identity $identity, UploadedFile $file)
     {
         $user = $identity->getUserData();
         if ($user === null) {
@@ -128,7 +128,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         }
 
         $group = $this->files->findGroupForSolutionFile($file);
-        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $group && ($group->isObserverOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user));
     }
 
     public function isRelatedToAssignment(Identity $identity, UploadedFile $file)

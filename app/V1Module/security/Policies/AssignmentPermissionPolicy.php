@@ -36,7 +36,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
         return $assignment->getGroup() && $assignment->getGroup()->isMemberOf($user);
     }
 
-    public function isSupervisor(Identity $identity, Assignment $assignment)
+    public function isSupervisorOrAdmin(Identity $identity, Assignment $assignment)
     {
         $group = $assignment->getGroup();
         $user = $identity->getUserData();
@@ -46,5 +46,17 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
         }
 
         return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+    }
+
+    public function isObserverOrBetter(Identity $identity, Assignment $assignment)
+    {
+        $group = $assignment->getGroup();
+        $user = $identity->getUserData();
+
+        if ($user === null) {
+            return false;
+        }
+
+        return $group && ($group->isObserverOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user));
     }
 }
