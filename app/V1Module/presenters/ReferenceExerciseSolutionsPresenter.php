@@ -588,7 +588,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         foreach ($files as $file) {
             $file->prepareExtendedSerializationData($this->fileStorage);
         }
-        $this->sendSuccessResponse($files);
+        $this->sendSuccessResponse($files->toArray());
     }
 
     public function checkDownloadResultArchive(string $submissionId)
