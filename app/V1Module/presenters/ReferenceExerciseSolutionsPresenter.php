@@ -18,6 +18,7 @@ use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
+use App\Helpers\ExerciseConfig\Pipeline\Box\ExecutionBox;
 use App\Helpers\FailureHelper;
 use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
@@ -584,11 +585,21 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      */
     public function actionFiles(string $id)
     {
-        $files = $this->referenceSolutions->findOrThrow($id)->getSolution()->getFiles();
-        foreach ($files as $file) {
+        $solution = $this->referenceSolutions->findOrThrow($id)->getSolution();
+        $entryPoint = $solution->getSolutionParams()->getVariable(ExecutionBox::$ENTRY_POINT_KEY);
+        $entryPoint = $entryPoint ? $entryPoint->getValue() : null;
+
+        $files = $solution->getFiles()->toArray();
+        foreach ($files as &$file) {
             $file->prepareExtendedSerializationData($this->fileStorage);
+            $file = $file->jsonSerialize();
+            if ($file["name"] === $entryPoint) {
+                $file["isEntryPoint"] = true;
+            }
         }
-        $this->sendSuccessResponse($files->toArray());
+        unset($file);
+
+        $this->sendSuccessResponse($files);
     }
 
     public function checkDownloadResultArchive(string $submissionId)

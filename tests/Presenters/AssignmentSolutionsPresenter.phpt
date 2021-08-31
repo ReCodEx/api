@@ -91,7 +91,13 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     public function testGetSolutionFiles()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-        $solution = current($this->presenter->assignmentSolutions->findAll());
+        $solution = current(array_filter(
+            $this->presenter->assignmentSolutions->findAll(),
+            function ($sol) {
+                return !$sol->getSolution()->getFiles()->isEmpty();
+            }
+        ));
+        Assert::truthy($solution);
 
         $result = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -100,7 +106,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             ['action' => 'files', 'id' => $solution->getId()]
         );
 
-        Assert::same($solution->getSolution()->getFiles()->toArray(), $result);
+        Assert::same(json_encode($solution->getSolution()->getFiles()->toArray()), json_encode($result));
     }
 
     public function testUpdateSolution()
