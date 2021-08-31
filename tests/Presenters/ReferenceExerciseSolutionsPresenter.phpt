@@ -14,6 +14,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\SolutionFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
@@ -587,6 +588,10 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $solution = current($this->presenter->referenceSolutions->findAll());
+        Assert::truthy($solution);
+        $file = new SolutionFile("source.py", new DateTime(), 123, $solution->getSolution()->getAuthor(), $solution->getSolution());
+        $this->presenter->files->persist($file);
+        Assert::false($solution->getSolution()->getFiles()->isEmpty());
 
         $result = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -595,7 +600,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
             ['action' => 'files', 'id' => $solution->getId()]
         );
 
-        Assert::same($solution->getSolution()->getFiles()->toArray(), $result);
+        Assert::same(json_encode($solution->getSolution()->getFiles()->toArray()), json_encode($result));
     }
 }
 
