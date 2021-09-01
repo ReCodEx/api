@@ -417,6 +417,7 @@ services:
   - App\Model\View\ShadowAssignmentViewFactory
   - App\Model\View\PipelineViewFactory
   - App\Model\View\InstanceViewFactory
+  - App\Model\View\SolutionFilesViewFactory
 
 nettrine.dbal:
   debug:

@@ -12,7 +12,6 @@ use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileStorageManager;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Helpers\Validators;
-use App\Helpers\ExerciseConfig\Pipeline\Box\ExecutionBox;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
@@ -20,6 +19,7 @@ use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\SolutionFilesViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -77,6 +77,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutionViewFactory;
+
+    /**
+     * @var SolutionFilesViewFactory
+     * @inject
+     */
+    public $solutionFilesViewFactory;
 
     /**
      * @var AssignmentSolutionSubmissionViewFactory
@@ -539,20 +545,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public function actionFiles(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id)->getSolution();
-        $entryPoint = $solution->getSolutionParams()->getVariable(ExecutionBox::$ENTRY_POINT_KEY);
-        $entryPoint = $entryPoint ? $entryPoint->getValue() : null;
-
-        $files = $solution->getFiles()->toArray();
-        foreach ($files as &$file) {
-            $file->prepareExtendedSerializationData($this->fileStorage);
-            $file = $file->jsonSerialize();
-            if ($file["name"] === $entryPoint) {
-                $file["isEntryPoint"] = true;
-            }
-        }
-        unset($file);
-
-        $this->sendSuccessResponse($files);
+        $this->sendSuccessResponse($this->solutionFilesViewFactory->getSolutionFilesData($solution));
     }
 
     public function checkDownloadResultArchive(string $submissionId)
