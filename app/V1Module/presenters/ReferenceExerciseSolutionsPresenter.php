@@ -18,7 +18,6 @@ use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
-use App\Helpers\ExerciseConfig\Pipeline\Box\ExecutionBox;
 use App\Helpers\FailureHelper;
 use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
@@ -40,6 +39,7 @@ use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\ReferenceExerciseSolutionViewFactory;
+use App\Model\View\SolutionFilesViewFactory;
 use App\Responses\StorageFileResponse;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IReferenceExerciseSolutionPermissions;
@@ -134,6 +134,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $referenceSolutionViewFactory;
+
+    /**
+     * @var SolutionFilesViewFactory
+     * @inject
+     */
+    public $solutionFilesViewFactory;
 
     /**
      * @var IReferenceExerciseSolutionPermissions
@@ -586,20 +592,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function actionFiles(string $id)
     {
         $solution = $this->referenceSolutions->findOrThrow($id)->getSolution();
-        $entryPoint = $solution->getSolutionParams()->getVariable(ExecutionBox::$ENTRY_POINT_KEY);
-        $entryPoint = $entryPoint ? $entryPoint->getValue() : null;
-
-        $files = $solution->getFiles()->toArray();
-        foreach ($files as &$file) {
-            $file->prepareExtendedSerializationData($this->fileStorage);
-            $file = $file->jsonSerialize();
-            if ($file["name"] === $entryPoint) {
-                $file["isEntryPoint"] = true;
-            }
-        }
-        unset($file);
-
-        $this->sendSuccessResponse($files);
+        $this->sendSuccessResponse($this->solutionFilesViewFactory->getSolutionFilesData($solution));
     }
 
     public function checkDownloadResultArchive(string $submissionId)

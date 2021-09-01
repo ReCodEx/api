@@ -40,26 +40,4 @@ class SolutionZipFile extends SolutionFile implements JsonSerializable
     {
         return $manager->getSolutionFile($this->getSolution(), $entryName);
     }
-
-    private $zipEntries = null;
-
-    public function prepareExtendedSerializationData(FileStorageManager $manager): void
-    {
-        $file = $this->getFile($manager);
-        if ($file) {
-            $this->zipEntries = $file->getZipEntries();
-        }
-    }
-
-    /**
-     * Includes entries of the ZIP file (since the user might want to access them).
-     */
-    public function jsonSerialize()
-    {
-        $json = parent::jsonSerialize();
-        if ($this->zipEntries) {
-            $json['zipEntries'] = $this->zipEntries;
-        }
-        return $json;
-    }
 }
