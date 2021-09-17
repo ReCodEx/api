@@ -198,7 +198,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
         $solution = $result['payload']['solution'];
         Assert::type('array', $solution);
-        Assert::equal($assignment->getId(), $solution['exerciseAssignmentId']);
+        Assert::equal($assignment->getId(), $solution['assignmentId']);
 
         $submission = $result['payload']['submission'];
         Assert::type('array', $submission);
