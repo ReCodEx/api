@@ -251,6 +251,7 @@ class RouterFactory
 
         $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");
         $router[] = new GetRoute("$prefix/<id>/students/<userId>", "Groups:studentsStats");
+        $router[] = new GetRoute("$prefix/<id>/students/<userId>/solutions", "Groups:studentsSolutions");
         $router[] = new PostRoute("$prefix/<id>/students/<userId>", "Groups:addStudent");
         $router[] = new DeleteRoute("$prefix/<id>/students/<userId>", "Groups:removeStudent");
 

@@ -821,6 +821,42 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::true(array_key_exists("passesLimit", $payload));
     }
 
+    public function testStudentsSolutions()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $solution = current($this->presenter->assignmentSolutions->findAll());
+        $user = $solution->getSolution()->getAuthor();
+        $group = $solution->getAssignment()->getGroup();
+        $solutions = array_filter($this->presenter->assignmentSolutions->findAll(), function ($s) use ($user, $group) {
+            return $s->getSolution()->getAuthor()->getId() === $user->getId()
+                && $s->getAssignment()->getGroup()->getId() === $group->getId();
+        });
+        Assert::true(count($solutions) > 0);
+        $solutionsIds = array_map(function ($s) {
+            return $s->getId();
+        }, $solutions);
+        sort($solutionsIds);
+
+        $request = new Nette\Application\Request(
+            'V1:Groups',
+            'GET',
+            ['action' => 'studentsSolutions', 'id' => $group->getId(), 'userId' => $user->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::count(count($solutions), $result['payload']);
+
+        $payloadIds = array_map(function ($r) {
+            return $r['id'];
+        }, $result['payload']);
+        sort($payloadIds);
+        Assert::same($solutionsIds, $payloadIds);
+    }
+
     public function testAddSupervisor()
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);

@@ -15,16 +15,20 @@ use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\GroupMembership;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\View\ExerciseViewFactory;
 use App\Model\View\AssignmentViewFactory;
+use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -66,6 +70,12 @@ class GroupsPresenter extends BasePresenter
     public $groupMemberships;
 
     /**
+     * @var AssignmentSolutions
+     * @inject
+     */
+    public $assignmentSolutions;
+
+    /**
      * @var IGroupPermissions
      * @inject
      */
@@ -82,6 +92,13 @@ class GroupsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentAcl;
+
+    /**
+     * @var IAssignmentSolutionPermissions
+     * @inject
+     */
+    public $assignmentSolutionAcl;
+
 
     /**
      * @var IShadowAssignmentPermissions
@@ -124,6 +141,12 @@ class GroupsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentViewFactory;
+
+    /**
+     * @var AssignmentSolutionViewFactory
+     * @inject
+     */
+    public $solutionsViewFactory;
 
     /**
      * @var ShadowAssignmentViewFactory
@@ -850,6 +873,47 @@ class GroupsPresenter extends BasePresenter
         }
 
         $this->sendSuccessResponse($this->groupViewFactory->getStudentsStats($group, $user));
+    }
+
+    public function checkStudentsSolutions(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+        $group = $this->groups->findOrThrow($id);
+
+        // actually studentStats permission is like a soft pre-condition, the solutions are filtered individually
+        if (!$this->groupAcl->canViewAssignments($group) || !$this->groupAcl->canViewStudentStats($group, $user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Get all solutions of a single student from all assignments in a group
+     * @GET
+     * @param string $id Identifier of the group
+     * @param string $userId Identifier of the student
+     * @throws BadRequestException
+     */
+    public function actionStudentsSolutions(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+        $group = $this->groups->findOrThrow($id);
+
+        if ($group->isStudentOf($user) === false) {
+            throw new BadRequestException("User $userId is not student of $id");
+        }
+
+        $allSolutions = $this->assignmentSolutions->findGroupSolutionsOfStudent($group, $user);
+        $bestSolutions = $this->assignmentSolutions->filterBestSolutions($allSolutions);
+        $solutions = array_filter(
+            $allSolutions,
+            function (AssignmentSolution $solution) {
+                return $this->assignmentSolutionAcl->canViewDetail($solution);
+            }
+        );
+
+        $this->sendSuccessResponse(
+            $this->solutionsViewFactory->getUserSolutionsData($solutions, $bestSolutions)
+        );
     }
 
     public function checkAddStudent(string $id, string $userId)

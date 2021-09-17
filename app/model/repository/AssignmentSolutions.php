@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
+use App\Model\Entity\Group;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
 
@@ -56,6 +57,22 @@ class AssignmentSolutions extends BaseRepository
     {
         $solutions = $this->findBestUserSolutionsForAssignments([$assignment], $user);
         return Arrays::get($solutions, $assignment->getId(), null);
+    }
+
+    /**
+     * Get all solutions of a student from all assignments in a group.
+     */
+    public function findGroupSolutionsOfStudent(Group $group, User $user): array
+    {
+        $qb = $this->createQueryBuilder("asol");
+        $qb->leftJoin("asol.solution", "sol")
+            ->leftJoin("asol.assignment", "ass")
+            ->andWhere($qb->expr()->eq("sol.author", ":author"))
+            ->andWhere($qb->expr()->eq("ass.group", ":group"))
+            ->setParameter("author", $user->getId())
+            ->setParameter("group", $group->getId())
+            ->orderBy("sol.createdAt", "DESC");
+        return $qb->getQuery()->getResult();
     }
 
     /**

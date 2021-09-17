@@ -6,6 +6,8 @@ use App\Helpers\PermissionHints;
 use App\Model\Repository\Comments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\Group;
+use App\Model\Entity\User;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\UserStorage;
 use App\Exceptions\InternalServerException;
@@ -110,7 +112,7 @@ class AssignmentSolutionViewFactory
         return [
             "id" => $solution->getId(),
             "note" => $solution->getNote(),
-            "exerciseAssignmentId" => $solution->getAssignment() ? $solution->getAssignment()->getId() : null,
+            "assignmentId" => $solution->getAssignment() ? $solution->getAssignment()->getId() : null,
             "authorId" => $solution->getSolution()->getAuthorId(),
             "createdAt" => $solution->getSolution()->getCreatedAt()->getTimestamp(),
             "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
