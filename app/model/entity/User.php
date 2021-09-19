@@ -25,16 +25,16 @@ class User
         string $email,
         string $firstName,
         string $lastName,
-        string $degreesBeforeName,
-        string $degreesAfterName,
+        string $titlesBeforeName,
+        string $titlesAfterName,
         ?string $role,
         Instance $instance,
         bool $instanceAdmin = false
     ) {
         $this->firstName = $firstName;
         $this->lastName = $lastName;
-        $this->degreesBeforeName = $degreesBeforeName;
-        $this->degreesAfterName = $degreesAfterName;
+        $this->titlesBeforeName = $titlesBeforeName;
+        $this->titlesAfterName = $titlesAfterName;
         $this->email = $email;
         $this->isVerified = false;
         $this->isAllowed = true;
@@ -69,7 +69,7 @@ class User
     /**
      * @ORM\Column(type="string")
      */
-    protected $degreesBeforeName;
+    protected $titlesBeforeName;
 
     /**
      * @ORM\Column(type="string")
@@ -83,13 +83,13 @@ class User
 
     public function getName()
     {
-        return trim("{$this->degreesBeforeName} {$this->firstName} {$this->lastName} {$this->degreesAfterName}");
+        return trim("{$this->titlesBeforeName} {$this->firstName} {$this->lastName} {$this->titlesAfterName}");
     }
 
     /**
      * @ORM\Column(type="string")
      */
-    protected $degreesAfterName;
+    protected $titlesAfterName;
 
     /**
      * @ORM\Column(type="string")
@@ -308,10 +308,10 @@ class User
     public function getNameParts(): array
     {
         return [
-            "degreesBeforeName" => $this->degreesBeforeName,
+            "titlesBeforeName" => $this->titlesBeforeName,
             "firstName" => $this->firstName,
             "lastName" => $this->lastName,
-            "degreesAfterName" => $this->degreesAfterName,
+            "titlesAfterName" => $this->titlesAfterName,
         ];
     }
 
@@ -477,14 +477,14 @@ class User
         $this->lastName = $lastName;
     }
 
-    public function setDegreesBeforeName(string $degreesBeforeName): void
+    public function setTitlesBeforeName(string $titlesBeforeName): void
     {
-        $this->degreesBeforeName = $degreesBeforeName;
+        $this->titlesBeforeName = $titlesBeforeName;
     }
 
-    public function setDegreesAfterName(string $degreesAfterName): void
+    public function setTitlesAfterName(string $titlesAfterName): void
     {
-        $this->degreesAfterName = $degreesAfterName;
+        $this->titlesAfterName = $titlesAfterName;
     }
 
     public function setRole(string $role): void

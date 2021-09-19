@@ -25,11 +25,11 @@ final class UserData
     /** @var string Last name of user */
     private $lastName;
 
-    /** @var string Degrees before user's name' */
-    private $degreesBeforeName = '';
+    /** @var string Titles before user's name' */
+    private $titlesBeforeName = '';
 
-    /** @var string Degrees after user's name */
-    private $degreesAfterName = '';
+    /** @var string Titles after user's name */
+    private $titlesAfterName = '';
 
     /** @var string Email address of user */
     private $mail;
@@ -94,8 +94,8 @@ final class UserData
             $this->mail,
             $this->firstName,
             $this->lastName,
-            $this->degreesBeforeName,
-            $this->degreesAfterName,
+            $this->titlesBeforeName,
+            $this->titlesAfterName,
             $this->role,
             $instance
         );

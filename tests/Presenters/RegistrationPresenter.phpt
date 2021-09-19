@@ -93,8 +93,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $password = "password";
         $instances = $this->instances->findAll();
         $instanceId = array_pop($instances)->getId();
-        $degreesBeforeName = "degreesBeforeName";
-        $degreesAfterName = "degreesAfterName";
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
@@ -107,8 +107,8 @@ class TestRegistrationPresenter extends Tester\TestCase
                 'password' => $password,
                 'passwordConfirm' => $password,
                 'instanceId' => $instanceId,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
             ]
         );
         $response = $this->presenter->run($request);
@@ -122,7 +122,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
         // check created user
         $user = $result["payload"]["user"];
-        Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $user["fullName"]);
+        Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $user["fullName"]);
         Assert::equal($email, $user["privateData"]["email"]);
 
         // check created login
@@ -140,8 +140,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $instances = $this->instances->findAll();
         $instance = array_pop($instances);
         $instanceId = $instance->getId();
-        $degreesBeforeName = "degreesBeforeName";
-        $degreesAfterName = "degreesAfterName";
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
         $groupId = $instance->getGroups()->filter(
             function (Group $group) {
                 return !$group->isArchived() && !$group->isOrganizational();
@@ -159,8 +159,8 @@ class TestRegistrationPresenter extends Tester\TestCase
                 'password' => $password,
                 'passwordConfirm' => $password,
                 'instanceId' => $instanceId,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
             ]
         );
         $this->presenter->registrationConfig = new RegistrationConfig(
@@ -180,7 +180,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
         // check created user
         $user = $result["payload"]["user"];
-        Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $user["fullName"]);
+        Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $user["fullName"]);
         Assert::equal($email, $user["privateData"]["email"]);
 
         // check created login
@@ -201,8 +201,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $lastName = "lastName";
         $password = "password";
         $instanceId = "bla bla bla random string";
-        $degreesBeforeName = "degreesBeforeName";
-        $degreesAfterName = "degreesAfterName";
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
@@ -215,8 +215,8 @@ class TestRegistrationPresenter extends Tester\TestCase
                 'password' => $password,
                 'passwordConfirm' => $password,
                 'instanceId' => $instanceId,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
             ]
         );
         $this->presenter->registrationConfig = new RegistrationConfig(
@@ -240,8 +240,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $lastName = "lastName";
         $password = "password";
         $instanceId = "bla bla bla random string";
-        $degreesBeforeName = "degreesBeforeName";
-        $degreesAfterName = "degreesAfterName";
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
@@ -254,8 +254,8 @@ class TestRegistrationPresenter extends Tester\TestCase
                 'password' => $password,
                 'passwordConfirm' => $password,
                 'instanceId' => $instanceId,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
             ]
         );
 
@@ -277,8 +277,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $passwordConfirm = "passwordConfirm";
         $instances = $this->instances->findAll();
         $instanceId = array_pop($instances)->getId();
-        $degreesBeforeName = "degreesBeforeName";
-        $degreesAfterName = "degreesAfterName";
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
@@ -291,8 +291,8 @@ class TestRegistrationPresenter extends Tester\TestCase
                 'password' => $password,
                 'passwordConfirm' => $passwordConfirm,
                 'instanceId' => $instanceId,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
             ]
         );
 
@@ -311,8 +311,8 @@ class TestRegistrationPresenter extends Tester\TestCase
         $lastName = "lastName";
         $password = "password";
         $instanceId = "bla bla bla random string";
-        $degreesBeforeName = "degreesBeforeName";
-        $degreesAfterName = "degreesAfterName";
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
@@ -325,8 +325,8 @@ class TestRegistrationPresenter extends Tester\TestCase
                 'password' => $password,
                 'passwordConfirm' => $password,
                 'instanceId' => $instanceId,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
             ]
         );
 

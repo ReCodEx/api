@@ -229,8 +229,8 @@ class TestUsersPresenter extends Tester\TestCase
 
         $firstName = "firstNameUpdated";
         $lastName = "lastNameUpdated";
-        $degreesBeforeName = "degreesBeforeNameUpdated";
-        $degreesAfterName = "degreesAfterNameUpdated";
+        $titlesBeforeName = "titlesBeforeNameUpdated";
+        $titlesAfterName = "titlesAfterNameUpdated";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
@@ -239,8 +239,8 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'firstName' => $firstName,
                 'lastName' => $lastName,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName,
                 'gravatarUrlEnabled' => false
             ]
         );
@@ -251,7 +251,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
 
         $updatedUser = $result["payload"]["user"];
-        Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
+        Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $updatedUser["fullName"]);
         Assert::null($updatedUser["avatarUrl"]);
 
         $storedUpdatedUser = $this->users->get($user->getId());
@@ -265,8 +265,8 @@ class TestUsersPresenter extends Tester\TestCase
 
         $firstName = "firstNameUpdated";
         $lastName = "lastNameUpdated";
-        $degreesBeforeName = "degreesBeforeNameUpdated";
-        $degreesAfterName = "degreesAfterNameUpdated";
+        $titlesBeforeName = "titlesBeforeNameUpdated";
+        $titlesAfterName = "titlesAfterNameUpdated";
         $email = "new-email@recodex.mff.cuni.cz";
 
         $emailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
@@ -280,8 +280,8 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'firstName' => $firstName,
                 'lastName' => $lastName,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName,
                 'email' => $email,
                 'gravatarUrlEnabled' => false
             ]
@@ -293,7 +293,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
 
         $updatedUser = $result["payload"]["user"];
-        Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
+        Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $updatedUser["fullName"]);
         Assert::equal($email, $updatedUser["privateData"]["email"]);
         Assert::null($updatedUser["avatarUrl"]);
 
@@ -309,8 +309,8 @@ class TestUsersPresenter extends Tester\TestCase
 
         $firstName = "firstNameUpdated";
         $lastName = "lastNameUpdated";
-        $degreesBeforeName = "degreesBeforeNameUpdated";
-        $degreesAfterName = "degreesAfterNameUpdated";
+        $titlesBeforeName = "titlesBeforeNameUpdated";
+        $titlesAfterName = "titlesAfterNameUpdated";
         $oldPassword = "admin";
         $password = "newPassword";
         $passwordConfirm = "newPassword";
@@ -322,8 +322,8 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'firstName' => $firstName,
                 'lastName' => $lastName,
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName,
                 'oldPassword' => $oldPassword,
                 'password' => $password,
                 'passwordConfirm' => $passwordConfirm,
@@ -337,7 +337,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
 
         $updatedUser = $result["payload"]["user"];
-        Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
+        Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $updatedUser["fullName"]);
         Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
         Assert::null($updatedUser["avatarUrl"]);
 
@@ -357,8 +357,8 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'firstName' => "firstNameUpdated",
                 'lastName' => "lastNameUpdated",
-                'degreesBeforeName' => "degreesBeforeNameUpdated",
-                'degreesAfterName' => "degreesAfterNameUpdated",
+                'titlesBeforeName' => "titlesBeforeNameUpdated",
+                'titlesAfterName' => "titlesAfterNameUpdated",
                 'oldPassword' => "admin",
                 'passwordConfirm' => "newPassword",
                 'gravatarUrlEnabled' => false
@@ -385,8 +385,8 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'firstName' => "firstNameUpdated",
                 'lastName' => "lastNameUpdated",
-                'degreesBeforeName' => "degreesBeforeNameUpdated",
-                'degreesAfterName' => "degreesAfterNameUpdated",
+                'titlesBeforeName' => "titlesBeforeNameUpdated",
+                'titlesAfterName' => "titlesAfterNameUpdated",
                 'oldPassword' => "admin",
                 'password' => "newPassword",
                 'gravatarUrlEnabled' => false
@@ -406,16 +406,16 @@ class TestUsersPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-        $degreesBeforeName = "degreesBeforeNameUpdated";
-        $degreesAfterName = "degreesAfterNameUpdated";
+        $titlesBeforeName = "titlesBeforeNameUpdated";
+        $titlesAfterName = "titlesAfterNameUpdated";
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
-                'degreesBeforeName' => $degreesBeforeName,
-                'degreesAfterName' => $degreesAfterName,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName,
                 'gravatarUrlEnabled' => true
             ]
         );
@@ -428,7 +428,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         $updatedUser = $result["payload"]["user"];
         Assert::equal(
-            "$degreesBeforeName {$user->getFirstName()} {$user->getLastName()} $degreesAfterName",
+            "$titlesBeforeName {$user->getFirstName()} {$user->getLastName()} $titlesAfterName",
             $updatedUser["fullName"]
         );
         Assert::true($updatedUser["avatarUrl"] !== null);
@@ -446,8 +446,8 @@ class TestUsersPresenter extends Tester\TestCase
             'POST',
             ['action' => 'updateProfile', 'id' => $user->getId()],
             [
-                'degreesBeforeName' => '',
-                'degreesAfterName' => '',
+                'titlesBeforeName' => '',
+                'titlesAfterName' => '',
                 'gravatarUrlEnabled' => false,
                 'password' => $newPassword,
                 'passwordConfirm' => $newPassword,
@@ -475,8 +475,8 @@ class TestUsersPresenter extends Tester\TestCase
                     'POST',
                     ['action' => 'updateProfile', 'id' => $user->getId()],
                     [
-                        'degreesBeforeName' => '',
-                        'degreesAfterName' => '',
+                        'titlesBeforeName' => '',
+                        'titlesAfterName' => '',
                         'gravatarUrlEnabled' => false,
                         'password' => $newPassword,
                         'passwordConfirm' => $newPassword,

@@ -216,8 +216,8 @@ class UsersPresenter extends BasePresenter
      * @throws InvalidArgumentException
      * @Param(type="post", name="firstName", required=false, validation="string:2..", description="First name")
      * @Param(type="post", name="lastName", required=false, validation="string:2..", description="Last name")
-     * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
-     * @Param(type="post", name="degreesAfterName", description="Degrees after name")
+     * @Param(type="post", name="titlesBeforeName", description="Titles before name")
+     * @Param(type="post", name="titlesAfterName", description="Titles after name")
      * @Param(type="post", name="email", validation="email", description="New email address", required=false)
      * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
      * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
@@ -244,8 +244,8 @@ class UsersPresenter extends BasePresenter
             $req->getPost("passwordConfirm")
         );
 
-        $user->setDegreesBeforeName($req->getPost("degreesBeforeName"));
-        $user->setDegreesAfterName($req->getPost("degreesAfterName"));
+        $user->setTitlesBeforeName($req->getPost("titlesBeforeName"));
+        $user->setTitlesAfterName($req->getPost("titlesAfterName"));
         $user->setGravatar(filter_var($req->getPost("gravatarUrlEnabled"), FILTER_VALIDATE_BOOLEAN));
 
         // make changes permanent

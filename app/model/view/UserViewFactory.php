@@ -78,6 +78,8 @@ class UserViewFactory
             $privateData = [
                 "email" => $user->getEmail(),
                 "createdAt" => $user->getCreatedAt()->getTimestamp(),
+                "lastAuthenticationAt" => $user->getLastAuthenticationAt()
+                    ? $user->getLastAuthenticationAt()->getTimestamp() : null,
                 "instancesIds" => $user->getInstancesIds(),
                 "role" => $user->getRole(),
                 "emptyLocalPassword" => $emptyLocalPassword,

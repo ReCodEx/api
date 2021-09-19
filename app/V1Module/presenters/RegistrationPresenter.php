@@ -136,8 +136,8 @@ class RegistrationPresenter extends BasePresenter
      * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="A password for authentication")
      * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.", description="A password confirmation")
      * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
-     * @Param(type="post", name="degreesBeforeName", required=false, validation="string:1..", description="Degrees which is placed before user name")
-     * @Param(type="post", name="degreesAfterName", required=false, validation="string:1..", description="Degrees which is placed after user name")
+     * @Param(type="post", name="titlesBeforeName", required=false, validation="string:1..", description="Titles which is placed before user name")
+     * @Param(type="post", name="titlesAfterName", required=false, validation="string:1..", description="Titles which is placed after user name")
      * @throws BadRequestException
      * @throws WrongCredentialsException
      * @throws InvalidArgumentException
@@ -156,8 +156,8 @@ class RegistrationPresenter extends BasePresenter
         $instanceId = $req->getPost("instanceId");
         $instance = $this->getInstance($instanceId);
 
-        $degreesBeforeName = $req->getPost("degreesBeforeName") === null ? "" : $req->getPost("degreesBeforeName");
-        $degreesAfterName = $req->getPost("degreesAfterName") === null ? "" : $req->getPost("degreesAfterName");
+        $titlesBeforeName = $req->getPost("titlesBeforeName") === null ? "" : $req->getPost("titlesBeforeName");
+        $titlesAfterName = $req->getPost("titlesAfterName") === null ? "" : $req->getPost("titlesAfterName");
 
         // check given passwords
         $password = $req->getPost("password");
@@ -173,8 +173,8 @@ class RegistrationPresenter extends BasePresenter
             $email,
             $req->getPost("firstName"),
             $req->getPost("lastName"),
-            $degreesBeforeName,
-            $degreesAfterName,
+            $titlesBeforeName,
+            $titlesAfterName,
             Roles::STUDENT_ROLE,
             $instance
         );
