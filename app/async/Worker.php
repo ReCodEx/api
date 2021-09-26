@@ -79,7 +79,7 @@ class Worker
         $this->notify = new Notify($config);
         $this->logger = $logger;
 
-        $this->pollingInterval = min((int)Arrays::get($config, "pollingInterval", 60), 1);
+        $this->pollingInterval = max((int)Arrays::get($config, "pollingInterval", 60), 1);
         $this->retries = (int)Arrays::get($config, "retries", 3);
 
         // termination watchdog parameters preventing memory leaking

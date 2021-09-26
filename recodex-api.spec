@@ -18,7 +18,7 @@ Url: https://github.com/ReCodEx/api
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
-Requires: git php php-json php-mysqlnd php-ldap php-pecl-yaml php-pecl-zip php-pecl-zmq php-xml php-intl php-mbstring
+Requires: git php php-json php-mysqlnd php-ldap php-pecl-yaml php-pecl-zip php-pecl-zmq php-xml php-intl php-mbstring php-pecl-inotify
 
 Source0: https://github.com/ReCodEx/%{short_name}/archive/%{unmangled_version}.tar.gz#/%{short_name}-%{unmangled_version}.tar.gz
 
@@ -98,6 +98,7 @@ fi
 %dir %{install_dir}/bin
 
 %{install_dir}/app/Bootstrap.php
+%{install_dir}/app/async
 %{install_dir}/app/commands
 %{install_dir}/app/exceptions
 %{install_dir}/app/helpers
@@ -116,6 +117,7 @@ fi
 %{install_dir}/migrations
 %{install_dir}/www
 %attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.local.neon
+%attr(0770,recodex,recodex) %{install_dir}/bin/async-worker
 %attr(0770,recodex,recodex) %{install_dir}/bin/console
 
 %config %{install_dir}/app/config/config.neon
