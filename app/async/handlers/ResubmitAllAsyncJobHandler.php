@@ -7,6 +7,7 @@ use App\Model\Entity\User;
 use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
 use App\Async\IAsyncJobHandler;
+use App\Async\Dispatcher;
 use App\Helpers\SubmissionHelper;
 use InvalidArgumentException;
 
@@ -69,10 +70,13 @@ class ResubmitAllAsyncJobHandler implements IAsyncJobHandler
      * Factory method for async job entity that will be handled by this handler.
      * @param User $user creator of the job
      * @param Assignment $assignment of which all solutions will be resubmitted
+     * @return AsyncJob that was just dispatched
      */
-    public static function createAsyncJob(User $user, Assignment $assignment): AsyncJob
+    public static function dispatchAsyncJob(Dispatcher $dispatcher, User $user, Assignment $assignment): AsyncJob
     {
-        return new AsyncJob($user, self::ID, [], $assignment);
+        $job = new AsyncJob($user, self::ID, [], $assignment);
+        $dispatcher->schedule($job);
+        return $job;
     }
 
     public function cancel(): void

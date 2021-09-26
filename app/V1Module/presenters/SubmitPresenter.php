@@ -38,6 +38,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
+use App\Async\Dispatcher;
 use App\Async\Handler\ResubmitAllAsyncJobHandler;
 use Exception;
 use Nette\Http\IResponse;
@@ -53,6 +54,12 @@ class SubmitPresenter extends BasePresenter
      * @inject
      */
     public $asyncJobs;
+
+    /**
+     * @var Dispatcher
+     * @inject
+     */
+    public $dispatcher;
 
     /**
      * @var FileStorageManager
@@ -369,8 +376,11 @@ class SubmitPresenter extends BasePresenter
         $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
         if (!$asyncJobs) {
             // new job is started only if no async jobs are pending
-            $asyncJob = ResubmitAllAsyncJobHandler::createAsyncJob($this->getCurrentUser(), $assignment);
-            $this->asyncJobs->persist($asyncJob);
+            $asyncJob = ResubmitAllAsyncJobHandler::dispatchAsyncJob(
+                $this->dispatcher,
+                $this->getCurrentUser(),
+                $assignment
+            );
             $asyncJobs = [ $asyncJob ];
         }
         $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);

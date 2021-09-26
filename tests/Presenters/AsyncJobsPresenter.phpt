@@ -4,13 +4,17 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\BrokerProxy;
 use App\V1Module\Presenters\AsyncJobsPresenter;
-use Tester\Assert;
+use App\Helpers\FileStorageManager;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\AsyncJob;
 use App\Model\Repository\AsyncJobs;
 use App\Async\Dispatcher;
 use App\Async\Worker;
-use Tracy\ILogger;
 use App\Async\Handler\PingAsyncJobHandler;
+use Tester\Assert;
+use Tracy\ILogger;
 
 /**
  * @testCase
@@ -39,6 +43,16 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->asyncJobs = $this->container->getByType(AsyncJobs::class);
         $this->dispatcher = new Dispatcher([], ['ping' => new PingAsyncJobHandler()], $this->asyncJobs);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()

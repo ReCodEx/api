@@ -32,7 +32,7 @@ You may list the PHP modules thusly:
 If you install core-api as a package, the PHP will be installed as dependencies.
 Otherwise, you may install it manually:
 ```
-# dnf -y install php php-json php-mysqlnd php-ldap php-pecl-yaml php-pecl-zip php-pecl-zmq php-xml php-intl php-mbstring
+# dnf -y install php php-json php-mysqlnd php-ldap php-pecl-yaml php-pecl-zip php-pecl-zmq php-xml php-intl php-mbstring php-pecl-inotify
 ```
 
 It is also recommended that you create a separate database (e.g., `recodex`)

@@ -143,17 +143,10 @@ class Notify
 
     /**
      * Raise the notification
-     * @throws LogicException
      */
     public function notify(): void
     {
         if ($this->inotifyFile) {
-            if (!$this->inotifyStream || !$this->watchDescriptor) {
-                throw new LogicException(
-                    "Notification functions must not be invoked before the notify object is initialized."
-                );
-            }
-
             touch($this->inotifyFile); // easiest way to trigger attrib modification which leads to inotify event
         }
     }

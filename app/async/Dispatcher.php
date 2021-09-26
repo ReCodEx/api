@@ -2,7 +2,6 @@
 
 namespace App\Async;
 
-use App\Model\Entity\User;
 use App\Model\Entity\AsyncJob;
 use App\Model\Repository\AsyncJobs;
 use Nette\Utils\Arrays;
@@ -48,18 +47,16 @@ class Dispatcher
     /**
      * Schedule execution of an async job. This method may be invoked directly or wrapped in async job component.
      * New job entity is created and saved in DB and the worker is notified.
-     * @param User $user on whose behalf the job is created
-     * @param string $command class name of the job handler
-     * @param array $args job arguments
+     * @param AsyncJob $job to be scheduled
      * @param DateTime|null $scheduleAt when the job should be executed (null == immediately)
      * @throws InvalidArgumentException
      */
-    public function schedule(User $user, string $command, array $args = [], DateTime $scheduleAt = null)
+    public function schedule(AsyncJob $job, DateTime $scheduleAt = null)
     {
+        $command = $job->getCommand();
         if (!array_key_exists($command, $this->knownHandlers)) {
             throw new InvalidArgumentException("Unknown async job type '$command'.");
         }
-        $job = new AsyncJob($user, $command, $args);
         if ($scheduleAt) {
             $job->setScheduledAt($scheduleAt);
         }

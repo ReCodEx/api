@@ -5,6 +5,7 @@ namespace App\Async\Handler;
 use App\Model\Entity\AsyncJob;
 use App\Model\Entity\User;
 use App\Async\IAsyncJobHandler;
+use App\Async\Dispatcher;
 
 /**
  * Ping performs no action. It is used by frontend to determine whether the async worker is running.
@@ -31,10 +32,13 @@ class PingAsyncJobHandler implements IAsyncJobHandler
     /**
      * Factory method for async job entity that will be handled by this handler.
      * @param User|null $user creator of the job
+     * @return AsyncJob that was just dispatched
      */
-    public static function createAsyncJob(?User $user): AsyncJob
+    public static function dispatchAsyncJob(Dispatcher $dispatcher, ?User $user): AsyncJob
     {
-        return new AsyncJob($user, self::ID);
+        $job = new AsyncJob($user, self::ID);
+        $dispatcher->schedule($job);
+        return $job;
     }
 
     public function cancel(): void

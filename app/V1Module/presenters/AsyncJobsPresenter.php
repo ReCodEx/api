@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Async\Dispatcher;
 use App\Async\Handler\PingAsyncJobHandler;
 use App\Model\Repository\AsyncJobs;
 use App\Model\Entity\AsyncJob;
@@ -20,6 +21,12 @@ use DateTime;
  */
 class AsyncJobsPresenter extends BasePresenter
 {
+    /**
+     * @var Dispatcher
+     * @inject
+     */
+    public $dispatcher;
+
     /**
      * @var AsyncJobs
      * @inject
@@ -150,8 +157,7 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public function actionPing()
     {
-        $asyncJob = PingAsyncJobHandler::createAsyncJob($this->getCurrentUser());
-        $this->asyncJobs->persist($asyncJob);
+        $asyncJob = PingAsyncJobHandler::dispatchAsyncJob($this->dispatcher, $this->getCurrentUser());
         $this->sendSuccessResponse($asyncJob);
     }
 }
