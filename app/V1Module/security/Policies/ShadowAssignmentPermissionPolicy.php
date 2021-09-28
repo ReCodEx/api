@@ -17,6 +17,13 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
         return $assignment->isPublic();
     }
 
+    public function isInActiveGroup(Identity $identity, ShadowAssignment $assignment)
+    {
+        $group = $assignment->getGroup();
+        return $group && !$group->isArchived(); // active = not deleted and not archived
+    }
+
+
     public function isAssignee(Identity $identity, ShadowAssignment $assignment)
     {
         $user = $identity->getUserData();

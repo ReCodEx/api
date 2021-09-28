@@ -104,6 +104,7 @@ permissions:
         - group.isPublic
         - group.isInSameInstance
         - student.isSameUser
+        - group.isNotArchived
 
     - allow: true
       role: student
@@ -114,6 +115,7 @@ permissions:
         - group.isNotDetainingStudents # ... which does not detain students
         - group.isMember
         - student.isSameUser
+        - group.isNotArchived
 
     - allow: true
       role: student
@@ -149,7 +151,17 @@ permissions:
       actions:
           - addStudent  # requires permissions to read all users' private data
           - removeStudent
-      conditions: group.isSupervisor
+      conditions:
+          - group.isSupervisor
+          - group.isNotArchived
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - sendEmail
+      conditions:
+          - group.isAdmin
 
     - allow: true
       resource: group
@@ -159,21 +171,26 @@ permissions:
           - remove
           - addSubgroup
           - removeMember
-          - sendEmail
-      conditions: group.isAdmin
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
 
     - allow: true
       resource: group
       role: supervisor
       actions:
           - addMember  # requires permissions to read all users' private data
-      conditions: group.isAdmin
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
 
     - allow: true
       resource: group
       role: supervisor-student
       actions:
           - becomeMember  # other than student
+      conditions:
+          - group.isNotArchived
 
     - allow: true
       resource: group
@@ -308,6 +325,7 @@ permissions:
       actions:
           - submit
       conditions:
+          - assignment.isInActiveGroup
           - assignment.isAssignee
           - assignment.isVisible
           - student.isSameUser
@@ -330,6 +348,7 @@ permissions:
           - submit
           - resubmitSubmissions
       conditions:
+          - assignment.isInActiveGroup
           - assignment.isSupervisorOrAdmin
 
     - allow: true
@@ -339,6 +358,7 @@ permissions:
       conditions:
           - exercise.isAuthor
           - group.isSupervisor
+          - group.isNotArchived
 
     - allow: true
       resource: group
@@ -346,6 +366,7 @@ permissions:
           - assignExercise
       conditions:
           - exercise.isSubGroupSupervisor
+          - group.isNotArchived
 
     - allow: true
       resource: group
@@ -354,6 +375,7 @@ permissions:
       conditions:
           - exercise.isPublic
           - group.isSupervisor
+          - group.isNotArchived
 
     - allow: true
       role: student
@@ -385,9 +407,17 @@ permissions:
       actions:
           - viewDetail
           - viewEvaluation
+      conditions:
+          - assignmentSolution.isAuthor
+
+    - allow: true
+      role: student
+      resource: assignmentSolution
+      actions:
           - update
       conditions:
           - assignmentSolution.isAuthor
+          - assignmentSolution.isInActiveGroup
 
     - allow: true
       role: student
@@ -421,6 +451,7 @@ permissions:
           - setFlag
       conditions:
           - assignmentSolution.isSupervisorOrAdmin
+          - assignmentSolution.isInActiveGroup
 
     - allow: true
       resource: assignmentSolution
@@ -609,6 +640,7 @@ permissions:
           - createExercise
       conditions:
           - group.isSupervisor
+          - group.isNotArchived
 
     #############################
     # Uploaded file permissions #
@@ -785,7 +817,8 @@ permissions:
         - group.isInSameInstance
         - student.isSameUser
         - group.isSisStudent
-
+        - group.isNotArchived
+        
     #################################
     # Shadow Assignment permissions #
     #################################
@@ -811,6 +844,12 @@ permissions:
       actions:
           - viewDetail
           - viewAllPoints
+      conditions:
+          - assignment.isSupervisor
+
+    - allow: true
+      resource: shadowAssignment
+      actions:
           - update
           - remove
           - createPoints
@@ -818,6 +857,7 @@ permissions:
           - removePoints
       conditions:
           - assignment.isSupervisor
+          - assignment.isInActiveGroup
 
     - allow: true
       resource: group
@@ -825,6 +865,7 @@ permissions:
           - createShadowAssignment
       conditions:
           - group.isSupervisor
+          - group.isNotArchived
 
     ############################
     # Notification permissions #

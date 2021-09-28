@@ -68,4 +68,15 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
     {
         return $solution->getAssignment() && $solution->getAssignment()->getCanViewJudgeStderr();
     }
+
+    public function isInActiveGroup(Identity $identity, AssignmentSolution $solution)
+    {
+        $assignment = $solution->getAssignment();
+        if (!$assignment) {
+            return false;
+        }
+
+        $group = $assignment->getGroup();
+        return $group && !$group->isArchived(); // active = not deleted and not archived
+    }
 }

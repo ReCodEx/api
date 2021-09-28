@@ -165,7 +165,8 @@ class SubmitPresenter extends BasePresenter
      */
     private function canReceiveSubmissions(Assignment $assignment, User $user = null)
     {
-        return $assignment->isVisibleToStudents() &&
+        return $this->assignmentAcl->canSubmit($assignment, $user) &&
+            $assignment->isVisibleToStudents() &&
             $assignment->getGroup() &&
             $assignment->getGroup()->hasValidLicence() &&
             $user !== null &&
@@ -189,9 +190,8 @@ class SubmitPresenter extends BasePresenter
     public function checkCanSubmit(string $id, string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);
-        $user = $this->getUserOrCurrent($userId);
 
-        if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
+        if (!$this->assignmentAcl->canViewDetail($assignment)) {
             throw new ForbiddenRequestException("You cannot access this assignment.");
         }
     }
