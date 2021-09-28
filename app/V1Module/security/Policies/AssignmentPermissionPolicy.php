@@ -25,6 +25,12 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
             ($assignment->getVisibleFrom() === null || $assignment->getVisibleFrom() <= $now);
     }
 
+    public function isInActiveGroup(Identity $identity, Assignment $assignment)
+    {
+        $group = $assignment->getGroup();
+        return $group && !$group->isArchived(); // active = not deleted and not archived
+    }
+
     public function isAssignee(Identity $identity, Assignment $assignment)
     {
         $user = $identity->getUserData();

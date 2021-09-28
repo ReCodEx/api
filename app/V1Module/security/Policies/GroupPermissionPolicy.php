@@ -64,6 +64,11 @@ class GroupPermissionPolicy implements IPermissionPolicy
         return !$group->isDetaining();
     }
 
+    public function isNotArchived(Identity $identity, Group $group): bool
+    {
+        return !$group->isArchived();
+    }
+
     public function areStatsPublic(Identity $identity, Group $group): bool
     {
         return $group->statsArePublic();
