@@ -414,7 +414,7 @@ class ZipFileStorage implements IFileStorage
         return 0;   // nop
     }
 
-    public function deleteByFilter(callable $filter): int
+    public function deleteByFilter(string $prefix, callable $filter): int
     {
         // iterate over files and filter them
         $toDelete = []; // we store the paths as a list first to avoid any iterator confusions
@@ -422,6 +422,9 @@ class ZipFileStorage implements IFileStorage
             $path = $this->zip->getNameIndex($i);
             if (Strings::endsWith($path, '/')) {
                 continue; // skipping directories
+            }
+            if ($prefix && !Strings::startsWith($path, $prefix)) {
+                continue; // skipping entries that do not match the prefix
             }
 
             $storagePath = ($this->archiveStoragePath ?? '') . '#' . $path;

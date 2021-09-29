@@ -111,11 +111,12 @@ interface IFileStorage
 
     /**
      * Delete all files that do not pass filtering. This operation may not be implemented atomically.
+     * @param string $prefix path prefix that allows us to restrict the deletion into a directory, for instance
      * @param callable $filter function used to identify, which files will remain and which will be removed
      *                         (gets one argument IImmutableFile, returns bool -- true if the file should be kept)
      * @return int number of deleted files
      */
-    public function deleteByFilter(callable $filter): int;
+    public function deleteByFilter(string $prefix, callable $filter): int;
 
     /**
      * Make sure all modifications are written and all caches invalidated.

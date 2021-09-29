@@ -66,7 +66,11 @@ class CleanupUploads extends Command
     }
 
     /**
-     *
+     * Wrapper function for deleting a list of files, computing basic stats, and printing out job results.
+     * @param array $files list of files to be delted
+     * @param BaseRepository $fileRepository related repository from which the $files entities are
+     * @param OutputInterface $output console acces for printing the info
+     * @param callable $deleteFile the actual function that can delete the physical file
      */
     protected function removeOldFiles(
         array $files,

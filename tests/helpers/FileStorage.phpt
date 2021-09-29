@@ -818,12 +818,13 @@ class TestFileStorage extends Tester\TestCase
             'foo/bar/a.txt' => 'AA',
             'foo/bar/b.txt' => 'BBBB',
             'foo/bar/c.txt' => 'CCCCCC',
+            'foo/bar/d.bin' => '---',
             'x.txt' => 'XXXXX',
         ]);
         $root = $storage->getRootDirectory();
 
-        $deleted = $storage->deleteByFilter(function ($file) {
-            return !Strings::startsWith($file->getStoragePath(), 'foo')
+        $deleted = $storage->deleteByFilter('foo', function ($file) {
+            return !Strings::endsWith($file->getStoragePath(), '.txt')
                 || $file->getSize() < 3;
         });
 
@@ -831,6 +832,7 @@ class TestFileStorage extends Tester\TestCase
         Assert::true(file_exists("$root/foo/bar/a.txt"));
         Assert::false(file_exists("$root/foo/bar/b.txt"));
         Assert::false(file_exists("$root/foo/bar/c.txt"));
+        Assert::true(file_exists("$root/foo/bar/d.bin"));
         Assert::true(file_exists("$root/x.txt"));
     }
 

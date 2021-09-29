@@ -467,25 +467,39 @@ class LocalFileStorage implements IFileStorage
         return $deleted;
     }
 
-    public function deleteByFilter(callable $filter): int
+    public function deleteByFilter(string $prefix, callable $filter): int
     {
+        $root = $this->rootDirectory;
+
+        // small optimization - if dir is recognized, let's scan only that subdir to save time
+        $slashPos = strrpos($prefix, '/');
+        if ($slashPos) {
+            $root .= '/' . substr($prefix, 0, $slashPos);
+        }
+
+        if (!is_dir($root) || !is_writeable($root)) {
+            return 0; // nothinth to do
+        }
+
         $rootDirLen = strlen($this->rootDirectory) + 1; // plus 1 for '/';
         $dirIterator = new RecursiveDirectoryIterator(
-            $this->rootDirectory,
-            FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS
+            $root,
+            FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
         );
         $recursiveIterator = new RecursiveIteratorIterator($dirIterator);
 
         // iterate over files and filter them
         $toDelete = []; // we store the paths as a list first to avoid any iterator confusions
         foreach ($recursiveIterator as $realPath) {
-            if (!Strings::startsWith($realPath, $this->rootDirectory)) {
+            if (!Strings::startsWith($realPath, $root)) {
                 throw new FileStorageException("Iterator returned a file outside the root directory.", $realPath);
             }
             $path = substr($realPath, $rootDirLen); // get the suffix without the root directory
-            $file = new LocalImmutableFile($realPath, $path);
-            if (!$filter($file)) {
-                $toDelete[] = $path;
+            if (!$prefix || Strings::startsWith($path, $prefix)) {
+                $file = new LocalImmutableFile($realPath, $path);
+                if (!$filter($file)) {
+                    $toDelete[] = $path;
+                }
             }
         }
 
