@@ -155,6 +155,7 @@ class FileStorageManager
     /**
      * Perform a maintenance cleanup on partial uploaded files.
      * All files except those with existing ID prefixes are deleted.
+     * Too fresh files (less than 1h) are not affected to avoid race conditions (accidental deletion of new uploads).
      * @param string[] $ids list of valid IDs
      * @return int how many files were actually deleted
      */
@@ -167,9 +168,10 @@ class FileStorageManager
         }
 
         // filter the files using the ids index
-        return $this->fileStorage->deleteByFilter(function ($file) use ($idsIndex) {
+        $now = time();
+        return $this->fileStorage->deleteByFilter(self::PARTIAL_UPLOADS . '/', function ($file) use ($idsIndex, $now) {
             $id = substr($file->getName(), 0, 36); // get the uuid, which is the prefix of the file name
-            return array_key_exists($id, $idsIndex);
+            return array_key_exists($id, $idsIndex) || $file->getTime() + 3600 > $now;
         });
     }
 
