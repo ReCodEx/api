@@ -807,7 +807,7 @@ permissions:
         - bindGroup
         - unbindGroup
       conditions:
-        - group.isSupervisor
+        - group.isAdmin
         - course.isSupervisor
 
     - allow: true
