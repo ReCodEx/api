@@ -68,20 +68,16 @@ class AssignmentCommentsEmailsSender
 
         // Recepients are all users related to the group (all members + all admins...)
         $recipients = [];
+        $authorId = $comment->getUser()->getId();
         foreach ($group->getMembers() as $user) {
-            $recipients[$user->getEmail()] = $user;
-        }
-
-        // filter out the author of the comment, it is pointless to send email to that user
-        unset($recipients[$comment->getUser()->getEmail()]);
-
-        // filter out users which do not have allowed sending these kind of emails
-        $recipients = array_filter(
-            $recipients,
-            function (User $user) {
-                return $user->getSettings()->getAssignmentCommentsEmails();
+            // filter out the author of the comment, it is pointless to send email to that user
+            if (
+                $user->isVerified() && $user->getId() !== $authorId
+                && $user->getSettings()->getAssignmentCommentsEmails()
+            ) {
+                $recipients[$user->getEmail()] = $user;
             }
-        );
+        }
 
         if (count($recipients) === 0) {
             return true;

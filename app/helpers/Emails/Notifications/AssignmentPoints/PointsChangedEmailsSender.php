@@ -51,8 +51,7 @@ class PointsChangedEmailsSender
     }
 
     /**
-     * Assignment was created, send emails to users who wanted to know this
-     * situation.
+     * Notify solution author that his/her solution points were updated.
      * @param AssignmentSolution $solution
      * @return boolean
      * @throws InvalidStateException
@@ -69,7 +68,7 @@ class PointsChangedEmailsSender
         }
 
         $author = $solution->getSolution()->getAuthor();
-        if (!$author->getSettings()->getPointsChangedEmails()) {
+        if (!$author->isVerified() || !$author->getSettings()->getPointsChangedEmails()) {
             return true;
         }
 
@@ -86,7 +85,7 @@ class PointsChangedEmailsSender
     }
 
     /**
-     * Prepare and format body of the assignment points updated mail.
+     * Prepare and format body of the solution points updated mail.
      * @param AssignmentSolution $solution
      * @param string $locale
      * @return EmailRenderResult
@@ -120,8 +119,7 @@ class PointsChangedEmailsSender
     }
 
     /**
-     * Assignment was created, send emails to users who wanted to know this
-     * situation.
+     * Send notification to a student who has been awarded points for shadow assignment.
      * @param ShadowAssignmentPoints $points
      * @return boolean
      * @throws InvalidStateException
@@ -142,7 +140,7 @@ class PointsChangedEmailsSender
             return false;
         }
 
-        if (!$awardee->getSettings()->getPointsChangedEmails()) {
+        if (!$awardee->isVerified() || !$awardee->getSettings()->getPointsChangedEmails()) {
             return true;
         }
 

@@ -75,23 +75,17 @@ class SolutionCommentsEmailsSender
             $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
         }
 
+        $authorId = $comment->getUser()->getId();
         foreach ($comment->getThread()->findAllPublic() as $pComment) {
             $user = $pComment->getUser();
-            if ($user !== null) {
+            // filter out the author of the comment, it is pointless to send email to that user
+            if (
+                $user !== null && $user->isVerified() && $user->getId() !== $authorId
+                && $user->getSettings()->getSolutionCommentsEmails()
+            ) {
                 $recipients[$user->getEmail()] = $user;
             }
         }
-
-        // filter out the author of the comment, it is pointless to send email to that user
-        unset($recipients[$comment->getUser()->getEmail()]);
-
-        // filter out users which do not have allowed sending these kind of emails
-        $recipients = array_filter(
-            $recipients,
-            function (User $user) {
-                return $user->getSettings()->getSolutionCommentsEmails();
-            }
-        );
 
         if (count($recipients) === 0) {
             return true;
