@@ -58,8 +58,7 @@ class AssignmentEmailsSender
     }
 
     /**
-     * Assignment was created, send emails to users who wanted to know this
-     * situation.
+     * Assignment was created, send emails to users who wanted to know about this.
      * @param AssignmentBase $assignment
      * @return boolean
      */
@@ -70,9 +69,9 @@ class AssignmentEmailsSender
             return false;
         }
 
-        $recipients = array();
+        $recipients = [];
         foreach ($assignment->getGroup()->getStudents() as $student) {
-            if (!$student->getSettings()->getNewAssignmentEmails()) {
+            if (!$student->isVerified() || !$student->getSettings()->getNewAssignmentEmails()) {
                 continue;
             }
             $recipients[] = $student;
@@ -173,11 +172,12 @@ class AssignmentEmailsSender
             return false;
         }
 
-        $recipients = array();
+        $recipients = [];
         /** @var User $student */
         foreach ($assignment->getGroup()->getStudents() as $student) {
             if (
                 count($this->assignmentSolutions->findSolutions($assignment, $student)) > 0 ||
+                !$student->isVerified() ||
                 !$student->getSettings()->getAssignmentDeadlineEmails()
             ) {
                 // student already submitted solution to this assignment or

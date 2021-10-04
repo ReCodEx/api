@@ -111,7 +111,9 @@ class SubmissionEmailsSender
         $threshold = (new DateTime())->modify($this->submissionNotificationThreshold);
         $createdAt = $solution->getSolution()->getCreatedAt();
         if (
-            $user->getSettings()->getSubmissionEvaluatedEmails() && ($createdAt < $threshold || $isResubmit)
+            $user->isVerified() &&
+            $user->getSettings()->getSubmissionEvaluatedEmails() &&
+            ($createdAt < $threshold || $isResubmit)
         ) {
             $locale = $user->getSettings()->getDefaultLanguage();
             $result = $this->createSubmissionEvaluated(
@@ -220,13 +222,13 @@ class SubmissionEmailsSender
         $recipients = [];
 
         foreach ($group->getSupervisors() as $supervisor) {
-            if ($supervisor->getSettings()->getFlag($flag)) {
+            if ($supervisor->isVerified() && $supervisor->getSettings()->getFlag($flag)) {
                 $recipients[$supervisor->getId()] = $supervisor;
             }
         }
 
         foreach ($group->getPrimaryAdmins() as $admin) {
-            if ($admin->getSettings()->getFlag($flag)) {
+            if ($admin->isVerified() && $admin->getSettings()->getFlag($flag)) {
                 $recipients[$admin->getId()] = $admin;
             }
         }
