@@ -71,11 +71,11 @@ class SolutionCommentsEmailsSender
 
         $baseSolution = $solution->getSolution();
         $recipients = [];
-        if ($baseSolution->getAuthor() !== null) {
+        $authorId = $comment->getUser()->getId();
+        if ($baseSolution->getAuthor() !== null && $baseSolution->getAuthor()->getId() !== $authorId) {
             $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
         }
 
-        $authorId = $comment->getUser()->getId();
         foreach ($comment->getThread()->findAllPublic() as $pComment) {
             $user = $pComment->getUser();
             // filter out the author of the comment, it is pointless to send email to that user
