@@ -43,11 +43,13 @@
                             <div style="word-wrap: break-word; width: 580px;">
                                 {$message|noescape}
                             </div>
+                            {if $showSettingsInfo}
                             <hr>
                             <p>
                                 Pokud nechcete dostávat tento typ oznámení, upravte prosím svoje nastavení uživatelského
                                 účtu.
                             </p>
+                            {/if}
                         </td>
                     </tr>
                     <tr style="background: #f8f8f8; margin: 0; padding: 0; text-align: left; overflow: hidden;">

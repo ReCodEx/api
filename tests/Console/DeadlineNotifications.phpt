@@ -124,6 +124,7 @@ class TestDeadlineNotifications extends Tester\TestCase
         $assignment->setFirstDeadline($deadline);
         $this->assignments->persist($assignment);
 
+        $this->emailHelperMock->shouldReceive("setShowSettingsInfo")->once()->andReturn($this->emailHelperMock);
         $this->emailHelperMock->shouldReceive("send")->once()->andReturn(true);
         $input = new StringInput("");
         $this->command->run($input, new NullOutput());
