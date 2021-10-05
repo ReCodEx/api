@@ -124,7 +124,7 @@ class SubmissionEmailsSender
             );
 
             // Send the mail
-            return $this->emailHelper->send(
+            return $this->emailHelper->setShowSettingsInfo()->send(
                 $this->sender,
                 [$user->getEmail()],
                 $locale,
@@ -159,7 +159,7 @@ class SubmissionEmailsSender
                     );
 
                     // Send the mail
-                    return $this->emailHelper->send(
+                    return $this->emailHelper->setShowSettingsInfo()->send(
                         $this->sender,
                         [],
                         $locale,
@@ -196,7 +196,7 @@ class SubmissionEmailsSender
                     );
 
                     // Send the mail
-                    return $this->emailHelper->send(
+                    return $this->emailHelper->setShowSettingsInfo()->send(
                         $this->sender,
                         [],
                         $locale,

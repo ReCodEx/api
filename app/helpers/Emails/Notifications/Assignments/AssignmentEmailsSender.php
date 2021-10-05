@@ -87,7 +87,7 @@ class AssignmentEmailsSender
                 $result = $this->renderNewAssignment($assignment, $locale);
 
                 // Send the mail
-                return $this->emailHelper->send(
+                return $this->emailHelper->setShowSettingsInfo()->send(
                     $this->sender,
                     [],
                     $locale,
@@ -198,7 +198,7 @@ class AssignmentEmailsSender
                 $result = $this->createAssignmentDeadline($assignment, $locale);
 
                 // Send the mail
-                return $this->emailHelper->send(
+                return $this->emailHelper->setShowSettingsInfo()->send(
                     $this->sender,
                     [],
                     $locale,

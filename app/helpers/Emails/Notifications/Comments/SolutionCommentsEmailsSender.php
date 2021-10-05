@@ -101,7 +101,7 @@ class SolutionCommentsEmailsSender
                 }
 
                 // Send the mail
-                return $this->emailHelper->send(
+                return $this->emailHelper->setShowSettingsInfo()->send(
                     $this->sender,
                     [],
                     $locale,

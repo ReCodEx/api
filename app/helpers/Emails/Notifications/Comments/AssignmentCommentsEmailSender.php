@@ -89,7 +89,7 @@ class AssignmentCommentsEmailsSender
                 $result = $this->createAssignmentComment($assignment, $comment, $locale);
 
                 // Send the mail
-                return $this->emailHelper->send(
+                return $this->emailHelper->setShowSettingsInfo()->send(
                     $this->sender,
                     [],
                     $locale,

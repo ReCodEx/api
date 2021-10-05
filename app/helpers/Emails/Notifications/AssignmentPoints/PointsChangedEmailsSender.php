@@ -75,7 +75,7 @@ class PointsChangedEmailsSender
         $locale = $author->getSettings()->getDefaultLanguage();
         $result = $this->createSolutionPointsUpdated($solution, $locale);
 
-        return $this->emailHelper->send(
+        return $this->emailHelper->setShowSettingsInfo()->send(
             $this->sender,
             [$author->getEmail()],
             $locale,
@@ -147,7 +147,7 @@ class PointsChangedEmailsSender
         $locale = $awardee->getSettings()->getDefaultLanguage();
         $result = $this->createShadowPointsUpdated($points, $locale);
 
-        return $this->emailHelper->send(
+        return $this->emailHelper->setShowSettingsInfo()->send(
             $this->sender,
             [$awardee->getEmail()],
             $locale,

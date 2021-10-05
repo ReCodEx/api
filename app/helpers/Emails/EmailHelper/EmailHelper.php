@@ -45,6 +45,9 @@ class EmailHelper
     /** @var string Path to archive directory. If set, copies of all emails are logged there in text files. */
     private $archivingDir;
 
+    /** @var bool Whether the template should show info about notification user settings. */
+    private $showSettingsInfo = false;
+
     /**
      * Constructor
      * @param Mailer $mailer Created and configured (TLS verification, etc.) mailer object
@@ -61,6 +64,16 @@ class EmailHelper
         $this->subjectPrefix = Arrays::get($params, "subjectPrefix", "ReCodEx - ");
         $this->debugMode = Arrays::get($params, "debugMode", false);
         $this->archivingDir = Arrays::get($params, "archivingDir", "");
+    }
+
+    /**
+     * @param bool $show whether to show settings info or not
+     * @return EmailHelper $this to support chaining
+     */
+    public function setShowSettingsInfo(bool $show = true): EmailHelper
+    {
+        $this->showSettingsInfo = $show;
+        return $this;
     }
 
     /**
@@ -138,7 +151,8 @@ class EmailHelper
             "apiUrl" => $this->apiUrl,
             "footerUrl" => $this->footerUrl,
             "siteName" => $this->siteName,
-            "githubUrl" => $this->githubUrl
+            "githubUrl" => $this->githubUrl,
+            "showSettingsInfo" => $this->showSettingsInfo,
         ];
         $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/email_{locale}.latte");
         $result = $latte->renderEmail($template, $params);
