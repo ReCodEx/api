@@ -73,7 +73,8 @@ class EmailVerificationHelper
     /**
      * Generate access token and send it to the given email.
      * @param User $user
-     * @param bool $firstTime True if this is the first time the verification is requested (account has just been created).
+     * @param bool $firstTime True if this is the first time the verification is requested
+     *                        (account has just been created).
      * @return bool If sending was successful or not
      * @throws InvalidStateException
      */
