@@ -203,6 +203,11 @@ class ArchivedImmutableFile implements IImmutableFile
             );
         }
 
+        // if output buffering is active, turn it off so the file goes directly to output
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
         if (fpassthru($fp) === false) {
             throw new FileStorageException(
                 "Error occured when passing through entry '$this->entry' of a ZIP archive",

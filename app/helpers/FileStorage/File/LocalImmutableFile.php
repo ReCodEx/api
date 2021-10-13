@@ -173,6 +173,12 @@ class LocalImmutableFile implements IImmutableFile
     public function passthru(): void
     {
         $this->checkExistence();
+
+        // if output buffering is active, turn it off so the file goes directly to output
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
         @readfile($this->realPath);
     }
 }
