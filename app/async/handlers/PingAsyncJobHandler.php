@@ -31,6 +31,7 @@ class PingAsyncJobHandler implements IAsyncJobHandler
 
     /**
      * Factory method for async job entity that will be handled by this handler.
+     * @param Dispatcher $dispatcher used to schedule the job
      * @param User|null $user creator of the job
      * @return AsyncJob that was just dispatched
      */

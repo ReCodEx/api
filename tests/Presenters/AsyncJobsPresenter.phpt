@@ -13,6 +13,7 @@ use App\Model\Repository\AsyncJobs;
 use App\Async\Dispatcher;
 use App\Async\Worker;
 use App\Async\Handler\PingAsyncJobHandler;
+use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use Tracy\ILogger;
 
@@ -42,7 +43,8 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         $this->container = $container;
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->asyncJobs = $this->container->getByType(AsyncJobs::class);
-        $this->dispatcher = new Dispatcher([], ['ping' => new PingAsyncJobHandler()], $this->asyncJobs);
+        $entityManager = $this->container->getByType(EntityManagerInterface::class);
+        $this->dispatcher = new Dispatcher([], ['ping' => new PingAsyncJobHandler()], $this->asyncJobs, $entityManager);
 
         // patch container, since we cannot create actual file storage manarer
         $fsName = current($this->container->findByType(FileStorageManager::class));

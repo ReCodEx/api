@@ -137,7 +137,7 @@ class Notify
         }
 
         $streams = [ $this->inotifyStream ];
-        stream_select($streams, $streams, $streams, $timeout); // will block until event or timeout
+        @stream_select($streams, $streams, $streams, $timeout); // will block until event or timeout
         return $this->isNotifiedInternal();
     }
 

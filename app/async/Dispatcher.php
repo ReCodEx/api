@@ -4,10 +4,12 @@ namespace App\Async;
 
 use App\Model\Entity\AsyncJob;
 use App\Model\Repository\AsyncJobs;
+use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
 use Nette;
 use InvalidArgumentException;
 use DateTime;
+use Exception;
 
 /**
  * Class responsible for scheduling and dispatching async jobs.
@@ -28,6 +30,11 @@ class Dispatcher
     private $notify;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+
+    /**
      * @var array job type ID => handler (component that executes the job)
      */
     private $knownHandlers = [];
@@ -35,9 +42,10 @@ class Dispatcher
     private $pendingHandler = null;
 
 
-    public function __construct($config, array $knownHandlers, AsyncJobs $asyncJobs)
+    public function __construct($config, array $knownHandlers, AsyncJobs $asyncJobs, EntityManagerInterface $em)
     {
         $this->asyncJobs = $asyncJobs;
+        $this->entityManager = $em;
         $this->notify = new Notify($config);
         foreach ($knownHandlers as $handler) {
             $this->knownHandlers[$handler->getId()] = $handler;
@@ -62,6 +70,34 @@ class Dispatcher
         }
         $this->asyncJobs->persist($job);
         $this->notify->notify(); // this should wake the neighbors
+    }
+
+    /**
+     * Try to unschedule a job if it has not been executed yet.
+     * @param AsyncJob $job to be removed from the scheduling
+     * @return bool true if the job was removed, false if it is too late (already running or finished)
+     */
+    public function unschedule(AsyncJob $job): bool
+    {
+        if ($job->getStartedAt() !== null) {
+            return false; // soft check, that the job has already started
+        }
+
+        try {
+            $rows = 0;
+            $this->entityManager->transactional(function ($em) use ($job, &$rows) {
+                $qb = $em->createQueryBuilder();
+                $qb->delete('AsyncJob', 'aj')
+                    ->where($qb->expr()->isNull("aj.startedAt"))
+                    ->andWhere("aj.id = :job")
+                    ->setParameter("job", $job);
+                $rows = $qb->getQuery->execute();
+            });
+
+            return (bool)$rows;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**

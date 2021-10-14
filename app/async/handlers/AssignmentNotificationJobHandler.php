@@ -9,6 +9,7 @@ use App\Model\Repository\Assignments;
 use App\Async\IAsyncJobHandler;
 use App\Async\Dispatcher;
 use App\Helpers\SubmissionHelper;
+use App\Helpers\Notifications\AssignmentEmailsSender;
 use InvalidArgumentException;
 
 /**
@@ -21,16 +22,12 @@ class AssignmentNotificationJobHandler implements IAsyncJobHandler
     /** @var bool */
     private $canceled = false;
 
-    /** @var SubmissionHelper */
-    private $submissionHelper;
+    /** @var AssignmentEmailsSender */
+    private $assignmentEmailsSender;
 
-    /** @var Assignments */
-    private $assignments;
-
-    public function __construct(SubmissionHelper $submissionHelper, Assignments $assignments)
+    public function __construct(AssignmentEmailsSender $assignmentEmailsSender)
     {
-        $this->submissionHelper = $submissionHelper;
-        $this->assignments = $assignments;
+        $this->assignmentEmailsSender = $assignmentEmailsSender;
     }
 
     public function getId(): string
@@ -45,18 +42,28 @@ class AssignmentNotificationJobHandler implements IAsyncJobHandler
 
     public function execute(AsyncJob $job)
     {
+        if ($this->canceled) {
+            return;
+        }
+
+        $assignment = $job->getAssociatedAssignment();
+        if ($assignment) {
+            $this->assignmentEmailsSender->assignmentCreated($assignment);
+        }
     }
 
     /**
      * Factory method for async job entity that will be handled by this handler.
+     * The job is scheduled at time when the assignment gets visible.
+     * @param Dispatcher $dispatcher used to schedule the job
      * @param User $user creator of the job
-     * @param Assignment $assignment of which all solutions will be resubmitted
-     * @return AsyncJob that was just dispatched
+     * @param Assignment $assignment about which the notification will be sent
+     * @return AsyncJob that was just scheduled
      */
-    public static function dispatchAsyncJob(Dispatcher $dispatcher, User $user, Assignment $assignment): AsyncJob
+    public static function scheduleAsyncJob(Dispatcher $dispatcher, User $user, Assignment $assignment): AsyncJob
     {
         $job = new AsyncJob($user, self::ID, [], $assignment);
-        $dispatcher->schedule($job);
+        $dispatcher->schedule($job, $assignment->getVisibleFrom());
         return $job;
     }
 

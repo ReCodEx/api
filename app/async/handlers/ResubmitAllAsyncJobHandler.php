@@ -68,6 +68,7 @@ class ResubmitAllAsyncJobHandler implements IAsyncJobHandler
 
     /**
      * Factory method for async job entity that will be handled by this handler.
+     * @param Dispatcher $dispatcher used to schedule the job
      * @param User $user creator of the job
      * @param Assignment $assignment of which all solutions will be resubmitted
      * @return AsyncJob that was just dispatched
