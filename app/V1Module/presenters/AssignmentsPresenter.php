@@ -20,6 +20,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\RuntimeEnvironments;
@@ -31,6 +32,8 @@ use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Async\Dispatcher;
+use App\Async\Handler\AssignmentNotificationJobHandler;
 use DateTime;
 use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
@@ -41,6 +44,18 @@ use Nette\Utils\Strings;
  */
 class AssignmentsPresenter extends BasePresenter
 {
+    /**
+     * @var AsyncJobs
+     * @inject
+     */
+    public $asyncJobs;
+
+    /**
+     * @var Dispatcher
+     * @inject
+     */
+    public $dispatcher;
+
     /**
      * @var FileStorageManager
      * @inject
@@ -222,8 +237,9 @@ class AssignmentsPresenter extends BasePresenter
         $req = $this->getRequest();
         $version = (int)$req->getPost("version");
         if ($version !== $assignment->getVersion()) {
+            $newVer = $assignment->getVersion();
             throw new BadRequestException(
-                "The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."
+                "The assignment was edited in the meantime and the version has changed. Current version is $newVer."
             );
         }
 
@@ -272,7 +288,8 @@ class AssignmentsPresenter extends BasePresenter
         $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
         $allowSecondDeadline = filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN);
         $secondDeadlineTimestamp = (int)$req->getPost("secondDeadline") ?: 0;
-        $oldVisibleFromTimestamp = $assignment->getVisibleFrom() ? $assignment->getVisibleFrom()->getTimestamp() : null;
+        $oldVisibleFrom = $assignment->getVisibleFrom();
+        $oldVisibleFromTimestamp = $oldVisibleFrom ? $oldVisibleFrom->getTimestamp() : null;
         $visibleFromTimestamp = (int)$req->getPost("visibleFrom");
         $visibleFrom = $visibleFromTimestamp ? DateTime::createFromFormat('U', $visibleFromTimestamp) : null;
         $maxPointsDeadlineInterpolation = filter_var(
@@ -384,26 +401,32 @@ class AssignmentsPresenter extends BasePresenter
             $this->assignments->persist($localizedAssignment, false);
         }
 
-        // sending notification has to be after setting new localized texts
-        if ($sendNotification) {
-            // mail notification sent to students was requested
-
-            $now = new DateTime();
-            if (
-                $wasPublic === false && $isPublic === true &&
-                ($visibleFrom === null || $visibleFrom <= $now)
-            ) {
-                // assignment is moving from non-public to public, send notification to students
-                $this->assignmentEmailsSender->assignmentCreated($assignment);
+        // stop scheduled notification from happening
+        $asyncJobs = $this->asyncJobs->findPendingJobs(AssignmentNotificationJobHandler::ID, true, null, $assignment);
+        $notificationAlreadySent = false; // true if we were unable to prevent notification from sending
+        if ($asyncJobs) {
+            if (count($asyncJobs) > 1) {
+                throw new InvalidStateException("Too many scheduled notification jobs.");
             }
+            $notificationAlreadySent = !$this->dispatcher->unschedule($asyncJobs[0]); // true = unscheduled
+        }
 
-            if (
-                $isPublic === true && $visibleFromTimestamp !== null &&
-                $oldVisibleFromTimestamp !== $visibleFromTimestamp
-            ) {
-                // assignment is public and visible from timestamp was set
-                // this means notification email should be sent later
-                // TODO: schedule email sending and unschedule old one if any
+        // sending notification has to be after setting new localized texts
+        if ($isPublic && $sendNotification && !$notificationAlreadySent) {
+            // mail notification sent to students was requested
+            $now = new DateTime();
+            $wasPublic = $wasPublic && ($oldVisibleFrom === null || $oldVisibleFrom <= $now);
+
+            if ($wasPublic === false && ($visibleFrom === null || $visibleFrom <= $now)) {
+                // assignment is visible now, send notification to students immediately
+                $this->assignmentEmailsSender->assignmentCreated($assignment);
+            } elseif ($visibleFrom !== null && $visibleFrom > $now) {
+                // assignment is public, but will be visible in the future, schedule a notification for later
+                AssignmentNotificationJobHandler::scheduleAsyncJob(
+                    $this->dispatcher,
+                    $this->getCurrentUser(),
+                    $assignment
+                );
             }
         }
 

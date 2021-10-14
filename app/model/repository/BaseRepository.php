@@ -22,6 +22,7 @@ class BaseRepository
      * @var EntityManagerInterface
      */
     protected $em;
+
     /**
      * @var EntityRepository
      */

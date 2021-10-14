@@ -147,16 +147,16 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $localizedTexts = [
             ["locale" => "locA", "text" => "descA", "name" => "nameA"]
         ];
-        $firstDeadline = (new \DateTime())->getTimestamp();
+        $firstDeadline = (new DateTime())->getTimestamp();
         $maxPointsBeforeFirstDeadline = 123;
         $submissionsCountLimit = 32;
         $allowSecondDeadline = true;
         $canViewLimitRatios = false;
         $canViewJudgeStdout = true;
         $canViewJudgeStderr = false;
-        $secondDeadline = (new \DateTime())->getTimestamp() + 10;
+        $secondDeadline = (new DateTime())->getTimestamp() + 10;
         $maxPointsBeforeSecondDeadline = 543;
-        $visibleFrom = (new \DateTime())->getTimestamp();
+        $visibleFrom = (new DateTime())->getTimestamp();
         $isBonus = true;
         $pointsPercentualThreshold = 90.0;
         $solutionFilesLimit = 3;
@@ -249,7 +249,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'localizedTexts' => [
                     ["locale" => "locA", "text" => "descA", "name" => "nameA"]
                 ],
-                'firstDeadline' => (new \DateTime())->getTimestamp(),
+                'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 42,
                 'submissionsCountLimit' => 10,
                 'allowSecondDeadline' => false,
@@ -278,6 +278,104 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::equal(42, $updatedAssignment["solutionSizeLimit"]);
     }
 
+    public function testUpdateDetailVisibleFromScheduleAsyncNotification()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $this->assignments->findAll();
+        $assignment = array_pop($assignments);
+        $assignment->setIsPublic(false); // for testing of notification emails
+
+        /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
+        //$mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
+        //$mockAssignmentEmailsSender->shouldReceive("assignmentCreated")->with($assignment)->andReturn(true)->once();
+        //$this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
+        $mockDispatcher = Mockery::mock(\App\Async\Dispatcher::class);
+        $mockDispatcher->shouldReceive("schedule")->once();
+        $this->presenter->dispatcher = $mockDispatcher;
+
+        $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
+        $mockEvaluations->shouldReceive("flush")->once();
+        $this->presenter->solutionEvaluations = $mockEvaluations;
+
+        $isPublic = true;
+        $localizedTexts = [
+            ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+        ];
+        $firstDeadline = (new DateTime())->getTimestamp() + 100;
+        $maxPointsBeforeFirstDeadline = 123;
+        $submissionsCountLimit = 32;
+        $allowSecondDeadline = true;
+        $canViewLimitRatios = false;
+        $canViewJudgeStdout = true;
+        $canViewJudgeStderr = false;
+        $secondDeadline = (new DateTime())->getTimestamp() + 1000;
+        $maxPointsBeforeSecondDeadline = 543;
+        $visibleFrom = (new DateTime())->getTimestamp() + 60;
+        $isBonus = true;
+        $pointsPercentualThreshold = 90.0;
+        $solutionFilesLimit = 3;
+        $solutionSizeLimit = null;
+
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => $isPublic,
+                'version' => 1,
+                'sendNotification' => true,
+                'localizedTexts' => $localizedTexts,
+                'firstDeadline' => $firstDeadline,
+                'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
+                'submissionsCountLimit' => $submissionsCountLimit,
+                'allowSecondDeadline' => $allowSecondDeadline,
+                'maxPointsDeadlineInterpolation' => false,
+                'canViewLimitRatios' => $canViewLimitRatios,
+                'canViewJudgeStdout' => $canViewJudgeStdout,
+                'canViewJudgeStderr' => $canViewJudgeStderr,
+                'secondDeadline' => $secondDeadline,
+                'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
+                'visibleFrom' => $visibleFrom,
+                'isBonus' => $isBonus,
+                'pointsPercentualThreshold' => $pointsPercentualThreshold,
+                'solutionFilesLimit' => $solutionFilesLimit,
+                'solutionSizeLimit' => $solutionSizeLimit,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+
+        // check updated assignment
+        /** @var Assignment $updatedAssignment */
+        $updatedAssignment = $result['payload'];
+        Assert::equal($isPublic, $updatedAssignment["isPublic"]);
+        Assert::equal($firstDeadline, $updatedAssignment["firstDeadline"]);
+        Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment["maxPointsBeforeFirstDeadline"]);
+        Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
+        Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
+        Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
+        Assert::equal($canViewJudgeStdout, $updatedAssignment["canViewJudgeStdout"]);
+        Assert::equal($canViewJudgeStderr, $updatedAssignment["canViewJudgeStderr"]);
+        Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
+        Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
+        Assert::equal($visibleFrom, $updatedAssignment["visibleFrom"]);
+        Assert::equal($isBonus, $updatedAssignment["isBonus"]);
+        Assert::equal($pointsPercentualThreshold, $updatedAssignment["pointsPercentualThreshold"]);
+        Assert::equal($solutionFilesLimit, $updatedAssignment['solutionFilesLimit']);
+        Assert::equal($solutionSizeLimit, $updatedAssignment['solutionSizeLimit']);
+
+        // check localized texts
+        Assert::count(1, $updatedAssignment["localizedTexts"]);
+        $localized = current($localizedTexts);
+        $updatedLocalized = $updatedAssignment["localizedTexts"][0];
+        Assert::equal($updatedLocalized["locale"], $localized["locale"]);
+        Assert::equal($updatedLocalized["text"], $localized["text"]);
+    }
+
     public function testAddStudentHints()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -297,7 +395,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'localizedTexts' => [
                     ["locale" => "locA", "text" => "descA", "name" => "nameA", "studentHint" => "Try hard"]
                 ],
-                'firstDeadline' => (new \DateTime())->getTimestamp(),
+                'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
                 'allowSecondDeadline' => true,
@@ -305,7 +403,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'canViewLimitRatios' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
-                'secondDeadline' => (new \DateTime())->getTimestamp() + 10,
+                'secondDeadline' => (new DateTime())->getTimestamp() + 10,
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
                 'pointsPercentualThreshold' => 90.0,
@@ -343,7 +441,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'localizedTexts' => [
                     ["locale" => "locA", "text" => "descA", "name" => "nameA"]
                 ],
-                'firstDeadline' => (new \DateTime())->getTimestamp(),
+                'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
                 'allowSecondDeadline' => true,
@@ -351,7 +449,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'canViewLimitRatios' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
-                'secondDeadline' => (new \DateTime())->getTimestamp() + 10,
+                'secondDeadline' => (new DateTime())->getTimestamp() + 10,
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
                 'pointsPercentualThreshold' => 90.0,
