@@ -553,6 +553,11 @@ class TestUsersPresenter extends Tester\TestCase
                 'open' => false,
             ],
         ];
+        $uiData2 = [
+            'lastSelected' => 'abcd',
+            'size' => 42,
+            'foo' => null
+        ];
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -561,8 +566,46 @@ class TestUsersPresenter extends Tester\TestCase
             ['action' => 'updateUiData', 'id' => $user->getId()],
             ['uiData' => $uiData]
         );
-
         Assert::equal($uiData, $payload["privateData"]["uiData"]);
+
+        $nested = [ 'pos1' => 0 ];
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateUiData', 'id' => $user->getId()],
+            ['uiData' => [ 'stretcherSize' => 54, 'nestedStructure' => $nested ] ]
+        );
+        $uiData['stretcherSize'] = 54;
+        $uiData['nestedStructure'] = $nested;
+        Assert::equal($uiData, $payload["privateData"]["uiData"]);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateUiData', 'id' => $user->getId()],
+            [ 'uiData' => $uiData2, 'overwrite' => true ]
+        );
+        Assert::equal($uiData2, $payload["privateData"]["uiData"]);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateUiData', 'id' => $user->getId()],
+            [ 'uiData' => null ]
+        );
+        Assert::equal($uiData2, $payload["privateData"]["uiData"]);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateUiData', 'id' => $user->getId()],
+            [ 'uiData' => null, 'overwrite' => true ]
+        );
+        Assert::null($payload["privateData"]["uiData"]);
     }
 
     public function testCreateLocalAccount()
