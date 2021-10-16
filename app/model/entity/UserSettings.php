@@ -12,20 +12,9 @@ class UserSettings implements JsonSerializable
 {
     use FlagAccessor;
 
-    public function __construct(
-        bool $darkTheme = true,
-        bool $vimMode = false,
-        string $defaultLanguage = "en",
-        bool $openedSidebar = true,
-        bool $useGravatar = true,
-        string $defaultPage = null
-    ) {
-        $this->darkTheme = $darkTheme;
-        $this->vimMode = $vimMode;
+    public function __construct(string $defaultLanguage = "en")
+    {
         $this->defaultLanguage = $defaultLanguage;
-        $this->openedSidebar = $openedSidebar;
-        $this->useGravatar = $useGravatar;
-        $this->defaultPage = $defaultPage;
 
         $this->newAssignmentEmails = true;
         $this->assignmentDeadlineEmails = true;
@@ -45,35 +34,9 @@ class UserSettings implements JsonSerializable
     protected $id;
 
     /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $darkTheme;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $vimMode;
-
-    /**
      * @ORM\Column(type="string", length=32)
      */
     protected $defaultLanguage;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $openedSidebar;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $useGravatar;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     * Default page identifier (set and interpreted by the UI only).
-     */
-    protected $defaultPage = null;
 
 
     /*******************
@@ -123,12 +86,7 @@ class UserSettings implements JsonSerializable
     public function jsonSerialize()
     {
         return [
-            "darkTheme" => $this->darkTheme,
-            "vimMode" => $this->vimMode,
             "defaultLanguage" => $this->defaultLanguage,
-            "openedSidebar" => $this->openedSidebar,
-            "useGravatar" => $this->useGravatar,
-            "defaultPage" => $this->defaultPage,
             "newAssignmentEmails" => $this->newAssignmentEmails,
             "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
             "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
@@ -143,56 +101,6 @@ class UserSettings implements JsonSerializable
     /*
      * Accessors
      */
-
-    public function getDarkTheme(): bool
-    {
-        return $this->darkTheme;
-    }
-
-    public function setDarkTheme(bool $darkTheme): void
-    {
-        $this->darkTheme = $darkTheme;
-    }
-
-    public function getVimMode(): bool
-    {
-        return $this->vimMode;
-    }
-
-    public function setVimMode(bool $vimMode): void
-    {
-        $this->vimMode = $vimMode;
-    }
-
-    public function getOpenedSidebar(): bool
-    {
-        return $this->openedSidebar;
-    }
-
-    public function setOpenedSidebar(bool $openedSidebar): void
-    {
-        $this->openedSidebar = $openedSidebar;
-    }
-
-    public function getUseGravatar(): bool
-    {
-        return $this->useGravatar;
-    }
-
-    public function setUseGravatar(bool $useGravatar): void
-    {
-        $this->useGravatar = $useGravatar;
-    }
-
-    public function getDefaultPage(): ?string
-    {
-        return $this->defaultPage;
-    }
-
-    public function setDefaultPage(?string $defaultPage): void
-    {
-        $this->defaultPage = $defaultPage;
-    }
 
     public function getDefaultLanguage(): string
     {

@@ -219,10 +219,14 @@ class UsersPresenter extends BasePresenter
      * @Param(type="post", name="titlesBeforeName", description="Titles before name")
      * @Param(type="post", name="titlesAfterName", description="Titles after name")
      * @Param(type="post", name="email", validation="email", description="New email address", required=false)
-     * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
-     * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
-     * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..", description="Confirmation of new password of current user")
-     * @Param(type="post", name="gravatarUrlEnabled", validation="bool", description="Enable or disable gravatar profile image")
+     * @Param(type="post", name="oldPassword", required=false, validation="string:1..",
+     *        description="Old password of current user")
+     * @Param(type="post", name="password", required=false, validation="string:1..",
+     *        description="New password of current user")
+     * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..",
+     *        description="Confirmation of new password of current user")
+     * @Param(type="post", name="gravatarUrlEnabled", validation="bool",
+     *        description="Enable or disable gravatar profile image")
      * @throws WrongCredentialsException
      * @throws NotFoundException
      */
@@ -390,19 +394,24 @@ class UsersPresenter extends BasePresenter
      * Update the profile settings
      * @POST
      * @param string $id Identifier of the user
-     * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=false)
-     * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=false)
-     * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=false)
-     * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=false)
-     * @Param(type="post", name="defaultPage", validation="string", description="Default page of the UI", required=false)
-     * @Param(type="post", name="useGravatar", validation="bool", description="Flag if the UI should display gravatars or not", required=false)
-     * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=false)
-     * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=false)
-     * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=false)
-     * @Param(type="post", name="solutionCommentsEmails", validation="bool", description="Flag if email should be sent to user when new submission comment is added", required=false)
-     * @Param(type="post", name="pointsChangedEmails", validation="bool", description="Flag if email should be sent to user when the points were awarded for assignment", required=false)
-     * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", description="Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment", required=false)
-     * @Param(type="post", name="assignmentSubmitAfterReviewedEmails", validation="bool", description="Flag if email should be sent to group supervisor if a student submits new solution for already reviewed and not accepted assignment", required=false)
+     * @Param(type="post", name="defaultLanguage", validation="string", required=false,
+     *        description="Default language of UI")
+     * @Param(type="post", name="newAssignmentEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to user when new assignment was created")
+     * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to user if assignment deadline is nearby")
+     * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to user when resubmission was evaluated")
+     * @Param(type="post", name="solutionCommentsEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to user when new submission comment is added")
+     * @Param(type="post", name="pointsChangedEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to user when the points were awarded for assignment")
+     * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to group supervisor if a student submits new solution
+     *                     for already accepted assignment")
+     * @Param(type="post", name="assignmentSubmitAfterReviewedEmails", validation="bool", required=false,
+     *        description="Flag if email should be sent to group supervisor if a student submits new solution
+     *                     for already reviewed and not accepted assignment")
      * @throws NotFoundException
      */
     public function actionUpdateSettings(string $id)
@@ -413,10 +422,6 @@ class UsersPresenter extends BasePresenter
 
         // handle boolean flags
         $knownBoolFlags = [
-            "darkTheme",
-            "vimMode",
-            "openedSidebar",
-            "useGravatar",
             "newAssignmentEmails",
             "assignmentDeadlineEmails",
             "submissionEvaluatedEmails",
@@ -436,11 +441,6 @@ class UsersPresenter extends BasePresenter
         // handle string flags
         if ($req->getPost("defaultLanguage") !== null) {
             $settings->setDefaultLanguage(trim($req->getPost("defaultLanguage")));
-        }
-        if ($req->getPost("defaultPage") !== null) {
-            $defaultPage = trim($req->getPost("defaultPage"));
-            $defaultPage = $defaultPage === '' ? null : $defaultPage;  // empty string is interpreted as null
-            $settings->setDefaultPage($defaultPage);
         }
 
         $this->users->persist($user);
