@@ -2,5 +2,6 @@ includes:
   - %rootDir%/../../../vendor/phpstan/phpstan-nette/extension.neon
 parameters:
   level: 4
+  treatPhpDocTypesAsCertain: false
   scanDirectories:
     - %rootDir%/../../../app

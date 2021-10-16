@@ -461,24 +461,37 @@ class UsersPresenter extends BasePresenter
      * @POST
      * @param string $id Identifier of the user
      * @Param(type="post", name="uiData", validation="array|null", description="Structured user-specific UI data")
+     * @Param(type="post", name="overwrite", validation="bool", required=false,
+     *        description="Flag indicating that uiData should be overwritten completelly (instead of regular merge)")
      * @throws NotFoundException
      */
     public function actionUpdateUiData(string $id)
     {
         $req = $this->getRequest();
         $user = $this->users->findOrThrow($id);
+        $uiData = $user->getUiData();
 
+        $overwrite = filter_var($req->getPost("overwrite"), FILTER_VALIDATE_BOOLEAN);
         $newUiData = $req->getPost("uiData");
-        if ($newUiData) {
-            $uiData = $user->getUiData();
+        if (!$newUiData && !$overwrite) {
+            // nothing will change
+            $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+            return;
+        }
+
+        if (!$newUiData && ($overwrite || $uiData)) {
+            $user->setUiData(null); // ui data are being erased
+        } else {
+            if (!$overwrite && $uiData) {
+                $newUiData = array_merge($uiData->getData(), $newUiData);
+            }
+
             if (!$uiData) {
                 $uiData = new UserUiData($newUiData);
                 $user->setUiData($uiData);
             } else {
                 $uiData->setData($newUiData);
             }
-        } else {
-            $user->setUiData(null);
         }
 
         $this->users->persist($user);
@@ -645,7 +658,8 @@ class UsersPresenter extends BasePresenter
      * Set a given role to the given user.
      * @POST
      * @param string $id Identifier of the user
-     * @Param(type="post", name="role", validation="string:1..", description="Role which should be assigned to the user")
+     * @Param(type="post", name="role", validation="string:1..",
+     *        description="Role which should be assigned to the user")
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
@@ -711,7 +725,8 @@ class UsersPresenter extends BasePresenter
      * Set "isAllowed" flag of the given user. The flag determines whether a user may perform any operation of the API.
      * @POST
      * @param string $id Identifier of the user
-     * @Param(type="post", name="isAllowed", validation="bool", description="Whether the user is allowed (active) or not.")
+     * @Param(type="post", name="isAllowed", validation="bool",
+     *        description="Whether the user is allowed (active) or not.")
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
