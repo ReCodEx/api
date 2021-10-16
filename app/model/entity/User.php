@@ -43,7 +43,7 @@ class User
         $this->createdAt = new DateTime();
         $this->instances = new ArrayCollection([$instance]);
         $instance->addMember($this);
-        $this->settings = new UserSettings(true, false, "en");
+        $this->settings = new UserSettings("en");
         $this->login = null;
         $this->externalLogins = new ArrayCollection();
         $this->avatarUrl = null;

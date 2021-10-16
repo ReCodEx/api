@@ -501,8 +501,6 @@ class TestUsersPresenter extends Tester\TestCase
 
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-        $darkTheme = false;
-        $vimMode = false;
         $defaultLanguage = "de";
         $newAssignmentEmails = false;
         $assignmentDeadlineEmails = false;
@@ -513,8 +511,6 @@ class TestUsersPresenter extends Tester\TestCase
             'POST',
             ['action' => 'updateSettings', 'id' => $user->getId()],
             [
-                'darkTheme' => $darkTheme,
-                'vimMode' => $vimMode,
                 'defaultLanguage' => $defaultLanguage,
                 'newAssignmentEmails' => $newAssignmentEmails,
                 'assignmentDeadlineEmails' => $assignmentDeadlineEmails,
@@ -529,8 +525,6 @@ class TestUsersPresenter extends Tester\TestCase
 
         $user = $result["payload"];
         $settings = $user["privateData"]["settings"];
-        Assert::equal($darkTheme, $settings->getDarkTheme());
-        Assert::equal($vimMode, $settings->getVimMode());
         Assert::equal($defaultLanguage, $settings->getDefaultLanguage());
         Assert::equal($newAssignmentEmails, $settings->getNewAssignmentEmails());
         Assert::equal($assignmentDeadlineEmails, $settings->getAssignmentDeadlineEmails());
