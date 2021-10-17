@@ -55,7 +55,7 @@ final class Version20211015163456 extends AbstractMigration
                 $json = [];
             }
             foreach (self::$transforms as $col => $uiProp) {
-                $json[$uiProp] = $s[$col];
+                $json[$uiProp] = ($col === 'default_page') ? $s[$col] : filter_var($s[$col], FILTER_VALIDATE_BOOLEAN);
             }
 
             if ($uiId && array_key_exists($uiId, $uiData)) {
