@@ -45,7 +45,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy
         return false;
     }
 
-    public function isSubGroupMember(Identity $identity, Exercise $exercise)
+    public function isSubGroupNonStudentMember(Identity $identity, Exercise $exercise)
     {
         $user = $identity->getUserData();
 
@@ -58,7 +58,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy
 
         /** @var Group $group */
         foreach ($exercise->getGroups() as $group) {
-            if ($group->isMemberOfSubgroup($user)) {
+            if ($group->isNonStudentMemberOfSubgroup($user)) {
                 return true;
             }
         }
