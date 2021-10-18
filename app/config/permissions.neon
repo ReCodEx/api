@@ -540,7 +540,7 @@ permissions:
       conditions:
           or:
             - exercise.isAuthor
-            - exercise.isSubGroupMember
+            - exercise.isSubGroupNonStudentMember
             - exercise.isSuperGroupAdmin
 
     - allow: true # Admin of the group of an exercise has most of the rights to the exercise
