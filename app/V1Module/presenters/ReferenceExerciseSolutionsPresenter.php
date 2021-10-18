@@ -230,8 +230,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         // delete source codes
         $this->fileStorage->deleteSolutionArchive($solution->getSolution());
 
-        $this->referenceSolutions->remove($solution);
+        $solution->setLastSubmission(null); // break cyclic dependency, so submissions may be deleted on cascade
         $this->referenceSolutions->flush();
+        $this->referenceSolutions->remove($solution);
+
         $this->sendSuccessResponse("OK");
     }
 
@@ -305,6 +307,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function actionDeleteSubmission(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
+        $solution = $submission->getReferenceSolution();
+        $solution->setLastSubmission($this->referenceSubmissions->getLastSubmission($solution, $submission));
         $this->referenceSubmissions->remove($submission);
         $this->referenceSubmissions->flush();
         $this->fileStorage->deleteResultsArchive($submission);
