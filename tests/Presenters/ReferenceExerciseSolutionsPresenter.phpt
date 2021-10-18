@@ -77,6 +77,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
             $mockBackendSubmitHelper,
             $this->container->getByType(App\Model\Repository\AssignmentSolutions::class),
             $this->container->getByType(App\Model\Repository\AssignmentSolutionSubmissions::class),
+            $this->container->getByType(App\Model\Repository\ReferenceExerciseSolutions::class),
             $this->container->getByType(App\Model\Repository\ReferenceSolutionSubmissions::class),
             $this->container->getByType(App\Model\Repository\SubmissionFailures::class),
             $this->container->getByType(App\Helpers\FailureHelper::class),

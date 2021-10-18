@@ -122,7 +122,7 @@ class AssignmentSolution
     /**
      * This is a reference to the last (by submittedAt) submission attached to this solution.
      * The reference should speed up loading in many cases since the last submission is the only one that counts.
-     * However, this behavior might be altered in the future, so we can activeley select which submission is relevant.
+     * However, this behavior might be altered in the future, so we can actively select which submission is relevant.
      *
      * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER")
      * @var AssignmentSolutionSubmission|null

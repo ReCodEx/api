@@ -33,6 +33,7 @@ class ReferenceExerciseSolutionViewFactory
                     return $evaluation->getId();
                 }
             )->getValues(),
+            "lastSubmission" => $solution->getLastSubmission(),
             "permissionHints" => PermissionHints::get($this->referenceSolutionAcl, $solution)
         ];
     }

@@ -32,7 +32,7 @@ class AssignmentSolutionSubmissions extends BaseRepository
     /**
      * Retrieve the last submission for given assignment solution.
      * @param AssignmentSolution $solution
-     * @param AssignmentSolutionSubmission|null $omitThisSubmission If set, given solution will be ignored
+     * @param AssignmentSolutionSubmission|null $omitThisSubmission If set, given submission will be ignored
      *  (as if it is not present on the list). That might be useful when looking for new last submission
      *  whilst a submission is being deleted.
      * @return AssignmentSolutionSubmission|null
@@ -42,11 +42,10 @@ class AssignmentSolutionSubmissions extends BaseRepository
         ?AssignmentSolutionSubmission $omitThisSubmission = null
     ): ?AssignmentSolutionSubmission {
         $submissions = $this->findBy(
+            [ "assignmentSolution" => $solution ],
             [
-                "assignmentSolution" => $solution
-            ],
-            [
-                "submittedAt" => "DESC"  // make sure the last one submitted is first one in the result
+                "submittedAt" => "DESC",  // make sure the last one submitted is first one in the result
+                "id" => "ASC",
             ]
         );
 

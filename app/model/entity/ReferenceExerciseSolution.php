@@ -44,6 +44,16 @@ class ReferenceExerciseSolution
     protected $submissions;
 
     /**
+     * This is a reference to the last (by submittedAt) submission attached to this solution.
+     * The reference should speed up loading in many cases since the last submission is the only one that counts.
+     * However, this behavior might be altered in the future, so we can actively select which submission is relevant.
+     *
+     * @ORM\OneToOne(targetEntity="ReferenceSolutionSubmission", fetch="EAGER")
+     * @var ReferenceSolutionSubmission|null
+     */
+    protected $lastSubmission = null;
+
+    /**
      * Add submission to solution entity.
      * @param ReferenceSolutionSubmission $submission
      */
@@ -82,5 +92,15 @@ class ReferenceExerciseSolution
     public function getSubmissions(): Collection
     {
         return $this->submissions;
+    }
+
+    public function getLastSubmission(): ?ReferenceSolutionSubmission
+    {
+        return $this->lastSubmission;
+    }
+
+    public function setLastSubmission(?ReferenceSolutionSubmission $lastSubmission): void
+    {
+        $this->lastSubmission = $lastSubmission;
     }
 }

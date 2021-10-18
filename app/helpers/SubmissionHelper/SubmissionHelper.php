@@ -30,6 +30,7 @@ use App\Model\Entity\User;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
+use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Solutions;
@@ -54,6 +55,9 @@ class SubmissionHelper
 
     /** @var AssignmentSolutionSubmissions  */
     private $assignmentSubmissions;
+
+    /** @var ReferenceExerciseSolutions */
+    private $referenceSolutions;
 
     /** @var ReferenceSolutionSubmissions */
     public $referenceSubmissions;
@@ -81,6 +85,7 @@ class SubmissionHelper
         BackendSubmitHelper $backendSubmitHelper,
         AssignmentSolutions $assignmentSolutions,
         AssignmentSolutionSubmissions $assignmentSubmissions,
+        ReferenceExerciseSolutions $referenceSolutions,
         ReferenceSolutionSubmissions $referenceSubmissions,
         SubmissionFailures $submissionFailures,
         FailureHelper $failureHelper,
@@ -91,6 +96,7 @@ class SubmissionHelper
         $this->backendSubmitHelper = $backendSubmitHelper;
         $this->assignmentSolutions = $assignmentSolutions;
         $this->assignmentSubmissions = $assignmentSubmissions;
+        $this->referenceSolutions = $referenceSolutions;
         $this->referenceSubmissions = $referenceSubmissions;
         $this->submissionFailures = $submissionFailures;
         $this->failureHelper = $failureHelper;
@@ -368,6 +374,8 @@ class SubmissionHelper
             $isDebug
         );
         $this->referenceSubmissions->persist($submission);
+        $referenceSolution->setLastSubmission($submission);
+        $this->referenceSolutions->persist($referenceSolution);
 
         try {
             $jobConfig = $this->jobConfigGenerator->generateJobConfig(
