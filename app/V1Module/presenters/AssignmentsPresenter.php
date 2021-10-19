@@ -28,7 +28,6 @@ use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\AssignmentViewFactory;
-use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -776,6 +775,6 @@ class AssignmentsPresenter extends BasePresenter
             }
         }
 
-        $this->sendResponse(new ZipFilesResponse($files, "assignment-{$id}.zip"));
+        $this->sendZipFilesResponse($files, "assignment-{$id}.zip");
     }
 }

@@ -17,7 +17,6 @@ use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
-use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IExercisePermissions;
 use Exception;
 use Tracy\ILogger;
@@ -237,7 +236,7 @@ class ExerciseFilesPresenter extends BasePresenter
             $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
 
-        $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true));
+        $this->sendZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true);
     }
 
     public function checkUploadAttachmentFiles(string $id)
@@ -372,6 +371,6 @@ class ExerciseFilesPresenter extends BasePresenter
         foreach ($exercise->getAttachmentFiles() as $file) {
             $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
-        $this->sendResponse(new ZipFilesResponse($files, "exercise-attachment-{$id}.zip"));
+        $this->sendZipFilesResponse($files, "exercise-attachment-{$id}.zip");
     }
 }

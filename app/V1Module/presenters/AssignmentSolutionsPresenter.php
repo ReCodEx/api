@@ -21,7 +21,6 @@ use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\SolutionFilesViewFactory;
 use App\Exceptions\ForbiddenRequestException;
-use App\Responses\StorageFileResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 
 /**
@@ -524,7 +523,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
         if (!$zipFile) {
             throw new NotFoundException("Solution archive not found.");
         }
-        $this->sendResponse(new StorageFileResponse($zipFile, "solution-{$id}.zip", "application/zip"));
+        $this->sendStorageFileResponse($zipFile, "solution-{$id}.zip", "application/zip");
     }
 
     public function checkFiles(string $id)
@@ -578,7 +577,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
             throw new NotFoundException("Archive for submission '$submissionId' not found in file storage");
         }
 
-        $this->sendResponse(new StorageFileResponse($file, "results-{$submissionId}.zip", "application/zip"));
+        $this->sendStorageFileResponse($file, "results-{$submissionId}.zip", "application/zip");
     }
 
     public function checkEvaluationScoreConfig(string $submissionId)

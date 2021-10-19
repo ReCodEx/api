@@ -2,7 +2,6 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Responses\StorageFileResponse;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\WorkerFilesConfig;
 use App\Helpers\FileStorageManager;
@@ -107,7 +106,7 @@ class WorkerFilesPresenter extends BasePresenter
                 );
             }
         }
-        $this->sendResponse(new StorageFileResponse($file, "${type}_${id}.zip"));
+        $this->sendStorageFileResponse($file, "${type}_${id}.zip");
     }
 
     /**
@@ -121,7 +120,7 @@ class WorkerFilesPresenter extends BasePresenter
         if (!$file) {
             throw new NotFoundException("Supplementary file not found in the storage");
         }
-        $this->sendResponse(new StorageFileResponse($file, $hash));
+        $this->sendStorageFileResponse($file, $hash);
     }
 
     /**

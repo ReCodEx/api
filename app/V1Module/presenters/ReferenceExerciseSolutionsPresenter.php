@@ -40,7 +40,6 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\ReferenceExerciseSolutionViewFactory;
 use App\Model\View\SolutionFilesViewFactory;
-use App\Responses\StorageFileResponse;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IReferenceExerciseSolutionPermissions;
 use Exception;
@@ -381,7 +380,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Add new reference solution to an exercise
      * @POST
-     * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
+     * @Param(type="post", name="note", validation="string",
+     *        description="Description of this particular reference solution, for example used algorithm")
      * @Param(type="post", name="files", description="Files of the reference solution")
      * @Param(type="post", name="runtimeEnvironmentId", description="ID of runtime for this solution")
      * @Param(type="post", name="solutionParams", required=false, description="Solution parameters")
@@ -433,7 +433,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * Evaluate a single reference exercise solution for all configured hardware groups
      * @POST
      * @param string $id Identifier of the reference solution
-     * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
+     * @Param(type="post", name="debug", validation="bool", required=false,
+     *        description="Debugging evaluation with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws ParseException
      * @throws BadRequestException
@@ -472,7 +473,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * Evaluate all reference solutions for an exercise (and for all configured hardware groups).
      * @POST
      * @param string $exerciseId Identifier of the exercise
-     * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
+     * @Param(type="post", name="debug", validation="bool", required=false,
+     *        description="Debugging evaluation with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws ParseException
      * @throws BadRequestException
@@ -575,7 +577,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         if (!$zipFile) {
             throw new NotFoundException("Reference solution archive not found.");
         }
-        $this->sendResponse(new StorageFileResponse($zipFile, "reference-solution-{$solutionId}.zip", "application/zip"));
+        $this->sendStorageFileResponse($zipFile, "reference-solution-{$solutionId}.zip", "application/zip");
     }
 
     public function checkFiles(string $id)
@@ -634,7 +636,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             throw new NotFoundException("Archive for reference submission '$submissionId' not found in file storage");
         }
 
-        $this->sendResponse(new StorageFileResponse($file, "results-{$submissionId}.zip", "application/zip"));
+        $this->sendStorageFileResponse($file, "results-{$submissionId}.zip", "application/zip");
     }
 
     public function checkEvaluationScoreConfig(string $submissionId)

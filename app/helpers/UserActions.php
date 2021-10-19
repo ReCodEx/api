@@ -13,9 +13,8 @@ use Tracy\Debugger;
  */
 class UserActions
 {
-
-    const USER_ACTIONS_LOG = "user_actions.log";
-    const COLUMNS_GLUE = ",";
+    private const USER_ACTIONS_LOG = "user_actions.log";
+    private const COLUMNS_GLUE = ",";
 
     /** @var Nette\Security\User */
     private $user;
