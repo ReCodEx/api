@@ -20,6 +20,9 @@ use App\Security\Authorizator;
 use App\Model\Repository\Users;
 use App\Helpers\UserActions;
 use App\Helpers\Validators;
+use App\Helpers\FileStorage\IImmutableFile;
+use App\Responses\StorageFileResponse;
+use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;
@@ -242,13 +245,18 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $value;
     }
 
-    protected function sendSuccessResponse($payload, $code = IResponse::S200_OK)
+    protected function logUserAction($code = IResponse::S200_OK)
     {
         if ($this->getUser()->isLoggedIn()) {
             $params = $this->getRequest()->getParameters();
             unset($params[self::ACTION_KEY]);
             $this->userActions->log($this->getAction(true), $params, $code);
         }
+    }
+
+    protected function sendSuccessResponse($payload, $code = IResponse::S200_OK)
+    {
+        $this->logUserAction($code);
 
         $resp = $this->getHttpResponse();
         $resp->setCode($code);
@@ -299,5 +307,35 @@ class BasePresenter extends \App\Presenters\BasePresenter
     protected function getPagination(...$params): Pagination
     {
         return new Pagination(...$params);
+    }
+
+    /**
+     * Wrapper for special responses that send one file directly from the storage.
+     * @param IImmutableFile $file to be sent
+     * @param string $name under which the file is presented in download
+     * @param string $contentType MIME
+     * @param bool $forceDownload
+     */
+    protected function sendStorageFileResponse(
+        IImmutableFile $file,
+        string $name,
+        string $contentType = null,
+        bool $forceDownload = true
+    ) {
+        $this->logUserAction(200);
+        $this->sendResponse(new StorageFileResponse($file, $name, $contentType, $forceDownload));
+    }
+
+    /**
+     * Wrapper for special responses that prepare a new ZIP archive and send it over.
+     * @param array $files indexed by original name (becomes zip entry) where values are local paths (strings)
+     *                     or possibly IImmutableFile objects
+     * @param string|null $name
+     * @param bool $forceDownload
+     */
+    protected function sendZipFilesResponse(array $files, string $name = null, bool $forceDownload = true)
+    {
+        $this->logUserAction(200);
+        $this->sendResponse(new ZipFilesResponse($files, $name, $forceDownload));
     }
 }

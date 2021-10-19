@@ -19,7 +19,6 @@ use App\Model\Repository\UploadedPartialFiles;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
 use App\Model\Entity\SolutionZipFile;
-use App\Responses\StorageFileResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use App\Security\ACL\IUploadedPartialFilePermissions;
 use ForceUTF8\Encoding;
@@ -149,7 +148,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!$file) {
             throw new NotFoundException("File not found in the storage");
         }
-        $this->sendResponse(new StorageFileResponse($file, $name));
+        $this->sendStorageFileResponse($file, $name);
     }
 
     public function checkContent(string $id)
@@ -533,6 +532,6 @@ class UploadedFilesPresenter extends BasePresenter
         if (!$file) {
             throw new NotFoundException("Supplementary file not found in the storage");
         }
-        $this->sendResponse(new StorageFileResponse($file, $fileEntity->getName()));
+        $this->sendStorageFileResponse($file, $fileEntity->getName());
     }
 }
