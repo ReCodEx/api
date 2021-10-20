@@ -241,4 +241,79 @@ class AssignmentEmailsSender
             ]
         );
     }
+
+    /**
+     * Deadline of shadow assignment is nearby so the users should be alerted.
+     * @param ShadowAssignment $assignment
+     * @return bool
+     * @throws InvalidStateException
+     */
+    public function shadowAssignmentDeadline(ShadowAssignment $assignment): bool
+    {
+        if ($assignment->getGroup() === null) {
+            // group was deleted, do not send emails
+            return false;
+        }
+
+        $recipients = [];
+        /** @var User $student */
+        foreach ($assignment->getGroup()->getStudents() as $student) {
+            if (!$student->isVerified() || !$student->getSettings()->getAssignmentDeadlineEmails()) {
+                continue;  // disabled sending emails or not verified email
+            }
+
+            $recipients[] = $student;
+        }
+
+        if (count($recipients) === 0) {
+            return true;
+        }
+
+        return $this->localizationHelper->sendLocalizedEmail(
+            $recipients,
+            function ($toUsers, $emails, $locale) use ($assignment) {
+                $result = $this->createShadowAssignmentDeadline($assignment, $locale);
+
+                // Send the mail
+                return $this->emailHelper->setShowSettingsInfo()->send(
+                    $this->sender,
+                    [],
+                    $locale,
+                    $result->getSubject(),
+                    $result->getText(),
+                    $emails
+                );
+            }
+        );
+    }
+
+    /**
+     * Prepare and format body of the assignment deadline mail
+     * @param ShadowAssignment $assignment
+     * @param string $locale
+     * @return EmailRenderResult
+     * @throws InvalidStateException
+     */
+    private function createShadowAssignmentDeadline(ShadowAssignment $assignment, string $locale): EmailRenderResult
+    {
+        // render the HTML to string using Latte engine
+        $latte = EmailLatteFactory::latte();
+        $localizedGroup = EmailLocalizationHelper::getLocalization(
+            $locale,
+            $assignment->getGroup()->getLocalizedTexts()
+        );
+        $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/shadowAssignmentDeadline_{locale}.latte");
+        return $latte->renderEmail(
+            $template,
+            [
+                "assignment" => EmailLocalizationHelper::getLocalization(
+                    $locale,
+                    $assignment->getLocalizedTexts()
+                )->getName(),
+                "group" => $localizedGroup ? $localizedGroup->getName() : "",
+                "deadline" => $assignment->getDeadline(),
+                "link" => EmailLinkHelper::getLink($this->shadowRedirectUrl, ["id" => $assignment->getId()])
+            ]
+        );
+    }
 }

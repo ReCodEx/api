@@ -3,13 +3,17 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Console\SendAssignmentDeadlineNotification;
+use App\Helpers\Localizations;
 use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
+use App\Model\Entity\LocalizedShadowAssignment;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\ShadowAssignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
@@ -26,6 +30,9 @@ class TestDeadlineNotifications extends Tester\TestCase
 {
     /** @var Assignments */
     private $assignments;
+
+    /** @var ShadowAssignments */
+    private $shadowAssignments;
 
     /** @var AssignmentSolutions */
     private $assignmentSolutions;
@@ -78,6 +85,7 @@ class TestDeadlineNotifications extends Tester\TestCase
 
         $this->emailHelperMock = Mockery::mock(EmailHelper::class);
         $this->assignments = $this->container->getByType(Assignments::class);
+        $this->shadowAssignments = $this->container->getByType(ShadowAssignments::class);
         $this->assignmentSolutions = $this->container->getByType(AssignmentSolutions::class);
         $this->localizationHelper = $this->container->getByType(EmailLocalizationHelper::class);
         $this->sender = new AssignmentEmailsSender(
@@ -90,6 +98,7 @@ class TestDeadlineNotifications extends Tester\TestCase
             "",
             "1 day",
             $this->assignments,
+            $this->shadowAssignments,
             $this->sender
         );
     }
@@ -123,6 +132,31 @@ class TestDeadlineNotifications extends Tester\TestCase
         $deadline->modify("+12 hours");
         $assignment->setFirstDeadline($deadline);
         $this->assignments->persist($assignment);
+
+        $this->emailHelperMock->shouldReceive("setShowSettingsInfo")->once()->andReturn($this->emailHelperMock);
+        $this->emailHelperMock->shouldReceive("send")->once()->andReturn(true);
+        $input = new StringInput("");
+        $this->command->run($input, new NullOutput());
+
+        Assert::true(true); // We make no assertions here - all the work is done by Mockery
+    }
+
+    public function testShadowAssignmentDeadlineNearby()
+    {
+        $assignment = ShadowAssignment::createInGroup($this->demoGroup, true);
+        $localizedTexts = [];
+        foreach (['cs', 'en'] as $lang) {
+            $localizedTexts[$lang] = new LocalizedShadowAssignment($lang, "Foo", "Bar", null);
+        }
+        Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
+        foreach ($assignment->getLocalizedTexts() as $localizedText) {
+            $this->shadowAssignments->persist($localizedText, false);
+        }
+
+        $deadline = new DateTime();
+        $deadline->modify("+12 hours");
+        $assignment->setDeadline($deadline);
+        $this->shadowAssignments->persist($assignment);
 
         $this->emailHelperMock->shouldReceive("setShowSettingsInfo")->once()->andReturn($this->emailHelperMock);
         $this->emailHelperMock->shouldReceive("send")->once()->andReturn(true);

@@ -38,7 +38,7 @@ class ShadowAssignmentViewFactory
             'awardeeId' => $points->getAwardee() ? $points->getAwardee()->getId() : null,  // who gets the points
             'createdAt' => $points->getCreatedAt()->getTimestamp(),
             'updatedAt' => $points->getUpdatedAt()->getTimestamp(),
-            'awardedAt' => $points->getAwardedAt() ? $points->getAwardedAt()->getTimestamp() : null
+            'awardedAt' => $points->getAwardedAt() ? $points->getAwardedAt()->getTimestamp() : null,
         ];
     }
 
@@ -80,7 +80,8 @@ class ShadowAssignmentViewFactory
             "isBonus" => $assignment->isBonus(),
             "maxPoints" => $assignment->getMaxPoints(),
             "points" => $this->getAssignmentPoints($assignment),
-            "permissionHints" => PermissionHints::get($this->shadowAssignmentAcl, $assignment)
+            "permissionHints" => PermissionHints::get($this->shadowAssignmentAcl, $assignment),
+            "deadline" => $assignment->getDeadline() ? $assignment->getDeadline()->getTimestamp() : null,
         ];
     }
 }
