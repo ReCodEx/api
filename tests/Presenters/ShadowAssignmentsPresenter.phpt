@@ -59,7 +59,8 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
         $assignment = current($this->presenter->shadowAssignments->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:ShadowAssignments', 'GET',
+            'V1:ShadowAssignments',
+            'GET',
             ['action' => 'detail', 'id' => $assignment->getId()]
         );
         $response = $this->presenter->run($request);
@@ -89,7 +90,8 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
         $isBonus = true;
 
         $request = new Nette\Application\Request(
-            'V1:ShadowAssignments', 'POST',
+            'V1:ShadowAssignments',
+            'POST',
             ['action' => 'updateDetail', 'id' => $assignment->getId()],
             [
                 'version' => 1,
@@ -112,6 +114,62 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
         Assert::equal($isPublic, $updatedAssignment["isPublic"]);
         Assert::equal($maxPoints, $updatedAssignment["maxPoints"]);
         Assert::equal($isBonus, $updatedAssignment["isBonus"]);
+        Assert::null($updatedAssignment["deadline"]);
+
+        // check localized texts
+        Assert::count(1, $updatedAssignment["localizedTexts"]);
+        $localized = current($localizedTexts);
+        $updatedLocalized = $updatedAssignment["localizedTexts"][0];
+        Assert::equal($updatedLocalized["locale"], $localized["locale"]);
+        Assert::equal($updatedLocalized["text"], $localized["text"]);
+    }
+
+    public function testUpdateDetailWithDeadline()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $assignment = current($this->presenter->shadowAssignments->findAll());
+        $assignment->setIsPublic(false); // for testing of notification emails
+
+        /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
+        $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
+        $mockAssignmentEmailsSender->shouldReceive("assignmentCreated")->with($assignment)->andReturn(true)->once();
+        $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
+
+        $isPublic = true;
+        $localizedTexts = [
+            ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+        ];
+        $maxPoints = 123;
+        $isBonus = true;
+        $deadline = (new DateTime())->getTimestamp();
+
+        $request = new Nette\Application\Request(
+            'V1:ShadowAssignments',
+            'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'version' => 1,
+                'isPublic' => $isPublic,
+                'isBonus' => $isBonus,
+                'localizedTexts' => $localizedTexts,
+                'maxPoints' => $maxPoints,
+                'deadline' => $deadline,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+
+        // check updated assignment
+        /** @var Assignment $updatedAssignment */
+        $updatedAssignment = $result['payload'];
+        Assert::equal(2, $updatedAssignment["version"]);
+        Assert::equal($isPublic, $updatedAssignment["isPublic"]);
+        Assert::equal($maxPoints, $updatedAssignment["maxPoints"]);
+        Assert::equal($isBonus, $updatedAssignment["isBonus"]);
+        Assert::equal($deadline, $updatedAssignment["deadline"]);
 
         // check localized texts
         Assert::count(1, $updatedAssignment["localizedTexts"]);
@@ -152,7 +210,8 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
         $assignmentId = current($this->presenter->shadowAssignments->findAll())->getId();
 
         $request = new Nette\Application\Request(
-            'V1:ShadowAssignments', 'DELETE',
+            'V1:ShadowAssignments',
+            'DELETE',
             ['action' => 'remove', 'id' => $assignmentId]
         );
         $response = $this->presenter->run($request);
@@ -249,7 +308,8 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
         $pointsId = current($this->presenter->shadowAssignmentPointsRepository->findAll())->getId();
 
         $request = new Nette\Application\Request(
-            'V1:ShadowAssignments', 'DELETE',
+            'V1:ShadowAssignments',
+            'DELETE',
             ['action' => 'removePoints', 'pointsId' => $pointsId]
         );
         $response = $this->presenter->run($request);

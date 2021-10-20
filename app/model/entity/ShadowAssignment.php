@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -112,6 +113,11 @@ class ShadowAssignment extends AssignmentBase
         return $first === false ? null : $first;
     }
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $deadline = null;
+
     /*
      * Accessors
      */
@@ -129,5 +135,15 @@ class ShadowAssignment extends AssignmentBase
     public function setMaxPoints(int $maxPoints): void
     {
         $this->maxPoints = $maxPoints;
+    }
+
+    public function getDeadline(): ?DateTime
+    {
+        return $this->deadline;
+    }
+
+    public function setDeadline(?DateTime $deadline): void
+    {
+        $this->deadline = $deadline;
     }
 }

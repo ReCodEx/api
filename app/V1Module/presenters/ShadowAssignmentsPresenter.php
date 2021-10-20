@@ -137,12 +137,20 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * Update details of an shadow assignment
      * @POST
      * @param string $id Identifier of the updated assignment
-     * @Param(type="post", name="version", validation="numericint", description="Version of the edited assignment")
-     * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
-     * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
-     * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
-     * @Param(type="post", name="maxPoints", validation="numericint", description="A maximum of points that user can be awarded")
-     * @Param(type="post", name="sendNotification", required=false, validation="bool", description="If email notification should be sent")
+     * @Param(type="post", name="version", validation="numericint",
+     *        description="Version of the edited assignment")
+     * @Param(type="post", name="isPublic", validation="bool",
+     *        description="Is the assignment ready to be displayed to students?")
+     * @Param(type="post", name="isBonus", validation="bool",
+     *        description="If true, the points from this exercise will not be included in overall score of group")
+     * @Param(type="post", name="localizedTexts", validation="array",
+     *        description="A description of the assignment")
+     * @Param(type="post", name="maxPoints", validation="numericint",
+     *        description="A maximum of points that user can be awarded")
+     * @Param(type="post", name="sendNotification", required=false, validation="bool",
+     *        description="If email notification should be sent")
+     * @Param(type="post", name="deadline", validation="timestamp|null", required=false,
+     *        description="Deadline (only for visualization), missing value meas no deadline (same as null)")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
@@ -177,6 +185,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
         $assignment->setIsPublic($isPublic);
         $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setMaxPoints($req->getPost("maxPoints"));
+
+        $deadline = (int)$req->getPost("deadline");
+        $assignment->setDeadline($deadline ? DateTime::createFromFormat('U', $deadline) : null);
+
 
         // go through localizedTexts and construct database entities
         $localizedTexts = [];
@@ -280,10 +292,12 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * Create new points for shadow assignment and user.
      * @POST
      * @param string $id Identifier of the shadow assignment
-     * @Param(type="post", name="userId", validation="string", description="Identifier of the user which is marked as awardee for points")
+     * @Param(type="post", name="userId", validation="string",
+     *        description="Identifier of the user which is marked as awardee for points")
      * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
      * @Param(type="post", name="note", validation="string", description="Note about newly created points")
-     * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that means")
+     * @Param(type="post", name="awardedAt", validation="timestamp", required=false,
+     *        description="Datetime when the points were awarded, whatever that means")
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
@@ -344,7 +358,8 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @param string $pointsId Identifier of the shadow assignment points
      * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
      * @Param(type="post", name="note", validation="string:0..1024", description="Note about newly created points")
-     * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that means")
+     * @Param(type="post", name="awardedAt", validation="timestamp", required=false,
+     *        description="Datetime when the points were awarded, whatever that means")
      * @throws NotFoundException
      * @throws InvalidStateException
      */

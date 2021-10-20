@@ -4,11 +4,12 @@ namespace App\Console;
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Repository\Assignments;
-use DateTime;
+use App\Model\Repository\ShadowAssignments;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use DateTime;
 
 class SendAssignmentDeadlineNotification extends Command
 {
@@ -20,6 +21,9 @@ class SendAssignmentDeadlineNotification extends Command
     /** @var Assignments */
     private $assignments;
 
+    /** @var ShadowAssignments */
+    private $shadowAssignments;
+
     /** @var string */
     private $thresholdFrom;
 
@@ -30,11 +34,13 @@ class SendAssignmentDeadlineNotification extends Command
         string $thresholdFrom,
         string $thresholdTo,
         Assignments $assignments,
+        ShadowAssignments $shadowAssignments,
         AssignmentEmailsSender $sender
     ) {
         parent::__construct();
         $this->sender = $sender;
         $this->assignments = $assignments;
+        $this->shadowAssignments = $shadowAssignments;
         $this->thresholdFrom = $thresholdFrom;
         $this->thresholdTo = $thresholdTo;
     }
@@ -66,6 +72,13 @@ class SendAssignmentDeadlineNotification extends Command
             $group = $assignment->getGroup();
             if ($assignment->isVisibleToStudents() && $group && !$group->isArchived()) {
                 $this->sender->assignmentDeadline($assignment);
+            }
+        }
+
+        foreach ($this->shadowAssignments->findByDeadline($from, $to) as $shadowAssignment) {
+            $group = $shadowAssignment->getGroup();
+            if ($shadowAssignment->isPublic() && $group && !$group->isArchived()) {
+                $this->sender->shadowAssignmentDeadline($shadowAssignment);
             }
         }
 
