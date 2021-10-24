@@ -65,7 +65,11 @@ class UserPermissionPolicy implements IPermissionPolicy
         }
 
         foreach ($user->getGroupsAsStudent() as $group) {
-            if ($group->isSupervisorOf($currentUser) || $group->isObserverOf($currentUser) || $group->isAdminOf($currentUser)) {
+            if (
+                $group->isSupervisorOf($currentUser)
+                || $group->isObserverOf($currentUser)
+                || $group->isAdminOf($currentUser)
+            ) {
                 return true;
             }
         }

@@ -216,8 +216,8 @@ class UsersPresenter extends BasePresenter
      * @throws InvalidArgumentException
      * @Param(type="post", name="firstName", required=false, validation="string:2..", description="First name")
      * @Param(type="post", name="lastName", required=false, validation="string:2..", description="Last name")
-     * @Param(type="post", name="titlesBeforeName", description="Titles before name")
-     * @Param(type="post", name="titlesAfterName", description="Titles after name")
+     * @Param(type="post", name="titlesBeforeName", required=false, description="Titles before name")
+     * @Param(type="post", name="titlesAfterName", required=false, description="Titles after name")
      * @Param(type="post", name="email", validation="email", description="New email address", required=false)
      * @Param(type="post", name="oldPassword", required=false, validation="string:1..",
      *        description="Old password of current user")
@@ -240,7 +240,13 @@ class UsersPresenter extends BasePresenter
 
         // change details in separate methods
         $this->changeUserEmail($user, $req->getPost("email"));
-        $this->changeFirstAndLastName($user, $req->getPost("firstName"), $req->getPost("lastName"));
+        $this->changePersonalData(
+            $user,
+            $req->getPost("titlesBeforeName"),
+            $req->getPost("firstName"),
+            $req->getPost("lastName"),
+            $req->getPost("titlesAfterName")
+        );
         $passwordChanged = $this->changeUserPassword(
             $login,
             $req->getPost("oldPassword"),
@@ -248,8 +254,6 @@ class UsersPresenter extends BasePresenter
             $req->getPost("passwordConfirm")
         );
 
-        $user->setTitlesBeforeName($req->getPost("titlesBeforeName"));
-        $user->setTitlesAfterName($req->getPost("titlesAfterName"));
         $user->setGravatar(filter_var($req->getPost("gravatarUrlEnabled"), FILTER_VALIDATE_BOOLEAN));
 
         // make changes permanent
@@ -309,25 +313,40 @@ class UsersPresenter extends BasePresenter
     /**
      * Change firstname and second name and check if user can change them.
      * @param User $user
+     * @param null|string $titlesBefore
      * @param null|string $firstname
      * @param null|string $lastname
+     * @param null|string $titlesAfter
      * @throws ForbiddenRequestException
      */
-    public function changeFirstAndLastName(User $user, ?string $firstname, ?string $lastname)
-    {
+    private function changePersonalData(
+        User $user,
+        ?string $titlesBefore,
+        ?string $firstname,
+        ?string $lastname,
+        ?string $titlesAfter
+    ) {
         if (
-            ($firstname !== null || $lastname !== null) &&
+            ($titlesBefore !== null || $firstname !== null || $lastname !== null || $titlesAfter !== null) &&
             !$this->userAcl->canUpdatePersonalData($user)
         ) {
             throw new ForbiddenRequestException("You cannot update personal data");
         }
 
-        if ($firstname) {
-            $user->setFirstName($firstname);
+        if ($titlesBefore !== null) {
+            $user->setTitlesBeforeName(trim($titlesBefore));
         }
 
-        if ($lastname) {
-            $user->setLastName($lastname);
+        if ($firstname && trim($firstname)) {
+            $user->setFirstName(trim($firstname));
+        }
+
+        if ($lastname && trim($lastname)) {
+            $user->setLastName(trim($lastname));
+        }
+
+        if ($titlesAfter !== null) {
+            $user->setTitlesAfterName(trim($titlesAfter));
         }
     }
 
