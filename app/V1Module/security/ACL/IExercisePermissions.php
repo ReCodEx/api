@@ -58,4 +58,6 @@ interface IExercisePermissions
     public function canAddTag(Exercise $exercise): bool;
 
     public function canRemoveTag(Exercise $exercise): bool;
+
+    public function canAssign(Exercise $exercise): bool;
 }

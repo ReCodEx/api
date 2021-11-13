@@ -44,7 +44,7 @@ interface IGroupPermissions
 
     public function canViewExercises(Group $group): bool;
 
-    public function canAssignExercise(Group $group, Exercise $exercise): bool;
+    public function canAssignExercise(Group $group): bool;
 
     public function canCreateExercise(Group $group): bool;
 
