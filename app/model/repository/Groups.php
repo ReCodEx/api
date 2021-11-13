@@ -122,19 +122,25 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * Fetch all groups in which the given user has membership (all relations except admin).
      * @param User $user The user whos memberships are considered.
-     * @param bool $admins If true, only admin relations are used. If false, all but admin relations are used.
-     *                     This way, the admined groups can be handled separately.
+     * @param array $allowed List of allowed membership types (empty list = no restrictions)
+     * @param array $denied List of denied membership types (empty list = no restrictions)
      * @return Group[] Array indexed by group IDs.
      */
-    private function fetchGroupsByMembership(User $user, bool $admins): array
+    private function findGroupsByMembership(User $user, array $allowed = [], array $denied = []): array
     {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
         $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");
         $sub->andWhere($sub->expr()->eq('gm.group', 'g'));
         $sub->andWhere($sub->expr()->eq('gm.user', $sub->expr()->literal($user->getId())));
-        // admins are handled separately...
-        $adminExpr = $sub->expr()->literal(GroupMembership::TYPE_ADMIN);
-        $sub->andWhere($admins ? $sub->expr()->eq('gm.type', $adminExpr) : $sub->expr()->neq('gm.type', $adminExpr));
+
+        // filter membership types
+        if ($allowed) {
+            $sub->andWhere($sub->expr()->in('gm.type', $allowed));
+        }
+        if ($denied) {
+            $sub->andWhere($sub->expr()->notIn('gm.type', $denied));
+        }
+
         $qb->andWhere($qb->expr()->exists($sub->getDQL()));
 
         $res = [];
@@ -145,6 +151,54 @@ class Groups extends BaseSoftDeleteRepository
     }
 
     /**
+     * Find immediate children of all parent groups on a given list.
+     * This can be used to iteratively get whole subtree of groups quite efficiently.
+     * @param string[] $parentsIds list of IDs of all parent groups
+     * @return Group[]
+     */
+    private function findAllChildrenOf(array $parentsIds): array
+    {
+        if (!$parentsIds) {
+            return [];
+        }
+        $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
+        $qb->andWhere($qb->expr()->in("g.parentGroup", $parentsIds));
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Find all groups that are supervised by a user (as supervisor, admin, or admin inherently).
+     * @param User $user The supervisor/admin
+     * @return Group[] Array indexed by group IDs.
+     */
+    public function findSupervisedGroupsIds(User $user): array
+    {
+        $res = [];
+
+        // Add groups where user is admin or inherits admin privileges.
+        $admined = $this->findGroupsByMembership($user, [ GroupMembership::TYPE_ADMIN ]);
+        while ($admined) {
+            $parents = []; // groups that become parents of next iteration
+            foreach ($admined as $group) {
+                if (!array_key_exists($group->getId(), $res)) {
+                    $res[$group->getId()] = $group;
+                    $parents[] = $group->getId();
+                }
+            }
+            $admined = $this->findAllChildrenOf($parents); // load all children of given parents at once
+        }
+
+        // Add groups where user is direct supervisor.
+        $supervised = $this->findGroupsByMembership($user, [ GroupMembership::TYPE_SUPERVISOR ]);
+        foreach ($supervised as $group) {
+            $res[$group->getId()] = $group;
+        }
+
+        return $res;
+    }
+
+
+    /**
      * Filter list of groups so that only groups affiliated to given user
      * (by direct membership or by admin rights) and public groups remain in the result.
      * @param User $user User whos affiliation is considered.
@@ -153,8 +207,8 @@ class Groups extends BaseSoftDeleteRepository
      */
     private function filterGroupsByUser(User $user, array $groups): array
     {
-        $memberOf = $this->fetchGroupsByMembership($user, false); // not admins
-        $adminOf = $this->fetchGroupsByMembership($user, true); // only admines
+        $memberOf = $this->findGroupsByMembership($user, [], [ GroupMembership::TYPE_ADMIN ]); // not admins
+        $adminOf = $this->findGroupsByMembership($user, [ GroupMembership::TYPE_ADMIN ]); // only admins
 
         return array_filter(
             $groups,

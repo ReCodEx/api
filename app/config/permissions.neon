@@ -356,24 +356,6 @@ permissions:
       actions:
           - assignExercise
       conditions:
-          - exercise.isAuthor
-          - group.isSupervisor
-          - group.isNotArchived
-
-    - allow: true
-      resource: group
-      actions:
-          - assignExercise
-      conditions:
-          - exercise.isSubGroupSupervisor
-          - group.isNotArchived
-
-    - allow: true
-      resource: group
-      actions:
-          - assignExercise
-      conditions:
-          - exercise.isPublic
           - group.isSupervisor
           - group.isNotArchived
 
@@ -537,6 +519,7 @@ permissions:
           - viewAssignments
           - addReferenceSolution
           - fork
+          - assign
       conditions:
           or:
             - exercise.isAuthor

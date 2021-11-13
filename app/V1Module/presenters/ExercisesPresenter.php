@@ -298,7 +298,7 @@ class ExercisesPresenter extends BasePresenter
      * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
      *   description="Maximal size (bytes) of all files in a solution being submitted (default for assignments)")
      * @Param(type="post", name="mergeJudgeLogs", validation="bool",
-     *   description="Initial value for assignments. If true, judge stdout and stderr will be merged in one log - stdout")
+     *   description="Initial value for assignments. If true, judge stderr will be merged into stdout.")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
@@ -541,7 +541,8 @@ class ExercisesPresenter extends BasePresenter
      * Set hardware groups which are associated with exercise.
      * @POST
      * @param string $id identifier of exercise
-     * @Param(type="post", name="hwGroups", validation="array", description="List of hardware groups identifications to which exercise belongs to")
+     * @Param(type="post", name="hwGroups", validation="array",
+     *        description="List of hardware groups identifications to which exercise belongs to")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
@@ -810,11 +811,15 @@ class ExercisesPresenter extends BasePresenter
     }
 
     /**
-     * Update the tag globally. At the moment, the 'update' means 'rename' as there is no other relevant function available.
+     * Update the tag globally. At the moment, the only 'update' function is 'rename'.
+     * Other types of updates may be implemented in the future.
      * @POST
      * @param string $tag Tag to be updated
-     * @Param(type="query", name="renameTo", validation="string:1..32", required=false, description="New name of the tag")
-     * @Param(type="query", name="force", validation="bool", required=false, description="If true, the rename will be allowed even if the new tag name exists (tags will be merged). Otherwise, name collisions will result in error.")
+     * @Param(type="query", name="renameTo", validation="string:1..32", required=false,
+     *        description="New name of the tag")
+     * @Param(type="query", name="force", validation="bool", required=false,
+     *        description="If true, the rename will be allowed even if the new tag name exists (tags will be merged).
+     *                     Otherwise, name collisions will result in error.")
      */
     public function actionTagsUpdateGlobal(string $tag, string $renameTo = null, bool $force = false)
     {
@@ -881,7 +886,8 @@ class ExercisesPresenter extends BasePresenter
      * @POST
      * @param string $id
      * @param string $name
-     * @Param(type="query", name="name", validation="string:1..32", description="Name of the newly added tag to given exercise")
+     * @Param(type="query", name="name", validation="string:1..32",
+     *        description="Name of the newly added tag to given exercise")
      * @throws BadRequestException
      * @throws NotFoundException
      * @throws ForbiddenRequestException

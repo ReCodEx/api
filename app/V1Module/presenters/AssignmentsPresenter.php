@@ -31,6 +31,7 @@ use App\Model\View\AssignmentViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Security\ACL\IExercisePermissions;
 use App\Async\Dispatcher;
 use App\Async\Handler\AssignmentNotificationJobHandler;
 use DateTime;
@@ -114,6 +115,12 @@ class AssignmentsPresenter extends BasePresenter
      * @inject
      */
     public $groupAcl;
+
+    /**
+     * @var IExercisePermissions
+     * @inject
+     */
+    public $exerciseAcl;
 
     /**
      * @var IAssignmentSolutionPermissions
@@ -482,7 +489,11 @@ class AssignmentsPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($groupId);
         $exercise = $this->exercises->findOrThrow($exerciseId);
 
-        if (!$this->groupAcl->canAssignExercise($group, $exercise)) {
+        if (!$this->exerciseAcl->canAssign($exercise)) {
+            throw new ForbiddenRequestException("You are not allowed to assign exercise '$exerciseId'.");
+        }
+
+        if (!$this->groupAcl->canAssignExercise($group)) {
             throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");
         }
 
