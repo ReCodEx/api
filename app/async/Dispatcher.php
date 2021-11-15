@@ -91,7 +91,7 @@ class Dispatcher
                     ->where($qb->expr()->isNull("aj.startedAt"))
                     ->andWhere("aj.id = :job")
                     ->setParameter("job", $job);
-                $rows = $qb->getQuery->execute();
+                $rows = $qb->getQuery()->execute();
             });
 
             return (bool)$rows;
