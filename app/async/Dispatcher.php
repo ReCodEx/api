@@ -87,7 +87,7 @@ class Dispatcher
             $rows = 0;
             $this->entityManager->transactional(function ($em) use ($job, &$rows) {
                 $qb = $em->createQueryBuilder();
-                $qb->delete('AsyncJob', 'aj')
+                $qb->delete(AsyncJob::class, 'aj')
                     ->where($qb->expr()->isNull("aj.startedAt"))
                     ->andWhere("aj.id = :job")
                     ->setParameter("job", $job);
