@@ -45,6 +45,15 @@ class ExercisePermissionPolicy implements IPermissionPolicy
         return false;
     }
 
+    /**
+     * @var Array[]
+     * A cache holding the result of isNonStudentMemberOfSubgroup invocation for given groups.
+     * The cache is structures as [user-id][group-id] => boolean
+     * Under normal circumstances, the cache should hold only one (logged in) user,
+     * but it was written as generic cache just in case.
+     */
+    private $subgroupMembersCache = [];
+
     public function isSubGroupNonStudentMember(Identity $identity, Exercise $exercise)
     {
         $user = $identity->getUserData();
@@ -56,15 +65,30 @@ class ExercisePermissionPolicy implements IPermissionPolicy
             return false;
         }
 
+        if (empty($this->subgroupMembersCache[$user->getId()])) {
+            $this->subgroupMembersCache[$user->getId()] = [];
+        }
+        $subgroupCache = &$this->subgroupMembersCache[$user->getId()];
+
         /** @var Group $group */
         foreach ($exercise->getGroups() as $group) {
-            if ($group->isNonStudentMemberOfSubgroup($user)) {
-                return true;
+            if (!array_key_exists($group->getId(), $subgroupCache)) {
+                $subgroupCache[$group->getId()] = $group->isNonStudentMemberOfSubgroup($user);
             }
+            return $subgroupCache[$group->getId()];
         }
 
         return false;
     }
+
+    /**
+     * @var Array[]
+     * A cache holding the result of isAdminOf invocation for given groups.
+     * The cache is structures as [user-id][group-id] => boolean
+     * Under normal circumstances, the cache should hold only one (logged in) user,
+     * but it was written as generic cache just in case.
+     */
+    private $supergroupAdminCache = [];
 
     public function isSuperGroupAdmin(Identity $identity, Exercise $exercise)
     {
@@ -77,11 +101,17 @@ class ExercisePermissionPolicy implements IPermissionPolicy
             return false;
         }
 
+        if (empty($this->supergroupAdminCache[$user->getId()])) {
+            $this->supergroupAdminCache[$user->getId()] = [];
+        }
+        $supergroupCache = &$this->supergroupAdminCache[$user->getId()];
+
         /** @var Group $group */
         foreach ($exercise->getGroups() as $group) {
-            if ($group->isAdminOf($user)) {
-                return true;
+            if (!array_key_exists($group->getId(), $supergroupCache)) {
+                $supergroupCache[$group->getId()] = $group->isAdminOf($user);
             }
+            return $supergroupCache[$group->getId()];
         }
 
         return false;
