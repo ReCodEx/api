@@ -508,6 +508,9 @@ permissions:
       actions:
         - viewList
 
+    # The exercise.viewDetail is special since its rules are also hard coded in Exercises::getPreparedForPagination
+    # method (it was necessary for performance optimizations).
+    # If the viewDetail rules change, they must be changed in Exercises repository class as well.
     - allow: true
       resource: exercise
       actions:
@@ -525,6 +528,15 @@ permissions:
             - exercise.isAuthor
             - exercise.isSubGroupNonStudentMember
             - exercise.isSuperGroupAdmin
+
+    - allow: true
+      role: supervisor-student
+      resource: exercise
+      actions:
+          - viewDetail
+      conditions:
+          - exercise.isGloballyPublic
+
 
     - allow: true # Admin of the group of an exercise has most of the rights to the exercise
       resource: exercise
@@ -599,14 +611,6 @@ permissions:
           or:
             - referenceExerciseSolution.isExerciseAuthor
             - referenceExerciseSolution.isExerciseSuperGroupAdmin
-
-    - allow: true
-      role: supervisor-student
-      resource: exercise
-      actions:
-          - viewDetail
-      conditions:
-          - exercise.isPublic
 
     - allow: true
       role: supervisor-student

@@ -182,7 +182,7 @@ class ExercisesPresenter extends BasePresenter
         );
 
         // Get all matching exercises and filter them by ACLs...
-        $exercises = $this->exercises->getPreparedForPagination($pagination, $this->groups);
+        $exercises = $this->exercises->getPreparedForPagination($pagination, $this->groups, $this->getCurrentUser());
         $exercises = array_filter(
             $exercises,
             function (Exercise $exercise) {
