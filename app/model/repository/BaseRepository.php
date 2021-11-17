@@ -259,4 +259,24 @@ class BaseRepository
     {
         $this->em->getConnection()->rollBack();
     }
+
+    /*
+     * Static helper functions
+     */
+
+    /**
+     * Convert collection of entities into an associative array indexed by IDs.
+     * @param iterable $entities collection of entities (entity must have getId() method)
+     * @param mixed $value common value for the records in the output array;
+     *                     if null, the original entities are used as values
+     * @return array indexed by string IDs
+     */
+    public static function createIdIndex(iterable $entities, $value = null): array
+    {
+        $res = [];
+        foreach ($entities as $entity) {
+            $res[$entity->getId()] = $value === null ? $entity : $value;
+        }
+        return $res;
+    }
 }

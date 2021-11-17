@@ -287,10 +287,10 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * Gets an initial set of groups and produces a set of groups which have the
      * original set as a subset and every group has its parent in the set as well.
-     * @param Group[] $groups Initial set of groups
+     * @param iterable $groups Initial set of groups
      * @return Group[]
      */
-    public function groupsAncestralClosure(array $groups): array
+    public function groupsAncestralClosure(iterable $groups): array
     {
         $res = [];
         foreach ($groups as $group) {
@@ -311,10 +311,10 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * Gets a set of group IDs and produces a set of group IDs which have the
      * original set as a subset and every group has its parent in the set as well.
-     * @param string[] $groupIds Initial set of group IDs
+     * @param iterable $groupIds Initial set of group IDs
      * @return string[]
      */
-    public function groupsIdsAncestralClosure(array $groupIds): array
+    public function groupsIdsAncestralClosure(iterable $groupIds): array
     {
         $res = [];
         foreach ($groupIds as $groupId) {
@@ -339,5 +339,34 @@ class Groups extends BaseSoftDeleteRepository
             ->select('COUNT(g.id)')
             ->where('g.archivedAt IS NOT NULL');
         return (int)$qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Retrieve all groups that where at least one exercise resides.
+     * @param Exercises $exercises repository (used for subselect)
+     * @param bool $onlyIds whether to retrieve only groupIDs or all entities
+     * @param bool $archived if true, archived groups are also returned
+     * @return array (either string[] if onlyIds is set, or Group[] otherwise)
+     */
+    public function findExerciseGroupsOfResidence(
+        Exercises $exercises,
+        bool $onlyIds = false,
+        bool $archived = false
+    ): array {
+        $qb = $this->createQueryBuilder('g');
+        if ($onlyIds) {
+            $qb->select('g.id');
+        }
+
+        // a not-deleted exercise must exist and be attached to the group
+        $sub = $exercises->createQueryBuilder('e');
+        $sub->where($sub->expr()->isMemberOf("e", "g.exercises"));
+        $qb->where($qb->expr()->exists($sub->getDQL()));
+
+        if (!$archived) {
+            $qb->andWhere('g.archivedAt IS NULL');
+        }
+
+        return array_values($qb->getQuery()->getResult());
     }
 }

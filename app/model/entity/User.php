@@ -245,12 +245,21 @@ class User
         }
     }
 
-    public function getGroups(string $type = null)
+    /**
+     * Get list of groups associated with the user by membership relation.
+     * @param string|null $type filter that selects only groups by defined type of membership
+     * @param string|null $notType filter that excludes groups by defined type of membership
+     */
+    public function getGroups(string $type = null, string $notType = null)
     {
         $result = $this->getMemberships();
 
         if ($type !== null) {
             $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
+            $result = $result->matching($filter);
+        }
+        if ($notType !== null) {
+            $filter = Criteria::create()->where(Criteria::expr()->neq("type", $notType));
             $result = $result->matching($filter);
         }
 

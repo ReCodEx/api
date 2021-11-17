@@ -75,7 +75,9 @@ class ExercisePermissionPolicy implements IPermissionPolicy
             if (!array_key_exists($group->getId(), $subgroupCache)) {
                 $subgroupCache[$group->getId()] = $group->isNonStudentMemberOfSubgroup($user);
             }
-            return $subgroupCache[$group->getId()];
+            if ($subgroupCache[$group->getId()]) {
+                return true;
+            }
         }
 
         return false;
@@ -111,13 +113,15 @@ class ExercisePermissionPolicy implements IPermissionPolicy
             if (!array_key_exists($group->getId(), $supergroupCache)) {
                 $supergroupCache[$group->getId()] = $group->isAdminOf($user);
             }
-            return $supergroupCache[$group->getId()];
+            if ($supergroupCache[$group->getId()]) {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public function isPublic(Identity $identity, Exercise $exercise)
+    public function isGloballyPublic(Identity $identity, Exercise $exercise)
     {
         return $exercise->isPublic() && $exercise->getGroups()->isEmpty();
     }

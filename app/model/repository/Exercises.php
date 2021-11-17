@@ -8,8 +8,10 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\User;
+use App\Model\Entity\GroupMembership;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
+use App\Security\Roles;
 
 /**
  * @extends BaseSoftDeleteRepository<Exercise>
@@ -115,9 +117,10 @@ class Exercises extends BaseSoftDeleteRepository
      * The exercises must be paginated manually, since they are tested by ACLs.
      * @param Pagination $pagination Pagination configuration object.
      * @param Groups $groups Doctrine groups repository
+     * @param User $user currently logged in (so we can restrict the selection based on user privileges)
      * @return Exercise[]
      */
-    public function getPreparedForPagination(Pagination $pagination, Groups $groups): array
+    public function getPreparedForPagination(Pagination $pagination, Groups $groups, User $user = null): array
     {
         // Welcome to Doctrine HELL! Put your sickbags on standby!
 
@@ -127,11 +130,11 @@ class Exercises extends BaseSoftDeleteRepository
         if ($pagination->hasFilter("instanceId")) {
             $instanceId = trim($pagination->getFilter("instanceId"));
 
-            $sub = $groups->createQueryBuilder("g");
-            $sub->andWhere($qb->expr()->eq("g.instance", $qb->expr()->literal($instanceId)))
-                ->andWhere($sub->expr()->isMemberOf("g", "e.groups"));
+            $instanceSub = $groups->createQueryBuilder("g");
+            $instanceSub->andWhere($qb->expr()->eq("g.instance", $qb->expr()->literal($instanceId)))
+                ->andWhere($instanceSub->expr()->isMemberOf("g", "e.groups"));
 
-            $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+            $qb->andWhere($qb->expr()->exists($instanceSub->getDQL()));
         }
 
         // Only exercises of given authors ...
@@ -146,6 +149,59 @@ class Exercises extends BaseSoftDeleteRepository
         // Only exercises in explicitly given groups (or their ascendants) ...
         if ($pagination->hasFilter("groupsIds")) {
             $this->getPreparedForPaginationGroupsFilter($qb, $pagination->getFilter("groupsIds"), $groups);
+        } elseif ($user && $user->getRole() !== Roles::SUPERADMIN_ROLE) {
+            // This is mere performance optimization, but we are overlapping into ACLs here!
+            // If the exercise.viewDetail ACL rules change significantly, this may need revision!
+            // Main idea: do the checking of user-memberships on groups of residence all together.
+
+            // find all groups of residence of all exercise
+            $groupsOfResidence = $groups->findExerciseGroupsOfResidence($this); // true = only IDs
+
+            // prepare member of index (all groups where the user is a member of a subgroup)
+            $memberOf = $user->getGroups(null, GroupMembership::TYPE_STUDENT); // except student membership
+            $memberOfClosure = $groups->groupsAncestralClosure($memberOf);
+            $memberOfIndex = BaseRepository::createIdIndex($memberOfClosure, true); // all values are "true"
+
+            // prepare index of groups where the user is directly admin
+            $adminOf = $user->getGroups(GroupMembership::TYPE_ADMIN); // primary admin
+            $adminOfIndex = BaseRepository::createIdIndex($adminOf, true); // all values are "true"
+
+            // filter the groups of residence using membeship filters
+            $filteredGroupsOfResidence = array_filter($groupsOfResidence, function ($group) use ($memberOfIndex, $adminOfIndex) {
+                if (!empty($memberOfIndex[$group->getId()])) {
+                    return true; // covered by membership from beneath
+                }
+
+                // check whether the group or its ancestors are covered by admin relation
+                while ($group && empty($adminOfIndex[$group->getId()])) {
+                    $group = $group->getParentGroup();
+                }
+
+                return (bool)$group; // admin-ed parent group found -> the original group should be kept in the result
+            });
+
+            // The exercise must be resident in one of the groups that passed user-filtering...
+            $orExpr = $qb->expr()->orX();
+            $gcounter = 0;
+            foreach ($filteredGroupsOfResidence as $id) {
+                $var = "residence" . ++$gcounter;
+                $orExpr->add($qb->expr()->isMemberOf(":$var", "e.groups"));
+                $qb->setParameter($var, $id);
+            }
+
+            // ...or the user is author of the exercise...
+            $orExpr->add($qb->expr()->eq('e.author', ':author'));
+            $qb->setParameter(':author', $user->getId());
+
+            // ...or the exercise is globally public.
+            $emptySub = $groups->createQueryBuilder("g2");
+            $emptySub->where($emptySub->expr()->isMemberOf("g2", "e.groups"));
+            $andExpr = $qb->expr()->andX()->add($qb->expr()->eq('e.isPublic', true))
+                ->add($qb->expr()->not($qb->expr()->exists($emptySub->getDQL()))); // no attached groups
+            $orExpr->add($andExpr);
+
+            // seal the deal
+            $qb->andWhere($orExpr);
         }
 
         // Only exercises with given tags
@@ -155,10 +211,10 @@ class Exercises extends BaseSoftDeleteRepository
                 $tagNames = [$tagNames];
             }
 
-            $sub = $qb->getEntityManager()->createQueryBuilder()->select("tags")->from(ExerciseTag::class, "tags");
-            $sub->andWhere($qb->expr()->eq("tags.exercise", "e.id")); // only tags of examined exercise
-            $sub->andWhere($sub->expr()->in("tags.name", $tagNames)); // at least one tag has to match
-            $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+            $tagSub = $qb->getEntityManager()->createQueryBuilder()->select("tags")->from(ExerciseTag::class, "tags");
+            $tagSub->andWhere($qb->expr()->eq("tags.exercise", "e.id")); // only tags of examined exercise
+            $tagSub->andWhere($tagSub->expr()->in("tags.name", $tagNames)); // at least one tag has to match
+            $qb->andWhere($qb->expr()->exists($tagSub->getDQL()));
         }
 
         // Only exercises of specific RTEs (at least one RTE is present)
