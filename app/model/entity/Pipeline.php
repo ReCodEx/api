@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\ExerciseConfig\Pipeline as ExerciseConfigPipeline;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -75,7 +76,8 @@ class Pipeline
     protected $supplementaryEvaluationFiles;
 
     /**
-     * @ORM\OneToMany(targetEntity="PipelineParameter", mappedBy="pipeline", indexBy="name", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="PipelineParameter", mappedBy="pipeline", indexBy="name",
+     *                cascade={"persist"}, orphanRemoval=true)
      * @var Collection
      */
     protected $parameters;
@@ -191,16 +193,6 @@ class Pipeline
         $this->supplementaryEvaluationFiles->add($exerciseFile);
     }
 
-    public function addRuntimeEnvironment(RuntimeEnvironment $environment)
-    {
-        $this->runtimeEnvironments->add($environment);
-    }
-
-    public function removeRuntimeEnvironment(?RuntimeEnvironment $environment)
-    {
-        $this->runtimeEnvironments->remove($environment);
-    }
-
     /**
      * Get array of identifications of supplementary files
      * @return array
@@ -228,6 +220,28 @@ class Pipeline
         return $files;
     }
 
+    public function addRuntimeEnvironment(RuntimeEnvironment $environment): void
+    {
+        $this->runtimeEnvironments->add($environment);
+    }
+
+    public function removeRuntimeEnvironment(?RuntimeEnvironment $environment): void
+    {
+        $this->runtimeEnvironments->remove($environment);
+    }
+
+    /**
+     * Set completely new associations with runtime environments.
+     * @param RuntimeEnvironment[] $environments list of runtime environments to override current associatons
+     */
+    public function setRuntimeEnvironments(array $environments): void
+    {
+        $this->runtimeEnvironments->clear();
+        foreach ($environments as $environment) {
+            $this->addRuntimeEnvironment($environment);
+        }
+    }
+
 
     /**
      * Create empty pipeline entity.
@@ -242,7 +256,7 @@ class Pipeline
             "",
             1,
             "",
-            new PipelineConfig((string)new \App\Helpers\ExerciseConfig\Pipeline(), $user),
+            new PipelineConfig((string)(new ExerciseConfigPipeline()), $user),
             new ArrayCollection(),
             $user,
             null,

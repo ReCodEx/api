@@ -178,7 +178,8 @@ class TestPipelinesPresenter extends Tester\TestCase
         $pipelinesCount = count($pipelines);
 
         $request = new Nette\Application\Request(
-            'V1:Pipelines', 'POST',
+            'V1:Pipelines',
+            'POST',
             ['action' => 'forkPipeline', 'id' => $pipeline->getId()],
             ['exerciseId' => $exercise->getId()]
         );
@@ -202,7 +203,8 @@ class TestPipelinesPresenter extends Tester\TestCase
         $pipeline = current($this->presenter->pipelines->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Pipelines', 'DELETE',
+            'V1:Pipelines',
+            'DELETE',
             ['action' => 'removePipeline', 'id' => $pipeline->getId()]
         );
         $response = $this->presenter->run($request);
@@ -294,7 +296,6 @@ class TestPipelinesPresenter extends Tester\TestCase
                 'name' => 'new pipeline name',
                 'version' => 1,
                 'description' => 'description of pipeline',
-                'pipeline' => static::PIPELINE_CONFIG,
                 'parameters' => [
                     "isCompilationPipeline" => "true"
                 ]
@@ -346,7 +347,8 @@ class TestPipelinesPresenter extends Tester\TestCase
         $pipeline = current($this->presenter->pipelines->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:Pipelines', 'POST',
+            'V1:Pipelines',
+            'POST',
             ['action' => 'validatePipeline', 'id' => $pipeline->getId()],
             ['version' => 2]
         );
@@ -398,10 +400,13 @@ class TestPipelinesPresenter extends Tester\TestCase
         /** @var Nette\Application\Responses\JsonResponse $response */
         $response = $this->presenter->run(
             new Nette\Application\Request(
-                "V1:Pipelines", "POST", [
+                "V1:Pipelines",
+                "POST",
+                [
                 "action" => 'uploadSupplementaryFiles',
                 'id' => $pipeline->getId()
-            ], [
+                ],
+                [
                     'files' => $files
                 ]
             )
@@ -447,7 +452,8 @@ class TestPipelinesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->flush();
 
         $request = new Nette\Application\Request(
-            "V1:Pipelines", 'GET',
+            "V1:Pipelines",
+            'GET',
             ['action' => 'getSupplementaryFiles', 'id' => $pipeline->getId()]
         );
         $response = $this->presenter->run($request);
@@ -463,6 +469,34 @@ class TestPipelinesPresenter extends Tester\TestCase
         Assert::equal($expectedFiles, $result['payload']);
     }
 
+    public function testSetPipelineEnviornments()
+    {
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $pipeline = current($this->presenter->pipelines->findAll());
+        $envs = $pipeline->getRuntimeEnvironments()->toArray();
+        Assert::count(0, $envs);
+
+        $newEnvs = ['java', 'mono'];
+        $request = new Nette\Application\Request(
+            'V1:Pipelines',
+            'POST',
+            ['action' => 'updateRuntimeEnvironments', 'id' => $pipeline->getId()],
+            [
+                'environments' => $newEnvs
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        $payload = $result['payload'];
+        Assert::equal(200, $result['code']);
+
+        $envs = $payload["runtimeEnvironmentIds"];
+        sort($envs);
+        Assert::equal($newEnvs, $envs);
+    }
 }
 
 $testCase = new TestPipelinesPresenter();
