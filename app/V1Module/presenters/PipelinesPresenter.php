@@ -17,6 +17,7 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\PipelineViewFactory;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IPipelinePermissions;
@@ -55,6 +56,12 @@ class PipelinesPresenter extends BasePresenter
      * @inject
      */
     public $exercises;
+
+    /**
+     * @var RuntimeEnvironments
+     * @inject
+     */
+    public $runtimes;
 
     /**
      * @var Loader
@@ -279,7 +286,7 @@ class PipelinesPresenter extends BasePresenter
      * @Param(type="post", name="name", validation="string:2..", description="Name of the pipeline")
      * @Param(type="post", name="version", validation="numericint", description="Version of the edited pipeline")
      * @Param(type="post", name="description", description="Human readable description of pipeline")
-     * @Param(type="post", name="pipeline", description="Pipeline configuration")
+     * @Param(type="post", name="pipeline", description="Pipeline configuration", required=false)
      * @Param(type="post", name="parameters", validation="array", description="A set of parameters", required=false)
      * @throws ForbiddenRequestException
      * @throws NotFoundException
@@ -295,8 +302,9 @@ class PipelinesPresenter extends BasePresenter
         $req = $this->getRequest();
         $version = intval($req->getPost("version"));
         if ($version !== $pipeline->getVersion()) {
+            $v = $pipeline->getVersion();
             throw new BadRequestException(
-                "The pipeline was edited in the meantime and the version has changed. Current version is {$pipeline->getVersion()}."
+                "The pipeline was edited in the meantime and the version has changed. Current version is $v."
             );
         }
 
@@ -310,21 +318,55 @@ class PipelinesPresenter extends BasePresenter
 
         // get new configuration from parameters, parse it and check for format errors
         $pipelinePost = $req->getPost("pipeline");
-        $pipelineArr = !empty($pipelinePost) ? $pipelinePost : array();
-        $pipelineConfig = $this->exerciseConfigLoader->loadPipeline($pipelineArr);
-        $oldConfig = $pipeline->getPipelineConfig();
+        if (!empty($pipelinePost)) {
+            $pipelineConfig = $this->exerciseConfigLoader->loadPipeline($pipelinePost);
+            $oldConfig = $pipeline->getPipelineConfig();
 
-        // validate new pipeline configuration
-        $this->configValidator->validatePipeline($pipeline, $pipelineConfig);
+            // validate new pipeline configuration
+            $this->configValidator->validatePipeline($pipeline, $pipelineConfig);
 
-        // create new pipeline configuration based on given data and store it in pipeline entity
-        $newConfig = new PipelineConfig((string)$pipelineConfig, $this->getCurrentUser(), $oldConfig);
-        $pipeline->setPipelineConfig($newConfig);
-        $this->pipelines->flush();
+            // create new pipeline configuration based on given data and store it in pipeline entity
+            $newConfig = new PipelineConfig((string)$pipelineConfig, $this->getCurrentUser(), $oldConfig);
+            $pipeline->setPipelineConfig($newConfig);
+            $this->pipelines->flush();
+        }
 
         $parameters = $this->request->getPost("parameters") ?? [];
         $pipeline->setParameters($parameters);
 
+        $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
+    }
+
+    public function checkUpdateRuntimeEnvironments(string $id)
+    {
+        /** @var Pipeline $pipeline */
+        $pipeline = $this->pipelines->findOrThrow($id);
+        if (!$this->pipelineAcl->canUpdateEnvironments($pipeline)) {
+            throw new ForbiddenRequestException(
+                "You are not allowed to update associations between a pipeline and runtime environments."
+            );
+        }
+    }
+
+    /**
+     * Set runtime environments associated with given pipeline.
+     * @param string $id Identifier of the pipeline
+     * @POST
+     * @throws ForbiddenRequestException
+     * @throws NotFoundException
+     */
+    public function actionUpdateRuntimeEnvironments(string $id)
+    {
+        /** @var Pipeline $pipeline */
+        $pipeline = $this->pipelines->findOrThrow($id);
+
+        $envsIds = $this->getRequest()->getPost("environments");
+        $envs = array_map(function ($envId) {
+            return $this->runtimes->findOrThrow($envId);
+        }, $envsIds);
+        $pipeline->setRuntimeEnvironments($envs);
+
+        $this->pipelines->flush();
         $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
     }
 

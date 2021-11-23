@@ -493,6 +493,7 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>", "Pipelines:getPipeline");
         $router[] = new PostRoute("$prefix/<id>", "Pipelines:updatePipeline");
         $router[] = new DeleteRoute("$prefix/<id>", "Pipelines:removePipeline");
+        $router[] = new PostRoute("$prefix/<id>/runtime-environments", "Pipelines:updateRuntimeEnvironments");
         $router[] = new PostRoute("$prefix/<id>/validate", "Pipelines:validatePipeline");
         $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Pipelines:getSupplementaryFiles");
         $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Pipelines:uploadSupplementaryFiles");

@@ -13,6 +13,8 @@ interface IPipelinePermissions
 
     public function canUpdate(Pipeline $pipeline): bool;
 
+    public function canUpdateEnvironments(Pipeline $pipeline): bool;
+
     public function canCreate(): bool;
 
     public function canRemove(Pipeline $pipeline): bool;
