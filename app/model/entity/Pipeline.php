@@ -46,12 +46,27 @@ class Pipeline
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
+     * If the pipeline has no author set, it is treated as predefined global pipeline used by everyone.
      */
     protected $author;
 
     public function getAuthor(): ?User
     {
         return $this->author && $this->author->isDeleted() ? null : $this->author;
+    }
+
+    /**
+     * If the author is set to null, the pipeline is turned into a global pipeline.
+     * @param User|null $author
+     */
+    public function setAuthor(?User $author = null): void
+    {
+        $this->author = $author;
+    }
+
+    public function isGlobal(): bool
+    {
+        return $this->getAuthor() === null;
     }
 
     /**
@@ -266,13 +281,13 @@ class Pipeline
 
     /**
      * Fork pipeline entity into new one.
-     * @param User $user
+     * @param User|null $user
      * @param Pipeline $pipeline
      * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
      * @return Pipeline
      * @throws Exception
      */
-    public static function forkFrom(User $user, Pipeline $pipeline, Exercise $exercise = null): Pipeline
+    public static function forkFrom(?User $user, Pipeline $pipeline, Exercise $exercise = null): Pipeline
     {
         return new self(
             $pipeline->getName(),

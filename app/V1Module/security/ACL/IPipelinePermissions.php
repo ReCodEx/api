@@ -17,6 +17,8 @@ interface IPipelinePermissions
 
     public function canCreate(): bool;
 
+    public function canCreateGlobal(): bool;
+
     public function canRemove(Pipeline $pipeline): bool;
 
     public function canFork(Pipeline $pipeline): bool;
