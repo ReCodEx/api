@@ -171,14 +171,17 @@ class PipelinesPresenter extends BasePresenter
      * Create pipeline.
      * @POST
      * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
+     * @Param(type="post", name="global", validation="bool", required=false,
+     *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
     public function actionCreatePipeline()
     {
+        $req = $this->getRequest();
         $exercise = null;
-        if ($this->getRequest()->getPost("exerciseId")) {
-            $exercise = $this->exercises->findOrThrow($this->getRequest()->getPost("exerciseId"));
+        if ($req->getPost("exerciseId")) {
+            $exercise = $this->exercises->findOrThrow($req->getPost("exerciseId"));
         }
 
         if (!$this->pipelineAcl->canCreate()) {
@@ -190,8 +193,13 @@ class PipelinesPresenter extends BasePresenter
             );
         }
 
+        $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
+        if ($global && !$this->pipelineAcl->canCreateGlobal()) {
+            throw new ForbiddenRequestException("You are not allowed to create global pipelines.");
+        }
+
         // create pipeline entity, persist it and return it
-        $pipeline = Pipeline::create($this->getCurrentUser(), $exercise);
+        $pipeline = Pipeline::create($global ? null : $this->getCurrentUser(), $exercise);
         $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
         $this->pipelines->persist($pipeline);
         $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
@@ -203,6 +211,8 @@ class PipelinesPresenter extends BasePresenter
      * @POST
      * @param string $id identification of pipeline
      * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
+     * @Param(type="post", name="global", validation="bool", required=false,
+     *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
@@ -220,8 +230,13 @@ class PipelinesPresenter extends BasePresenter
             throw new ForbiddenRequestException("You are not allowed to attach forked pipeline to given exercise.");
         }
 
+        $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
+        if ($global && !$this->pipelineAcl->canCreateGlobal()) {
+            throw new ForbiddenRequestException("You are not allowed to create global pipelines.");
+        }
+
         // fork pipeline entity, persist it and return it
-        $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline, $exercise);
+        $pipeline = Pipeline::forkFrom($global ? null : $this->getCurrentUser(), $pipeline, $exercise);
         $this->pipelines->persist($pipeline);
         $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
     }
@@ -288,6 +303,8 @@ class PipelinesPresenter extends BasePresenter
      * @Param(type="post", name="description", description="Human readable description of pipeline")
      * @Param(type="post", name="pipeline", description="Pipeline configuration", required=false)
      * @Param(type="post", name="parameters", validation="array", description="A set of parameters", required=false)
+     * @Param(type="post", name="global", validation="bool", required=false,
+     *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws BadRequestException
@@ -308,6 +325,11 @@ class PipelinesPresenter extends BasePresenter
             );
         }
 
+        $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
+        if ($global && !$this->pipelineAcl->canCreateGlobal()) {
+            throw new ForbiddenRequestException("You are not allowed to create global pipelines.");
+        }
+
         // update fields of the pipeline
         $name = $req->getPost("name");
         $description = $req->getPost("description");
@@ -315,6 +337,9 @@ class PipelinesPresenter extends BasePresenter
         $pipeline->setDescription($description);
         $pipeline->updatedNow();
         $pipeline->incrementVersion();
+        if ($global !== $pipeline->isGlobal()) {
+            $pipeline->setAuthor($global ? null : $this->getCurrentUser());
+        }
 
         // get new configuration from parameters, parse it and check for format errors
         $pipelinePost = $req->getPost("pipeline");
@@ -328,11 +353,15 @@ class PipelinesPresenter extends BasePresenter
             // create new pipeline configuration based on given data and store it in pipeline entity
             $newConfig = new PipelineConfig((string)$pipelineConfig, $this->getCurrentUser(), $oldConfig);
             $pipeline->setPipelineConfig($newConfig);
-            $this->pipelines->flush();
         }
 
-        $parameters = $this->request->getPost("parameters") ?? [];
-        $pipeline->setParameters($parameters);
+        $parameters = $this->request->getPost("parameters");
+        if ($parameters !== null) {
+            $pipeline->setParameters($parameters);
+        }
+
+        $this->pipelines->persist($pipeline);
+        $this->pipelines->flush();
 
         $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
     }
