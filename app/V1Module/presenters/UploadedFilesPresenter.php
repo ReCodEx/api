@@ -466,7 +466,7 @@ class UploadedFilesPresenter extends BasePresenter
             throw new CannotReceiveUploadedFileException(
                 "Unable to finalize incomplete per-partes upload.",
                 IResponse::S400_BAD_REQUEST,
-                FrontendErrorMappings::E400_004__UPLOADED_FILE_PARTIAL,
+                FrontendErrorMappings::E400_005__UPLOADED_FILE_PARTIAL,
                 [
                     "chunks" => $partialFile->getChunks(),
                     "totalSize" => $partialFile->getTotalSize(),

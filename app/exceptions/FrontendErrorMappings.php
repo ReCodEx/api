@@ -19,7 +19,9 @@ class FrontendErrorMappings
     /** Invalid declared uploaded file size */
     public const E400_004__UPLOADED_FILE_INVALID_SIZE = "400-004";
     /** Per-partes upload is not completed yet */
-    public const E400_004__UPLOADED_FILE_PARTIAL = "400-005";
+    public const E400_005__UPLOADED_FILE_PARTIAL = "400-005";
+    /** Entity version is too old (concurrent edits occured) */
+    public const E400_010__ENTITY_VERSION_TOO_OLD = "400-010";
 
     /** Invalid credentials */
     public const E400_100__WRONG_CREDENTIALS = "400-100";
