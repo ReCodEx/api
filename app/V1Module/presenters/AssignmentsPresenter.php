@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\EvaluationPointsLoader;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
@@ -245,7 +246,13 @@ class AssignmentsPresenter extends BasePresenter
         if ($version !== $assignment->getVersion()) {
             $newVer = $assignment->getVersion();
             throw new BadRequestException(
-                "The assignment was edited in the meantime and the version has changed. Current version is $newVer."
+                "The assignment was edited in the meantime and the version has changed. Current version is $newVer.",
+                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
+                [
+                    'entity' => 'assignment',
+                    'id' => $id,
+                    'version' => $newVer
+                ]
             );
         }
 

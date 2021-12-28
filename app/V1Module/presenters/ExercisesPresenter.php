@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ParseException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
@@ -315,9 +316,16 @@ class ExercisesPresenter extends BasePresenter
 
         $version = intval($req->getPost("version"));
         if ($version !== $exercise->getVersion()) {
+            $v = $exercise->getVersion();
             throw new BadRequestException(
-                "The exercise was edited in the meantime and the version has changed. Current version is {$exercise->getVersion()}."
-            ); // @todo better exception
+                "The exercise was edited in the meantime and the version has changed. Current version is $v.",
+                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
+                [
+                    'entity' => 'exercise',
+                    'id' => $id,
+                    'version' => $v
+                ]
+            );
         }
 
         // make changes to the exercise

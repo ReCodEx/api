@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\FileStorageManager;
@@ -321,7 +322,13 @@ class PipelinesPresenter extends BasePresenter
         if ($version !== $pipeline->getVersion()) {
             $v = $pipeline->getVersion();
             throw new BadRequestException(
-                "The pipeline was edited in the meantime and the version has changed. Current version is $v."
+                "The pipeline was edited in the meantime and the version has changed. Current version is $v.",
+                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
+                [
+                    'entity' => 'pipeline',
+                    'id' => $id,
+                    'version' => $v
+                ]
             );
         }
 

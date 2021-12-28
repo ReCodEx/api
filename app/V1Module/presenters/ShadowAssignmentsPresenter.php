@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
@@ -162,8 +163,15 @@ class ShadowAssignmentsPresenter extends BasePresenter
         $req = $this->getRequest();
         $version = intval($req->getPost("version"));
         if ($version !== $assignment->getVersion()) {
+            $v = $assignment->getVersion();
             throw new BadRequestException(
-                "The shadow assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."
+                "The shadow assignment was edited in the meantime and the version has changed. Current version is $v.",
+                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
+                [
+                    'entity' => 'shadowAssignment',
+                    'id' => $id,
+                    'version' => $v
+                ]
             );
         }
 
