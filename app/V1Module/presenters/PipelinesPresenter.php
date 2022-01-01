@@ -169,9 +169,8 @@ class PipelinesPresenter extends BasePresenter
     }
 
     /**
-     * Create pipeline.
+     * Create a brand new pipeline.
      * @POST
-     * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
      * @Param(type="post", name="global", validation="bool", required=false,
      *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
@@ -180,18 +179,9 @@ class PipelinesPresenter extends BasePresenter
     public function actionCreatePipeline()
     {
         $req = $this->getRequest();
-        $exercise = null;
-        if ($req->getPost("exerciseId")) {
-            $exercise = $this->exercises->findOrThrow($req->getPost("exerciseId"));
-        }
 
         if (!$this->pipelineAcl->canCreate()) {
             throw new ForbiddenRequestException("You are not allowed to create pipeline.");
-        }
-        if ($exercise && !$this->exerciseAcl->canAttachPipeline($exercise)) {
-            throw new ForbiddenRequestException(
-                "You are not allowed to attach newly created pipeline to given exercise."
-            );
         }
 
         $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
@@ -200,18 +190,16 @@ class PipelinesPresenter extends BasePresenter
         }
 
         // create pipeline entity, persist it and return it
-        $pipeline = Pipeline::create($global ? null : $this->getCurrentUser(), $exercise);
+        $pipeline = Pipeline::create($global ? null : $this->getCurrentUser());
         $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
         $this->pipelines->persist($pipeline);
         $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
     }
 
     /**
-     * Fork pipeline, if exercise identification is given pipeline is forked
-     * to specified exercise.
+     * Create a complete copy of given pipeline.
      * @POST
-     * @param string $id identification of pipeline
-     * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
+     * @param string $id identification of pipeline to be copied
      * @Param(type="post", name="global", validation="bool", required=false,
      *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
@@ -220,15 +208,10 @@ class PipelinesPresenter extends BasePresenter
     public function actionForkPipeline(string $id)
     {
         $req = $this->getRequest();
-        $exerciseId = $req->getPost("exerciseId");
-        $exercise = $exerciseId ? $this->exercises->findOrThrow($exerciseId) : null;
         $pipeline = $this->pipelines->findOrThrow($id);
 
         if (!$this->pipelineAcl->canFork($pipeline)) {
             throw new ForbiddenRequestException("You are not allowed to fork pipeline.");
-        }
-        if ($exercise && !$this->exerciseAcl->canAttachPipeline($exercise)) {
-            throw new ForbiddenRequestException("You are not allowed to attach forked pipeline to given exercise.");
         }
 
         $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
@@ -237,7 +220,7 @@ class PipelinesPresenter extends BasePresenter
         }
 
         // fork pipeline entity, persist it and return it
-        $pipeline = Pipeline::forkFrom($global ? null : $this->getCurrentUser(), $pipeline, $exercise);
+        $pipeline = Pipeline::forkFrom($global ? null : $this->getCurrentUser(), $pipeline);
         $this->pipelines->persist($pipeline);
         $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
     }

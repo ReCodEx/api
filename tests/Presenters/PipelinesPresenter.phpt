@@ -164,7 +164,7 @@ class TestPipelinesPresenter extends Tester\TestCase
 
         Assert::equal($author->getId(), $payload["author"]);
         Assert::equal("Pipeline by " . $author->getName(), $payload["name"]);
-        Assert::count(0, $payload["exercisesIds"]);
+        Assert::null($payload["forkedFrom"]);
     }
 
     public function testForkPipeline()
@@ -181,7 +181,6 @@ class TestPipelinesPresenter extends Tester\TestCase
             'V1:Pipelines',
             'POST',
             ['action' => 'forkPipeline', 'id' => $pipeline->getId()],
-            ['exerciseId' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -193,7 +192,7 @@ class TestPipelinesPresenter extends Tester\TestCase
 
         Assert::equal($author->getId(), $payload["author"]);
         Assert::equal($pipeline->getName(), $payload["name"]);
-        Assert::contains($exercise->getId(), $payload["exercisesIds"]);
+        Assert::equal($pipeline->getId(), $payload["forkedFrom"]);
     }
 
     public function testRemovePipeline()
