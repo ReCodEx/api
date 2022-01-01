@@ -121,7 +121,6 @@ class Pipeline
      * @param Collection $supplementaryEvaluationFiles
      * @param User $author
      * @param Pipeline|null $createdFrom
-     * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
      * @param Collection|null $runtimeEnvironments
      * @throws Exception
      */
@@ -133,7 +132,6 @@ class Pipeline
         Collection $supplementaryEvaluationFiles,
         ?User $author = null,
         ?Pipeline $createdFrom = null,
-        Exercise $exercise = null,
         Collection $runtimeEnvironments = null
     ) {
         $this->createdAt = new DateTime();
@@ -153,9 +151,6 @@ class Pipeline
             foreach ($runtimeEnvironments as $runtimeEnvironment) {
                 $this->runtimeEnvironments->add($runtimeEnvironment);
             }
-        }
-        if ($exercise) {
-            $exercise->addPipeline($this);
         }
     }
 
@@ -261,11 +256,10 @@ class Pipeline
     /**
      * Create empty pipeline entity.
      * @param User|null $user The author of the pipeline (null for universal pipelines).
-     * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
      * @return Pipeline
      * @throws Exception
      */
-    public static function create(?User $user, ?Exercise $exercise = null): Pipeline
+    public static function create(?User $user): Pipeline
     {
         return new self(
             "",
@@ -275,7 +269,6 @@ class Pipeline
             new ArrayCollection(),
             $user,
             null,
-            $exercise
         );
     }
 
@@ -283,11 +276,10 @@ class Pipeline
      * Fork pipeline entity into new one.
      * @param User|null $user
      * @param Pipeline $pipeline
-     * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
      * @return Pipeline
      * @throws Exception
      */
-    public static function forkFrom(?User $user, Pipeline $pipeline, Exercise $exercise = null): Pipeline
+    public static function forkFrom(?User $user, Pipeline $pipeline): Pipeline
     {
         return new self(
             $pipeline->getName(),
@@ -297,7 +289,6 @@ class Pipeline
             $pipeline->getSupplementaryEvaluationFiles(),
             $user,
             $pipeline,
-            $exercise
         );
     }
 
