@@ -20,6 +20,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\PipelineViewFactory;
+use App\Model\View\ExerciseViewFactory;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
@@ -99,6 +100,12 @@ class PipelinesPresenter extends BasePresenter
      * @inject
      */
     public $pipelineViewFactory;
+
+    /**
+     * @var ExerciseViewFactory
+     * @inject
+     */
+    public $exerciseViewFactory;
 
     /**
      * @var FileStorageManager
@@ -516,5 +523,31 @@ class PipelinesPresenter extends BasePresenter
         $this->pipelines->flush();
 
         $this->sendSuccessResponse("OK");
+    }
+
+
+    public function checkGetPipelineExercises(string $id)
+    {
+        /** @var Pipeline $pipeline */
+        $pipeline = $this->pipelines->findOrThrow($id);
+        if (!$this->pipelineAcl->canViewDetail($pipeline)) {
+            throw new ForbiddenRequestException("You are not allowed to view the exercises of pipeline $id.");
+        }
+    }
+
+    /**
+     * Get all exercises that use given pipeline.
+     * Only bare minimum is retrieved for each exercise (localized name and author).
+     * @GET
+     * @param string $id Identifier of the pipeline
+     * @throws NotFoundException
+     */
+    public function actionGetPipelineExercises(string $id)
+    {
+        $exercises = $this->exercises->getPipelineExercises($id);
+        $this->sendSuccessResponse(array_map(
+            [$this->exerciseViewFactory, "getExerciseBareMinimum"],
+            array_values($exercises)
+        ));
     }
 }

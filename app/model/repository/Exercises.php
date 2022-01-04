@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
+use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\User;
 use App\Model\Entity\GroupMembership;
@@ -279,6 +280,25 @@ class Exercises extends BaseSoftDeleteRepository
         }
 
         $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Get all exercises that have given pipeline in the configuration.
+     * @param string $pipelineId
+     * @return Exercise[]
+     */
+    public function getPipelineExercises(string $pipelineId): array
+    {
+        // select for all the configs with the pipeline
+        $sub = $this->em->createQueryBuilder()->select("ec")->from(ExerciseConfig::class, "ec");
+        $sub->andWhere("ec = e.exerciseConfig");
+        $sub->andWhere("ec.config LIKE :like");
+
+        // select the exercises corresponding to those configs
+        $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+        $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+        $qb->setParameter("like", "%$pipelineId%");
         return $qb->getQuery()->getResult();
     }
 }
