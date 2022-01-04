@@ -51,7 +51,8 @@ class UploadedFiles extends BaseRepository
             return null;
         }
 
-        return current($result)->getAssignment()->getGroup();
+        $assignment = current($result)->getAssignment();
+        return $assignment ? $assignment->getGroup() : null;
     }
 
     /**

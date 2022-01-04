@@ -498,6 +498,7 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Pipelines:getSupplementaryFiles");
         $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Pipelines:uploadSupplementaryFiles");
         $router[] = new DeleteRoute("$prefix/<id>/supplementary-files/<fileId>", "Pipelines:deleteSupplementaryFile");
+        $router[] = new GetRoute("$prefix/<id>/exercises", "Pipelines:getPipelineExercises");
         return $router;
     }
 

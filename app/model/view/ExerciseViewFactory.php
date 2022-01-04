@@ -18,6 +18,21 @@ class ExerciseViewFactory
         $this->exercisePermissions = $exercisePermissions;
     }
 
+    /**
+     * Helper function that reduces localized texts to bare minimum (only name remains).
+     * @param LocalizedExercise[] $localizedTexts to be reduced
+     * @return array
+     */
+    private static function restrictToLocalizedName(array $localizedTexts): array
+    {
+        return array_map(function ($text) {
+            return [
+                "locale" => $text->getLocale(),
+                "name" => $text->getName(),
+            ];
+        }, $localizedTexts);
+    }
+
     public function getExercise(Exercise $exercise)
     {
         /** @var LocalizedExercise|null $primaryLocalization */
@@ -57,6 +72,19 @@ class ExerciseViewFactory
             "solutionFilesLimit" => $exercise->getSolutionFilesLimit(),
             "solutionSizeLimit" => $exercise->getSolutionSizeLimit(),
             "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
+        ];
+    }
+
+    /**
+     * Returns bare minimum of an exercise (localized names, author, and permission hint for view detail).
+     */
+    public function getExerciseBareMinimum(Exercise $exercise)
+    {
+        return [
+            "id" => $exercise->getId(),
+            "localizedTexts" => self::restrictToLocalizedName($exercise->getLocalizedTexts()->getValues()),
+            "authorId" => $exercise->getAuthor() ? $exercise->getAuthor()->getId() : null,
+            "canViewDetail" => $this->exercisePermissions->canViewDetail($exercise),
         ];
     }
 }
