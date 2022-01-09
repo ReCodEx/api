@@ -162,34 +162,9 @@ class Exercise implements IExercise
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="Pipeline", inversedBy="exercises")
-     */
-    protected $pipelines;
-
-    public function getPipelines()
-    {
-        return $this->pipelines->filter(
-            function (Pipeline $pipeline) {
-                return !$pipeline->isDeleted();
-            }
-        );
-    }
-
-    public function addPipeline(Pipeline $pipeline)
-    {
-        $this->pipelines->add($pipeline);
-        $pipeline->getAllExercises()->add($this);
-    }
-
-    public function removePipeline(Pipeline $pipeline)
-    {
-        $this->pipelines->removeElement($pipeline);
-        $pipeline->getAllExercises()->removeElement($this);
-    }
-
-    /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="ExerciseTag", mappedBy="exercise", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="ExerciseTag", mappedBy="exercise",
+     *                cascade={"persist", "remove"}, orphanRemoval=true)
      */
     protected $tags;
 
@@ -219,7 +194,6 @@ class Exercise implements IExercise
      * @param Collection $attachmentFiles
      * @param Collection $exerciseLimits
      * @param Collection $exerciseEnvironmentConfigs
-     * @param Collection $pipelines
      * @param Collection $exerciseTests
      * @param Collection $groups
      * @param Exercise|null $exercise
@@ -241,7 +215,6 @@ class Exercise implements IExercise
         Collection $attachmentFiles,
         Collection $exerciseLimits,
         Collection $exerciseEnvironmentConfigs,
-        Collection $pipelines,
         Collection $exerciseTests,
         Collection $groups,
         ?Exercise $exercise,
@@ -274,7 +247,6 @@ class Exercise implements IExercise
         $this->hardwareGroups = $hardwareGroups;
         $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
         $this->exerciseTests = $exerciseTests;
-        $this->pipelines = $pipelines;
         $this->referenceSolutions = new ArrayCollection();
         $this->scoreConfig = $scoreConfig;
         $this->configurationType = $configurationType;
@@ -294,7 +266,6 @@ class Exercise implements IExercise
         return new self(
             1,
             "",
-            new ArrayCollection(),
             new ArrayCollection(),
             new ArrayCollection(),
             new ArrayCollection(),
@@ -328,7 +299,6 @@ class Exercise implements IExercise
             $exercise->attachmentFiles,
             $exercise->exerciseLimits,
             $exercise->exerciseEnvironmentConfigs,
-            $exercise->pipelines,
             $exercise->exerciseTests,
             new ArrayCollection([$group]),
             $exercise,

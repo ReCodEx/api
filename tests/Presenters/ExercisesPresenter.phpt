@@ -501,47 +501,6 @@ class TestExercisesPresenter extends Tester\TestCase
         );
     }
 
-    public function testGetPipelines()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container);
-
-        // prepare pipelines into exercise
-        $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
-        $pipeline = current($this->pipelines->findAll());
-        $pipeline1 = Pipeline::forkFrom($user, $pipeline);
-        $pipeline2 = Pipeline::forkFrom($user, $pipeline);
-        $exercise = current($this->exercises->findAll());
-        $exercise->addPipeline($pipeline1);
-        $exercise->addPipeline($pipeline2);
-        $this->pipelines->persist($pipeline1, false);
-        $this->pipelines->persist($pipeline2, false);
-        $this->pipelines->flush();
-        $this->exercises->persist($exercise);
-
-        $request = new Nette\Application\Request(
-            "V1:Exercises",
-            'GET',
-            ['action' => 'getPipelines', 'id' => $exercise->getId()]
-        );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
-        $payload = $result['payload'];
-        Assert::count(2, $payload);
-
-        $expectedIds = [$pipeline1->getId(), $pipeline2->getId()];
-        $actualIds = array_map(
-            function ($item) {
-                return $item["id"];
-            },
-            $result['payload']
-        );
-        Assert::equal(sort($expectedIds), sort($actualIds));
-    }
-
     public function testAssignments()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -714,49 +673,6 @@ class TestExercisesPresenter extends Tester\TestCase
         /** @var Exercise $payload */
         $payload = $result['payload'];
         Assert::count(1, $payload["groupsIds"]);
-    }
-
-    public function testAttachPipeline()
-    {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
-
-        $exercise = current($this->presenter->exercises->findAll());
-        $pipeline = current($this->presenter->pipelines->findAll());
-
-        /** @var Exercise $payload */
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:Exercises',
-            'POST',
-            ['action' => 'attachPipeline', 'id' => $exercise->getId(), 'pipelineId' => $pipeline->getId()]
-        );
-
-        Assert::equal($exercise->getId(), $payload["id"]);
-        $this->presenter->exercises->refresh($exercise);
-        Assert::true($exercise->getPipelines()->contains($pipeline));
-    }
-
-    public function testDetachPipeline()
-    {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
-
-        $exercise = current($this->presenter->exercises->findAll());
-        $pipeline = current($this->presenter->pipelines->findAll());
-        $exercise->addPipeline($pipeline);
-        $this->presenter->exercises->flush();
-        Assert::true($exercise->getPipelines()->contains($pipeline));
-
-        /** @var Exercise $payload */
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:Exercises',
-            'POST',
-            ['action' => 'detachPipeline', 'id' => $exercise->getId(), 'pipelineId' => $pipeline->getId()]
-        );
-
-        Assert::equal($exercise->getId(), $payload["id"]);
-        $this->presenter->exercises->refresh($exercise);
-        Assert::false($exercise->getPipelines()->contains($pipeline));
     }
 
     public function testAllTags()

@@ -80,11 +80,6 @@ class Pipeline
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="pipelines")
-     */
-    protected $exercises;
-
-    /**
      * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="pipelines")
      * @var Collection
      */
@@ -143,7 +138,6 @@ class Pipeline
         $this->pipelineConfig = $pipelineConfig;
         $this->author = $author;
         $this->createdFrom = $createdFrom;
-        $this->exercises = new ArrayCollection();
         $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
         $this->parameters = new ArrayCollection();
         $this->runtimeEnvironments = new ArrayCollection();
@@ -152,41 +146,6 @@ class Pipeline
                 $this->runtimeEnvironments->add($runtimeEnvironment);
             }
         }
-    }
-
-    /**
-     * Get filtered collection of not-deleted exercises.
-     * @return ArrayCollection
-     */
-    public function getExercises()
-    {
-        return $this->exercises->filter(
-            function (Exercise $exercise) {
-                return $exercise->getDeletedAt() === null;
-            }
-        );
-    }
-
-    /**
-     * Get filtered collection of all exercises including delted ones.
-     * @return ArrayCollection
-     */
-    public function getAllExercises()
-    {
-        return $this->exercises;
-    }
-
-    /**
-     * Get array of identifications of exercises using this pipeline.
-     * @return array
-     */
-    public function getExercisesIds()
-    {
-        return $this->getExercises()->map(
-            function (Exercise $exercise) {
-                return $exercise->getId();
-            }
-        )->getValues();
     }
 
     public function getSupplementaryEvaluationFiles(): Collection
