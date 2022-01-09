@@ -35,12 +35,6 @@ interface IExercisePermissions
 
     public function canAddReferenceSolution(Exercise $exercise): bool;
 
-    public function canAttachPipeline(Exercise $exercise): bool;
-
-    public function canDetachPipeline(Exercise $exercise): bool;
-
-    public function canViewPipelines(Exercise $exercise): bool;
-
     public function canViewAssignments(Exercise $exercise): bool;
 
     public function canAttachGroup(Exercise $exercise, Group $group): bool;

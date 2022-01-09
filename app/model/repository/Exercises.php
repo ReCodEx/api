@@ -168,18 +168,21 @@ class Exercises extends BaseSoftDeleteRepository
             $adminOfIndex = BaseRepository::createIdIndex($adminOf, true); // all values are "true"
 
             // filter the groups of residence using membeship filters
-            $filteredGroupsOfResidence = array_filter($groupsOfResidence, function ($group) use ($memberOfIndex, $adminOfIndex) {
-                if (!empty($memberOfIndex[$group->getId()])) {
-                    return true; // covered by membership from beneath
-                }
+            $filteredGroupsOfResidence = array_filter(
+                $groupsOfResidence,
+                function ($group) use ($memberOfIndex, $adminOfIndex) {
+                    if (!empty($memberOfIndex[$group->getId()])) {
+                        return true; // covered by membership from beneath
+                    }
 
-                // check whether the group or its ancestors are covered by admin relation
-                while ($group && empty($adminOfIndex[$group->getId()])) {
-                    $group = $group->getParentGroup();
-                }
+                    // check whether the group or its ancestors are covered by admin relation
+                    while ($group && empty($adminOfIndex[$group->getId()])) {
+                        $group = $group->getParentGroup();
+                    }
 
-                return (bool)$group; // admin-ed parent group found -> the original group should be kept in the result
-            });
+                    return (bool)$group; // admin-ed parent group found -> the original group should be kept in the res
+                }
+            );
 
             // The exercise must be resident in one of the groups that passed user-filtering...
             $orExpr = $qb->expr()->orX();
@@ -225,13 +228,17 @@ class Exercises extends BaseSoftDeleteRepository
 
         if ($pagination->getOrderBy() === "name") {
             // Special patch, we need to load localized names from another entity ...
-            // Note: This requires custom COALESCE_SUB, which is actually normal COALESCE function that allows subqueries inside in DQL
+            // Note: This requires custom COALESCE_SUB, which is actually normal
+            // COALESCE function that allows subqueries inside in DQL
             $qb->addSelect(
                 'COALESCE_SUB(
-          (SELECT le1.name FROM App\Model\Entity\LocalizedExercise AS le1 WHERE le1 MEMBER OF e.localizedTexts AND le1.locale = :locale),
-          (SELECT le2.name FROM App\Model\Entity\LocalizedExercise AS le2 WHERE le2 MEMBER OF e.localizedTexts AND le2.locale = \'en\'),
-          (SELECT MAX(le3.name) FROM App\Model\Entity\LocalizedExercise AS le3 WHERE le3 MEMBER OF e.localizedTexts)
-        ) AS HIDDEN localizedName'
+                    (SELECT le1.name FROM App\Model\Entity\LocalizedExercise AS le1
+                        WHERE le1 MEMBER OF e.localizedTexts AND le1.locale = :locale),
+                    (SELECT le2.name FROM App\Model\Entity\LocalizedExercise AS le2
+                        WHERE le2 MEMBER OF e.localizedTexts AND le2.locale = \'en\'),
+                    (SELECT MAX(le3.name) FROM App\Model\Entity\LocalizedExercise AS le3
+                        WHERE le3 MEMBER OF e.localizedTexts)
+                ) AS HIDDEN localizedName'
             );
             $qb->setParameter('locale', $pagination->getLocale() ?? 'en');
         }

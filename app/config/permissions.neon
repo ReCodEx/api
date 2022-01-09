@@ -497,7 +497,6 @@ permissions:
           - viewConfig
           - viewLimits
           - viewScoreConfig
-          - viewPipelines
           - viewAssignments
           - viewList
           - viewAllTags
@@ -518,7 +517,6 @@ permissions:
           - viewConfig
           - viewLimits
           - viewScoreConfig
-          - viewPipelines
           - viewAssignments
           - addReferenceSolution
           - fork
@@ -544,8 +542,6 @@ permissions:
           - setLimits
           - setScoreConfig
           - update
-          - attachPipeline
-          - detachPipeline
           - addTag
           - removeTag
       conditions:
@@ -748,9 +744,15 @@ permissions:
           - update
           - remove
           - fork
-          - viewDetail
       conditions:
           - pipeline.isAuthor
+
+    - allow: true
+      role: empowered-supervisor
+      resource: pipeline
+      actions:
+          - create
+          - fork
 
     ###################
     # Sis permissions #

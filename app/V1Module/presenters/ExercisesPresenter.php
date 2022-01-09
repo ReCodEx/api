@@ -434,33 +434,6 @@ class ExercisesPresenter extends BasePresenter
         );
     }
 
-    public function checkGetPipelines(string $id)
-    {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        if (!$this->exerciseAcl->canViewPipelines($exercise)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Get all pipelines for an exercise.
-     * @GET
-     * @param string $id Identifier of the exercise
-     */
-    public function actionGetPipelines(string $id)
-    {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $pipelines = $exercise->getPipelines()->filter(
-            function (Pipeline $pipeline) {
-                return $this->pipelineAcl->canViewDetail($pipeline);
-            }
-        )->getValues();
-        $pipelines = $this->pipelineViewFactory->getPipelines($pipelines);
-        $this->sendSuccessResponse($pipelines);
-    }
-
     public function checkAssignments(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -703,72 +676,6 @@ class ExercisesPresenter extends BasePresenter
         }
 
         $exercise->removeGroup($group);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
-    }
-
-    // ***************************************************
-    // ******************** PIPELINES ********************
-    // ***************************************************
-
-    public function checkAttachPipeline(string $id, string $pipelineId)
-    {
-        $exercise = $this->exercises->findOrThrow($id);
-        $pipeline = $this->pipelines->findOrThrow($pipelineId);
-        if (!$this->exerciseAcl->canAttachPipeline($exercise)) {
-            throw new ForbiddenRequestException("You are not allowed to attach the pipeline to the exercise");
-        }
-    }
-
-    /**
-     * Attach existing pipeline to an exercise.
-     * @POST
-     * @param string $id Identifier of the exercise
-     * @param string $pipelineId Identifier of the pipeline to be attached
-     * @throws InvalidArgumentException
-     * @throws NotFoundException
-     */
-    public function actionAttachPipeline(string $id, string $pipelineId)
-    {
-        $exercise = $this->exercises->findOrThrow($id);
-        $pipeline = $this->pipelines->findOrThrow($pipelineId);
-
-        if ($exercise->getPipelines()->contains($pipeline)) {
-            throw new InvalidArgumentException("pipelineId", "pipeline is already attached to the exercise");
-        }
-
-        $exercise->addPipeline($pipeline);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
-    }
-
-    public function checkDetachPipeline(string $id, string $pipelineId)
-    {
-        $exercise = $this->exercises->findOrThrow($id);
-        $pipeline = $this->pipelines->findOrThrow($pipelineId);
-        if (!$this->exerciseAcl->canDetachPipeline($exercise)) {
-            throw new ForbiddenRequestException("You are not allowed to detach the pipeline from the exercise");
-        }
-    }
-
-    /**
-     * Detach given pipeline from the exercise.
-     * @DELETE
-     * @param string $id Identifier of the exercise
-     * @param string $pipelineId Identifier of the pipeline to be detached from the exercise
-     * @throws InvalidArgumentException
-     * @throws NotFoundException
-     */
-    public function actionDetachPipeline(string $id, string $pipelineId)
-    {
-        $exercise = $this->exercises->findOrThrow($id);
-        $pipeline = $this->pipelines->findOrThrow($pipelineId);
-
-        if (!$exercise->getPipelines()->contains($pipeline)) {
-            throw new InvalidArgumentException("pipelineId", "given pipeline is not attached to the exercise");
-        }
-
-        $exercise->removePipeline($pipeline);
         $this->exercises->flush();
         $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
     }
