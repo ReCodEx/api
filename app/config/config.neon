@@ -293,6 +293,7 @@ services:
   - App\Console\CleanupExerciseConfigs
   - App\Console\CleanupPipelineConfigs
   - App\Console\RemoveInactiveUsers(%removeInactiveUsers.threshold%)
+  - App\Console\RuntimeExport
 
   # security
   - App\Security\AccessManager(%accessManager%)
