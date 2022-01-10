@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class Pipelines extends BaseSoftDeleteRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Pipeline::class);
@@ -50,5 +49,15 @@ class Pipelines extends BaseSoftDeleteRepository
         );
         $paginationDbHelper->apply($qb, $pagination);
         return $paginationDbHelper->getResult($qb, $pagination);
+    }
+
+    /**
+     * Retrieve all pipelines which are associated with given runtime environment.
+     */
+    public function getRuntimeEnvironmentPipelines(string $runtimeId): array
+    {
+        $qb = $this->createQueryBuilder('p'); // takes care of softdelete cases
+        $qb->andWhere(":rteId MEMBER OF p.runtimeEnvironments")->setParameter('rteId', $runtimeId);
+        return $qb->getQuery()->getResult();
     }
 }
