@@ -95,7 +95,7 @@ class RuntimeExport extends Command
             $runtimeId = $input->getArgument('runtime');
             $runtime = $this->runtimeEnvironments->findOrThrow($runtimeId);
 
-            // open the ZIP archive and start writing.
+            // Open the ZIP archive and start writing.
             $zip = new ZipArchive();
             $opened = $zip->open($fileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
             if ($opened !== true) {
@@ -136,7 +136,9 @@ class RuntimeExport extends Command
                     $pid = $pipeline->getId();
                     $immFile = $supFile->getFile($this->fileManager);
                     if (!$immFile) {
-                        throw new RuntimeException("Supplementary file '$name' of pipeline '$pid' is not present in file storage.");
+                        throw new RuntimeException(
+                            "Supplementary file '$name' of pipeline '$pid' is not present in file storage."
+                        );
                     }
 
                     $immFile->addToZip($zip, "$pid/$name");

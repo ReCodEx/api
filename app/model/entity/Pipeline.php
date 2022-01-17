@@ -79,6 +79,11 @@ class Pipeline
         return $this->createdFrom && $this->createdFrom->isDeleted() ? null : $this->createdFrom;
     }
 
+    public function overrideCreatedFrom(?Pipeline $pipeline): void
+    {
+        $this->createdFrom = $pipeline;
+    }
+
     /**
      * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="pipelines")
      * @var Collection
@@ -191,12 +196,16 @@ class Pipeline
 
     public function addRuntimeEnvironment(RuntimeEnvironment $environment): void
     {
-        $this->runtimeEnvironments->add($environment);
+        if (!$this->runtimeEnvironments->contains($environment)) {
+            $this->runtimeEnvironments->add($environment);
+        }
     }
 
     public function removeRuntimeEnvironment(?RuntimeEnvironment $environment): void
     {
-        $this->runtimeEnvironments->remove($environment);
+        if ($this->runtimeEnvironments->contains($environment)) {
+            $this->runtimeEnvironments->remove($environment);
+        }
     }
 
     /**

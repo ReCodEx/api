@@ -19,8 +19,16 @@ trait CreateableEntity
         return $this->createdAt;
     }
 
-    public function createdNow()
+    public function createdNow(): void
     {
         $this->createdAt = new DateTime();
+    }
+
+    /**
+     * Special setter used for rare cases. Use createdNow() for common usage.
+     */
+    public function overrideCreatedAt(DateTime $createdAt): void
+    {
+        $this->createdAt = $createdAt;
     }
 }

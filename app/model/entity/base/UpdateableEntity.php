@@ -19,8 +19,16 @@ trait UpdateableEntity
         return $this->updatedAt;
     }
 
-    public function updatedNow()
+    public function updatedNow(): void
     {
         $this->updatedAt = new DateTime();
+    }
+
+    /**
+     * Special setter used for rare cases. Use updatedNow() for common usage.
+     */
+    public function overrideUpdatedAt(DateTime $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
     }
 }

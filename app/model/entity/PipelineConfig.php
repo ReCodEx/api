@@ -100,4 +100,17 @@ class PipelineConfig
     {
         return $this->pipelineConfig;
     }
+
+    /**
+     * Completely override the config (this is not typical, usually a new config is created to keep history).
+     * @param array $pipelineConfig parsed config structure
+     * @param bool $detach if true (default), the createdFrom field is set to null
+     */
+    public function overridePipelineConfig(array $pipelineConfig, bool $detach = true): void
+    {
+        $this->pipelineConfig = Yaml::dump($pipelineConfig);
+        if ($detach) {
+            $this->createdFrom = null;
+        }
+    }
 }
