@@ -7,7 +7,10 @@ App\Model\Entity\RuntimeEnvironment:
             - '\[c, h]'
             - 'GNU/Linux'
             - 'C compiled with GCC'
-            - '[{name: source-files, type: "file[]", value: "*.{c,h}"}]'
+            -
+              - name: source-files
+                type: 'file\[]'
+                value: '*.{c,h}'
     PascalRuntime:
         __construct:
             - freepascal-linux
@@ -16,7 +19,10 @@ App\Model\Entity\RuntimeEnvironment:
             - '\[pas]'
             - 'GNU/Linux'
             - 'Pascal compiled with FreePascal'
-            - '[{name: source-files, type: "file[]", value: "*.{pas,lpr}"}]'
+            - 
+              - name: source-files
+                type: 'file\[]'
+                value: '*.{pas,lpr}'
     CPPRuntime:
         __construct:
             - cxx-gcc-linux
@@ -25,7 +31,10 @@ App\Model\Entity\RuntimeEnvironment:
             - '\[cpp, h, hpp]'
             - 'GNU/Linux'
             - C++ compiled with G++
-            - '[{name: source-files, type: "file[]", value: "*.{cpp,h,hpp}"}]'
+            - 
+              - name: source-files
+                type: 'file\[]'
+                value: '*.{cpp,h,hpp}'
     MonoRuntime:
         __construct:
             - mono
@@ -34,7 +43,10 @@ App\Model\Entity\RuntimeEnvironment:
             - '\[cs]'
             - 'GNU/Linux'
             - 'C# run in Mono'
-            - '[{name: source-files, type: "file[]", value: "*.cs"}]'
+            - 
+              - name: source-files
+                type: 'file\[]'
+                value: '*.cs'
     JavaRuntime:
         __construct:
             - java
@@ -43,7 +55,10 @@ App\Model\Entity\RuntimeEnvironment:
             - '\[java]'
             - 'GNU/Linux'
             - 'Java'
-            - '[{name: source-files, type: "file[]", value: "*.java"}]'
+            - 
+              - name: source-files
+                type: 'file\[]'
+                value: '*.java'
     Python3Runtime:
         __construct:
             - python3
@@ -52,4 +67,7 @@ App\Model\Entity\RuntimeEnvironment:
             - '\[py]'
             - 'GNU/Linux'
             - 'Python 3 (CPython)'
-            - '[{name: source-files, type: "file[]", value: "*.py"}]'
+            - 
+              - name: source-files
+                type: 'file\[]'
+                value: '*.py'

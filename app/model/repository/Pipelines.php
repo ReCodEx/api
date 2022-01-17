@@ -17,6 +17,11 @@ class Pipelines extends BaseSoftDeleteRepository
         parent::__construct($em, Pipeline::class);
     }
 
+    public function findByName(string $name): array
+    {
+        return $this->findBy([ 'name' => $name ]);
+    }
+
     /**
      * Search pipelines based on parameters (filters and orderBy) in pagination config.
      * The result is not sliced as pipelines must be filtered by ACL first.

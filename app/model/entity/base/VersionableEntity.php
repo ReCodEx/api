@@ -24,4 +24,13 @@ trait VersionableEntity
     {
         $this->version++;
     }
+
+    /**
+     * A setter with strange name since arbitrary modifications of version are extremely rare.
+     * Use incrementVersion() instead in regular cases.
+     */
+    public function overrideVersion(int $version): void
+    {
+        $this->version = $version;
+    }
 }

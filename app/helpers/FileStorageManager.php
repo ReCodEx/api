@@ -314,6 +314,18 @@ class FileStorageManager
     }
 
     /**
+     * Save a regular file to persistent hash storage for supplementary files.
+     * Used for special situations, storeUploadedSupplementaryFile() is used in most cases.
+     * @param string $pathToFile file to be stored
+     * @param bool $move whether the file should be moved instead of copied (may save time)
+     * @return string hash identifying stored supplementary file
+     */
+    public function storeSupplementaryFile(string $pathToFile, bool $move = false): string
+    {
+        return $this->hashStorage->storeFile($pathToFile, $move);
+    }
+
+    /**
      * Move uploaded file to persistent hash storage for supplementary files.
      * @param UploadedFile $uploadedFile to be moved from tmp upload storage to hash storage
      * @return string hash identifying stored supplementary file

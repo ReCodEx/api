@@ -85,19 +85,19 @@ class RuntimeEnvironment implements JsonSerializable
     public function __construct(
         $id,
         $name,
-        $language,
+        $longName,
         $extensions,
         $platform,
         $description,
-        $defaultVariables = "[]"
+        $defaultVariables = []
     ) {
         $this->id = $id;
         $this->name = $name;
-        $this->longName = $language;
+        $this->longName = $longName;
         $this->extensions = $extensions;
         $this->platform = $platform;
         $this->description = $description;
-        $this->defaultVariables = $defaultVariables;
+        $this->setDefaultVariables($defaultVariables);
     }
 
     public function jsonSerialize()
@@ -127,9 +127,19 @@ class RuntimeEnvironment implements JsonSerializable
         return $this->name;
     }
 
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
     public function getLongName(): string
     {
         return $this->longName;
+    }
+
+    public function setLongName(string $longName): void
+    {
+        $this->$longName = $longName;
     }
 
     public function getExtensions(): string
@@ -137,9 +147,19 @@ class RuntimeEnvironment implements JsonSerializable
         return $this->extensions;
     }
 
+    public function setExtensions(string $extensions): void
+    {
+        $this->extensions = $extensions;
+    }
+
     public function getPlatform(): string
     {
         return $this->platform;
+    }
+
+    public function setPlatform(string $platform): void
+    {
+        $this->platform = $platform;
     }
 
     public function getDescription(): string
@@ -147,8 +167,18 @@ class RuntimeEnvironment implements JsonSerializable
         return $this->description;
     }
 
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
+    }
+
     public function getDefaultVariables(): string
     {
         return $this->defaultVariables;
+    }
+
+    public function setDefaultVariables(array $variables)
+    {
+        $this->defaultVariables = Yaml::dump($variables);
     }
 }
