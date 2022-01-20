@@ -76,7 +76,7 @@ class EvaluationPointsLoader
         $score = $evaluation->getScore();
 
         // calculate points from the score
-        $points = ($score >= $threshold) ? floor($score * $maxPoints) : 0;
+        $points = ($score >= $threshold) ? floor($score * $maxPoints + 1e-6) : 0;
 
         // ... and set results
         $evaluation->setPoints($points);
