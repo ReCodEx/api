@@ -84,11 +84,13 @@ class Validator
      * database entity.
      * @param PipelineEntity $pipeline
      * @param Pipeline $pipelineConfig
+     * @param array|null $pipelineFiles supplementary files of pipeline [ fileName => fileHash]
+     *                                  if null, the array is automatically loaded from the pipeline entity
      * @throws ExerciseConfigException
      */
-    public function validatePipeline(PipelineEntity $pipeline, Pipeline $pipelineConfig)
+    public function validatePipeline(PipelineEntity $pipeline, Pipeline $pipelineConfig, ?array $pipelineFiles = null)
     {
-        $this->pipelineValidator->validate($pipeline, $pipelineConfig);
+        $this->pipelineValidator->validate($pipeline, $pipelineConfig, $pipelineFiles);
     }
 
     /**

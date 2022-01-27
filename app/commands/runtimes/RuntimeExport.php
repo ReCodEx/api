@@ -58,7 +58,7 @@ class RuntimeExport extends Command
     {
         $supplementaryFiles = [];
         foreach ($pipeline->getSupplementaryEvaluationFiles()->getValues() as $file) {
-            $suplementaryFiles[] = [
+            $supplementaryFiles[] = [
                 "name" => $file->getName(),
                 "uploadedAt" => $file->getUploadedAt()->getTimestamp(),
                 "size" => $file->getFileSize(),
