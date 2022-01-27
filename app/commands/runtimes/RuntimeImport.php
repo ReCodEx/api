@@ -89,7 +89,6 @@ class RuntimeImport extends Command
         $this->setName(self::$defaultName)->setDescription(
             'Import runtime environment and its pipelines from a ZIP package.'
         )
-        ->addArgument('runtime', InputArgument::REQUIRED, 'ID of the runtime environment to be imported.')
         ->addArgument(
             'zipFile',
             InputArgument::REQUIRED,
@@ -555,6 +554,8 @@ class RuntimeImport extends Command
             );
             $this->uploadedFiles->persist($file, false);
         }
+
+        $this->pipelines->persist($pipeline);
     }
 
     /*
@@ -608,13 +609,14 @@ class RuntimeImport extends Command
                 $pipeline = $targetPipelines[$pipelineData['id']] ?? null;
                 $pipeline = $this->updatePipeline($pipeline, $pipelineData, $runtime);
 
+                // files must go first, so they are up to date for pipeline verification
+                $this->updatePipelineSupplementaryFiles($zip, $pipelineData, $pipeline);
+
                 // update config structure
                 $pipelineConfigData = $this->loadPipeline($zip, $pipelineData['id'], $pipeline);
                 $pipelineConfig = $pipeline->getPipelineConfig();
                 $pipelineConfig->overridePipelineConfig($pipelineConfigData);
                 $this->pipelines->persist($pipelineConfig);
-
-                $this->updatePipelineSupplementaryFiles($zip, $pipelineData, $pipeline);
             }
 
             $this->runtimeEnvironments->commit();

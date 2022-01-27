@@ -60,26 +60,31 @@ class UploadedFile implements JsonSerializable
 
     public function getUser(): ?User
     {
-        return $this->user->isDeleted() ? null : $this->user;
+        return $this->user && !$this->user->isDeleted() ? $this->user : null;
     }
 
-    public function getUserIdEvenIfDeleted(): string
+    public function getUserId(): ?string
     {
-        return $this->user->getId();
+        return $this->user && !$this->user->isDeleted() ? $this->user->getId() : null;
+    }
+
+    public function getUserIdEvenIfDeleted(): ?string
+    {
+        return $this->user ? $this->user->getId() : null;
     }
 
     /**
      * @param string $name Name of the file
      * @param DateTime $uploadedAt Time of the upload
      * @param int $fileSize Size of the file
-     * @param User $user The user who uploaded the file
+     * @param User|null $user The user who uploaded the file
      * @param bool $isPublic
      */
     public function __construct(
         string $name,
         DateTime $uploadedAt,
         int $fileSize,
-        User $user,
+        ?User $user,
         $isPublic = false
     ) {
         $this->name = $name;
@@ -96,7 +101,7 @@ class UploadedFile implements JsonSerializable
             "name" => $this->name,
             "size" => $this->fileSize,
             "uploadedAt" => $this->uploadedAt->getTimestamp(),
-            "userId" => $this->getUser() ? $this->getUser()->getId() : null,
+            "userId" => $this->getUserId(),
             "isPublic" => $this->isPublic
         ];
     }

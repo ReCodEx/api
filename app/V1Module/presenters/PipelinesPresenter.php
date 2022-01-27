@@ -475,7 +475,7 @@ class PipelinesPresenter extends BasePresenter
         $this->pipelines->flush();
         $this->uploadedFiles->flush();
 
-        $this->sendSuccessResponse($supplementaryFiles);
+        $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
     }
 
     public function checkGetSupplementaryFiles(string $id)

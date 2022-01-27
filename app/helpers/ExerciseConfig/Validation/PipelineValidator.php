@@ -18,12 +18,14 @@ class PipelineValidator
      * For more detailed description look at @ref App\Helpers\ExerciseConfig\Validator
      * @param PipelineEntity $pipeline
      * @param Pipeline $pipelineConfig
+     * @param array|null $pipelineFiles supplementary files of pipeline [ fileName => fileHash]
+     *                                  if null, the array is automatically loaded from the pipeline entity
      * @throws ExerciseConfigException
      */
-    public function validate(PipelineEntity $pipeline, Pipeline $pipelineConfig)
+    public function validate(PipelineEntity $pipeline, Pipeline $pipelineConfig, ?array $pipelineFiles = null): void
     {
         $variables = $pipelineConfig->getVariablesTable();
-        $pipelineFiles = $pipeline->getHashedSupplementaryFiles();
+        $pipelineFiles = $pipelineFiles ?? $pipeline->getHashedSupplementaryFiles();
 
         // Check ports of all boxes
         foreach ($pipelineConfig->getAll() as $box) {

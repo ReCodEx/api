@@ -356,9 +356,10 @@ class FileStorageManager
     {
         $dir = self::ATTACHMENTS;
         $user = $file->getUserIdEvenIfDeleted();
+        $userDir = $user ? "user_$user" : "_system"; // files without user are treated as sys. files
         $id = $file->getId();
         $name = $file->getName();
-        return "$dir/user_$user/${id}_${name}";
+        return "$dir/$userDir/${id}_${name}";
     }
 
     /**
