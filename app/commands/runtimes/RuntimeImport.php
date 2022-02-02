@@ -580,7 +580,7 @@ class RuntimeImport extends Command
             // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
             $opened = $zip->open($fileName);
             if ($opened !== true) {
-                throw new RuntimeException("Unable to open file '$fileName' for writing (code $opened).");
+                throw new RuntimeException("Unable to open file '$fileName' for reading (code $opened).");
             }
 
             $manifest = self::loadManifest($zip);

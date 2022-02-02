@@ -12,25 +12,25 @@ class Task
 {
 
     /** Config key which represents task identification */
-    const TASK_ID_KEY = "task-id";
+    public const TASK_ID_KEY = "task-id";
     /** Key representing priority of task */
-    const PRIORITY_KEY = "priority";
+    public const PRIORITY_KEY = "priority";
     /** Config key which represents if task has fatal failure bit set */
-    const FATAL_FAILURE_KEY = "fatal-failure";
+    public const FATAL_FAILURE_KEY = "fatal-failure";
     /** Key representing dependencies collection */
-    const DEPENDENCIES = "dependencies";
+    public const DEPENDENCIES = "dependencies";
     /** Key representing command map */
-    const CMD_KEY = "cmd";
+    public const CMD_KEY = "cmd";
     /** Command binary key */
-    const CMD_BIN_KEY = "bin";
+    public const CMD_BIN_KEY = "bin";
     /** Command arguments key */
-    const CMD_ARGS_KEY = "args";
+    public const CMD_ARGS_KEY = "args";
     /** Test identification key */
-    const TEST_ID_KEY = "test-id";
+    public const TEST_ID_KEY = "test-id";
     /** Task type key */
-    const TYPE_KEY = "type";
+    public const TYPE_KEY = "type";
     /** Sandbox config key */
-    const SANDBOX_KEY = "sandbox";
+    public const SANDBOX_KEY = "sandbox";
 
     /** @var string Task ID */
     private $id = "";

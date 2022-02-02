@@ -93,12 +93,14 @@ class BoxesCompiler
             $tasks = $current->getBox() ? $current->getBox()->compile($params) : [];
 
             // construct dependencies
-            $dependencies = array();
+            $dependencies = [];
             foreach ($current->getDependencies() as $dependency) {
-                $dependencies = array_unique(array_merge($dependencies, $dependency->getTaskIds()));
+                $dependencies = array_merge($dependencies, $dependency->getTaskIds());
             }
+            $dependencies = array_unique($dependencies);
 
             // set additional attributes to the tasks
+            $lastTaskId = null; // so we can properly link box tasks with dependencies
             foreach ($tasks as $task) {
                 // create and set task identification
                 $taskId = $this->createTaskIdentification($current, $order);
@@ -106,6 +108,8 @@ class BoxesCompiler
                 $task->setId($taskId);
 
                 // construct and set dependencies
+                $currentDependencies = $lastTaskId === null ? $dependencies
+                    : array_merge($dependencies, [ $lastTaskId ]);
                 $task->setDependencies($dependencies);
 
                 // identification of test is present in node
@@ -128,6 +132,7 @@ class BoxesCompiler
 
                 // update helper vars
                 $order++;
+                $lastTaskId = $taskId;
             }
 
             // add children of current node into stack
