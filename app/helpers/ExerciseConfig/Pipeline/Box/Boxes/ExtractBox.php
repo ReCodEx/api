@@ -2,28 +2,30 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
+use Nette\Utils\Strings;
+use Nette\Utils\Random;
 
 /**
- * Box which represents custom compilation unit.
- * It can be used for any compilation preprocessing or postprocessing,
- * like custom macro processing, bison&flex compilation, or additional executable bundling.
+ * Extracts zip (or other) archive(s) into a directory.
+ * If multiple archives are given, they are extracted all in one directory (with overwrites).
  */
-class CustomCompilationBox extends CompilationBox
+class ExtractBox extends CompilationBox
 {
     /** Type key */
-    public static $CUSTOM_COMPILATION_TYPE = "custom-compilation";
-    public static $DEFAULT_NAME = "Custom Compilation";
-    public static $COMPILER_EXEC_PORT_KEY = "compiler-exec";
+    public static $BOX_TYPE = "extract";
+    public static $ARCHIVE_FILES_PORT_KEY = "archive";
+    public static $TARGET_DIR_PORT_KEY = "out-dir";
+    public static $DEFAULT_NAME = "Extract Files from Archive";
 
     private static $initialized = false;
     private static $defaultInputPorts;
@@ -31,25 +33,23 @@ class CustomCompilationBox extends CompilationBox
 
     /**
      * Static initializer.
+     * @throws ExerciseConfigException
      */
     public static function init()
     {
         if (!self::$initialized) {
             self::$initialized = true;
             self::$defaultInputPorts = Box::constructPorts([
-                self::$COMPILER_EXEC_PORT_KEY => VariableTypes::$STRING_TYPE,
-                self::$ARGS_PORT_KEY => VariableTypes::$STRING_ARRAY_TYPE,
-                self::$SOURCE_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
-                self::$EXTRA_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
+                self::$ARCHIVE_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
             ]);
             self::$defaultOutputPorts = Box::constructPorts([
-                self::$BINARY_FILE_PORT_KEY => VariableTypes::$FILE_TYPE,
+                self::$TARGET_DIR_PORT_KEY => VariableTypes::$FILE_TYPE,
             ]);
         }
     }
 
     /**
-     * JudgeNormalBox constructor.
+     * ExtractBox constructor.
      * @param BoxMeta $meta
      */
     public function __construct(BoxMeta $meta)
@@ -64,12 +64,13 @@ class CustomCompilationBox extends CompilationBox
      */
     public function getType(): string
     {
-        return self::$CUSTOM_COMPILATION_TYPE;
+        return self::$BOX_TYPE;
     }
 
     /**
      * Get default input ports for this box.
      * @return array
+     * @throws ExerciseConfigException
      */
     public function getDefaultInputPorts(): array
     {
@@ -80,6 +81,7 @@ class CustomCompilationBox extends CompilationBox
     /**
      * Get default output ports for this box.
      * @return array
+     * @throws ExerciseConfigException
      */
     public function getDefaultOutputPorts(): array
     {
@@ -101,25 +103,28 @@ class CustomCompilationBox extends CompilationBox
      * Compile box into set of low-level tasks.
      * @param CompilationParams $params
      * @return array
+     * @throws ExerciseConfigException
      */
     public function compile(CompilationParams $params): array
     {
-        $task = $this->compileBaseTask($params);
-        $task->setCommandBinary($this->getInputPortValue(self::$COMPILER_EXEC_PORT_KEY)->getValue());
-
-        // Process args
-        $args = [];
-        if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
-            $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
+        $targetDir = $this->getOutputPortValue(self::$TARGET_DIR_PORT_KEY);
+        if ($targetDir->isEmpty()) {
+            // name of the directory is empty, so just make up a random one
+            $targetDir->setValue("extract_" . Random::generate(20));
         }
-        $task->setCommandArguments($args);
+        $to = $targetDir->getValue(ConfigParams::$EVAL_DIR);
 
-        // check if file produced by compilation was successfully created
-        $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getDirPrefixedValue(
-            ConfigParams::$SOURCE_DIR
-        );
-        $exists = $this->compileExistsTask([$binary]);
+        $archives = $this->getInputPortValue(self::$ARCHIVE_FILES_PORT_KEY)->getValueAsArray(ConfigParams::$EVAL_DIR);
 
-        return [$task, $exists];
+        $tasks = [];
+        foreach ($archives as $archive) {
+            $task = new Task();
+            $task->setPriority(Priorities::$DEFAULT);
+            $task->setCommandBinary(TaskCommands::$EXTRACT);
+            $task->setCommandArguments([ $archive, $to ]);
+            $tasks[] = $task;
+        }
+
+        return $tasks;
     }
 }
