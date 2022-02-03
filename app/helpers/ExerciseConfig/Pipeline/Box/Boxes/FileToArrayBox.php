@@ -13,6 +13,10 @@ class FileToArrayBox extends ScalarToArrayBox
     public static $BOX_TYPE = "file-to-array";
     public static $DEFAULT_NAME = "File to array";
 
+    protected static $initialized = false;
+    protected static $defaultInputPorts;
+    protected static $defaultOutputPorts;
+
     /**
      * Static initializer.
      * @throws ExerciseConfigException

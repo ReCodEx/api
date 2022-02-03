@@ -13,6 +13,11 @@ class StringToArrayBox extends ScalarToArrayBox
     public static $BOX_TYPE = "string-to-array";
     public static $DEFAULT_NAME = "String to array";
 
+    protected static $initialized = false;
+    protected static $defaultInputPorts;
+    protected static $defaultOutputPorts;
+
+
     /**
      * Static initializer.
      * @throws ExerciseConfigException
