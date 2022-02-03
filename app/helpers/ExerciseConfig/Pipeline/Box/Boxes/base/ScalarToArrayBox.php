@@ -19,9 +19,10 @@ abstract class ScalarToArrayBox extends Box
     public static $IN_PORT_KEY = "in";
     public static $OUT_PORT_KEY = "out";
 
-    private static $initialized = false;
-    private static $defaultInputPorts;
-    private static $defaultOutputPorts;
+    // these are just placeholders for static analysis (derived classes must have their own)
+    protected static $initialized = true;
+    protected static $defaultInputPorts = null;
+    protected static $defaultOutputPorts = null;
 
     /**
      * Static initializer.
@@ -39,12 +40,12 @@ abstract class ScalarToArrayBox extends Box
      */
     public static function initScalarToArray(string $scalarType, string $arrayType)
     {
-        if (!self::$initialized) {
-            self::$initialized = true;
-            self::$defaultInputPorts = array(
+        if (!static::$initialized) {
+            static::$initialized = true;
+            static::$defaultInputPorts = array(
                 new Port((new PortMeta())->setName(self::$IN_PORT_KEY)->setType($scalarType)),
             );
-            self::$defaultOutputPorts = array(
+            static::$defaultOutputPorts = array(
                 new Port((new PortMeta())->setName(self::$OUT_PORT_KEY)->setType($arrayType))
             );
         }
@@ -75,7 +76,7 @@ abstract class ScalarToArrayBox extends Box
     public function getDefaultInputPorts(): array
     {
         static::init();
-        return self::$defaultInputPorts;
+        return static::$defaultInputPorts;
     }
 
     /**
@@ -86,7 +87,7 @@ abstract class ScalarToArrayBox extends Box
     public function getDefaultOutputPorts(): array
     {
         static::init();
-        return self::$defaultOutputPorts;
+        return static::$defaultOutputPorts;
     }
 
 
