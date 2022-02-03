@@ -6,6 +6,7 @@ use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -300,5 +301,17 @@ abstract class Box implements JsonSerializable
     public function jsonSerialize()
     {
         return $this->toArray();
+    }
+
+    /**
+     * Helper method to save typing when initializing box ports.
+     * @param array $descriptor [ port name => variable type ]
+     * @return Port[] array of constructed and initialized port objects
+     */
+    public static function constructPorts(array $descriptor): array
+    {
+        return array_map(function ($name) use ($descriptor) {
+            return new Port((new PortMeta())->setName($name)->setType($descriptor[$name]));
+        }, array_keys($descriptor));
     }
 }

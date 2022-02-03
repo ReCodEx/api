@@ -18,11 +18,11 @@ class Variable implements JsonSerializable
     public static $ESCAPE_CHAR = '\\';
 
     /** Name of the name key */
-    const NAME_KEY = "name";
+    public const NAME_KEY = "name";
     /** Name of the type key */
-    const TYPE_KEY = "type";
+    public const TYPE_KEY = "type";
     /** Name of the value key */
-    const VALUE_KEY = "value";
+    public const VALUE_KEY = "value";
 
     /**
      * Variable name.
@@ -247,7 +247,7 @@ class Variable implements JsonSerializable
      * @param string $prefix another prefix which can be added to values
      * @return array
      */
-    public function getDirPrefixedValueAsArray(string $prefix = "")
+    public function getDirPrefixedValueAsArray(string $prefix = ""): array
     {
         if ($this->isEmpty()) {
             return [];
@@ -286,15 +286,16 @@ class Variable implements JsonSerializable
 
     /**
      * Get value of the variable as array if it is not an array already.
+     * @param string $prefix
      * @return array
      */
-    public function getValueAsArray()
+    public function getValueAsArray(string $prefix = ""): array
     {
         if ($this->isEmpty()) {
             return [];
         }
 
-        $value = $this->getValue();
+        $value = $this->getValue($prefix);
         if (!is_array($value)) {
             $value = [$value];
         }

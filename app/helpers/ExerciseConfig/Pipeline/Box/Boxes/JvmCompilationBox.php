@@ -39,22 +39,16 @@ class JvmCompilationBox extends CompilationBox
     {
         if (!self::$initialized) {
             self::$initialized = true;
-            self::$defaultInputPorts = array(
-                new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-                new Port(
-                    (new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
-                ),
-                new Port(
-                    (new PortMeta())->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
-                ),
-                new Port((new PortMeta())->setName(self::$JAR_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-                new Port((new PortMeta())->setName(self::$COMPILER_EXEC_PORT_KEY)->setType(VariableTypes::$STRING_TYPE))
-            );
-            self::$defaultOutputPorts = array(
-                new Port(
-                    (new PortMeta())->setName(self::$CLASS_FILES_DIR_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)
-                )
-            );
+            self::$defaultInputPorts = Box::constructPorts([
+                self::$ARGS_PORT_KEY => VariableTypes::$STRING_ARRAY_TYPE,
+                self::$SOURCE_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
+                self::$EXTRA_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
+                self::$JAR_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
+                self::$COMPILER_EXEC_PORT_KEY => VariableTypes::$STRING_TYPE,
+            ]);
+            self::$defaultOutputPorts = Box::constructPorts([
+                self::$CLASS_FILES_DIR_PORT_KEY => VariableTypes::$FILE_TYPE,
+            ]);
         }
     }
 

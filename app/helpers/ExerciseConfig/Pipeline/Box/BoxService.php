@@ -57,7 +57,8 @@ class BoxService
             FileNameBox::$BOX_TYPE => FileNameBox::class,
             JvmCompilationBox::$BOX_TYPE => JvmCompilationBox::class,
             JvmRunBox::$BOX_TYPE => JvmRunBox::class,
-            ScriptExecutionBox::$BOX_TYPE => ScriptExecutionBox::class
+            ScriptExecutionBox::$BOX_TYPE => ScriptExecutionBox::class,
+            ExtractBox::$BOX_TYPE => ExtractBox::class,
         ];
     }
 
