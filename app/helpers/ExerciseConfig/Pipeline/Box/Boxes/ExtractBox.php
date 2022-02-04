@@ -23,7 +23,7 @@ class ExtractBox extends CompilationBox
 {
     /** Type key */
     public static $BOX_TYPE = "extract";
-    public static $ARCHIVE_FILES_PORT_KEY = "archive";
+    public static $ARCHIVE_FILES_PORT_KEY = "archives";
     public static $TARGET_DIR_PORT_KEY = "out-dir";
     public static $DEFAULT_NAME = "Extract Files from Archive";
 

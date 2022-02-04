@@ -114,12 +114,15 @@ class CustomCompilationBox extends CompilationBox
         }
         $task->setCommandArguments($args);
 
+        if ($this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY) === null) {
+            return [$task]; // nobody cares about output (e.g., compilation only modifies input directory)
+        }
+
         // check if file produced by compilation was successfully created
         $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getDirPrefixedValue(
             ConfigParams::$SOURCE_DIR
         );
         $exists = $this->compileExistsTask([$binary]);
-
         return [$task, $exists];
     }
 }
