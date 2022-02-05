@@ -112,11 +112,19 @@ class ExtractBox extends CompilationBox
             // name of the directory is empty, so just make up a random one
             $targetDir->setValue("extract_" . Random::generate(20));
         }
-        $to = $targetDir->getValue(ConfigParams::$EVAL_DIR);
+        $to = $targetDir->getDirPrefixedValue(ConfigParams::$SOURCE_DIR);
 
-        $archives = $this->getInputPortValue(self::$ARCHIVE_FILES_PORT_KEY)->getValueAsArray(ConfigParams::$EVAL_DIR);
+        // we must ensure the target directory exists
+        $mkdirTask = new Task();
+        $mkdirTask->setPriority(Priorities::$INITIATION);
+        $mkdirTask->setType(TaskType::$INITIATION);
+        $mkdirTask->setCommandBinary(TaskCommands::$MKDIR);
+        $mkdirTask->setCommandArguments([ $to ]);
+        $tasks = [ $mkdirTask ];
 
-        $tasks = [];
+        // create extract task for each input (archive) file
+        $archives = $this->getInputPortValue(self::$ARCHIVE_FILES_PORT_KEY)
+            ->getDirPrefixedValueAsArray(ConfigParams::$SOURCE_DIR);
         foreach ($archives as $archive) {
             $task = new Task();
             $task->setPriority(Priorities::$DEFAULT);
