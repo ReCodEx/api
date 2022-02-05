@@ -480,9 +480,9 @@ class TestBaseCompiler extends Tester\TestCase
         $initiationExistsTask = $jobConfig->getTasks()[9];
         Assert::equal($initiationDir . ".compilationPipeline.compilation." . $it++, $initiationExistsTask->getId());
         Assert::equal(Priorities::$INITIATION, $initiationExistsTask->getPriority());
-        Assert::count(3, $initiationExistsTask->getDependencies());
+        Assert::count(4, $initiationExistsTask->getDependencies());
         Assert::equal(
-            [$initiationSourceTask->getId(), $initiationExtraTask->getId(), $initiationMkdir->getId()],
+            [$initiationSourceTask->getId(), $initiationExtraTask->getId(), $initiationMkdir->getId(), $initiationCompilationTask->getId()],
             $initiationExistsTask->getDependencies()
         );
         Assert::equal(TaskCommands::$EXISTS, $initiationExistsTask->getCommandBinary());

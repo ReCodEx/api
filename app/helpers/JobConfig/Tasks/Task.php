@@ -129,7 +129,7 @@ class Task
      */
     public function setDependencies(array $dependencies)
     {
-        $this->dependencies = $dependencies;
+        $this->dependencies = array_values($dependencies);
         return $this;
     }
 

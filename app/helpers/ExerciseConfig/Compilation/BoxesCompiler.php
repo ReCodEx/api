@@ -110,7 +110,7 @@ class BoxesCompiler
                 // construct and set dependencies
                 $currentDependencies = $lastTaskId === null ? $dependencies
                     : array_merge($dependencies, [ $lastTaskId ]);
-                $task->setDependencies($dependencies);
+                $task->setDependencies($currentDependencies);
 
                 // identification of test is present in node
                 if (!empty($currentTestName)) {
