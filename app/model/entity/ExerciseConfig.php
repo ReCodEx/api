@@ -92,6 +92,16 @@ class ExerciseConfig
         }
     }
 
+    /**
+     * Low level function that overrides existing config.
+     * This should be used only in very special situations (e.g., cli command that is fixing something)!
+     * @param array $parsedConfig config represented as structure of arrays
+     */
+    public function overrideConfig(array $parsedConfig): void
+    {
+        $this->config = Yaml::dump($parsedConfig);
+    }
+
     /*
      * Accessors
      */

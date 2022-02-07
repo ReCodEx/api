@@ -15,6 +15,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
 class RuntimeExport extends Command
 {
@@ -90,6 +91,8 @@ class RuntimeExport extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $stderr = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
+
         try {
             $fileName = $input->getArgument('saveAs');
             $runtimeId = $input->getArgument('runtime');
@@ -103,8 +106,8 @@ class RuntimeExport extends Command
             }
         } catch (Exception $e) {
             $msg = $e->getMessage();
-            $output->writeln("Error: $msg");
-            return 1;
+            $stderr->writeln("Error: $msg");
+            return Command::FAILURE;
         }
 
         try {
@@ -146,19 +149,19 @@ class RuntimeExport extends Command
             }
         } catch (Exception $e) {
             $msg = $e->getMessage();
-            $output->writeln("Error: $msg");
+            $stderr->writeln("Error: $msg");
 
             // try to erase our mistakes
             @$zip->close();
             @unlink($fileName);
-            return 2;
+            return Command::FAILURE;
         }
 
         if (!$zip->close()) {
-            $output->writeln("Unable to finalize and close ZIP file '$fileName'.");
-            return 3;
+            $stderr->writeln("Unable to finalize and close ZIP file '$fileName'.");
+            return Command::FAILURE;
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }
