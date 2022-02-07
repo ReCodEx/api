@@ -201,11 +201,9 @@ class Pipeline
         }
     }
 
-    public function removeRuntimeEnvironment(?RuntimeEnvironment $environment): void
+    public function removeRuntimeEnvironment(RuntimeEnvironment $environment): void
     {
-        if ($this->runtimeEnvironments->contains($environment)) {
-            $this->runtimeEnvironments->remove($environment);
-        }
+        $this->runtimeEnvironments->removeElement($environment);
     }
 
     /**
@@ -346,6 +344,20 @@ class Pipeline
     public function getParameters(): Collection
     {
         return $this->parameters;
+    }
+
+    /**
+     * Return parameters as associative array where values are already fetched.
+     * @param bool $includeDefaults if true, default values will be also present
+     * @return array
+     */
+    public function getParametersValues(bool $includeDefaults = false): array
+    {
+        $values = $this->getParameters()->toArray();
+        foreach ($values as &$value) {
+            $value = $value->getValue();
+        }
+        return $includeDefaults ? array_merge(self::DEFAULT_PARAMETERS, $values) : $values;
     }
 
     public function getRuntimeEnvironments(): Collection

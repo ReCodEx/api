@@ -295,6 +295,7 @@ services:
   - App\Console\RemoveInactiveUsers(%removeInactiveUsers.threshold%)
   - App\Console\RuntimeExport
   - App\Console\RuntimeImport
+  - App\Console\FixExerciseConfigs
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -380,6 +381,8 @@ services:
   - App\Model\Repository\AsyncJobs
   - App\Model\Repository\Comments
   - App\Model\Repository\Exercises
+  - App\Model\Repository\ExerciseConfigs
+  - App\Model\Repository\ExerciseTags
   - App\Model\Repository\ExerciseTests
   - App\Model\Repository\Assignments
   - App\Model\Repository\ExternalLogins
@@ -408,7 +411,6 @@ services:
   - App\Model\Repository\ShadowAssignments
   - App\Model\Repository\ShadowAssignmentPointsRepository
   - App\Model\Repository\Notifications
-  - App\Model\Repository\ExerciseTags
 
   # views factories
   - App\Model\View\ExerciseViewFactory

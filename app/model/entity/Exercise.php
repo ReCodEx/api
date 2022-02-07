@@ -323,9 +323,9 @@ class Exercise implements IExercise
         $this->runtimeEnvironments->add($runtimeEnvironment);
     }
 
-    public function removeRuntimeEnvironment(?RuntimeEnvironment $runtimeEnvironment)
+    public function removeRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment)
     {
-        $this->runtimeEnvironments->remove($runtimeEnvironment);
+        $this->runtimeEnvironments->removeElement($runtimeEnvironment);
     }
 
     public function setExerciseTests(Collection $exerciseTests)

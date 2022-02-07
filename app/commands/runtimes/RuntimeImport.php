@@ -22,25 +22,14 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
-class RuntimeImport extends Command
+class RuntimeImport extends BaseCommand
 {
     protected static $defaultName = 'runtimes:import';
 
     /** @var bool */
-    private $nonInteractive = false;
-
-    /** @var bool */
     private $silent = false;
-
-    /** @var InputInterface|null */
-    private $input = null;
-
-    /** @var OutputInterface|null */
-    private $output = null;
 
     // injections
 
@@ -106,87 +95,6 @@ class RuntimeImport extends Command
             InputOption::VALUE_NONE,
             "Silent mode (no outputs except for errors)"
         );
-    }
-
-    /**
-     * Wrapper for confirmation question.
-     * @param string $text message of the question
-     * @param bool $default value when the query is confirmed hastily
-     * @return bool true if the user confirmed the inquiry
-     */
-    protected function confirm(string $text, bool $default = false): bool
-    {
-        if (!$this->input || !$this->output) {
-            throw new RuntimeException("The confirm() method may be invoked only when the command is executed.");
-        }
-
-        if ($this->nonInteractive) {
-            return true; // assume "yes"
-        }
-
-        $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion($text, $default);
-        return $helper->ask($this->input, $this->output, $question);
-    }
-
-    /**
-     * Helper that convert numeric index into letter-based encoding.
-     * (0 = a, ..., 25 = z, 26 = aa, 27 = ab, ...)
-     * @param int $idx zero based index
-     * @return string encoded representation
-     */
-    private static function indexToLetters(int $idx): string
-    {
-        $res = '';
-        do {
-            $letter = chr(($idx % 26) + ord('a'));
-            $res = "$letter$res";
-            $idx = (int)($idx / 26) - 1;
-        } while ($idx >= 0);
-        return $res;
-    }
-
-    /**
-     * Perform a select inquery so the user chooses from given options.
-     * @param string $text of the inquery
-     * @param array $options to choose from
-     * @param callable|null $renderer explicit to-string converter for options
-     * @return mixed selected option value
-     */
-    protected function select(string $text, array $options, ?callable $renderer = null)
-    {
-        if (!$this->input || !$this->output) {
-            throw new RuntimeException("The select() method may be invoked only when the command is executed.");
-        }
-
-        if (count($options) === 1) {
-            return reset($options); // only one item to choose from
-        }
-
-        if ($this->nonInteractive) {
-            throw new RuntimeException(
-                "Unable preform the '$text' inquery in non-interactive mode. Operation aborted."
-            );
-        }
-
-        // wrap the options into strings with a, b, c, d ... selection keys
-        $internalOptions = [];
-        $translateBack = [];
-        foreach (array_values($options) as $idx => $option) {
-            $key = self::indexToLetters($idx);
-            $internalOptions[$key] = $renderer ? $renderer($option) : $option;
-            $translateBack[$key] = $option;
-        }
-
-        // make the inquery
-        QuestionHelper::disableStty();
-        $helper = $this->getHelper('question');
-        $question = new ChoiceQuestion($text, $options, 0);
-        $question->setErrorMessage('Invalid input.');
-
-        // translate the selection back to an option and report it
-        $selectedKey = $helper->ask($this->input, $this->output, $question);
-        return array_key_exists($selectedKey, $translateBack) ? $translateBack[$selectedKey] : null;
     }
 
     /*
@@ -445,6 +353,12 @@ class RuntimeImport extends Command
             $runtime->setPlatform($data['platform']);
             $runtime->setDescription($data['description']);
             $runtime->setDefaultVariables($data['defaultVariables']);
+
+            // remove all existing pipelines from this environment
+            foreach ($this->pipelines->getRuntimeEnvironmentPipelines($id) as $pipeline) {
+                $pipeline->removeRuntimeEnvironment($runtime);
+                $this->pipelines->persist($pipeline);
+            }
         } else {
             $runtime = new RuntimeEnvironment(
                 $id,
@@ -584,7 +498,7 @@ class RuntimeImport extends Command
             }
 
             $manifest = self::loadManifest($zip);
-            $targetPipelines = [];
+            $targetPipelines = []; // manifest pipelineId => existing entity (or null)
             foreach ($manifest['pipelines'] as $pipelineData) {
                 $targetPipelines[$pipelineData['id']] = $this->getTargetPipeline($pipelineData);
             }
@@ -595,7 +509,7 @@ class RuntimeImport extends Command
             }
 
             // confirm the modifications
-            if (!$this->nonInteractive && !$this->confirm("Do you wish to proceed with modifications?")) {
+            if (!$this->nonInteractive && !$this->confirm("Do you wish to proceed with modifications? ")) {
                 $this->runtimeEnvironments->rollback();
                 $zip->close();
                 return Command::SUCCESS;
@@ -628,8 +542,9 @@ class RuntimeImport extends Command
         } catch (Exception $e) {
             $this->runtimeEnvironments->rollback();
             $msg = $e->getMessage();
-            $output->writeln("Error: $msg");
-            return 1;
+            $stderr = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
+            $stderr->writeln("Error: $msg");
+            return Command::FAILURE;
         }
 
         return Command::SUCCESS;
