@@ -176,8 +176,6 @@ class AssignmentSolution
     /*
      * Accessors
      */
-    /// GETTERS AND SETTERS
-    ///
 
     public function getId(): ?string
     {
