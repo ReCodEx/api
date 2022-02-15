@@ -131,6 +131,7 @@ class GroupViewFactory
                     "bonus" => $best ? $best->getBonusPoints() : null,
                 ],
                 "bestSolutionId" => $best ? $best->getId() : null,
+                "accepted" => $best ? $best->isAccepted() : null,
             ];
         }
 

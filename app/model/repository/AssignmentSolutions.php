@@ -93,7 +93,7 @@ class AssignmentSolutions extends BaseRepository
 
                     if (!$submission->hasEvaluation()) {
                         // Condition sustained for readability
-                        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
+                        // the submission is not evaluated yet, but it will be evaluated (or fail) in the future
                         // -> otherwise the user would be able to submit many solutions before they are evaluated
                         return true;
                     }
@@ -141,8 +141,10 @@ class AssignmentSolutions extends BaseRepository
      * @param AssignmentSolution $solution Solution to be compared with the best solution
      * @return AssignmentSolution Better of the two given solutions
      */
-    private static function compareBestSolution(?AssignmentSolution $best, AssignmentSolution $solution): AssignmentSolution
-    {
+    private static function compareBestSolution(
+        ?AssignmentSolution $best,
+        AssignmentSolution $solution
+    ): AssignmentSolution {
         if ($best === null) {
             return $solution;
         }
@@ -162,7 +164,8 @@ class AssignmentSolutions extends BaseRepository
             $createdAtCmp = $best->getSolution()->getCreatedAt() <=> $solution->getSolution()->getCreatedAt();
             if ($createdAtCmp === -1) {
                 return $solution;
-            } elseif ($createdAtCmp === 0) { // finally we compare IDs lexicographically (to be deterministic in very rare cases)
+            } elseif ($createdAtCmp === 0) {
+                // finally we compare IDs lexicographically (to be deterministic in very rare cases)
                 if (($best->getId() <=> $solution->getId()) === -1) {
                     return $solution;
                 }
