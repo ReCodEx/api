@@ -22,11 +22,11 @@
     },
     "config": {
         "platform": {
-            "php": "7.3.29"
+            "php": "7.4.0"
         }
     },
     "require": {
-        "php": ">=7.3",
+        "php": ">=7.4",
         "ext-yaml": ">=2.0",
         "ext-json": ">=1.7",
         "ext-zip": ">=1.15",

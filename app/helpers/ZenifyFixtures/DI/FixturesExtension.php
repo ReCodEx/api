@@ -22,7 +22,6 @@ use stdClass;
  */
 final class FixturesExtension extends CompilerExtension
 {
-
     public function getConfigSchema(): Schema
     {
         return Expect::structure([

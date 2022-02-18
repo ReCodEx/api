@@ -18,9 +18,9 @@ class CustomNativeLoader extends NativeLoader
     /**
      * CustomNativeLoader constructor.
      * @param FakerGenerator|null $fakerGenerator
-     * @param ChainableParserInterface ...$parsers
+     * @param ChainableParserInterface[] $parsers
      */
-    public function __construct(FakerGenerator $fakerGenerator = null, ChainableParserInterface ...$parsers)
+    public function __construct(FakerGenerator $fakerGenerator = null, array $parsers)
     {
         $this->parsers = $parsers; // this needs to be first
         parent::__construct($fakerGenerator);
