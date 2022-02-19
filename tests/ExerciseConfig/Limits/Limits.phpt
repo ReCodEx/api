@@ -15,11 +15,11 @@ class TestLimits extends Tester\TestCase
 {
     static $sample = [
         "memory" => 123,
-        "wall-time" => 456
+        "wall-time" => 456.7
     ];
     static $cfg = [
-        ["memory" => 123, "cpu-time" => 456],
-        ["memory" => 321, "wall-time" => 645],
+        ["memory" => 123, "cpu-time" => 456.7],
+        ["memory" => 321, "wall-time" => 645.1],
         ["memory" => 123]
     ];
     static $optional = [
@@ -49,7 +49,7 @@ class TestLimits extends Tester\TestCase
         $limits = $this->loader->loadLimits(self::$cfg[0]);
         Assert::equal(123, $limits->getMemoryLimit());
         Assert::type("int", $limits->getMemoryLimit());
-        Assert::equal(456.0, $limits->getCpuTime());
+        Assert::equal(456.7, $limits->getCpuTime());
         Assert::type("float", $limits->getCpuTime());
     }
 
@@ -58,7 +58,7 @@ class TestLimits extends Tester\TestCase
         $limits = $this->loader->loadLimits(self::$cfg[1]);
         Assert::equal(321, $limits->getMemoryLimit());
         Assert::type("int", $limits->getMemoryLimit());
-        Assert::equal(645.0, $limits->getWallTime());
+        Assert::equal(645.1, $limits->getWallTime());
         Assert::type("float", $limits->getWallTime());
     }
 
