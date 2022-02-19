@@ -162,7 +162,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         );
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'GET',
+            'V1:ExercisesConfig',
+            'GET',
             [
                 'action' => 'getConfiguration',
                 'id' => $exercise->getId()
@@ -256,7 +257,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         ];
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'setConfiguration',
                 'id' => $exercise->getId()
@@ -304,7 +306,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $exercise = current($this->exercises->findAll());
         $environment = $exercise->getRuntimeEnvironments()->first();
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'getVariablesForExerciseConfig',
                 'id' => $exercise->getId()
@@ -340,7 +343,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $exerciseLimits = $exercise->getExerciseLimits()->first();
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'GET',
+            'V1:ExercisesConfig',
+            'GET',
             [
                 'action' => 'getHardwareGroupLimits',
                 'id' => $exercise->getId(),
@@ -377,12 +381,13 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
         // prepare limits arrays
         $limits = [
-            '1' => ['wall-time' => 1.0, 'memory' => 1024],
-            '2' => ['wall-time' => 2.0, 'memory' => 1024]
+            '1' => ['wall-time' => 1.1, 'memory' => 1024],
+            '2' => ['wall-time' => 2.2, 'memory' => 1024]
         ];
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'setHardwareGroupLimits',
                 'id' => $exercise->getId(),
@@ -428,7 +433,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         ];
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'setHardwareGroupLimits',
                 'id' => $exercise->getId(),
@@ -459,8 +465,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $limits = [
             $hwGroupId => [
                 $environmentId => [
-                    '1' => ['wall-time' => 1.0, 'memory' => 1024],
-                    '2' => ['wall-time' => 2.0, 'memory' => 1024]
+                    '1' => ['wall-time' => 1.1, 'memory' => 1024],
+                    '2' => ['wall-time' => 2.2, 'memory' => 1024]
                 ]
             ]
         ];
@@ -541,7 +547,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $hwGroup = $exerciseLimits->getHardwareGroup();
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'DELETE',
+            'V1:ExercisesConfig',
+            'DELETE',
             [
                 'action' => 'removeHardwareGroupLimits',
                 'id' => $exercise->getId(),
@@ -566,7 +573,10 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercise = current($this->exercises->findAll());
 
-        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'GET',
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ExercisesConfig',
+            'GET',
             [ 'action' => 'getScoreConfig', 'id' => $exercise->getId() ]
         );
         $resultConfig = $payload->getConfigParsed();
@@ -586,7 +596,10 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             'Test 3' => 100,
         ] ];
 
-        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'setScoreConfig',
                 'id' => $exercise->getId()
@@ -608,7 +621,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $exercise = current($this->exercises->findAll());
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'GET',
+            'V1:ExercisesConfig',
+            'GET',
             [
                 'action' => 'getTests',
                 'id' => $exercise->getId()
@@ -656,7 +670,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         ];
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'setTests',
                 'id' => $exercise->getId()
@@ -703,7 +718,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         }
 
         $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+            'V1:ExercisesConfig',
+            'POST',
             [
                 'action' => 'setTests',
                 'id' => $exercise->getId()
@@ -718,7 +734,6 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             App\Exceptions\InvalidArgumentException::class
         );
     }
-
 }
 
 $testCase = new TestExercisesConfigPresenter();

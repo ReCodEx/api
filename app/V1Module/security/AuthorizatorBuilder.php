@@ -17,7 +17,8 @@ class AuthorizatorBuilder
     private $checkCounter;
     private $dumper;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->dumper = new Dumper();
     }
 
@@ -26,7 +27,7 @@ class AuthorizatorBuilder
         return "AuthorizatorImpl_" . $uniqueId;
     }
 
-    public function build($aclInterfaces, $permissions, $uniqueId): ClassType
+    public function build($aclInterfaces, array $permissions, $uniqueId): ClassType
     {
         $this->checkCounter = 0;
 
@@ -40,14 +41,15 @@ class AuthorizatorBuilder
         $check->addParameter("privilege")->setType("string");
 
         foreach ($permissions as $i => $rule) {
-            $all = new PhpLiteral(sprintf("%s::ALL", Permission::class));
+            if (!is_array($rule)) {
+                continue;
+            }
 
             $allow = Arrays::get($rule, "allow", true);
             $role = Arrays::get($rule, "role", null);
             $resource = Arrays::get($rule, "resource", null);
             $interface = $resource !== null ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : null;
-            $actions = Arrays::get($rule, "actions", []);
-            $actions = $actions !== $all ? (array)$actions : $actions;
+            $actions = (array)Arrays::get($rule, "actions", []);
 
             $assertion = null;
             $conditions = (array)Arrays::get($rule, "conditions", []);

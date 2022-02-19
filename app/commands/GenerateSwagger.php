@@ -60,6 +60,9 @@ class GenerateSwagger extends Command
      */
     private $apiConfig;
 
+    /**
+     * @var array
+     */
     private $typeMap = [
         'bool' => 'boolean',
         'boolean' => 'boolean',
