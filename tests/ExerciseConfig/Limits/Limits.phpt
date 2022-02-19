@@ -15,7 +15,7 @@ class TestLimits extends Tester\TestCase
 {
     static $sample = [
         "memory" => 123,
-        "wall-time" => 456.0
+        "wall-time" => 456
     ];
     static $cfg = [
         ["memory" => 123, "cpu-time" => 456],
@@ -23,8 +23,8 @@ class TestLimits extends Tester\TestCase
         ["memory" => 123]
     ];
     static $optional = [
-        "wall-time" => 2.0,
-        "cpu-time" => 3.0,
+        "wall-time" => 2.2,
+        "cpu-time" => 3.3,
         "memory" => 5,
         "parallel" => 6
     ];
@@ -40,6 +40,7 @@ class TestLimits extends Tester\TestCase
     public function testSerialization()
     {
         $deserialized = Yaml::parse((string)$this->loader->loadLimits(self::$sample));
+        ksort($deserialized);
         Assert::equal(self::$sample, $deserialized);
     }
 
@@ -74,13 +75,12 @@ class TestLimits extends Tester\TestCase
     public function testOptional()
     {
         $limits = $this->loader->loadLimits(self::$optional);
-        Assert::equal(2.0, $limits->getWallTime());
-        Assert::equal(3.0, $limits->getCpuTime());
+        Assert::equal(2.2, $limits->getWallTime());
+        Assert::equal(3.3, $limits->getCpuTime());
         Assert::equal(5, $limits->getMemoryLimit());
         Assert::equal(6, $limits->getParallel());
         Assert::equal(self::$optional, $limits->toArray());
     }
-
 }
 
 # Testing methods run

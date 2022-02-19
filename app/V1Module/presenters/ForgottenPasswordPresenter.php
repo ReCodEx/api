@@ -64,14 +64,12 @@ class ForgottenPasswordPresenter extends BasePresenter
      */
     public function actionChange()
     {
-        $req = $this->getHttpRequest();
-
         if (!$this->isInScope(TokenScope::CHANGE_PASSWORD)) {
             throw new ForbiddenRequestException("You cannot reset your password with this access token.");
         }
 
         // try to find login according to username and process request
-        $password = $req->getPost("password");
+        $password = $this->getRequest()->getPost("password");
         $login = $this->getCurrentUser()->getLogin();
 
         // actually change the password
@@ -90,15 +88,14 @@ class ForgottenPasswordPresenter extends BasePresenter
      */
     public function actionValidatePasswordStrength()
     {
-        $req = $this->getHttpRequest();
-        $password = $req->getPost("password");
-
-        $zxcvbn = new Zxcvbn();
-        $passwordStrength = $zxcvbn->passwordStrength($password);
-        $this->sendSuccessResponse(
-            [
-                "passwordScore" => $passwordStrength["score"]
-            ]
-        );
+        $password = $this->getRequest()->getPost("password");
+        if ($password) {
+            $zxcvbn = new Zxcvbn();
+            $passwordStrength = $zxcvbn->passwordStrength($password);
+            $score = $passwordStrength["score"];
+        } else {
+            $score = 0;
+        }
+        $this->sendSuccessResponse(["passwordScore" => $score]);
     }
 }

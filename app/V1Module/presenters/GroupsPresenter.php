@@ -406,6 +406,10 @@ class GroupsPresenter extends BasePresenter
 
             // snapshot the inherited membership-relations
             $typePriorities = array_flip(GroupMembership::INHERITABLE_TYPES);
+
+            // this is actually a hack for PHP Stan (can be removed when there will be more than 1 interitable type)
+            $typePriorities[''] = -1; // adding a fake priority for fake type
+
             $membershipsToInherit = []; // aggregated memberships from all ancestors, key is user ID
 
             // scan ancestors and aggregate memberships by priorities

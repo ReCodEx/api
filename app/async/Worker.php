@@ -72,7 +72,7 @@ class Worker
     private $quiet = false;
 
 
-    public function __construct($config, Dispatcher $dispatcher, AsyncJobs $asyncJobs, ILogger $logger)
+    public function __construct(array $config, Dispatcher $dispatcher, AsyncJobs $asyncJobs, ILogger $logger)
     {
         $this->dispatcher = $dispatcher;
         $this->asyncJobs = $asyncJobs;

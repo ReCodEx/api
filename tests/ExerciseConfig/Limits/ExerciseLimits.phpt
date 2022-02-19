@@ -14,7 +14,7 @@ class TestExerciseLimits extends Tester\TestCase
     static $sample = [
         "test-id-1" => [
             "memory" => 123,
-            "wall-time" => 456.0
+            "wall-time" => 456
         ]
     ];
     static $parse = [
@@ -51,6 +51,7 @@ class TestExerciseLimits extends Tester\TestCase
     public function testSerialization()
     {
         $deserialized = Yaml::parse((string)$this->loader->loadExerciseLimits(self::$sample));
+        ksort($deserialized);
         Assert::equal(self::$sample, $deserialized);
     }
 
@@ -93,7 +94,6 @@ class TestExerciseLimits extends Tester\TestCase
         Assert::equal(6, $limits["test-id-2"]->getMemoryLimit());
         Assert::equal(7, $limits["test-id-2"]->getParallel());
     }
-
 }
 
 # Testing methods run
