@@ -14,27 +14,27 @@ class TestExerciseLimits extends Tester\TestCase
     static $sample = [
         "test-id-1" => [
             "memory" => 123,
-            "wall-time" => 456
+            "wall-time" => 456.7
         ]
     ];
     static $parse = [
         "test-id-1" => [
             "memory" => 123,
-            "wall-time" => 456
+            "wall-time" => 456.7
         ],
         "test-id-2" => [
             "memory" => 321,
-            "wall-time" => 645
+            "wall-time" => 645.1
         ]
     ];
     static $optional = [
         "test-id-1" => [
-            "wall-time" => 2,
+            "wall-time" => 2.2,
             "memory" => 5,
             "parallel" => 6
         ],
         "test-id-2" => [
-            "wall-time" => 3,
+            "wall-time" => 3.3,
             "memory" => 6,
             "parallel" => 7
         ]
@@ -72,12 +72,12 @@ class TestExerciseLimits extends Tester\TestCase
 
         Assert::equal(123, $limits["test-id-1"]->getMemoryLimit());
         Assert::type("int", $limits["test-id-1"]->getMemoryLimit());
-        Assert::equal(456.0, $limits["test-id-1"]->getWallTime());
+        Assert::equal(456.7, $limits["test-id-1"]->getWallTime());
         Assert::type("float", $limits["test-id-1"]->getWallTime());
 
         Assert::equal(321, $limits["test-id-2"]->getMemoryLimit());
         Assert::type("int", $limits["test-id-2"]->getMemoryLimit());
-        Assert::equal(645.0, $limits["test-id-2"]->getWallTime());
+        Assert::equal(645.1, $limits["test-id-2"]->getWallTime());
         Assert::type("float", $limits["test-id-2"]->getWallTime());
     }
 
@@ -86,11 +86,11 @@ class TestExerciseLimits extends Tester\TestCase
         $limits = $this->loader->loadExerciseLimits(self::$optional)->getLimitsArray();
         Assert::count(2, $limits);
 
-        Assert::equal(2.0, $limits["test-id-1"]->getWallTime());
+        Assert::equal(2.2, $limits["test-id-1"]->getWallTime());
         Assert::equal(5, $limits["test-id-1"]->getMemoryLimit());
         Assert::equal(6, $limits["test-id-1"]->getParallel());
 
-        Assert::equal(3.0, $limits["test-id-2"]->getWallTime());
+        Assert::equal(3.3, $limits["test-id-2"]->getWallTime());
         Assert::equal(6, $limits["test-id-2"]->getMemoryLimit());
         Assert::equal(7, $limits["test-id-2"]->getParallel());
     }
