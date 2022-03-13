@@ -296,6 +296,7 @@ services:
   - App\Console\RuntimeExport
   - App\Console\RuntimeImport
   - App\Console\FixExerciseConfigs
+  - App\Console\FixConfigVariables
 
   # security
   - App\Security\AccessManager(%accessManager%)
