@@ -359,8 +359,10 @@ class ExercisesConfigPresenter extends BasePresenter
      * pipelines and runtime environment.
      * @POST
      * @param string $id Identifier of the exercise
-     * @Param(type="post", name="runtimeEnvironmentId", validation="string:1..", description="Environment identifier", required=false)
-     * @Param(type="post", name="pipelinesIds", validation="array", description="Identifiers of selected pipelines for one test")
+     * @Param(type="post", name="runtimeEnvironmentId", validation="string:1..", required=false,
+     *        description="Environment identifier")
+     * @Param(type="post", name="pipelinesIds", validation="array",
+     *        description="Identifiers of selected pipelines for one test")
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
