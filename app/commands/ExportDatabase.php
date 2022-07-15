@@ -53,8 +53,7 @@ class ExportDatabase extends Command
         RuntimeEnvironments $runtimeEnvironments,
         Pipelines $pipelines,
         HardwareGroups $hardwareGroups
-    )
-    {
+    ) {
         parent::__construct();
         $this->runtimeEnvironments = $runtimeEnvironments;
         $this->pipelines = $pipelines;
@@ -143,8 +142,11 @@ class ExportDatabase extends Command
             $constructArr[] = $group->getId();
             $constructArr[] = $group->getName();
             $constructArr[] = $this->correctDbNewlines($group->getDescription());
-            $constructArr[] = $this->addParameterAndGetReference($group->getId(),
-                $this->correctDbNewlines($group->getMetadataString()), $parameters);
+            $constructArr[] = $this->addParameterAndGetReference(
+                $group->getId(),
+                $this->correctDbNewlines($group->getMetadataString()),
+                $parameters
+            );
 
             $groupArr = [];
             $groupArr["__construct"] = $constructArr;
@@ -170,12 +172,18 @@ class ExportDatabase extends Command
             $constructArr[] = $runtime->getId();
             $constructArr[] = $runtime->getName();
             $constructArr[] = $runtime->getLongName();
-            $constructArr[] = $this->addParameterAndGetReference("extension_" . $runtime->getId(),
-                $runtime->getExtensions(), $parameters);
+            $constructArr[] = $this->addParameterAndGetReference(
+                "extension_" . $runtime->getId(),
+                $runtime->getExtensions(),
+                $parameters
+            );
             $constructArr[] = $runtime->getPlatform();
             $constructArr[] = $runtime->getDescription();
-            $constructArr[] = $this->addParameterAndGetReference("defVariables_" . $runtime->getId(),
-                $this->correctDbNewlines($runtime->getDefaultVariables()), $parameters);
+            $constructArr[] = $this->addParameterAndGetReference(
+                "defVariables_" . $runtime->getId(),
+                $this->correctDbNewlines($runtime->getDefaultVariables()),
+                $parameters
+            );
 
             $runtimeArr = [];
             $runtimeArr["__construct"] = $constructArr;
@@ -210,8 +218,11 @@ class ExportDatabase extends Command
 
             // create yaml config
             $constructArr = [];
-            $constructArr[] = $this->addParameterAndGetReference("config_" . $configId,
-                $this->correctDbNewlines($config->getPipelineConfig()), $parameters);
+            $constructArr[] = $this->addParameterAndGetReference(
+                "config_" . $configId,
+                $this->correctDbNewlines($config->getPipelineConfig()),
+                $parameters
+            );
             $constructArr[] = "@demoAdmin";
 
             $configArr = [];
@@ -230,10 +241,16 @@ class ExportDatabase extends Command
 
             $pipelineArr = [];
             $pipelineArr["__construct"] = $constructArr;
-            $pipelineArr["name"] = $this->addParameterAndGetReference("name_" . $pipelineId,
-                $pipeline->getName(), $parameters);
-            $pipelineArr["description"] = $this->addParameterAndGetReference("description_" . $pipelineId,
-                $this->correctDbNewlines($pipeline->getDescription()), $parameters);
+            $pipelineArr["name"] = $this->addParameterAndGetReference(
+                "name_" . $pipelineId,
+                $pipeline->getName(),
+                $parameters
+            );
+            $pipelineArr["description"] = $this->addParameterAndGetReference(
+                "description_" . $pipelineId,
+                $this->correctDbNewlines($pipeline->getDescription()),
+                $parameters
+            );
             $pipelineArr["pipelineConfig"] = "@" . $configId;
 
             $pipelineArr["runtimeEnvironments"] = array_map(

@@ -27,7 +27,7 @@ class Identity implements Nette\Security\IIdentity
      * Returns the ID of user.
      * @return mixed
      */
-    function getId()
+    public function getId()
     {
         return $this->user ? $this->user->getId() : null;
     }
@@ -36,7 +36,7 @@ class Identity implements Nette\Security\IIdentity
      * Returns a list of roles that the user is a member of.
      * @return array
      */
-    function getRoles(): array
+    public function getRoles(): array
     {
         return $this->user ? [$this->user->getRole()] : [self::UNAUTHENTICATED_ROLE];
     }
@@ -45,7 +45,7 @@ class Identity implements Nette\Security\IIdentity
      * Returns a list of scope roles that the user is a member of (in current session).
      * @return array
      */
-    function getScopeRoles()
+    public function getScopeRoles()
     {
         if (!$this->token) {
             return [];
@@ -72,7 +72,7 @@ class Identity implements Nette\Security\IIdentity
         return $this->token->getEffectiveRole();
     }
 
-    function getUserData()
+    public function getUserData()
     {
         return $this->user;
     }
@@ -87,7 +87,7 @@ class Identity implements Nette\Security\IIdentity
         return $this->token;
     }
 
-    function isInScope($scope)
+    public function isInScope($scope)
     {
         return $this->token ? $this->token->isInScope($scope) : false;
     }

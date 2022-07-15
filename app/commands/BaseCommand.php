@@ -113,7 +113,7 @@ class BaseCommand extends Command
         // make the inquery
         QuestionHelper::disableStty();
         $helper = $this->getHelper('question');
-        $question = new ChoiceQuestion($text, $options, 0);
+        $question = new ChoiceQuestion($text, $internalOptions, 0);
         $question->setErrorMessage('Invalid input.');
 
         // translate the selection back to an option and report it
