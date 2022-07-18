@@ -79,12 +79,12 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
         );
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $result = parent::jsonSerialize();
         return $result;
     }
-   
+
     public function getFile(FileStorageManager $manager): ?IImmutableFile
     {
         return $manager->getAttachmentFile($this);

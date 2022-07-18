@@ -16,8 +16,10 @@ class ExerciseLimits implements JsonSerializable
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -96,10 +98,10 @@ class ExerciseLimits implements JsonSerializable
         }
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "runtimeConfigId" => $this->runtimeEnvironment->getId(),
             "hardwareGroupId" => $this->hardwareGroup->getId(),
             "limits" => $this->limits,
@@ -127,7 +129,7 @@ class ExerciseLimits implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getLimits(): string

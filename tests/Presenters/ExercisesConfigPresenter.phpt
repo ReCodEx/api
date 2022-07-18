@@ -193,8 +193,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->exercises->findAll());
-        $compilationPipeline = $this->pipelines->findOrThrow("compilationPipeline");
-        $testPipeline = $this->pipelines->findOrThrow("testPipeline");
+        $compilationPipeline = $this->pipelines->findOrThrow("2341b599-c388-4357-8fea-be1e3bb182e0");
+        $testPipeline = $this->pipelines->findOrThrow("9a511efd-fd36-43ce-aa45-e2721845ae3b");
 
         // prepare config array
         $config = [
@@ -314,7 +314,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             ],
             [
                 'runtimeEnvironmentId' => $environment->getId(),
-                'pipelinesIds' => ['compilationPipeline', 'testPipeline']
+                'pipelinesIds' => ['2341b599-c388-4357-8fea-be1e3bb182e0', '9a511efd-fd36-43ce-aa45-e2721845ae3b']
             ]
         );
         $response = $this->presenter->run($request);
@@ -325,8 +325,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         Assert::count(2, $result['payload']);
 
         $payload = $result['payload'];
-        Assert::equal("compilationPipeline", $payload[0]["id"]);
-        Assert::equal("testPipeline", $payload[1]["id"]);
+        Assert::equal("2341b599-c388-4357-8fea-be1e3bb182e0", $payload[0]["id"]);
+        Assert::equal("9a511efd-fd36-43ce-aa45-e2721845ae3b", $payload[1]["id"]);
         Assert::count(0, $payload[0]["variables"]);
 
         $testPipelineVars = $payload[1]["variables"];

@@ -40,8 +40,10 @@ class SubmissionFailure implements JsonSerializable
 
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -106,7 +108,7 @@ class SubmissionFailure implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getDescription(): string
@@ -158,7 +160,7 @@ class SubmissionFailure implements JsonSerializable
         ];
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $assignmentSolution = $this->assignmentSolutionSubmission
             ? $this->assignmentSolutionSubmission->getAssignmentSolution() : null;
@@ -168,7 +170,7 @@ class SubmissionFailure implements JsonSerializable
         $exercise = $referenceSolution ? $referenceSolution->getExercise() : null;
 
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "type" => $this->type,
             "description" => $this->description,
             "createdAt" => $this->createdAt->getTimestamp(),

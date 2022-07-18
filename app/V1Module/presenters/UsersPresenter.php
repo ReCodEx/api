@@ -279,7 +279,7 @@ class UsersPresenter extends BasePresenter
      */
     private function changeUserEmail(User $user, ?string $email)
     {
-        $email = trim($email);
+        $email = trim($email ?? "");
         if (strlen($email) === 0) {
             return;
         }

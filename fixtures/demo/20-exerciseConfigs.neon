@@ -37,7 +37,7 @@ App\Model\Entity\ExerciseConfig:
               tests:
                 "Test 1":
                   pipelines:
-                    - name: "compilationPipeline"
+                    - name: "2341b599-c388-4357-8fea-be1e3bb182e0"
                       variables:
                         - name: expected-output
                           type: remote-file
@@ -45,7 +45,7 @@ App\Model\Entity\ExerciseConfig:
                   environments:
                     java:
                       pipelines:
-                        - name: "compilationPipeline"
+                        - name: "2341b599-c388-4357-8fea-be1e3bb182e0"
                           variables:
                             - name: expected-output
                               type: remote-file
@@ -53,7 +53,7 @@ App\Model\Entity\ExerciseConfig:
                     c-gcc-linux: {}
                 "Test 2":
                   pipelines:
-                    - name: "compilationPipeline"
+                    - name: "2341b599-c388-4357-8fea-be1e3bb182e0"
                       variables:
                         - name: expected-output
                           type: remote-file
@@ -61,7 +61,7 @@ App\Model\Entity\ExerciseConfig:
                   environments:
                     c-gcc-linux:
                       pipelines:
-                        - name: "compilationPipeline"
+                        - name: "2341b599-c388-4357-8fea-be1e3bb182e0"
                           variables:
                             - name: expected-output
                               type: remote-file

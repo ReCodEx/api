@@ -39,7 +39,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
      */
     protected $failure;
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $evaluationData = null;
         if ($this->evaluation !== null) {
@@ -59,7 +59,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
         }
 
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "referenceSolutionId" => $this->referenceSolution->getId(),
             "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
             "isCorrect" => $this->isCorrect(),

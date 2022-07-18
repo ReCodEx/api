@@ -26,14 +26,16 @@ class AsyncJob implements JsonSerializable
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     /**
@@ -254,7 +256,7 @@ class AsyncJob implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "createdBy" => $this->createdBy ? $this->createdBy->getId() : null,
             "createdAt" => $this->createdAt->getTimestamp(),
             "scheduledAt" => $this->scheduledAt ? $this->scheduledAt->getTimestamp() : null,

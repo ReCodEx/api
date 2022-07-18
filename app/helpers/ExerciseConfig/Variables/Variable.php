@@ -391,7 +391,7 @@ class Variable implements JsonSerializable
      * Enable automatic serialization to JSON
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }

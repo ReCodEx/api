@@ -46,10 +46,10 @@ class LocalizedAssignment extends LocalizedEntity implements JsonSerializable
         }
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "locale" => $this->locale,
             "studentHint" => $this->studentHint
         ];

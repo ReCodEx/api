@@ -438,6 +438,7 @@ nettrine.dbal:
     types:
       bit: Doctrine\DBAL\Types\BooleanType
       datetime: DoctrineExtensions\DBAL\Types\UTCDateTimeType
+      uuid: Ramsey\Uuid\Doctrine\UuidType
     defaultTableOptions:
       charset: utf8mb4
       collate: utf8mb4_unicode_ci

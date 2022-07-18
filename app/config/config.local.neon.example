@@ -45,6 +45,7 @@ parameters:
     - name: "cas-auth-ext"
       jwtSecret: "secretStringSharedWithExternAuth"
       expiration: 60 # seconds passed since iat
+      usedAlgorithm: HS256 # optional, HS256 is default
 
   emails:
     footerUrl: "%webapp.address%"

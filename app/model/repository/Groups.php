@@ -256,7 +256,7 @@ class Groups extends BaseSoftDeleteRepository
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
 
         // Filter by instance ID...
-        $instanceId = trim($instanceId);
+        $instanceId = trim($instanceId ?? "");
         if ($instanceId) {
             $qb->andWhere(':instanceId = g.instance')->setParameter('instanceId', $instanceId);
         }
