@@ -5,7 +5,6 @@ namespace App\Helpers\ExerciseConfig\Validation;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\EntityMetadata\HwGroupMeta;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
-use App\Helpers\ExerciseConfig\Loader;
 use App\Model\Entity\Exercise;
 use App\Model\Repository\Pipelines;
 
@@ -14,19 +13,11 @@ use App\Model\Repository\Pipelines;
  */
 class ExerciseLimitsValidator
 {
-
-    /**
-     * @var Loader
-     */
-    private $loader;
-
     /**
      * ExerciseConfigValidator constructor.
-     * @param Loader $loader
      */
-    public function __construct(Loader $loader)
+    public function __construct()
     {
-        $this->loader = $loader;
     }
 
 

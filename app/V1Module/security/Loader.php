@@ -3,10 +3,10 @@
 namespace App\Security;
 
 use Nette\IOException;
-use Nette\Reflection\ClassType;
 use Nette\SmartObject;
 use Nette\Utils\Arrays;
 use Nette\Neon\Neon;
+use ReflectionClass;
 
 class Loader
 {
@@ -47,7 +47,7 @@ class Loader
         $interfaceHashes = [];
 
         foreach ($aclInterfaces as $interface) {
-            $reflection = new ClassType($interface);
+            $reflection = new ReflectionClass($interface);
             $interfaceHashes[$interface] = sha1_file($reflection->getFileName());
         }
 

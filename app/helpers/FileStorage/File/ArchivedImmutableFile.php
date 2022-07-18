@@ -208,12 +208,7 @@ class ArchivedImmutableFile implements IImmutableFile
             ob_end_clean();
         }
 
-        if (fpassthru($fp) === false) {
-            throw new FileStorageException(
-                "Error occured when passing through entry '$this->entry' of a ZIP archive",
-                $this->archivePath
-            );
-        }
+        fpassthru($fp);
 
         fclose($fp);
         $zip->close();

@@ -21,12 +21,6 @@ use App\Model\Entity\Pipeline as PipelineEntity;
  */
 class Validator
 {
-
-    /**
-     * @var Loader
-     */
-    private $loader;
-
     /**
      * @var ExerciseConfigValidator
      */
@@ -49,20 +43,17 @@ class Validator
 
     /**
      * Validator constructor.
-     * @param Loader $loader
      * @param ExerciseConfigValidator $exerciseConfigValidator
      * @param PipelineValidator $pipelineValidator
      * @param ExerciseLimitsValidator $exerciseLimitsValidator
      * @param EnvironmentConfigValidator $environmentConfigValidator
      */
     public function __construct(
-        Loader $loader,
         ExerciseConfigValidator $exerciseConfigValidator,
         PipelineValidator $pipelineValidator,
         ExerciseLimitsValidator $exerciseLimitsValidator,
         EnvironmentConfigValidator $environmentConfigValidator
     ) {
-        $this->loader = $loader;
         $this->exerciseConfigValidator = $exerciseConfigValidator;
         $this->pipelineValidator = $pipelineValidator;
         $this->exerciseLimitsValidator = $exerciseLimitsValidator;

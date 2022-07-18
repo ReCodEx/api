@@ -35,7 +35,7 @@ class UploadedFile implements JsonSerializable
      */
     public function getFileExtension(): string
     {
-        return pathinfo($this->name, PATHINFO_EXTENSION) ?? "";
+        return pathinfo($this->name, PATHINFO_EXTENSION);
     }
 
     /**

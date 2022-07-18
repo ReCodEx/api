@@ -4,9 +4,10 @@ namespace App\Security;
 
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\PhpLiteral;
-use Nette\Reflection;
-use Nette\Reflection\Method;
 use Nette\Utils\Strings;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionNamedType;
 
 class ACLModuleBuilder
 {
@@ -34,15 +35,15 @@ class ACLModuleBuilder
     {
         $class = new ClassType($this->getClassName($interfaceName, $uniqueId));
         $class->addImplement($interfaceName);
-        $class->addExtend(ACLModule::class);
+        $class->setExtends(ACLModule::class);
 
-        $interface = Reflection\ClassType::from($interfaceName);
+        $interface = new ReflectionClass($interfaceName);
 
         $class->addMethod("getResourceName")->addBody('return ?;', [$name]);
 
-        foreach ($interface->getMethods(Method::IS_ABSTRACT) as $method) {
+        foreach ($interface->getMethods(ReflectionMethod::IS_ABSTRACT) as $method) {
             $isNameCorrect = Strings::startsWith($method->getName(), "can");
-            /** @var ?\ReflectionNamedType $methodReturnType */
+            /** @var ?ReflectionNamedType $methodReturnType */
             $methodReturnType = $method->getReturnType();
             $isBoolean = $methodReturnType !== null ? $methodReturnType->getName() === "bool" : false;
 
@@ -57,7 +58,7 @@ class ACLModuleBuilder
 
             foreach ($method->getParameters() as $parameter) {
                 $contextStrings[] = sprintf('"%s" => $%s', $parameter->getName(), $parameter->getName());
-                /** @var ?\ReflectionNamedType $parameterType */
+                /** @var ?ReflectionNamedType $parameterType */
                 $parameterType = $parameter->getType();
                 $newParameter = $methodImpl->addParameter($parameter->getName())->setType(
                     $parameterType !== null ? $parameterType->getName() : null

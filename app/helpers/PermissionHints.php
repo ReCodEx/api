@@ -2,12 +2,12 @@
 
 namespace App\Helpers;
 
-use Generator;
-use Nette\Reflection\ClassType;
-use Nette\Reflection\Method;
 use Nette\StaticClass;
 use Nette\Utils\Strings;
 use ReflectionNamedType;
+use ReflectionClass;
+use ReflectionMethod;
+use Generator;
 
 class PermissionHints
 {
@@ -53,8 +53,8 @@ class PermissionHints
      */
     protected static function generateAclMethods($aclModule)
     {
-        $reflection = ClassType::from($aclModule);
-        foreach ($reflection->getMethods(Method::IS_PUBLIC) as $method) {
+        $reflectionClass = new ReflectionClass($aclModule);
+        foreach ($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             if (!Strings::startsWith($method->getName(), "can")) {
                 continue;
             }
@@ -70,7 +70,7 @@ class PermissionHints
     /**
      * Get an array of ACL method reflections for an ACL module. The results are cached for better performance.
      * @param object $aclModule
-     * @return Method[]
+     * @return ReflectionMethod[]
      */
     protected static function getAclMethods($aclModule)
     {

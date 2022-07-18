@@ -44,7 +44,6 @@ parameters:
   externalAuthenticators:
     - name: "cas-auth-ext"
       jwtSecret: "secretStringSharedWithExternAuth"
-      jwtAlgorithms: ["HS256"]
       expiration: 60 # seconds passed since iat
 
   emails:

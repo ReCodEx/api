@@ -6,9 +6,7 @@ use App\Helpers\Pagination;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
 use App\Security\Identity;
-use LogicException;
 use Nette\Utils\Strings;
-use ReflectionException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongHttpMethodException;
@@ -21,13 +19,17 @@ use App\Model\Repository\Users;
 use App\Helpers\UserActions;
 use App\Helpers\Validators;
 use App\Helpers\FileStorage\IImmutableFile;
+use App\Helpers\AnnotationsParser;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
 use Nette\Http\IResponse;
-use Nette\Reflection;
 use Nette\Utils\Arrays;
 use Tracy\ILogger;
+use ReflectionClass;
+use ReflectionMethod;
+use LogicException;
+use ReflectionException;
 
 class BasePresenter extends \App\Presenters\BasePresenter
 {
@@ -82,7 +84,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         $this->parameters = new \stdClass();
 
         try {
-            $presenterReflection = new Reflection\ClassType(get_class($this));
+            $presenterReflection = new ReflectionClass($this);
             $actionMethodName = $this->formatActionMethod($this->getAction());
             $actionReflection = $presenterReflection->getMethod($actionMethodName);
         } catch (ReflectionException $e) {
@@ -156,9 +158,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $identity->isInScope($scope);
     }
 
-    private function processParams(Reflection\Method $reflection)
+    private function processParams(ReflectionMethod $reflection)
     {
-        $annotations = $reflection->getAnnotations();
+        $annotations = AnnotationsParser::getAll($reflection);
         $requiredFields = Arrays::get($annotations, "Param", []);
 
         foreach ($requiredFields as $field) {
@@ -237,8 +239,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
         if (Validators::is($value, $validationRule) === false) {
             throw new InvalidArgumentException(
                 $param,
-                $msg ?? "The value '" . ($value ?? 'null')
-                    . "' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"
+                $msg ?? "The value '$value' does not match validation rule '$validationRule'"
+                    . " - for more information check the documentation of Nette\\Utils\\Validators"
             );
         }
 

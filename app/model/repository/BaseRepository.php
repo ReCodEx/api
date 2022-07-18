@@ -4,7 +4,7 @@ namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
 use DateTime;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -158,9 +158,9 @@ class BaseRepository
 
     /**
      * @param Criteria $params
-     * @return Collection<T>
+     * @return AbstractLazyCollection<int, object>
      */
-    public function matching(Criteria $params): Collection
+    public function matching(Criteria $params): AbstractLazyCollection
     {
         return $this->repository->matching($params);
     }

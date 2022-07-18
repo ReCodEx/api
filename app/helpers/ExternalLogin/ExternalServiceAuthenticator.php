@@ -40,7 +40,7 @@ class ExternalServiceAuthenticator
     public $emailVerificationHelper;
 
     /**
-     * @var array [ name => { jwtSecret, jwtAlgorithms, expiration } ]
+     * @var array [ name => { jwtSecret, expiration } ]
      */
     private $authenticators = [];
 
@@ -70,7 +70,6 @@ class ExternalServiceAuthenticator
             if (!empty($auth['name'] && !empty($auth['jwtSecret']))) {
                 $this->authenticators[$auth['name']] = (object)[
                     'jwtSecret' => $auth['jwtSecret'],
-                    'jwtAlgorithms' => Arrays::get($auth, 'jwtAlgorithms', ['HS256']),
                     'expiration' => Arrays::get($auth, 'expiration', 60),
                     'defaultRole' => Arrays::get($auth, 'defaultRole', null),
                     // if set, users may register even when extrnal authenticator does not provide role
@@ -168,7 +167,7 @@ class ExternalServiceAuthenticator
 
         $authenticator = $this->authenticators[$authName];
         try {
-            $decodedToken = JWT::decode($token, $authenticator->jwtSecret, $authenticator->jwtAlgorithms);
+            $decodedToken = JWT::decode($token, $authenticator->jwtSecret);
         } catch (DomainException $e) {
             throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
         } catch (UnexpectedValueException $e) {

@@ -8,8 +8,8 @@ use Nette\PhpGenerator\Dumper;
 use Nette\PhpGenerator\PhpLiteral;
 use Nette\PhpGenerator\Helpers;
 use Nette\Security\Permission;
-use Nette\Reflection;
 use Nette\Utils\Arrays;
+use ReflectionClass;
 use ReflectionException;
 
 class AuthorizatorBuilder
@@ -32,7 +32,7 @@ class AuthorizatorBuilder
         $this->checkCounter = 0;
 
         $class = new ClassType($this->getClassName($uniqueId));
-        $class->addExtend(Authorizator::class);
+        $class->setExtends(Authorizator::class);
 
         $check = $class->addMethod("checkPermissions");
         $check->setReturnType("bool");
@@ -48,7 +48,7 @@ class AuthorizatorBuilder
             $allow = Arrays::get($rule, "allow", true);
             $role = Arrays::get($rule, "role", null);
             $resource = Arrays::get($rule, "resource", null);
-            $interface = $resource !== null ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : null;
+            $interface = $resource !== null ? new ReflectionClass(Arrays::get($aclInterfaces, $resource)) : null;
             $actions = (array)Arrays::get($rule, "actions", []);
 
             $assertion = null;
@@ -137,7 +137,7 @@ class AuthorizatorBuilder
         }
     }
 
-    private function checkActionProvidesContext(?Reflection\ClassType $interface, string $action, string $contextItem)
+    private function checkActionProvidesContext(?ReflectionClass $interface, string $action, string $contextItem)
     {
         if ($interface === null) {
             throw new LogicException(

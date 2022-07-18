@@ -30,9 +30,6 @@ class AccessManager
     /** @var string Identification of the audience of the token */
     private $audience;
 
-    /** @var string[] Allowed algorithms for the encoding of the signature */
-    private $allowedAlgorithms;
-
     /** @var string Name of the algorithm currently used for encrypting the signature of the token. */
     private $usedAlgorithm;
 
@@ -49,7 +46,6 @@ class AccessManager
         $this->expiration = Arrays::get($parameters, "expiration", 24 * 60 * 60); // one day in seconds
         $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.mff.cuni.cz");
         $this->audience = Arrays::get($parameters, "audience", "https://recodex.mff.cuni.cz");
-        $this->allowedAlgorithms = Arrays::get($parameters, "allowedAlgorithms", ["HS256"]);
         $this->usedAlgorithm = Arrays::get($parameters, "usedAlgorithm", "HS256");
         JWT::$leeway = Arrays::get($parameters, "leeway", 10); // 10 seconds
     }
@@ -69,7 +65,7 @@ class AccessManager
     public function decodeToken($token): AccessToken
     {
         try {
-            $decodedToken = JWT::decode($token, $this->verificationKey, $this->allowedAlgorithms);
+            $decodedToken = JWT::decode($token, $this->verificationKey);
         } catch (DomainException $e) {
             throw new InvalidAccessTokenException($token, $e);
         } catch (UnexpectedValueException $e) {
