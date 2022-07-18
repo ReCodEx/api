@@ -70,9 +70,9 @@ class SisCourseRecord implements JsonSerializable
         $result->room = $data["room"];
         $result->fortnightly = $data["fortnight"];
         $result->oddWeeks = $data["firstweek"] == 1;
-        $result->type = array_key_exists($data["type"], static::$typeMap) ? static::$typeMap[$data["type"]] : "unknown";
+        $result->type = array_key_exists($data["type"], self::$typeMap) ? self::$typeMap[$data["type"]] : "unknown";
 
-        foreach (static::$languages as $language) {
+        foreach (self::$languages as $language) {
             $result->captions[$language] = $data["caption_" . $language];
             $result->annotations[$language] = !empty($data["annotation_" . $language]) ? $data["annotation_" . $language] : '';
         }

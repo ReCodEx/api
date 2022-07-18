@@ -7,7 +7,7 @@ abstract class ACLModule
     /** @var UserStorage */
     private $userStorage;
 
-    /** @var Identity */
+    /** @var ?Identity */
     private $identity;
 
     /** @var IAuthorizator */

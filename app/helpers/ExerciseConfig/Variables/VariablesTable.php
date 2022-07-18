@@ -111,7 +111,7 @@ class VariablesTable implements JsonSerializable, IteratorAggregate
         return $this->toArray();
     }
 
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->table);
     }

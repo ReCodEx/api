@@ -5,7 +5,6 @@ namespace App\Async\Handler;
 use App\Model\Entity\AsyncJob;
 use App\Model\Entity\User;
 use App\Model\Entity\Assignment;
-use App\Model\Repository\Assignments;
 use App\Async\IAsyncJobHandler;
 use App\Async\Dispatcher;
 use App\Helpers\SubmissionHelper;
@@ -25,13 +24,9 @@ class ResubmitAllAsyncJobHandler implements IAsyncJobHandler
     /** @var SubmissionHelper */
     private $submissionHelper;
 
-    /** @var Assignments */
-    private $assignments;
-
-    public function __construct(SubmissionHelper $submissionHelper, Assignments $assignments)
+    public function __construct(SubmissionHelper $submissionHelper)
     {
         $this->submissionHelper = $submissionHelper;
-        $this->assignments = $assignments;
     }
 
     public function getId(): string

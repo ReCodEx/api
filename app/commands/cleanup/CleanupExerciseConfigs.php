@@ -5,9 +5,7 @@ namespace App\Console;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionEvaluation;
-use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
-use App\Model\Repository\SolutionEvaluations;
 use DateTime;
 use Exception;
 use Doctrine\DBAL\Connection;
@@ -27,25 +25,13 @@ class CleanupExerciseConfigs extends Command
     /** @var Exercises */
     private $exercises;
 
-    /** @var Assignments */
-    private $assignments;
-
-    /** @var SolutionEvaluations */
-    private $solutionEvaluations;
-
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(
-        Exercises $exercises,
-        Assignments $assignments,
-        SolutionEvaluations $solutionEvaluations,
-        EntityManagerInterface $entityManager
-    ) {
+    public function __construct(Exercises $exercises, EntityManagerInterface $entityManager)
+    {
         parent::__construct();
         $this->exercises = $exercises;
-        $this->assignments = $assignments;
-        $this->solutionEvaluations = $solutionEvaluations;
         $this->entityManager = $entityManager;
     }
 

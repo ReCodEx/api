@@ -3,7 +3,7 @@
 namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -114,9 +114,9 @@ class BaseSoftDeleteRepository extends BaseRepository
 
     /**
      * @param Criteria $params
-     * @return Collection<T>
+     * @return AbstractLazyCollection<int, object>
      */
-    public function matching(Criteria $params): Collection
+    public function matching(Criteria $params): AbstractLazyCollection
     {
         $params->andWhere(Criteria::expr()->isNull($this->softDeleteColumn));
         return $this->repository->matching($params);

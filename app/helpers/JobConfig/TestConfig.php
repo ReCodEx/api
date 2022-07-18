@@ -13,11 +13,8 @@ use App\Helpers\JobConfig\Tasks\Task;
  */
 class TestConfig
 {
-
     /** @var string ID of the test */
     private $id;
-    /** @var array The tasks which define this test */
-    private $tasks;
 
     /** @var array List of tasks which defines the initiation part of the test */
     private $initiationTaskType = [];
@@ -37,7 +34,6 @@ class TestConfig
     public function __construct(string $id, array $tasks)
     {
         $this->id = $id;
-        $this->tasks = $tasks;
 
         // identify the important tasks
         foreach ($tasks as $task) {
@@ -56,7 +52,8 @@ class TestConfig
 
         if (empty($this->executionTaskType) || $this->evaluationTaskType === null) {
             throw new JobConfigLoadingException(
-                "Each test must contain at least on task of type 'execution' and exactly one of type 'evaluation'. Test '{$id}' does not meet these criteria."
+                "Each test must contain at least on task of type 'execution' and exactly one of type 'evaluation'."
+                . " Test '{$id}' does not meet these criteria."
             );
         }
     }

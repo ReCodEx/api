@@ -111,7 +111,8 @@ class TestAccessManager extends Tester\TestCase
                 "issuer" => "X",
                 "audience" => "Y",
                 "expiration" => 123
-            ], $users
+            ],
+            $users
         );
 
         $user = Mockery::mock(App\Model\Entity\User::CLASS);
@@ -119,7 +120,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user);
 
-        $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+        $payload = JWT::decode($token, $verificationKey);
         Assert::equal($user->getId(), $payload->sub);
         Assert::equal("X", $payload->iss);
         Assert::equal("Y", $payload->aud);
@@ -139,7 +140,8 @@ class TestAccessManager extends Tester\TestCase
                 "issuer" => "X",
                 "audience" => "Y",
                 "expiration" => 123
-            ], $users
+            ],
+            $users
         );
 
         $user = Mockery::mock(App\Model\Entity\User::CLASS);
@@ -165,7 +167,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, ["x", "y"]);
 
-        $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+        $payload = JWT::decode($token, $verificationKey);
         Assert::equal(["x", "y"], $payload->scopes);
     }
 
@@ -180,7 +182,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, "role-eff");
 
-        $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+        $payload = JWT::decode($token, $verificationKey);
         Assert::equal("role-eff", $payload->effrole);
     }
 
@@ -195,7 +197,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30);
 
-        $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+        $payload = JWT::decode($token, $verificationKey);
         Assert::true((time() + 30) >= $payload->exp);
     }
 
@@ -210,7 +212,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
 
-        $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+        $payload = JWT::decode($token, $verificationKey);
         Assert::true((time() + 30) >= $payload->exp);
         Assert::equal("123456", $payload->sub);
         Assert::equal("uvw", $payload->xyz);

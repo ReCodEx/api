@@ -16,7 +16,7 @@ class RolesBuilder
     public function build($roles, $uniqueId): ClassType
     {
         $class = new ClassType($this->getClassName($uniqueId));
-        $class->addExtend(Roles::class);
+        $class->setExtends(Roles::class);
 
         $setup = $class->addMethod("setup");
         $setup->setVisibility("public");

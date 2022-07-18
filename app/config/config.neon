@@ -49,8 +49,6 @@ parameters:
     audience: "%webapp.address%"
     expiration: 86400
     usedAlgorithm: HS256
-    allowedAlgorithms:
-      - HS256
     verificationKey: "recodex-123"
 
   broker:  # connection to broker
@@ -281,7 +279,7 @@ services:
   
   # commands
   - App\Console\DoctrineFixtures
-  - App\Console\GenerateSwagger(@router)
+  #- App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
   - App\Console\CleanupExercisesFiles
   - App\Console\CleanupWorkerTmpFiles

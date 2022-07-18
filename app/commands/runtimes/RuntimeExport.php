@@ -6,7 +6,6 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\Pipelines;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\Pipeline;
-use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorageManager;
 use ZipArchive;
 use Exception;
@@ -27,9 +26,6 @@ class RuntimeExport extends Command
     /** @var Pipelines */
     private $pipelines;
 
-    /** @var TmpFilesHelper */
-    private $tmpFilesHelper;
-
     /** @var FileStorageManager */
     private $fileManager;
 
@@ -38,13 +34,11 @@ class RuntimeExport extends Command
         RuntimeEnvironments $runtimeEnvironments,
         Pipelines $pipelines,
         FileStorageManager $fileManager,
-        TmpFilesHelper $tmpFilesHelper
     ) {
         parent::__construct();
         $this->runtimeEnvironments = $runtimeEnvironments;
         $this->pipelines = $pipelines;
         $this->fileManager = $fileManager;
-        $this->tmpFilesHelper = $tmpFilesHelper;
     }
 
     protected function configure()
