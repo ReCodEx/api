@@ -100,10 +100,10 @@ class RuntimeEnvironment implements JsonSerializable
         $this->setDefaultVariables($defaultVariables);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "name" => $this->name,
             "longName" => $this->longName,
             "extensions" => $this->extensions,
@@ -119,7 +119,7 @@ class RuntimeEnvironment implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getName(): string

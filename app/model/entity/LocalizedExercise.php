@@ -87,10 +87,10 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
             && (!$this->externalAssignmentLink || !filter_var($this->externalAssignmentLink, FILTER_VALIDATE_URL));
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "locale" => $this->locale,
             "name" => $this->name,
             "text" => $this->assignmentText,

@@ -13,7 +13,7 @@ App\Model\Entity\Pipeline:
         __construct:
             create:
                 - @demoAdmin
-        id: compilationPipeline
+        id: "2341b599-c388-4357-8fea-be1e3bb182e0"
         name: "compilationPipeline"
         pipelineConfig: @demoCompilationPipelineConfig
 
@@ -21,6 +21,6 @@ App\Model\Entity\Pipeline:
         __construct:
             create:
                 - @demoAdmin
-        id: testPipeline
+        id: "9a511efd-fd36-43ce-aa45-e2721845ae3b"
         name: "testPipeline"
         pipelineConfig: @demoTestPipelineConfig

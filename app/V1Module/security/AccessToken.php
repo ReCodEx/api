@@ -18,7 +18,7 @@ class AccessToken
     /** @var string[] Array of scopes this access can access */
     private $scopes = [];
 
-    /** @var  stdClass Payload of the token */
+    /** @var stdClass Payload of the token */
     private $payload;
 
     /**
@@ -126,6 +126,6 @@ class AccessToken
 
     public function encode(string $verificationKey, string $usedAlgorithm): string
     {
-        return JWT::encode($this->payload, $verificationKey, $usedAlgorithm);
+        return JWT::encode((array)$this->payload, $verificationKey, $usedAlgorithm);
     }
 }

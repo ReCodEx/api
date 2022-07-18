@@ -16,6 +16,7 @@ use App\Model\Repository\Instances;
 use App\Helpers\EmailVerificationHelper;
 use Nette\Utils\Arrays;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use DomainException;
 use UnexpectedValueException;
 
@@ -72,6 +73,7 @@ class ExternalServiceAuthenticator
                     'jwtSecret' => $auth['jwtSecret'],
                     'expiration' => Arrays::get($auth, 'expiration', 60),
                     'defaultRole' => Arrays::get($auth, 'defaultRole', null),
+                    'usedAlgorithm' => Arrays::get($auth, 'usedAlgorithm', 'HS256'),
                     // if set, users may register even when extrnal authenticator does not provide role
                 ];
             }
@@ -167,7 +169,7 @@ class ExternalServiceAuthenticator
 
         $authenticator = $this->authenticators[$authName];
         try {
-            $decodedToken = JWT::decode($token, $authenticator->jwtSecret);
+            $decodedToken = JWT::decode($token, new Key($authenticator->jwtSecret, $authenticator->usedAlgorithm));
         } catch (DomainException $e) {
             throw new InvalidExternalTokenException($token, $e->getMessage(), $e);
         } catch (UnexpectedValueException $e) {

@@ -13,8 +13,10 @@ class SisValidTerm implements JsonSerializable
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -73,10 +75,10 @@ class SisValidTerm implements JsonSerializable
         return $now >= $this->beginning && $now <= $advertiseUntil;
     }
 
-    function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getId(),
             'year' => $this->year,
             'term' => $this->term,
             'beginning' => $this->beginning ? $this->beginning->getTimestamp() : null,
@@ -91,7 +93,7 @@ class SisValidTerm implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getYear(): int

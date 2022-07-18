@@ -200,7 +200,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         $firstName = "firstName";
         $lastName = "lastName";
         $password = "password";
-        $instanceId = "bla bla bla random string";
+        $instanceId = "a1e546a4-afea-425d-8a97-d3efa1ccda7a"; // dummy (nonexist) ID
         $titlesBeforeName = "titlesBeforeName";
         $titlesAfterName = "titlesAfterName";
 
@@ -239,7 +239,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         $firstName = "firstName";
         $lastName = "lastName";
         $password = "password";
-        $instanceId = "bla bla bla random string";
+        $instanceId = "a1e546a4-afea-425d-8a97-d3efa1ccda7a"; // dummy (nonexist) ID
         $titlesBeforeName = "titlesBeforeName";
         $titlesAfterName = "titlesAfterName";
 
@@ -310,7 +310,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         $firstName = "firstName";
         $lastName = "lastName";
         $password = "password";
-        $instanceId = "bla bla bla random string";
+        $instanceId = "a1e546a4-afea-425d-8a97-d3efa1ccda7a"; // dummy (nonexist) ID
         $titlesBeforeName = "titlesBeforeName";
         $titlesAfterName = "titlesAfterName";
 

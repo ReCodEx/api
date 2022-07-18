@@ -42,6 +42,14 @@ class ZipFileStorage implements IFileStorage
 
     private function openZipArchive($flags = 0): void
     {
+        if (file_exists($this->archivePath)) {
+            clearstatcache(true, $this->archivePath);
+            if (filesize($this->archivePath) === 0) {
+                // fix problem with opening empty files
+                $flags |= ZipArchive::CREATE | ZipArchive::OVERWRITE;
+            }
+        }
+
         $res = $this->zip->open($this->archivePath, $flags);
         if ($res !== true) {
             throw new FileStorageException("Unable to open ZIP archive (error code $res)", $this->archivePath);

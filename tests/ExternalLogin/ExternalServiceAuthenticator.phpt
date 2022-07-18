@@ -125,7 +125,11 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase
     {
         Assert::exception(function () {
             $token = $this->prepareToken('bar');
-            $res = $this->authenticator->authenticate(self::AUTH_NAME, $token, 'nonexistingInstanceId');
+            $res = $this->authenticator->authenticate(
+                self::AUTH_NAME,
+                $token,
+                'ae497c87-ce9e-4c9d-a86c-7d1a8ace9898' // non-existing ID
+            );
         }, WrongCredentialsException::class);
     }
 

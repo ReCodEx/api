@@ -58,10 +58,10 @@ class ExerciseTest implements JsonSerializable
         $this->author = $author;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "name" => $this->name,
             "description" => $this->description
         ];

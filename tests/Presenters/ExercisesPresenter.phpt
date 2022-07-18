@@ -698,7 +698,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'GET',
             ['action' => 'tagsStats']
         );
-        Assert::equal(["tag1" => '1', "tag2" => '1', "tag3" => '2'], $payload);
+        Assert::equal(["tag1" => 1, "tag2" => 1, "tag3" => 2], $payload);
     }
 
     public function testTagsRename()
@@ -770,7 +770,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'GET',
             ['action' => 'tagsStats']
         );
-        Assert::equal(["tag1" => '1', "tag2" => '3'], $stats);
+        Assert::equal(["tag1" => 1, "tag2" => 3], $stats);
     }
 
     public function testTagsRemove()
@@ -799,7 +799,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'GET',
             ['action' => 'tagsStats']
         );
-        Assert::equal(["tag1" => '1', "tag2" => '1'], $stats);
+        Assert::equal(["tag1" => 1, "tag2" => 1], $stats);
     }
 
     public function testAddTag()

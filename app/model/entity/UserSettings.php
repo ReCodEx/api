@@ -28,8 +28,10 @@ class UserSettings implements JsonSerializable
 
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -83,7 +85,7 @@ class UserSettings implements JsonSerializable
      */
     protected $assignmentSubmitAfterReviewedEmails;
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             "defaultLanguage" => $this->defaultLanguage,

@@ -107,7 +107,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $name = tempnam($this->tmpDir, 'zip');
         $zip = new ZipArchive();
-        $zip->open($name);
+        $zip->open($name, ZipArchive::OVERWRITE | ZipArchive::CREATE);
         foreach ($contents as $entry => $data) {
             $zip->addFromString($entry, $data);
         }

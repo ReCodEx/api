@@ -61,8 +61,10 @@ class User
 
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -428,7 +430,7 @@ class User
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getEmail(): string

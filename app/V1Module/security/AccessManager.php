@@ -12,6 +12,7 @@ use Nette\Http\IResponse;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use DomainException;
 use UnexpectedValueException;
 use Firebase\JWT\ExpiredException;
@@ -65,7 +66,7 @@ class AccessManager
     public function decodeToken($token): AccessToken
     {
         try {
-            $decodedToken = JWT::decode($token, $this->verificationKey);
+            $decodedToken = JWT::decode($token, new Key($this->verificationKey, $this->usedAlgorithm));
         } catch (DomainException $e) {
             throw new InvalidAccessTokenException($token, $e);
         } catch (UnexpectedValueException $e) {

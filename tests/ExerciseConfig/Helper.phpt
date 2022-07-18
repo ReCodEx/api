@@ -40,9 +40,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
         $this->loader = new Loader(new BoxService());
 
         $this->pipelinesCache = Mockery::mock(PipelinesCache::class);
-        $this->pipelinesCache->shouldReceive("getPipelineConfig")->with("compilationPipeline")
+        $this->pipelinesCache->shouldReceive("getPipelineConfig")->with("2341b599-c388-4357-8fea-be1e3bb182e0")
             ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
-        $this->pipelinesCache->shouldReceive("getPipelineConfig")->with("testPipeline")
+        $this->pipelinesCache->shouldReceive("getPipelineConfig")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")
             ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
         $this->helper = new Helper($this->loader, $this->pipelinesCache);
@@ -65,7 +65,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
                     "c-gcc-linux" => [
                         "pipelines" => [
                             [
-                                "name" => "compilationPipeline",
+                                "name" => "2341b599-c388-4357-8fea-be1e3bb182e0",
                                 "variables" => [
                                     [
                                         "name" => "submit_exercise_file",
@@ -75,7 +75,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
                                 ]
                             ],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out"],
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.A.in"]
@@ -86,7 +86,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
                     "java-linux" => [
                         "pipelines" => [
                             [
-                                "name" => "compilationPipeline",
+                                "name" => "2341b599-c388-4357-8fea-be1e3bb182e0",
                                 "variables" => [
                                     [
                                         "name" => "submit_exercise_file",
@@ -96,7 +96,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
                                 ]
                             ],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out"],
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.A.in"]
@@ -110,13 +110,13 @@ class TestExerciseConfigHelper extends Tester\TestCase
                 "environments" => [
                     "c-gcc-linux" => [
                         "pipelines" => [
-                            ["name" => "compilationPipeline", "variables" => []],
+                            ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                         ]
                     ],
                     "java-linux" => [
                         "pipelines" => [
                             [
-                                "name" => "compilationPipeline",
+                                "name" => "2341b599-c388-4357-8fea-be1e3bb182e0",
                                 "variables" => [
                                     [
                                         "name" => "submit_exercise_file",
@@ -126,7 +126,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
                                 ]
                             ],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out"],
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.B.in"]
@@ -687,7 +687,6 @@ class TestExerciseConfigHelper extends Tester\TestCase
         $exercise->setExerciseConfig($exerciseConfig);
         return $exercise;
     }
-
 }
 
 # Testing methods run

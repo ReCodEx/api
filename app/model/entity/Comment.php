@@ -13,8 +13,10 @@ class Comment implements JsonSerializable
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -68,10 +70,10 @@ class Comment implements JsonSerializable
      */
     protected $text;
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "commentThreadId" => $this->commentThread->getId(),
             "user" => [
                 "id" => $this->user->getId(),
@@ -107,7 +109,7 @@ class Comment implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getCommentThread(): CommentThread

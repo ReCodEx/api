@@ -57,13 +57,17 @@ class TestCommentsPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'mainThread']);
+        $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default',
+            'id' => '6b89a6df-f7e8-4c2c-a216-1b7cb4391647']); // mainThread
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
-        Assert::equal($this->presenter->comments->getThread('mainThread'), $result['payload']);
+        Assert::equal(
+            $this->presenter->comments->getThread('6b89a6df-f7e8-4c2c-a216-1b7cb4391647'),
+            $result['payload']
+        );
         $comments = $result['payload']->jsonSerialize()['comments'];
 
         // Two comments for this user
@@ -86,7 +90,8 @@ class TestCommentsPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
-        $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'emptyThread']);
+        $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default',
+            'id' => '8308df60-8da5-4ef7-be1f-9a0160409b64']); // emptyThread
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -103,7 +108,7 @@ class TestCommentsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Comments',
             'POST',
-            ['action' => 'addComment', 'id' => 'mainThread'],
+            ['action' => 'addComment', 'id' => '6b89a6df-f7e8-4c2c-a216-1b7cb4391647'], // mainThread
             ['text' => 'some comment text', 'isPrivate' => 'false']
         );
         $response = $this->presenter->run($request);
@@ -115,7 +120,7 @@ class TestCommentsPresenter extends Tester\TestCase
         $comment = $result['payload'];
         Assert::false($comment->isPrivate());
         Assert::equal("some comment text", $comment->getText());
-        Assert::equal("mainThread", $comment->getCommentThread()->getId());
+        Assert::equal("6b89a6df-f7e8-4c2c-a216-1b7cb4391647", $comment->getCommentThread()->getId());
 
         // Make sure the assignment was persisted
         Assert::same($this->presenter->comments->findOneBy(['id' => $comment->getId()]), $result['payload']);
@@ -219,7 +224,7 @@ class TestCommentsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Comments',
             'POST',
-            ['action' => 'addComment', 'id' => 'dummyThreadId'],
+            ['action' => 'addComment', 'id' => '5d45dcd0-50e7-4b2a-a291-cfe4b5fb5cbb'], // dummy thread (nonexist)
             ['text' => 'some comment text', 'isPrivate' => 'false']
         );
         $response = $this->presenter->run($request);
@@ -228,7 +233,7 @@ class TestCommentsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $comment = $result['payload'];
-        Assert::equal("dummyThreadId", $comment->getCommentThread()->getId());
+        Assert::equal("5d45dcd0-50e7-4b2a-a291-cfe4b5fb5cbb", $comment->getCommentThread()->getId());
     }
 
     public function testTogglePrivate()
@@ -243,7 +248,8 @@ class TestCommentsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:Comments',
             'POST',
-            ['action' => 'togglePrivate', 'threadId' => 'mainThread', 'commentId' => $exampleComment->getId()]
+            ['action' => 'togglePrivate', 'threadId' => '6b89a6df-f7e8-4c2c-a216-1b7cb4391647',
+                'commentId' => $exampleComment->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);

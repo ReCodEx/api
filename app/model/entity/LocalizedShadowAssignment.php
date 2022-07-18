@@ -66,10 +66,10 @@ class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializa
         }
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "locale" => $this->locale,
             "name" => $this->name,
             "text" => $this->assignmentText,

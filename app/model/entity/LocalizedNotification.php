@@ -44,10 +44,10 @@ class LocalizedNotification extends LocalizedEntity implements JsonSerializable
         }
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "locale" => $this->locale,
             "text" => $this->text,
             "createdAt" => $this->createdAt->getTimestamp(),

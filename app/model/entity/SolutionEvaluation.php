@@ -16,8 +16,10 @@ class SolutionEvaluation
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -87,7 +89,7 @@ class SolutionEvaluation
         )->getValues();
 
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "evaluatedAt" => $this->evaluatedAt->getTimestamp(),
             "score" => $this->score,
             "points" => $this->points,
@@ -124,7 +126,7 @@ class SolutionEvaluation
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getEvaluatedAt(): DateTime

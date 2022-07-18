@@ -85,9 +85,9 @@ class TestPipelinesMerger extends Tester\TestCase
                     "environments" => [
                         "envA" => [
                             "pipelines" => [
-                                ["name" => "compilationPipeline", "variables" => []],
+                                ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                                 [
-                                    "name" => "testPipeline",
+                                    "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                     "variables" => [
                                         [
                                             "name" => "expected_output",
@@ -100,9 +100,9 @@ class TestPipelinesMerger extends Tester\TestCase
                         ],
                         "envB" => [
                             "pipelines" => [
-                                ["name" => "compilationPipeline", "variables" => []],
+                                ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                                 [
-                                    "name" => "testPipeline",
+                                    "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                     "variables" => [
                                         [
                                             "name" => "expected_output",
@@ -119,14 +119,14 @@ class TestPipelinesMerger extends Tester\TestCase
                     "environments" => [
                         "envA" => [
                             "pipelines" => [
-                                ["name" => "compilationPipeline", "variables" => []],
+                                ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                             ]
                         ],
                         "envB" => [
                             "pipelines" => [
-                                ["name" => "compilationPipeline", "variables" => []],
+                                ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                                 [
-                                    "name" => "testPipeline",
+                                    "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                     "variables" => [
                                         [
                                             "name" => "expected_output",
@@ -238,15 +238,15 @@ class TestPipelinesMerger extends Tester\TestCase
 
     public function testEmptyTests()
     {
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("2341b599-c388-4357-8fea-be1e3bb182e0")->andReturn(
             $this->mockCompilationPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")->andReturn(
             $this->mockTestPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("2341b599-c388-4357-8fea-be1e3bb182e0")
             ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")
             ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
         Assert::exception(
@@ -275,15 +275,15 @@ class TestPipelinesMerger extends Tester\TestCase
         // create all needed stuff
         $config = $this->loader->loadExerciseConfig(self::$config);
         $envVariablesTable = $this->loader->loadVariablesTable(self::$envVariablesTable);
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("2341b599-c388-4357-8fea-be1e3bb182e0")->andReturn(
             $this->mockCompilationPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")->andReturn(
             $this->mockTestPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("2341b599-c388-4357-8fea-be1e3bb182e0")
             ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")
             ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
         Assert::exception(
@@ -379,12 +379,12 @@ class TestPipelinesMerger extends Tester\TestCase
         Assert::equal("1", $runNode->getTestId());
         Assert::equal("1", $judgeNode->getTestId());
 
-        Assert::equal("compilationPipeline", $sourceNode->getPipelineId());
-        Assert::equal("testPipeline", $testNode->getPipelineId());
-        Assert::equal("compilationPipeline", $compilationNode->getPipelineId());
-        Assert::equal("testPipeline", $joinNode->getPipelineId());
-        Assert::equal("testPipeline", $runNode->getPipelineId());
-        Assert::equal("testPipeline", $judgeNode->getPipelineId());
+        Assert::equal("2341b599-c388-4357-8fea-be1e3bb182e0", $sourceNode->getPipelineId());
+        Assert::equal("9a511efd-fd36-43ce-aa45-e2721845ae3b", $testNode->getPipelineId());
+        Assert::equal("2341b599-c388-4357-8fea-be1e3bb182e0", $compilationNode->getPipelineId());
+        Assert::equal("9a511efd-fd36-43ce-aa45-e2721845ae3b", $joinNode->getPipelineId());
+        Assert::equal("9a511efd-fd36-43ce-aa45-e2721845ae3b", $runNode->getPipelineId());
+        Assert::equal("9a511efd-fd36-43ce-aa45-e2721845ae3b", $judgeNode->getPipelineId());
 
         // check connections between nodes
 
@@ -460,9 +460,9 @@ class TestPipelinesMerger extends Tester\TestCase
         Assert::equal("2", $compilationNode->getTestId());
         Assert::equal("2", $outputNode->getTestId());
 
-        Assert::equal("compilationPipeline", $sourceNode->getPipelineId());
-        Assert::equal("compilationPipeline", $compilationNode->getPipelineId());
-        Assert::equal("compilationPipeline", $outputNode->getPipelineId());
+        Assert::equal("2341b599-c388-4357-8fea-be1e3bb182e0", $sourceNode->getPipelineId());
+        Assert::equal("2341b599-c388-4357-8fea-be1e3bb182e0", $compilationNode->getPipelineId());
+        Assert::equal("2341b599-c388-4357-8fea-be1e3bb182e0", $outputNode->getPipelineId());
 
         // check connections between nodes
 
@@ -483,15 +483,15 @@ class TestPipelinesMerger extends Tester\TestCase
     {
         $config = $this->loader->loadExerciseConfig(self::$config);
         $envVariablesTable = $this->loader->loadVariablesTable(self::$envVariablesTable);
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("2341b599-c388-4357-8fea-be1e3bb182e0")->andReturn(
             $this->mockCompilationPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")->andReturn(
             $this->mockTestPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("2341b599-c388-4357-8fea-be1e3bb182e0")
             ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")
             ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
         $context = CompilationContext::create(
@@ -516,7 +516,6 @@ class TestPipelinesMerger extends Tester\TestCase
         // check test B
         $this->checkTreeB($testB);
     }
-
 }
 
 # Testing methods run

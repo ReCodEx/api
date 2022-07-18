@@ -177,7 +177,7 @@ class TestResult
         }
 
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "testName" => $this->testName,
             "solutionEvaluationId" => $this->solutionEvaluation->getId(),
             "status" => $this->status,

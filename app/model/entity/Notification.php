@@ -19,8 +19,10 @@ class Notification implements JsonSerializable
 
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -136,10 +138,10 @@ class Notification implements JsonSerializable
         $this->groups = new ArrayCollection();
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "authorId" => $this->getAuthor() ? $this->getAuthor()->getId() : null,
             "createdAt" => $this->createdAt->getTimestamp(),
             "visibleFrom" => $this->visibleFrom->getTimestamp(),
@@ -157,7 +159,7 @@ class Notification implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getVisibleFrom(): DateTime

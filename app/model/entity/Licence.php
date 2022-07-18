@@ -14,8 +14,10 @@ class Licence implements JsonSerializable
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
+     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
+     * @var \Ramsey\Uuid\UuidInterface
      */
     protected $id;
 
@@ -62,10 +64,10 @@ class Licence implements JsonSerializable
      */
     protected $note;
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "note" => $this->note,
             "isValid" => $this->isValid,
             "validUntil" => $this->validUntil->getTimestamp()
@@ -89,7 +91,7 @@ class Licence implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getNote(): ?string

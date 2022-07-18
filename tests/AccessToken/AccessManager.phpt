@@ -10,6 +10,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Model\Repository\Users;
 
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Nette\Http\UrlScript;
 use Nette\Http\Request;
 
@@ -120,7 +121,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user);
 
-        $payload = JWT::decode($token, $verificationKey);
+        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
         Assert::equal($user->getId(), $payload->sub);
         Assert::equal("X", $payload->iss);
         Assert::equal("Y", $payload->aud);
@@ -167,7 +168,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, ["x", "y"]);
 
-        $payload = JWT::decode($token, $verificationKey);
+        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
         Assert::equal(["x", "y"], $payload->scopes);
     }
 
@@ -182,7 +183,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, "role-eff");
 
-        $payload = JWT::decode($token, $verificationKey);
+        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
         Assert::equal("role-eff", $payload->effrole);
     }
 
@@ -197,7 +198,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30);
 
-        $payload = JWT::decode($token, $verificationKey);
+        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
         Assert::true((time() + 30) >= $payload->exp);
     }
 
@@ -212,7 +213,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
 
-        $payload = JWT::decode($token, $verificationKey);
+        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
         Assert::true((time() + 30) >= $payload->exp);
         Assert::equal("123456", $payload->sub);
         Assert::equal("uvw", $payload->xyz);

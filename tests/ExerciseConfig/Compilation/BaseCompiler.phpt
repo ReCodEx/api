@@ -54,9 +54,9 @@ class TestBaseCompiler extends Tester\TestCase
                 "environments" => [
                     "envA" => [
                         "pipelines" => [
-                            ["name" => "compilationPipeline", "variables" => []],
+                            ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.A.in"]
                                 ]
@@ -65,9 +65,9 @@ class TestBaseCompiler extends Tester\TestCase
                     ],
                     "envB" => [
                         "pipelines" => [
-                            ["name" => "compilationPipeline", "variables" => []],
+                            ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.A.in"]
                                 ]
@@ -80,9 +80,9 @@ class TestBaseCompiler extends Tester\TestCase
                 "environments" => [
                     "envA" => [
                         "pipelines" => [
-                            ["name" => "compilationPipeline", "variables" => []],
+                            ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.B.in"]
                                 ]
@@ -91,9 +91,9 @@ class TestBaseCompiler extends Tester\TestCase
                     ],
                     "envB" => [
                         "pipelines" => [
-                            ["name" => "compilationPipeline", "variables" => []],
+                            ["name" => "2341b599-c388-4357-8fea-be1e3bb182e0", "variables" => []],
                             [
-                                "name" => "testPipeline",
+                                "name" => "9a511efd-fd36-43ce-aa45-e2721845ae3b",
                                 "variables" => [
                                     ["name" => "input-file", "type" => "remote-file", "value" => "expected.B.in"]
                                 ]
@@ -263,18 +263,18 @@ class TestBaseCompiler extends Tester\TestCase
         $this->mockTestPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
 
         $this->mockPipelinesCache = Mockery::mock(PipelinesCache::class);
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("2341b599-c388-4357-8fea-be1e3bb182e0")->andReturn(
             $this->mockCompilationPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn(
+        $this->mockPipelinesCache->shouldReceive("getPipeline")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")->andReturn(
             $this->mockTestPipeline
         );
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")->twice()
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("2341b599-c388-4357-8fea-be1e3bb182e0")->twice()
             ->andReturn(
                 $this->loader->loadPipeline(self::$compilationPipeline),
                 $this->loader->loadPipeline(self::$compilationPipeline)
             );
-        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")->twice()
+        $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("9a511efd-fd36-43ce-aa45-e2721845ae3b")->twice()
             ->andReturn(
                 $this->loader->loadPipeline(self::$testPipeline),
                 $this->loader->loadPipeline(self::$testPipeline)
@@ -416,7 +416,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($dumpTestAMkdir->getSandboxConfig());
 
         $initiationExtraTask = $jobConfig->getTasks()[6];
-        Assert::equal($initiationDir . ".compilationPipeline.extra." . $it++, $initiationExtraTask->getId());
+        Assert::equal($initiationDir . ".2341b599-c388-4357-8fea-be1e3bb182e0.extra." . $it++, $initiationExtraTask->getId());
         Assert::equal(Priorities::$DEFAULT, $initiationExtraTask->getPriority());
         Assert::count(1, $initiationExtraTask->getDependencies());
         Assert::equal([$initiationMkdir->getId()], $initiationExtraTask->getDependencies());
@@ -430,7 +430,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($initiationExtraTask->getSandboxConfig());
 
         $initiationSourceTask = $jobConfig->getTasks()[7];
-        Assert::equal($initiationDir . ".compilationPipeline.source." . $it++, $initiationSourceTask->getId());
+        Assert::equal($initiationDir . ".2341b599-c388-4357-8fea-be1e3bb182e0.source." . $it++, $initiationSourceTask->getId());
         Assert::equal(Priorities::$DEFAULT, $initiationSourceTask->getPriority());
         Assert::count(1, $initiationSourceTask->getDependencies());
         Assert::equal([$initiationMkdir->getId()], $initiationSourceTask->getDependencies());
@@ -445,7 +445,7 @@ class TestBaseCompiler extends Tester\TestCase
 
         $initiationCompilationTask = $jobConfig->getTasks()[8];
         Assert::equal(
-            $initiationDir . ".compilationPipeline.compilation." . $it++,
+            $initiationDir . ".2341b599-c388-4357-8fea-be1e3bb182e0.compilation." . $it++,
             $initiationCompilationTask->getId()
         );
         Assert::equal(Priorities::$INITIATION, $initiationCompilationTask->getPriority());
@@ -478,7 +478,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::count(0, $initiationCompilationTask->getSandboxConfig()->getLimitsArray());
 
         $initiationExistsTask = $jobConfig->getTasks()[9];
-        Assert::equal($initiationDir . ".compilationPipeline.compilation." . $it++, $initiationExistsTask->getId());
+        Assert::equal($initiationDir . ".2341b599-c388-4357-8fea-be1e3bb182e0.compilation." . $it++, $initiationExistsTask->getId());
         Assert::equal(Priorities::$INITIATION, $initiationExistsTask->getPriority());
         Assert::count(4, $initiationExistsTask->getDependencies());
         Assert::equal(
@@ -495,7 +495,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($initiationExistsTask->getSandboxConfig());
 
         $testAInputTask = $jobConfig->getTasks()[10];
-        Assert::equal("testA.testPipeline.input-file." . $it++, $testAInputTask->getId());
+        Assert::equal("testA.9a511efd-fd36-43ce-aa45-e2721845ae3b.input-file." . $it++, $testAInputTask->getId());
         Assert::equal(Priorities::$DEFAULT, $testAInputTask->getPriority());
         Assert::count(1, $testAInputTask->getDependencies());
         Assert::equal([$testAMkdir->getId()], $testAInputTask->getDependencies());
@@ -532,7 +532,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($testACopyTask->getSandboxConfig());
 
         $testARunTask = $jobConfig->getTasks()[12];
-        Assert::equal("testA.testPipeline.run." . $it++, $testARunTask->getId());
+        Assert::equal("testA.9a511efd-fd36-43ce-aa45-e2721845ae3b.run." . $it++, $testARunTask->getId());
         Assert::equal(Priorities::$EXECUTION, $testARunTask->getPriority());
         Assert::count(6, $testARunTask->getDependencies());
         Assert::equal(
@@ -564,7 +564,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getTimeLimit());
 
         $testATestTask = $jobConfig->getTasks()[13];
-        Assert::equal("testA.testPipeline.test." . $it++, $testATestTask->getId());
+        Assert::equal("testA.9a511efd-fd36-43ce-aa45-e2721845ae3b.test." . $it++, $testATestTask->getId());
         Assert::equal(Priorities::$DEFAULT, $testATestTask->getPriority());
         Assert::count(1, $testATestTask->getDependencies());
         Assert::equal([$testAMkdir->getId()], $testATestTask->getDependencies());
@@ -578,7 +578,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($testATestTask->getSandboxConfig());
 
         $testAJudgeTask = $jobConfig->getTasks()[14];
-        Assert::equal("testA.testPipeline.judge." . $it++, $testAJudgeTask->getId());
+        Assert::equal("testA.9a511efd-fd36-43ce-aa45-e2721845ae3b.judge." . $it++, $testAJudgeTask->getId());
         Assert::equal(Priorities::$EVALUATION, $testAJudgeTask->getPriority());
         Assert::count(3, $testAJudgeTask->getDependencies());
         Assert::equal(
@@ -604,7 +604,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
 
         $testBInputTask = $jobConfig->getTasks()[15];
-        Assert::equal("testB.testPipeline.input-file." . $it++, $testBInputTask->getId());
+        Assert::equal("testB.9a511efd-fd36-43ce-aa45-e2721845ae3b.input-file." . $it++, $testBInputTask->getId());
         Assert::equal(Priorities::$DEFAULT, $testBInputTask->getPriority());
         Assert::count(1, $testBInputTask->getDependencies());
         Assert::equal([$testBMkdir->getId()], $testBInputTask->getDependencies());
@@ -641,7 +641,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($testBCopyTask->getSandboxConfig());
 
         $testBRunTask = $jobConfig->getTasks()[17];
-        Assert::equal("testB.testPipeline.run." . $it++, $testBRunTask->getId());
+        Assert::equal("testB.9a511efd-fd36-43ce-aa45-e2721845ae3b.run." . $it++, $testBRunTask->getId());
         Assert::equal(Priorities::$EXECUTION, $testBRunTask->getPriority());
         Assert::count(6, $testBRunTask->getDependencies());
         Assert::equal(
@@ -669,7 +669,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal("testB", $testBRunTask->getSandboxConfig()->getWorkingDirectory());
 
         $testBTestTask = $jobConfig->getTasks()[18];
-        Assert::equal("testB.testPipeline.test." . $it++, $testBTestTask->getId());
+        Assert::equal("testB.9a511efd-fd36-43ce-aa45-e2721845ae3b.test." . $it++, $testBTestTask->getId());
         Assert::equal(Priorities::$DEFAULT, $testBTestTask->getPriority());
         Assert::count(1, $testBTestTask->getDependencies());
         Assert::equal([$testBMkdir->getId()], $testBTestTask->getDependencies());
@@ -683,7 +683,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::null($testBTestTask->getSandboxConfig());
 
         $testBJudgeTask = $jobConfig->getTasks()[19];
-        Assert::equal("testB.testPipeline.judge." . $it++, $testBJudgeTask->getId());
+        Assert::equal("testB.9a511efd-fd36-43ce-aa45-e2721845ae3b.judge." . $it++, $testBJudgeTask->getId());
         Assert::equal(Priorities::$EVALUATION, $testBJudgeTask->getPriority());
         Assert::count(3, $testBJudgeTask->getDependencies());
         Assert::equal(

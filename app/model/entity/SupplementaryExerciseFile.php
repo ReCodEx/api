@@ -123,7 +123,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
         );
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $result = parent::jsonSerialize();
         $result["hashName"] = $this->hashName;

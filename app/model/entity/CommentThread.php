@@ -48,10 +48,10 @@ class CommentThread implements JsonSerializable
         $this->comments = $this->comments->matching($publicComments);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "comments" => $this->comments->toArray()
         ];
     }
@@ -70,7 +70,7 @@ class CommentThread implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getComments(): Collection

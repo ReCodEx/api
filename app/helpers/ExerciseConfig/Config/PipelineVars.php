@@ -12,9 +12,9 @@ class PipelineVars implements JsonSerializable
 {
 
     /** Name of the name key */
-    const NAME_KEY = "name";
+    public const NAME_KEY = "name";
     /** Name of the variables key */
-    const VARIABLES_KEY = "variables";
+    public const VARIABLES_KEY = "variables";
 
 
     /**
@@ -102,7 +102,7 @@ class PipelineVars implements JsonSerializable
      * Enable automatic serialization to JSON
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }

@@ -55,10 +55,10 @@ class HardwareGroup implements JsonSerializable
         return new HwGroupMeta($this->metadata);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
-            "id" => $this->id,
+            "id" => $this->getId(),
             "name" => $this->name,
             "description" => $this->description,
             "metadata" => $this->getMetadata()->toArray()
@@ -71,7 +71,7 @@ class HardwareGroup implements JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id === null ? null : (string)$this->id;
     }
 
     public function getName(): string

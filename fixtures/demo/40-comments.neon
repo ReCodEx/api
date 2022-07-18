@@ -1,10 +1,10 @@
 App\Model\Entity\CommentThread:
     mainThread:
         __construct:
-            createThread: [ "mainThread" ]
+            createThread: [ "6b89a6df-f7e8-4c2c-a216-1b7cb4391647" ]
     emptyThread:
         __construct:
-            createThread: [ "emptyThread" ]
+            createThread: [ "8308df60-8da5-4ef7-be1f-9a0160409b64" ]
 
 App\Model\Entity\Comment:
     privateComment:
