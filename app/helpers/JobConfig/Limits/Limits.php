@@ -12,27 +12,27 @@ use JsonSerializable;
 class Limits implements JsonSerializable
 {
     /** Hardware group identification key */
-    const HW_GROUP_ID_KEY = "hw-group-id";
+    public const HW_GROUP_ID_KEY = "hw-group-id";
     /** Cpu time limit key */
-    const TIME_KEY = "time";
+    public const TIME_KEY = "time";
     /** Wall time limit key */
-    const WALL_TIME_KEY = "wall-time";
+    public const WALL_TIME_KEY = "wall-time";
     /** Extra time limit key */
-    const EXTRA_TIME_KEY = "extra-time";
+    public const EXTRA_TIME_KEY = "extra-time";
     /** Stack size limit key */
-    const STACK_SIZE_KEY = "stack-size";
+    public const STACK_SIZE_KEY = "stack-size";
     /** Memory limit key */
-    const MEMORY_KEY = "memory";
+    public const MEMORY_KEY = "memory";
     /** Parallel executions key */
-    const PARALLEL_KEY = "parallel";
+    public const PARALLEL_KEY = "parallel";
     /** Disk size key */
-    const DISK_SIZE_KEY = "disk-size";
+    public const DISK_SIZE_KEY = "disk-size";
     /** Disk files key */
-    const DISK_FILES_KEY = "disk-files";
+    public const DISK_FILES_KEY = "disk-files";
     /** Environmental variables key */
-    const ENVIRON_KEY = "environ-variable";
+    public const ENVIRON_KEY = "environ-variable";
     /** Bound directories key */
-    const BOUND_DIRECTORIES_KEY = "bound-directories";
+    public const BOUND_DIRECTORIES_KEY = "bound-directories";
 
     /** @var string ID of the hardware group */
     protected $id = "";

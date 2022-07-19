@@ -34,7 +34,8 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     }
 
     /**
-     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"}, inversedBy="referenceSolutionSubmission", fetch="EAGER")
+     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"},
+     *               inversedBy="referenceSolutionSubmission", fetch="EAGER")
      * @var SubmissionFailure
      */
     protected $failure;
