@@ -91,7 +91,7 @@ class PresenterTestHelper
 
         if (!is_file($dbPath) || !is_file($dumpPath) || filesize($dumpPath) === 0) {
             // Create a new entity manager connected to a temporary sqlite database
-            $schemaEm = static::createEntityManager(
+            $schemaEm = self::createEntityManager(
                 $dbPath,
                 $originalEm->getConfiguration(),
                 $originalEm->getEventManager()
