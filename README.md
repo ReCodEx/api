@@ -7,30 +7,33 @@
 
 Business logic core of the application and a REST API that provides access to other modules.
 
-
 ## Installation
 
 ### Prerequisites
 
-You need a web server with PHP (7.3+) and MySQL or MariaDB database.
+You need a web server with PHP (8.1+) and MySQL or MariaDB database.
 
 We recommend installing PHP from remi repository:
+
 ```
 # dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
 ```
 
 You may list the PHP modules thusly:
+
 ```
 # dnf module list php
 ```
 
 ...and select the right module:
+
 ```
-# dnf module enable php:remi-7.3
+# dnf module enable php:remi-8.1
 ```
 
 If you install core-api as a package, the PHP will be installed as dependencies.
 Otherwise, you may install it manually:
+
 ```
 # dnf -y install php php-json php-mysqlnd php-ldap php-pecl-yaml php-pecl-zip php-pecl-zmq php-xml php-intl php-mbstring php-pecl-inotify
 ```
@@ -40,12 +43,12 @@ and a separate DB user who is granted all rights for this database (and only
 this database).
 
 You can do this by running `mysql -uroot -p` and then executing these SQLs:
+
 ```
 CREATE DATABASE `recodex`;
 CREATE USER 'recodex'@'localhost' IDENTIFIED BY 'someSecretPasswordYouNeedToSetYourself';
 GRANT ALL PRIVILEGES ON `recodex`.* TO 'recodex'@'localhost';
 ```
-
 
 ### Install as Package
 
@@ -60,10 +63,9 @@ The module will be installed in `/opt/recodex-core`. After installation, you nee
 edit `/etc/recodex/core-api/config.neon`. Proceed from step 3. of manual
 installation to the end.
 
-
 ### Manual Installation
 
-The web API requires a PHP runtime version at least 7.3. Which one depends on
+The web API requires a PHP runtime version at least 8.1. Which one depends on
 actual configuration, there is a choice between _mod_php_ inside Apache,
 _php-fpm_ with Apache or Nginx proxy or running it as standalone uWSGI script.
 Also see the required PHP modules in the prerequisites section.
@@ -76,40 +78,40 @@ dependencies to the `vendor/` subdirectory.
 
 1. Clone the git repository
 2. Run `composer install`
-3. Create a database and fill in the access information in 
-   `app/config/config.local.neon` (for an example, see 
+3. Create a database and fill in the access information in
+   `app/config/config.local.neon` (for an example, see
    `app/config/config.local.neon.example`)
    do not forget to set the database configuration, especially the credentials.
 4. Setup the database schema by running `bin/console migrations:migrate`
-
 
 ### Post-Install
 
 You may optionally fill the database with initial values by running
 `bin/console db:fill init`, after this database will contain:
-* Instance with administrator registered as local account with credentials username: `admin@admin.com`, password: `admin`
-* Runtime environments which ReCodEx can handle
-* Default single hardware group which might be used for workers
-* Pipelines for runtime environments which can be used when building exercises
+
+- Instance with administrator registered as local account with credentials username: `admin@admin.com`, password: `admin`
+- Runtime environments which ReCodEx can handle
+- Default single hardware group which might be used for workers
+- Pipelines for runtime environments which can be used when building exercises
 
 Creating these data manually may be somewhat difficult and tedious, so it might
 be a good idea to proceed with this step and perhaps prune the data later
 (remove runtimes and pipelines you will not use).
 
 Finally, you need to configure the web server, so that
+
 1. Directory `/opt/recodex-core/www` is accessible and PHP scripts here are interpreted.
 2. Proper alias is set for `/opt/recodex-core/www` that matches API path set in
    other modules, especially the web frontend (e.g., `/api` if the recodex runs
    on a root of a domain).
 3. It might necessary to set up CORS headers (similar thing goes for the web
    app) as follows:
-   
+
 ```
 Header always set Access-Control-Allow-Origin "*"
 Header always set Access-Control-Allow-Headers "headers, Authorization, Accept-Language, X-ReCodEx-lang"
 Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
 ```
-
 
 ## Configuration
 
@@ -126,7 +128,7 @@ Descriptions of particular config items are managed in static global config file
 
 The simplest way to get started is to start the built-in PHP server in the root directory of your project:
 
-	php -S localhost:4000 -t www
+    php -S localhost:4000 -t www
 
 Then visit `http://localhost:4000` in your browser to see the welcome page.
 
@@ -155,39 +157,38 @@ php vendor/bin/tester -c /etc/php/php.ini tests
 Core API offers several command line commands for cleanup, maintenance, and
 email notifications. It is recommended you set up some periodical execution of
 these commands -- e.g., by crontab. The actual frequency depends on utilization
-of your system, but here are some recommendations: 
+of your system, but here are some recommendations:
 
 Daily:
 
-* `notifications:assignment-deadlines` will send emails to students (who
+- `notifications:assignment-deadlines` will send emails to students (who
   actually allowed this in their configurations) about approaching deadlines.
   This is the most important command as it is directly related to ReCodEx operations.
   It is recommended to run this command every night.
-* `fs:cleanup:worker` will remove old files that are exchanged between core api and worker backend
-* `db:cleanup:uploads` will remove old uploaded files
+- `fs:cleanup:worker` will remove old files that are exchanged between core api and worker backend
+- `db:cleanup:uploads` will remove old uploaded files
 
 Weekly:
 
-* `notifications:general-stats` will send an email to all administrators with
+- `notifications:general-stats` will send an email to all administrators with
   brief statistics about ReCodEx usage. It is recommended to run this command
   once a week (e.g., during the night between Saturday and Monday).
 
 Monthly:
 
-* `db:cleanup:localized-texts` will remove old texts of groups and exercises
-* `db:cleanup:exercise-configs` will remove old exercise configs
-* `db:cleanup:exercise-files` will remove unused files (attachments and test files) of deleted exercises/assignments and pipelines 
-* `db:cleanup:pipeline-configs` will remove old pipeline configs
+- `db:cleanup:localized-texts` will remove old texts of groups and exercises
+- `db:cleanup:exercise-configs` will remove old exercise configs
+- `db:cleanup:exercise-files` will remove unused files (attachments and test files) of deleted exercises/assignments and pipelines
+- `db:cleanup:pipeline-configs` will remove old pipeline configs
 
 Annually:
 
-* `users:remove-inactive` will soft-delete and anonymize users who are deemed
+- `users:remove-inactive` will soft-delete and anonymize users who are deemed
   inactive (i.e., they have not verified their credentials for a period of time
   that is set in core module config)
 
 Some details of these periodic commands (e.g., a threshold period of relevant
 assignment deadlines) can be configured in the neon config file.
-
 
 ## Adminer
 
