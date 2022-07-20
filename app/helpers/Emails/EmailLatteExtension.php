@@ -55,14 +55,25 @@ class EmailLatteExtension extends Latte\Extension
     {
         [$content, $endTag] = yield; // wait for the closing tag and get the contents
 
-        // convert content node into raw text wrapped in string (scalar) node
-        $textContext = new PrintContext(Latte\ContentType::Text);
-        $contentNode = new StringNode($content->print($textContext));
-
         // auxiliary node creates PHP content based on given lambda (print) function
         return new AuxiliaryNode(
-            fn(PrintContext $context) =>
-                $context->format('\App\Helpers\Emails\EmailLatteExtension::setSubject(%node);', $contentNode)
+            function (PrintContext $context) use ($content) {
+                return $context->format(
+                    <<<'CODE'
+                        ob_start(fn() => '');
+                        try {
+                            (function () { extract(func_get_arg(0));
+                                %node
+                            })(get_defined_vars());
+                        } finally {
+                            $ʟ_recodex_email_subject = ob_get_clean();
+                            \App\Helpers\Emails\EmailLatteExtension::setSubject($ʟ_recodex_email_subject);
+                            echo $ʟ_recodex_email_subject;
+                        }
+                        CODE,
+                    $content,
+                );
+            }
         );
     }
 }
