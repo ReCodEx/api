@@ -144,6 +144,14 @@ class AssignmentSolution
     }
 
     /**
+     * Incremental counter marking submission attempts of one user solving one assignment (one-based).
+     * Each solution gets an unique marker (per user x assignment) which is immutable,
+     * so it will hold even when some solutions get deleted.
+     * @ORM\Column(type="integer")
+     */
+    protected $attemptIndex;
+
+    /**
      * AssignmentSolution constructor.
      */
     private function __construct()
@@ -165,13 +173,14 @@ class AssignmentSolution
     public static function createSolution(
         string $note,
         Assignment $assignment,
-        Solution $solution
+        Solution $solution,
+        //int $attemptIndex,
     ) {
         $entity = new AssignmentSolution();
         $entity->assignment = $assignment;
         $entity->note = $note;
         $entity->solution = $solution;
-
+        $entity->attemptIndex = 0; // TODO
         return $entity;
     }
 
