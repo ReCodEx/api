@@ -40,6 +40,7 @@ class RouterFactory
         $router[] = self::createInstancesRoutes("$prefix/instances");
         $router[] = self::createReferenceSolutionsRoutes("$prefix/reference-solutions");
         $router[] = self::createAssignmentSolutionsRoutes("$prefix/assignment-solutions");
+        $router[] = self::createAssignmentSolversRoutes("$prefix/assignment-solvers");
         $router[] = self::createSubmissionFailuresRoutes("$prefix/submission-failures");
         $router[] = self::createUploadedFilesRoutes("$prefix/uploaded-files");
         $router[] = self::createUsersRoutes("$prefix/users");
@@ -355,6 +356,13 @@ class RouterFactory
             "AssignmentSolutions:evaluationScoreConfig"
         );
 
+        return $router;
+    }
+
+    private static function createAssignmentSolversRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+        $router[] = new GetRoute("$prefix", "AssignmentSolvers:");
         return $router;
     }
 

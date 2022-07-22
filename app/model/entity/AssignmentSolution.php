@@ -174,13 +174,13 @@ class AssignmentSolution
         string $note,
         Assignment $assignment,
         Solution $solution,
-        //int $attemptIndex,
+        int $attemptIndex,
     ) {
         $entity = new AssignmentSolution();
         $entity->assignment = $assignment;
         $entity->note = $note;
         $entity->solution = $solution;
-        $entity->attemptIndex = 0; // TODO
+        $entity->attemptIndex = $attemptIndex;
         return $entity;
     }
 
@@ -261,5 +261,10 @@ class AssignmentSolution
     public function setLastSubmission(?AssignmentSolutionSubmission $lastSubmission): void
     {
         $this->lastSubmission = $lastSubmission;
+    }
+
+    public function getAttemptIndex(): int
+    {
+        return $this->attemptIndex;
     }
 }

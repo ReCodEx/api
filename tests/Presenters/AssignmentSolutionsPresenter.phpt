@@ -86,6 +86,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         Assert::same($solution->getId(), $result['payload']['id']);
+        Assert::same($solution->getAttemptIndex(), $result['payload']['attemptIndex']);
     }
 
     public function testGetSolutionFiles()

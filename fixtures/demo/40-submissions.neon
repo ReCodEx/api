@@ -30,6 +30,7 @@ App\Model\Entity\AssignmentSolution:
                 - "Random note"
                 - @demoAssignment
                 - "@demoSolution1"
+                - 1
         bonusPoints: 1
         lastSubmission: @submission6
     "solution2":
@@ -38,6 +39,7 @@ App\Model\Entity\AssignmentSolution:
                 - "Random note"
                 - @demoAssignment
                 - "@demoSolution2"
+                - 2
         bonusPoints: 1
         lastSubmission: @submission4
 
@@ -77,3 +79,11 @@ App\Model\Entity\AssignmentSolutionSubmission:
             - "@solution1"
             - @submitUser1
         failure: "@unresolvedSubmissionFailure"
+
+App\Model\Entity\AssignmentSolver:
+    "assignmentSolver1":
+        __construct:
+            - @demoAssignment
+            - @submitUser1
+            - 2
+            - 4

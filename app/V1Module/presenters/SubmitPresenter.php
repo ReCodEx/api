@@ -17,13 +17,14 @@ use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FailureHelper;
 use App\Helpers\MonitorConfig;
+use App\Helpers\SubmissionHelper;
+use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\Solution;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
-use App\Helpers\SubmissionHelper;
-use App\Helpers\JobConfig\Generator as JobConfigGenerator;
+use App\Model\Entity\AssignmentSolver;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
@@ -32,6 +33,7 @@ use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\AssignmentSolvers;
 use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
@@ -78,6 +80,12 @@ class SubmitPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutions;
+
+    /**
+     * @var AssignmentSolvers
+     * @inject
+     */
+    public $assignmentSolvers;
 
     /**
      * @var AssignmentSolutionSubmissions
@@ -235,39 +243,51 @@ class SubmitPresenter extends BasePresenter
      */
     public function actionSubmit(string $id)
     {
-        $assignment = $this->assignments->findOrThrow($id);
-        $req = $this->getRequest();
-        $user = $this->getUserOrCurrent($req->getPost("userId"));
+        $this->assignments->beginTransaction();
+        try {
+            $assignment = $this->assignments->findOrThrow($id);
+            $req = $this->getRequest();
+            $user = $this->getUserOrCurrent($req->getPost("userId"));
 
-        if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
-            throw new ForbiddenRequestException();
-        }
+            if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
+                throw new ForbiddenRequestException();
+            }
 
-        if (!$this->canReceiveSubmissions($assignment, $user)) {
-            throw new ForbiddenRequestException(
-                "User '{$user->getId()}' cannot submit solutions for this assignment anymore."
+            if (!$this->canReceiveSubmissions($assignment, $user)) {
+                throw new ForbiddenRequestException(
+                    "User '{$user->getId()}' cannot submit solutions for this assignment anymore."
+                );
+            }
+
+            // get all uploaded files based on given ID list and verify them
+            $uploadedFiles = $this->submissionHelper->getUploadedFiles(
+                $req->getPost("files"),
+                $assignment->getSolutionFilesLimit(),
+                $assignment->getSolutionSizeLimit()
             );
+
+            // create Solution object
+            $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
+            $solution = new Solution($user, $runtimeEnvironment);
+            $solution->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
+
+            // this may not be entirely atomic (depending on the isolation level), but hey, the worst thing
+            // that might happen is that the attempt counting will be a little off ... no big deal
+            $attemptIndex = $this->assignmentSolvers->getNextAttemptIndex($assignment, $user);
+
+            // create and fill assignment solution
+            $note = $req->getPost("note");
+            $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution, $attemptIndex);
+            $this->assignmentSolutions->persist($assignmentSolution);
+
+            // convert uploaded files into solutions files and manage them in the storage correctly
+            $this->submissionHelper->prepareUploadedFilesForSubmit($uploadedFiles, $assignmentSolution->getSolution());
+
+            $this->assignments->commit();
+        } catch (Exception $e) {
+            $this->assignments->rollback();
+            throw $e;
         }
-
-        // get all uploaded files based on given ID list and verify them
-        $uploadedFiles = $this->submissionHelper->getUploadedFiles(
-            $req->getPost("files"),
-            $assignment->getSolutionFilesLimit(),
-            $assignment->getSolutionSizeLimit()
-        );
-
-        // create Solution object
-        $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
-        $solution = new Solution($user, $runtimeEnvironment);
-        $solution->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
-
-        // create and fill assignment solution
-        $note = $req->getPost("note");
-        $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution);
-        $this->assignmentSolutions->persist($assignmentSolution);
-
-        // convert uploaded files into solutions files and manage them in the storage correctly
-        $this->submissionHelper->prepareUploadedFilesForSubmit($uploadedFiles, $assignmentSolution->getSolution());
 
         $this->sendSuccessResponse($this->finishSubmission($assignmentSolution));
     }
@@ -288,6 +308,12 @@ class SubmitPresenter extends BasePresenter
 
         // The solution needs to reload submissions (it is tedious and error prone to update them manually)
         $this->solutions->refresh($solution);
+
+        $assignment = $solution->getAssignment();
+        $user = $solution->getSolution()->getAuthor();
+        if ($assignment && $user) {
+            $this->assignmentSolvers->incrementEvaluationsCount($assignment, $user);
+        }
 
         return [
             "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),

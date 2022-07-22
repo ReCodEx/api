@@ -9,6 +9,7 @@ use App\Model\Repository\Users;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\AssignmentSolvers;
 use App\Model\Repository\Solutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
@@ -98,6 +99,12 @@ class GeneralStats
      * Number of failed submissions during the selected period.
      */
     public $failedSubmissions = null;
+
+    /**
+     * @var int|null
+     * Number of evaluations made by backend (submissions that failed before evaluation are not counted).
+     */
+    public $totalEvaluations = null;
 }
 
 
@@ -124,6 +131,9 @@ class GeneralStatsHelper
     /** @var Assignments */
     public $assignments;
 
+    /** @var AssignmentSolvers */
+    public $assignmentSolvers;
+
     /** @var Solutions */
     public $solutions;
 
@@ -142,6 +152,7 @@ class GeneralStatsHelper
         Groups $groups,
         Exercises $exercises,
         Assignments $assignments,
+        AssignmentSolvers $assignmentSolvers,
         Solutions $solutions,
         AssignmentSolutionSubmissions $assignmentSubmissions,
         ReferenceSolutionSubmissions $referenceSubmissions,
@@ -152,6 +163,7 @@ class GeneralStatsHelper
         $this->groups = $groups;
         $this->exercises = $exercises;
         $this->assignments = $assignments;
+        $this->assignmentSolvers = $assignmentSolvers;
         $this->solutions = $solutions;
         $this->assignmentSubmissions = $assignmentSubmissions;
         $this->referenceSubmissions = $referenceSubmissions;
@@ -188,10 +200,11 @@ class GeneralStatsHelper
         $res->createdAssignments = count($this->assignments->findByCreatedAt($since, $until));
         $res->totalAssignments = $this->assignments->getTotalCount();
         $res->createdSolutions = count($this->solutions->findByCreatedAt($since, $until));
-        $res->totalSolutions = $this->solutions->getTotalCount();
+        $res->totalSolutions = $this->assignmentSolvers->getTotalSolutionsCount();
         $res->createdSubmissions = count($this->assignmentSubmissions->findByCreatedAt($since, $until))
             + count($this->referenceSubmissions->findByCreatedAt($since, $until));
         $res->failedSubmissions = count($this->submissionFailures->findByCreatedAt($since, $until));
+        $res->totalEvaluations = $this->assignmentSolvers->getTotalEvaluationsCount();
         return $res;
     }
 }
