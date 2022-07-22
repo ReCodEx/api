@@ -111,6 +111,7 @@ class AssignmentSolutionViewFactory
 
         return [
             "id" => $solution->getId(),
+            "attemptIndex" => $solution->getAttemptIndex(),
             "note" => $solution->getNote(),
             "assignmentId" => $solution->getAssignment() ? $solution->getAssignment()->getId() : null,
             "authorId" => $solution->getSolution()->getAuthorId(),

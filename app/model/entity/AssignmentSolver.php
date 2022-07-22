@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 /**
  * This entity holds records related to all solutions/submissions of one user to one assignment.
@@ -10,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"assignment_id", "solver_id"})})
  */
-class AssignmentSolver
+class AssignmentSolver implements JsonSerializable
 {
     /**
      * @ORM\Id
@@ -52,13 +53,32 @@ class AssignmentSolver
      * Initialize entity with default values.
      * @param Assignment $assignment
      * @param User $solver
+     * @param int $lastAttemptIndex should be 0, unless we are re-creating an entity
+     * @param int $evaluationsCount should be 0, unless we are re-creating an entity
      */
-    public function __construct(Assignment $assignment, User $solver)
-    {
+    public function __construct(
+        Assignment $assignment,
+        User $solver,
+        int $lastAttemptIndex = 0,
+        int $evaluationsCount = 0
+    ) {
         $this->assignment = $assignment;
         $this->solver = $solver;
-        $this->lastAttemptIndex = 0;
-        $this->evaluationsCount = 0;
+        $this->lastAttemptIndex = $lastAttemptIndex;
+        $this->evaluationsCount = $evaluationsCount;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        $assignment = $this->getAssignment();
+        $solver = $this->getSolver();
+        return [
+            "id" => $this->getId(),
+            "assignmentId" => $assignment ? $assignment->getId() : null,
+            "solverId" => $solver ? $solver->getId() : null,
+            "lastAttemptIndex" => $this->lastAttemptIndex,
+            "evaluationsCount" => $this->evaluationsCount,
+        ];
     }
 
     /*

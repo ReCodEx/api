@@ -393,6 +393,7 @@ services:
   - App\Model\Repository\ReferenceSolutionSubmissions
   - App\Model\Repository\AssignmentSolutions
   - App\Model\Repository\AssignmentSolutionSubmissions
+  - App\Model\Repository\AssignmentSolvers
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
