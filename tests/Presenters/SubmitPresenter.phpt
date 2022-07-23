@@ -15,6 +15,7 @@ use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\AssignmentSolvers;
 use App\V1Module\Presenters\SubmitPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
@@ -37,8 +38,11 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var  Nette\DI\Container */
     protected $container;
 
-    /** @var App\Model\Repository\Assignments */
+    /** @var Assignments */
     protected $assignments;
+
+    /** @var AssignmentSolvers */
+    protected $assignmentSolvers;
 
     /** @var Nette\Security\User */
     private $user;
@@ -49,7 +53,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
-        $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
+        $this->assignments = $container->getByType(Assignments::class);
+        $this->assignmentSolvers = $container->getByType(AssignmentSolvers::class);
 
         // patch container, since we cannot create actual file storage manarer
         $fsName = current($this->container->findByType(FileStorageManager::class));
@@ -210,6 +215,11 @@ class TestSubmitPresenter extends Tester\TestCase
         Assert::equal($jobId, $webSocketChannel['id']);
         Assert::equal($webSocketMonitorUrl, $webSocketChannel['monitorUrl']);
         Assert::equal($tasksCount, $webSocketChannel['expectedTasksCount']);
+
+        $author = $this->presenter->users->findOrThrow($solution['authorId']);
+        $solvers = $this->assignmentSolvers->findBy([ "assignment" => $assignment, "solver" => $author ]);
+        Assert::count(1, $solvers);
+        Assert::equal($solvers[0]->getLastAttemptIndex(), $solution['attemptIndex']);
     }
 
     public function testSubmissionFailure()
