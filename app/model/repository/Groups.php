@@ -126,7 +126,7 @@ class Groups extends BaseSoftDeleteRepository
      * @param array $denied List of denied membership types (empty list = no restrictions)
      * @return Group[] Array indexed by group IDs.
      */
-    private function findGroupsByMembership(User $user, array $allowed = [], array $denied = []): array
+    public function findGroupsByMembership(User $user, array $allowed = [], array $denied = []): array
     {
         $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
         $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");

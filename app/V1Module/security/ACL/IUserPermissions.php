@@ -39,4 +39,8 @@ interface IUserPermissions
     public function canInvalidateTokens(User $user): bool;
 
     public function canForceChangePassword(User $user): bool;
+
+    public function canViewCalendars(User $user): bool;
+
+    public function canEditCalendars(User $user): bool;
 }

@@ -711,6 +711,19 @@ class Group
     }
 
     /**
+     * Return all localized texts as an array indexed by locales.
+     * @return array
+     */
+    public function getLocalizedTextsAssocArray(): array
+    {
+        $result = [];
+        foreach ($this->getLocalizedTexts() as $text) {
+            $result[$text->getLocale()] = $text;
+        }
+        return $result;
+    }
+
+    /**
      * Get identifications of groups in descending order.
      * @return string[]
      */
