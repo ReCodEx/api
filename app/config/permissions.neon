@@ -266,6 +266,8 @@ permissions:
           - viewGroups
           - viewDetail
           - createLocalAccount
+          - viewCalendars
+          - editCalendars
       conditions: user.isSameUser
 
     - allow: true

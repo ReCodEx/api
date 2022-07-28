@@ -399,6 +399,7 @@ services:
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\UploadedPartialFiles
   - App\Model\Repository\Users
+  - App\Model\Repository\UserCalendars
   - App\Model\Repository\RuntimeEnvironments
   - App\Model\Repository\Solutions
   - App\Model\Repository\GroupMemberships

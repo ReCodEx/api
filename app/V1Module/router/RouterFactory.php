@@ -415,6 +415,8 @@ class RouterFactory
         $router[] = new PostRoute("$prefix", "Registration:createAccount");
         $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
         $router[] = new PostRoute("$prefix/list", "Users:listByIds");
+        $router[] = new GetRoute("$prefix/ical/<id>", "UserCalendars:");
+        $router[] = new DeleteRoute("$prefix/ical/<id>", "UserCalendars:expireCalendar");
 
         $router[] = new GetRoute("$prefix/<id>", "Users:detail");
         $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");
@@ -429,6 +431,8 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/create-local", "Users:createLocalAccount");
         $router[] = new PostRoute("$prefix/<id>/role", "Users:setRole");
         $router[] = new PostRoute("$prefix/<id>/allowed", "Users:setAllowed");
+        $router[] = new GetRoute("$prefix/<id>/calendar-tokens", "UserCalendars:userCalendars");
+        $router[] = new PostRoute("$prefix/<id>/calendar-tokens", "UserCalendars:createCalendar");
         return $router;
     }
 
