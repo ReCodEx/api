@@ -4,9 +4,9 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
+use App\Helpers\WebappLinks;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ShadowAssignmentPoints;
@@ -17,37 +17,25 @@ use Nette\Utils\Arrays;
  */
 class PointsChangedEmailsSender
 {
-
     /** @var EmailHelper */
     private $emailHelper;
 
+    /** @var WebappLinks */
+    private $webappLinks;
+
     /** @var string */
     private $sender;
-    /** @var string */
-    private $solutionPointsRedirectUrl;
-    /** @var string */
-    private $shadowPointsRedirectUrl;
-
 
     /**
      * Constructor.
      * @param EmailHelper $emailHelper
      * @param array $params
      */
-    public function __construct(EmailHelper $emailHelper, array $params)
+    public function __construct(array $params, EmailHelper $emailHelper, WebappLinks $webappLinks)
     {
         $this->emailHelper = $emailHelper;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-        $this->solutionPointsRedirectUrl = Arrays::get(
-            $params,
-            ["solutionPointsRedirectUrl"],
-            "https://recodex.mff.cuni.cz"
-        );
-        $this->shadowPointsRedirectUrl = Arrays::get(
-            $params,
-            ["shadowPointsRedirectUrl"],
-            "https://recodex.mff.cuni.cz"
-        );
+        $this->webappLinks = $webappLinks;
+        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex");
     }
 
     /**
@@ -113,7 +101,7 @@ class PointsChangedEmailsSender
                 "maxPoints" => $solution->getMaxPoints(),
                 "hasBonusPoints" => $solution->getBonusPoints() !== 0,
                 "bonusPoints" => $solution->getBonusPoints(),
-                "link" => EmailLinkHelper::getLink($this->solutionPointsRedirectUrl, ["id" => $assignment->getId()])
+                "link" => $this->webappLinks->getAssignmentPageUrl($assignment->getId())
             ]
         );
     }
@@ -183,7 +171,7 @@ class PointsChangedEmailsSender
                 )->getName(),
                 "points" => $points->getPoints(),
                 "maxPoints" => $assignment->getMaxPoints(),
-                "link" => EmailLinkHelper::getLink($this->shadowPointsRedirectUrl, ["id" => $points->getId()])
+                "link" => $this->webappLinks->getShadowAssignmentPageUrl($points->getId())
             ]
         );
     }

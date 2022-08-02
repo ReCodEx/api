@@ -4,9 +4,9 @@ namespace App\Helpers;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailRenderResult;
+use App\Helpers\WebappLinks;
 use App\Security\TokenScope;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -22,7 +22,6 @@ use DateInterval;
  */
 class ForgottenPasswordHelper
 {
-
     /**
      * Database entity manager
      * @var EntityManagerInterface
@@ -36,17 +35,10 @@ class ForgottenPasswordHelper
     private $emailHelper;
 
     /**
-     * Sender address of all mails, something like "noreply@recodex.mff.cuni.cz"
+     * Sender address of all mails, something like "noreply@recodex"
      * @var string
      */
     private $sender;
-
-
-    /**
-     * URL which will be sent to user with token.
-     * @var string
-     */
-    private $redirectUrl;
 
     /**
      * Expiration period of the change-password token in seconds
@@ -59,25 +51,33 @@ class ForgottenPasswordHelper
      */
     private $accessManager;
 
+    /** @var WebappLinks */
+    private $webappLinks;
+
     /**
      * Constructor
+     * @param array $notificationsConfig Parameters from configuration file
      * @param EntityManagerInterface $em
      * @param EmailHelper $emailHelper
      * @param AccessManager $accessManager
-     * @param array $params Parameters from configuration file
      */
     public function __construct(
+        array $notificationsConfig,
         EntityManagerInterface $em,
         EmailHelper $emailHelper,
         AccessManager $accessManager,
-        array $params
+        WebappLinks $webappLinks
     ) {
         $this->em = $em;
         $this->emailHelper = $emailHelper;
         $this->accessManager = $accessManager;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-        $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.mff.cuni.cz");
-        $this->tokenExpiration = Arrays::get($params, ["tokenExpiration"], 10 * 60); // default value: 10 minutes
+        $this->webappLinks = $webappLinks;
+        $this->sender = Arrays::get($notificationsConfig, ["emails", "from"], "noreply@recodex");
+        $this->tokenExpiration = Arrays::get(
+            $notificationsConfig,
+            ["tokenExpiration"],
+            600 // default value: 10 minutes
+        );
     }
 
     /**
@@ -93,7 +93,6 @@ class ForgottenPasswordHelper
         $entry = new ForgottenPassword(
             $login->getUser(),
             $login->getUser()->getEmail(),
-            $this->redirectUrl,
             $IPaddress
         );
         $this->em->persist($entry);
@@ -141,7 +140,7 @@ class ForgottenPasswordHelper
             $template,
             [
                 "username" => $login->getUsername(),
-                "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
+                "link" => $this->webappLinks->getForgottenPasswordUrl($token),
                 "expiresAfter" => $expiresAfter->format("H:i")
             ]
         );

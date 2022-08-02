@@ -16,6 +16,7 @@ use App\Security\ACL\IGroupPermissions;
 use App\Security\Loader;
 use App\Security\Identity;
 use App\Responses\CalendarResponse;
+use App\Helpers\WebappLinks;
 use Eluceo\iCal\Domain\Entity\Event;
 use Eluceo\iCal\Domain\Entity\Calendar;
 use Eluceo\iCal\Presentation\Factory\CalendarFactory;
@@ -59,6 +60,12 @@ class UserCalendarsPresenter extends BasePresenter
     public $aclLoader;
 
     /**
+     * @var WebappLinks
+     * @inject
+     */
+    public $webappLinks;
+
+    /**
      * Helper that selects best localized entity from associative array.
      * @param array $texts [ lang => localized entity ]
      * @param string $lang identifier
@@ -91,9 +98,9 @@ class UserCalendarsPresenter extends BasePresenter
             $event->setSummary('ReCodEx deadline: ' . $texts->getName());
         }
 
-        // url TODO
-        //$assignmentUrl = '';
-        //$event->setUrl(new ValueObject\Uri($assignmentUrl));
+        // url
+        $assignmentUrl = $this->webappLinks->getAssignmentPageUrl($assignment->getId());
+        $event->setUrl(new ValueObject\Uri($assignmentUrl));
 
         // location
         $group = $assignment->getGroup();
@@ -152,9 +159,13 @@ class UserCalendarsPresenter extends BasePresenter
             }
         }
 
+        // prepare the calendar entity that wraps the events
+        $calendarEntity = new Calendar($events);
+        $calendarEntity->setProductIdentifier('-//ReCodEx Team at MFF-UK/ReCodEx//2.x/EN');
+
         // render the deadline events
         $componentFactory = new CalendarFactory();
-        $calendarComponent = $componentFactory->createCalendar(new Calendar($events));
+        $calendarComponent = $componentFactory->createCalendar($calendarEntity);
         $this->sendResponse(new CalendarResponse($calendarComponent));
     }
 

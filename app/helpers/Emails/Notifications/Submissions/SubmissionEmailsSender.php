@@ -5,9 +5,9 @@ namespace App\Helpers\Notifications;
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailRenderResult;
 use App\Helpers\EmailHelper;
+use App\Helpers\WebappLinks;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -22,40 +22,47 @@ use DateTime;
  */
 class SubmissionEmailsSender
 {
-
     /** @var EmailHelper */
     private $emailHelper;
+
     /** @var EmailLocalizationHelper */
     private $localizationHelper;
+
     /** @var AssignmentSolutions */
     private $assignmentSolutions;
 
+    /** @var WebappLinks */
+    private $webappLinks;
+
     /** @var string */
     private $sender;
-    /** @var string */
-    private $solutionRedirectUrl;
+
     /** @var string */
     private $submissionNotificationThreshold;
 
 
     /**
      * Constructor.
+     * @param array $notificationsConfig
      * @param EmailHelper $emailHelper
-     * @param array $params
+     * @param EmailLocalizationHelper $localizationHelper
+     * @param AssignmentSolutions $assignmentSolutions
+     * @param WebappLinks $webappLinks
      */
     public function __construct(
+        array $notificationsConfig,
         EmailHelper $emailHelper,
         EmailLocalizationHelper $localizationHelper,
         AssignmentSolutions $assignmentSolutions,
-        array $params
+        WebappLinks $webappLinks,
     ) {
         $this->emailHelper = $emailHelper;
         $this->localizationHelper = $localizationHelper;
         $this->assignmentSolutions = $assignmentSolutions;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-        $this->solutionRedirectUrl = Arrays::get($params, ["solutionRedirectUrl"], "https://recodex.mff.cuni.cz");
+        $this->webappLinks = $webappLinks;
+        $this->sender = Arrays::get($notificationsConfig, ["emails", "from"], "noreply@recodex");
         $this->submissionNotificationThreshold = Arrays::get(
-            $params,
+            $notificationsConfig,
             ["submissionNotificationThreshold"],
             "-5 minutes"
         );
@@ -283,12 +290,9 @@ class SubmissionEmailsSender
                 "status" => $submission->isCorrect() === true ? "success" : "failure",
                 "points" => $submission->getEvaluation()->getPoints(),
                 "maxPoints" => $submission->getAssignmentSolution()->getMaxPoints(),
-                "link" => EmailLinkHelper::getLink(
-                    $this->solutionRedirectUrl,
-                    [
-                        "assignmentId" => $assignment->getId(),
-                        "solutionId" => $submission->getAssignmentSolution()->getId(),
-                    ]
+                "link" => $this->webappLinks->getSolutionPageUrl(
+                    $assignment->getId(),
+                    $submission->getAssignmentSolution()->getId()
                 ),
                 "isResubmit" => $isResubmit,
                 "submittedBy" => $submittedBy ? $submittedBy->getName() : "",
@@ -327,12 +331,9 @@ class SubmissionEmailsSender
                 )->getName(),
                 "user" => $user ? $user->getName() : "",
                 "score" => (int)($submission->getEvaluation()->getScore() * 100),
-                "link" => EmailLinkHelper::getLink(
-                    $this->solutionRedirectUrl,
-                    [
-                        "assignmentId" => $assignment->getId(),
-                        "solutionId" => $solution->getId(),
-                    ]
+                "link" => $this->webappLinks->getSolutionPageUrl(
+                    $assignment->getId(),
+                    $solution->getId()
                 ),
             ]
         );
@@ -366,12 +367,9 @@ class SubmissionEmailsSender
                 )->getName(),
                 "user" => $user ? $user->getName() : "",
                 "score" => (int)($submission->getEvaluation()->getScore() * 100),
-                "link" => EmailLinkHelper::getLink(
-                    $this->solutionRedirectUrl,
-                    [
-                        "assignmentId" => $assignment->getId(),
-                        "solutionId" => $solution->getId(),
-                    ]
+                "link" => $this->webappLinks->getSolutionPageUrl(
+                    $assignment->getId(),
+                    $solution->getId(),
                 ),
             ]
         );

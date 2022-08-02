@@ -106,7 +106,8 @@ class SubmissionFailuresPresenter extends BasePresenter
      * @param string $id An identifier of the failure
      * @Param(name="note", type="post", validation="string:0..255", required=false,
      *   description="Brief description of how the failure was resolved")
-     * @Param(name="sendEmail", type="post", validation="bool", description="True if email should be sent to the author of submission")
+     * @Param(name="sendEmail", type="post", validation="bool",
+     *        description="True if email should be sent to the author of submission")
      */
     public function actionResolve(string $id)
     {

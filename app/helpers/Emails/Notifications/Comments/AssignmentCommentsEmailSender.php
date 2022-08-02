@@ -4,8 +4,8 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
+use App\Helpers\WebappLinks;
 use App\Helpers\Emails\EmailLatteFactory;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\Assignment;
@@ -18,33 +18,35 @@ use Nette\Utils\Arrays;
  */
 class AssignmentCommentsEmailsSender
 {
-
     /** @var EmailHelper */
     private $emailHelper;
+
     /** @var EmailLocalizationHelper */
     private $localizationHelper;
 
+    /** @var WebappLinks */
+    private $webappLinks;
+
     /** @var string */
     private $sender;
-    /** @var string */
-    private $assignmentRedirectUrl;
 
     /**
      * Constructor.
+     * @param array $notificationsConfig
      * @param EmailHelper $emailHelper
      * @param EmailLocalizationHelper $localizationHelper
-     * @param array $params
+     * @param WebappLinks $webappLinks
      */
-    public function __construct(EmailHelper $emailHelper, EmailLocalizationHelper $localizationHelper, array $params)
-    {
+    public function __construct(
+        array $notificationsConfig,
+        EmailHelper $emailHelper,
+        EmailLocalizationHelper $localizationHelper,
+        WebappLinks $webappLinks
+    ) {
         $this->emailHelper = $emailHelper;
         $this->localizationHelper = $localizationHelper;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-        $this->assignmentRedirectUrl = Arrays::get(
-            $params,
-            ["assignmentRedirectUrl"],
-            "https://recodex.mff.cuni.cz"
-        );
+        $this->webappLinks = $webappLinks;
+        $this->sender = Arrays::get($notificationsConfig, ["emails", "from"], "noreply@recodex");
     }
 
     /**
@@ -134,12 +136,7 @@ class AssignmentCommentsEmailsSender
                 "author" => $comment->getUser() ? $comment->getUser()->getName() : "",
                 "date" => $comment->getPostedAt(),
                 "comment" => $comment->getText(),
-                "link" => EmailLinkHelper::getLink(
-                    $this->assignmentRedirectUrl,
-                    [
-                        "assignmentId" => $assignment->getId(),
-                    ]
-                )
+                "link" => $this->webappLinks->getAssignmentPageUrl($assignment->getId())
             ]
         );
     }

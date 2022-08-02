@@ -102,16 +102,21 @@ parameters:
       to: %emails.defaultAdminTo%  # admin mail address
       from: %emails.from%  # source address
 
+  linkTemplates:
+    assignmentUrl: "%webapp.address%/app/assignment/{id}"
+    shadowAssignmentUrl: "%webapp.address%/app/shadow-assignment/{id}"
+    solutionUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
+    referenceSolutiontUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
+    forgottenPasswordUrl: "%webapp.address%/forgotten-password/change?{token}"  # URL of web application where the password can be changed
+    emailVerificationUrl: "%webapp.address%/email-verification?{token}"
+
   assignmentNotifications:
-    assignmentRedirectUrl: "%webapp.address%/app/assignment/{id}"
-    shadowRedirectUrl: "%webapp.address%/app/shadow-assignment/{id}"
+    deadlineThresholdFrom: +1 day
+    deadlineThresholdTo: +2 days
     emails:
       from: %emails.from%
-      assignmentDeadlineThresholdFrom: +1 day
-      assignmentDeadlineThresholdTo: +2 days
 
   submissionNotifications:
-    solutionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
     submissionNotificationThreshold: -5 minutes
     emails:
       from: %emails.from%
@@ -121,19 +126,14 @@ parameters:
       from: %emails.from%
 
   solutionCommentsNotifications:
-    assignmentSolutionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
-    referenceSolutionRedirectUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
     emails:
       from: %emails.from%
 
   assignmentCommentsNotifications:
-    assignmentRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}"
     emails:
       from: %emails.from%
 
   pointsChangedNotifications:
-    solutionPointsRedirectUrl: "%webapp.address%/app/assignment/{id}"
-    shadowPointsRedirectUrl: "%webapp.address%/app/shadow-assignment/{id}"
     emails:
       from: %emails.from%
 
@@ -144,13 +144,11 @@ parameters:
       to: %emails.defaultAdminTo%
 
   forgottenPassword:  # user messages for changing passwords
-    redirectUrl: "%webapp.address%/forgotten-password/change?{token}"  # URL of web application where the password can be changed
     tokenExpiration: 600  # expiration timeout of temporary token (in seconds), 10 minutes
     emails:  # additional info for sending mails, from is source address
       from: %emails.from%
 
   emailVerification:
-    redirectUrl: "%webapp.address%/email-verification?{token}"
     tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
@@ -283,7 +281,7 @@ services:
   - App\Console\CleanupUploads
   - App\Console\CleanupExercisesFiles
   - App\Console\CleanupWorkerTmpFiles
-  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
+  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.deadlineThresholdFrom%, %assignmentNotifications.deadlineThresholdTo%)
   - App\Console\AsyncJobsUpkeep(%async.upkeep%)
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
@@ -361,20 +359,21 @@ services:
   - App\Helpers\FileStorage\LocalFileStorage(@App\Helpers\TmpFilesHelper, %fileStorage.local%)
   - App\Helpers\FileStorage\LocalHashFileStorage(%fileStorage.hash%)
   - App\Helpers\FileStorageManager(@App\Helpers\FileStorage\LocalFileStorage, @App\Helpers\FileStorage\LocalHashFileStorage, @App\Helpers\TmpFilesHelper, %api.address%)
+  - App\Helpers\WebappLinks(%webapp.address%, %linkTemplates%)
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
-  - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
-  - App\Helpers\ForgottenPasswordHelper(@Doctrine\ORM\EntityManagerInterface, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
-  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)
-  - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
-  - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
-  - App\Helpers\Notifications\AssignmentCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentCommentsNotifications%)
-  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, @App\Model\Repository\AssignmentSolutions, %submissionNotifications%)
-  - App\Helpers\Notifications\GeneralStatsEmailsSender(@App\Helpers\EmailHelper, %generalStatsNotifications%)
-  - App\Helpers\Notifications\AsyncJobsStuckEmailsSender(@App\Helpers\EmailHelper, %async.upkeep.emails%)
-  - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)
+  - App\Helpers\EmailVerificationHelper(%emailVerification%)
+  - App\Helpers\ForgottenPasswordHelper(%forgottenPassword%)
+  - App\Helpers\Notifications\AssignmentEmailsSender(%assignmentNotifications%)
+  - App\Helpers\Notifications\FailureResolutionEmailsSender(%failureResolutionNotifications%)
+  - App\Helpers\Notifications\SolutionCommentsEmailsSender(%solutionCommentsNotifications%)
+  - App\Helpers\Notifications\AssignmentCommentsEmailsSender(%assignmentCommentsNotifications%)
+  - App\Helpers\Notifications\SubmissionEmailsSender(%submissionNotifications%)
+  - App\Helpers\Notifications\GeneralStatsEmailsSender(%generalStatsNotifications%)
+  - App\Helpers\Notifications\AsyncJobsStuckEmailsSender(%async.upkeep.emails%)
+  - App\Helpers\Notifications\PointsChangedEmailsSender(%pointsChangedNotifications%)
 
   # models - repositories
   - App\Model\Repository\AsyncJobs
