@@ -27,13 +27,13 @@ class FailureResolutionEmailsSender
 
 
     /**
-     * @param EmailHelper $emailHelper
      * @param array $params
+     * @param EmailHelper $emailHelper
      */
-    public function __construct(EmailHelper $emailHelper, array $params)
+    public function __construct(array $params, EmailHelper $emailHelper)
     {
         $this->emailHelper = $emailHelper;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
+        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex");
     }
 
     /**

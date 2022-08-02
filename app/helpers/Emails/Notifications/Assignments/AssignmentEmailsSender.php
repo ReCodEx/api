@@ -6,8 +6,8 @@ use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailRenderResult;
+use App\Helpers\WebappLinks;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentBase;
 use App\Model\Entity\AssignmentSolution;
@@ -21,40 +21,41 @@ use Nette\Utils\Arrays;
  */
 class AssignmentEmailsSender
 {
-
     /** @var EmailHelper */
     private $emailHelper;
+
     /** @var AssignmentSolutions */
     private $assignmentSolutions;
+
     /** @var EmailLocalizationHelper */
     private $localizationHelper;
 
+    /** @var WebappLinks */
+    private $webappLinks;
+
     /** @var string */
     private $sender;
-    /** @var string */
-    private $assignmentRedirectUrl;
-    /** @var string */
-    private $shadowRedirectUrl;
 
     /**
      * Constructor.
+     * @param array $notificationsConfig
      * @param EmailHelper $emailHelper
      * @param AssignmentSolutions $assignmentSolutions
      * @param EmailLocalizationHelper $localizationHelper
-     * @param array $params
+     * @param WebappLinks $webappLinks
      */
     public function __construct(
+        array $notificationsConfig,
         EmailHelper $emailHelper,
         AssignmentSolutions $assignmentSolutions,
         EmailLocalizationHelper $localizationHelper,
-        array $params
+        WebappLinks $webappLinks,
     ) {
         $this->emailHelper = $emailHelper;
         $this->assignmentSolutions = $assignmentSolutions;
         $this->localizationHelper = $localizationHelper;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-        $this->assignmentRedirectUrl = Arrays::get($params, ["assignmentRedirectUrl"], "https://recodex.mff.cuni.cz");
-        $this->shadowRedirectUrl = Arrays::get($params, ["shadowRedirectUrl"], "https://recodex.mff.cuni.cz");
+        $this->webappLinks = $webappLinks;
+        $this->sender = Arrays::get($notificationsConfig, ["emails", "from"], "noreply@recodex");
     }
 
     /**
@@ -128,7 +129,7 @@ class AssignmentEmailsSender
                     "secondDeadline" => $assignment->getSecondDeadline(),
                     "attempts" => $assignment->getSubmissionsCountLimit(),
                     "points" => $assignment->getMaxPointsBeforeFirstDeadline(),
-                    "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])
+                    "link" => $this->webappLinks->getAssignmentPageUrl($assignment->getId()),
                 ]
             );
         } else {
@@ -149,7 +150,7 @@ class AssignmentEmailsSender
                             $assignment->getGroup()->getLocalizedTexts()
                         )->getName(),
                         "maxPoints" => $assignment->getMaxPoints(),
-                        "link" => EmailLinkHelper::getLink($this->shadowRedirectUrl, ["id" => $assignment->getId()])
+                        "link" => $this->webappLinks->getShadowAssignmentPageUrl($assignment->getId()),
                     ]
                 );
             } else {
@@ -237,7 +238,7 @@ class AssignmentEmailsSender
                 "firstDeadline" => $assignment->getFirstDeadline(),
                 "allowSecondDeadline" => $assignment->getAllowSecondDeadline(),
                 "secondDeadline" => $assignment->getSecondDeadline(),
-                "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])
+                "link" => $this->webappLinks->getAssignmentPageUrl($assignment->getId()),
             ]
         );
     }
@@ -312,7 +313,7 @@ class AssignmentEmailsSender
                 )->getName(),
                 "group" => $localizedGroup ? $localizedGroup->getName() : "",
                 "deadline" => $assignment->getDeadline(),
-                "link" => EmailLinkHelper::getLink($this->shadowRedirectUrl, ["id" => $assignment->getId()])
+                "link" => $this->webappLinks->getShadowAssignmentPageUrl($assignment->getId()),
             ]
         );
     }

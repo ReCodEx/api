@@ -5,6 +5,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Console\SendAssignmentDeadlineNotification;
 use App\Helpers\Localizations;
 use App\Helpers\EmailHelper;
+use App\Helpers\WebappLinks;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
@@ -89,10 +90,11 @@ class TestDeadlineNotifications extends Tester\TestCase
         $this->assignmentSolutions = $this->container->getByType(AssignmentSolutions::class);
         $this->localizationHelper = $this->container->getByType(EmailLocalizationHelper::class);
         $this->sender = new AssignmentEmailsSender(
+            [],
             $this->emailHelperMock,
             $this->assignmentSolutions,
             $this->localizationHelper,
-            []
+            new WebappLinks('', []),
         );
         $this->command = new SendAssignmentDeadlineNotification(
             "",

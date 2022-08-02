@@ -56,11 +56,11 @@ class EmailHelper
     public function __construct(Mailer $mailer, array $params)
     {
         $this->mailer = $mailer;
-        $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.mff.cuni.cz:4000");
+        $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.mff.cuni.cz/api");
         $this->footerUrl = Arrays::get($params, "footerUrl", "https://recodex.mff.cuni.cz");
         $this->siteName = Arrays::get($params, "siteName", "ReCodEx");
         $this->githubUrl = Arrays::get($params, "githubUrl", "https://github.com/ReCodEx");
-        $this->from = Arrays::get($params, "from", "ReCodEx <noreply@recodex.mff.cuni.cz>");
+        $this->from = Arrays::get($params, "from", "ReCodEx <noreply@recodex>");
         $this->subjectPrefix = Arrays::get($params, "subjectPrefix", "ReCodEx - ");
         $this->debugMode = Arrays::get($params, "debugMode", false);
         $this->archivingDir = Arrays::get($params, "archivingDir", "");

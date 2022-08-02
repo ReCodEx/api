@@ -7,9 +7,9 @@ use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailRenderResult;
+use App\Helpers\WebappLinks;
 use App\Security\TokenScope;
 use Exception;
 use Latte;
@@ -25,7 +25,6 @@ use DateInterval;
  */
 class EmailVerificationHelper
 {
-
     /**
      * Emails sending component
      * @var EmailHelper
@@ -33,16 +32,10 @@ class EmailVerificationHelper
     private $emailHelper;
 
     /**
-     * Sender address of all mails, something like "noreply@recodex.mff.cuni.cz"
+     * Sender address of all mails, something like "noreply@recodex"
      * @var string
      */
     private $sender;
-
-    /**
-     * URL which will be sent to user with token.
-     * @var string
-     */
-    private $redirectUrl;
 
     /**
      * Expiration period of the token in seconds
@@ -55,19 +48,31 @@ class EmailVerificationHelper
      */
     private $accessManager;
 
+    /** @var WebappLinks */
+    private $webappLinks;
+
     /**
      * Constructor
+     * @param array $notificationsConfig Parameters from configuration file
      * @param EmailHelper $emailHelper
      * @param AccessManager $accessManager
-     * @param array $params Parameters from configuration file
+     * @param WebappLinks $webappLinks
      */
-    public function __construct(EmailHelper $emailHelper, AccessManager $accessManager, array $params)
-    {
+    public function __construct(
+        array $notificationsConfig,
+        EmailHelper $emailHelper,
+        AccessManager $accessManager,
+        WebappLinks $webappLinks
+    ) {
         $this->emailHelper = $emailHelper;
         $this->accessManager = $accessManager;
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-        $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.mff.cuni.cz");
-        $this->tokenExpiration = Arrays::get($params, ["tokenExpiration"], 10 * 60); // default value: 10 minutes
+        $this->webappLinks = $webappLinks;
+        $this->sender = Arrays::get($notificationsConfig, ["emails", "from"], "noreply@recodex");
+        $this->tokenExpiration = Arrays::get(
+            $notificationsConfig,
+            ["tokenExpiration"],
+            600 // default value: 10 minutes
+        );
     }
 
     /**
@@ -161,7 +166,7 @@ class EmailVerificationHelper
             $template,
             [
                 "email" => $user->getEmail(),
-                "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
+                "link" => $this->webappLinks->getEmailVerificationUrl($token),
                 "expiresAfter" => $expiresAfter->format("H:i"),
                 "firstTime" => $firstTime,
             ]

@@ -25,7 +25,7 @@ class FailureHelper
     /** @var array List of email addresses which will receive the reports */
     private $receivers;
 
-    /** @var string Sender address of all mails, something like "noreply@recodex.mff.cuni.cz" */
+    /** @var string Sender address of all mails, something like "noreply@recodex" */
     private $sender;
 
     /** @var string Prefix of mail subject to be used */
@@ -44,8 +44,8 @@ class FailureHelper
     {
         $this->em = $em;
         $this->emailHelper = $emailHelper;
-        $this->receivers = Arrays::get($params, ["emails", "to"], ["admin@recodex.org"]);
-        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.org");
+        $this->receivers = Arrays::get($params, ["emails", "to"], []);
+        $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex");
         $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Failure Report - ");
 
         if (!is_array($this->receivers)) {

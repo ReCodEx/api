@@ -28,14 +28,14 @@ class AsyncJobsStuckEmailsSender
 
     /**
      * Constructor.
-     * @param EmailHelper $emailHelper
      * @param array $params
+     * @param EmailHelper $emailHelper
      * @throws InvalidStateException
      */
-    public function __construct(EmailHelper $emailHelper, array $params)
+    public function __construct(array $params, EmailHelper $emailHelper)
     {
         $this->emailHelper = $emailHelper;
-        $this->sender = Arrays::get($params, ["from"], "noreply@recodex.mff.cuni.cz");
+        $this->sender = Arrays::get($params, ["from"], "noreply@recodex");
         $recipient = Arrays::get($params, ["to"]);
         if (!$recipient) {
             throw new InvalidStateException(
