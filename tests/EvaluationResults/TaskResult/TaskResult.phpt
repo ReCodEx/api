@@ -15,19 +15,19 @@ class TestTaskResult extends Tester\TestCase
             function () {
                 new TaskResult([]);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new TaskResult(['task-id' => 'ABC']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new TaskResult(['status' => 'XYZ']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::noError(
             function () {
@@ -70,7 +70,6 @@ class TestTaskResult extends Tester\TestCase
         Assert::false($result->isOK());
         Assert::equal(TaskResult::MIN_SCORE, $result->getScore());
     }
-
 }
 
 # Testing methods run

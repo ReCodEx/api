@@ -43,7 +43,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            BadRequestException::CLASS
+            BadRequestException::class
         );
     }
 
@@ -58,7 +58,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            CASMissingInfoException::CLASS
+            CASMissingInfoException::class
         );
     }
 
@@ -73,7 +73,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            CannotReceiveUploadedFileException::CLASS
+            CannotReceiveUploadedFileException::class
         );
     }
 
@@ -88,7 +88,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            ForbiddenRequestException::CLASS
+            ForbiddenRequestException::class
         );
     }
 
@@ -104,7 +104,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            HttpBasicAuthException::CLASS
+            HttpBasicAuthException::class
         );
     }
 
@@ -119,7 +119,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            InternalServerException::CLASS
+            InternalServerException::class
         );
     }
 
@@ -135,7 +135,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            InvalidAccessTokenException::CLASS
+            InvalidAccessTokenException::class
         );
     }
 
@@ -150,7 +150,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            InvalidArgumentException::CLASS
+            InvalidArgumentException::class
         );
     }
 
@@ -165,7 +165,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            InvalidMembershipException::CLASS
+            InvalidMembershipException::class
         );
     }
 
@@ -180,7 +180,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            InvalidStateException::CLASS
+            InvalidStateException::class
         );
     }
 
@@ -195,7 +195,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 
@@ -210,7 +210,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            LdapConnectException::CLASS
+            LdapConnectException::class
         );
     }
 
@@ -226,7 +226,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            NoAccessTokenException::CLASS
+            NoAccessTokenException::class
         );
     }
 
@@ -241,7 +241,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            NotImplementedException::CLASS
+            NotImplementedException::class
         );
     }
 
@@ -256,7 +256,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            NotReadyException::CLASS
+            NotReadyException::class
         );
     }
 
@@ -271,7 +271,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
     }
 
@@ -286,7 +286,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            SubmissionEvaluationFailedException::CLASS
+            SubmissionEvaluationFailedException::class
         );
     }
 
@@ -301,7 +301,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            SubmissionFailedException::CLASS
+            SubmissionFailedException::class
         );
     }
 
@@ -317,7 +317,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            UnauthorizedException::CLASS
+            UnauthorizedException::class
         );
     }
 
@@ -332,7 +332,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            UploadedFileException::CLASS
+            UploadedFileException::class
         );
     }
 
@@ -348,7 +348,7 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            WrongCredentialsException::CLASS
+            WrongCredentialsException::class
         );
     }
 
@@ -363,10 +363,9 @@ class TestExceptions extends Tester\TestCase
                     throw $e;
                 }
             },
-            WrongHttpMethodException::CLASS
+            WrongHttpMethodException::class
         );
     }
-
 }
 
 $testCase = new TestExceptions();

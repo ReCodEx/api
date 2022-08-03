@@ -21,7 +21,7 @@ class TestAccessToken extends Tester\TestCase
             function () use ($token) {
                 $token->getUserId();
             },
-            InvalidAccessTokenException::CLASS
+            InvalidAccessTokenException::class
         );
     }
 
@@ -91,8 +91,6 @@ class TestAccessToken extends Tester\TestCase
             InvalidArgumentException::class
         );
     }
-
-
 }
 
 $testCase = new TestAccessToken();
