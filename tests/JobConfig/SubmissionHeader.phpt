@@ -50,7 +50,7 @@ class TestSubmissionHeader extends Tester\TestCase
             function () use ($config) {
                 $this->builder->loadSubmissionHeader($config);
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 
@@ -62,7 +62,7 @@ class TestSubmissionHeader extends Tester\TestCase
             function () use ($config) {
                 $this->builder->loadSubmissionHeader($config);
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 
@@ -74,7 +74,7 @@ class TestSubmissionHeader extends Tester\TestCase
             function () use ($config) {
                 $this->builder->loadSubmissionHeader($config);
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 
@@ -115,7 +115,7 @@ class TestSubmissionHeader extends Tester\TestCase
             function () use ($header) {
                 $header->setType("unknown");
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 

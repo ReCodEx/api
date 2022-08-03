@@ -25,13 +25,13 @@ class TestEvaluationResultsLoader extends Tester\TestCase
     public function testCanLoadSuccessResult()
     {
         $results = Loader::parseResults(self::$successResult, $this->jobConfig);
-        Assert::type(EvaluationResults::CLASS, $results);
+        Assert::type(EvaluationResults::class, $results);
     }
 
     public function testCanLoadInitFailedResult()
     {
         $results = Loader::parseResults(self::$initFailedResult, $this->jobConfig);
-        Assert::type(EvaluationResults::CLASS, $results);
+        Assert::type(EvaluationResults::class, $results);
         Assert::false($results->initOK());
         Assert::equal(6, count($results->getTestsResults()));
         foreach ($results->getTestsResults() as $testResult) {
@@ -42,13 +42,13 @@ class TestEvaluationResultsLoader extends Tester\TestCase
     public function testCanLoadFailedResult()
     {
         $results = Loader::parseResults(self::$failedResult, $this->jobConfig);
-        Assert::type(EvaluationResults::CLASS, $results);
+        Assert::type(EvaluationResults::class, $results);
     }
 
     public function testRejectsInvalidYaml()
     {
         Assert::exception(
-            function() {
+            function () {
                 Loader::parseResults(
                     '
 a:
@@ -58,7 +58,7 @@ b:
                     $this->jobConfig
                 );
             },
-            SubmissionEvaluationFailedException::CLASS
+            SubmissionEvaluationFailedException::class
         );
     }
 
@@ -637,7 +637,6 @@ results:
 job-id: hippoes
 hw-group: group1
 EOS;
-
 }
 
 # Testing methods run

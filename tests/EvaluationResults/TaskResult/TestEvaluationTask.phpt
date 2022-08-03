@@ -19,19 +19,19 @@ class TestEvaluationTask extends Tester\TestCase
             function () {
                 new EvaluationTaskResult([]);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new EvaluationTaskResult(['task-id' => 'ABC']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new EvaluationTaskResult(['status' => 'XYZ']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::noError(
             function () {
@@ -87,7 +87,6 @@ class TestEvaluationTask extends Tester\TestCase
             Assert::same($score, $result->getScore());
         }
     }
-
 }
 
 # Testing methods run

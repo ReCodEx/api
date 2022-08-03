@@ -37,7 +37,7 @@ class TestTestResult extends Tester\TestCase
                     ]
                 );
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
 
         Assert::exception(
@@ -52,7 +52,7 @@ class TestTestResult extends Tester\TestCase
                     ]
                 );
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
 
         Assert::exception(
@@ -67,7 +67,7 @@ class TestTestResult extends Tester\TestCase
                     ]
                 );
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 
@@ -104,8 +104,6 @@ class TestTestResult extends Tester\TestCase
         Assert::equal("Y", $cfg->getExecutionTasks()[0]->getId());
         Assert::equal("X", $cfg->getEvaluationTask()->getId());
     }
-
-
 }
 
 # Testing methods run

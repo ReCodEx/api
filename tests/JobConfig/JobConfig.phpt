@@ -76,7 +76,7 @@ class TestJobConfig extends Tester\TestCase
             function () use ($jobConfig) {
                 $jobConfig->setJobId("XY_ratataId");
             },
-            JobConfigLoadingException::CLASS
+            JobConfigLoadingException::class
         );
     }
 
@@ -158,10 +158,9 @@ class TestJobConfig extends Tester\TestCase
             function () use ($jobConfig, $testLimits) {
                 $jobConfig->setLimits("newHwGroup", $testLimits);
             },
-            ForbiddenRequestException::CLASS
+            ForbiddenRequestException::class
         );
     }
-
 }
 
 # Testing methods run

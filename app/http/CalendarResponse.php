@@ -23,6 +23,11 @@ class CalendarResponse implements Response
         $this->calendar = $calendar;
     }
 
+    public function getCalendarComponent(): Component
+    {
+        return $this->calendar;
+    }
+
     /**
      * Send response to client.
      * @param Nette\Http\IRequest $httpRequest

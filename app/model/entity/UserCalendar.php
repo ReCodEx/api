@@ -32,7 +32,7 @@ class UserCalendar implements JsonSerializable
     protected $expiredAt = null;
 
     /**
-     * @return string base64-encoded ID (32 chars, 192 bits of information)
+     * @return string base64-encoded ID (32 chars, 192 bits of information), '+/=' replaced with URL-safe chars
      */
     public static function generateId(): string
     {

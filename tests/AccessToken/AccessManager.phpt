@@ -33,7 +33,7 @@ class TestAccessManager extends Tester\TestCase
         $payload = ["sub" => "123", "exp" => time() + 123];
         $token = JWT::encode($payload, $verificationKey, "HS256");
         $accessToken = $manager->decodeToken($token);
-        Assert::type(AccessToken::CLASS, $accessToken);
+        Assert::type(AccessToken::class, $accessToken);
         Assert::equal("123", $accessToken->getUserId());
     }
 
@@ -49,7 +49,7 @@ class TestAccessManager extends Tester\TestCase
             function () use ($manager, $token) {
                 $manager->decodeToken($token);
             },
-            InvalidAccessTokenException::CLASS,
+            InvalidAccessTokenException::class,
             "Access token '$token' is not valid."
         );
     }
@@ -66,7 +66,7 @@ class TestAccessManager extends Tester\TestCase
             function () use ($manager, $token) {
                 $manager->decodeToken($token);
             },
-            InvalidAccessTokenException::CLASS,
+            InvalidAccessTokenException::class,
             "Access token '$token' is not valid."
         );
     }
@@ -78,7 +78,7 @@ class TestAccessManager extends Tester\TestCase
         $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
         $payload = ["sub" => "123", "exp" => time() - 5, "leeway" => 10];
         $token = JWT::encode($payload, $verificationKey, "HS256");
-        Assert::type(AccessToken::CLASS, $manager->decodeToken($token));
+        Assert::type(AccessToken::class, $manager->decodeToken($token));
     }
 
     public function testDecodeTokenBeforeNBF()
@@ -93,7 +93,7 @@ class TestAccessManager extends Tester\TestCase
             function () use ($manager, $token) {
                 $manager->decodeToken($token);
             },
-            InvalidAccessTokenException::CLASS,
+            InvalidAccessTokenException::class,
             "Access token '$token' is not valid."
         );
     }
@@ -116,7 +116,7 @@ class TestAccessManager extends Tester\TestCase
             $users
         );
 
-        $user = Mockery::mock(App\Model\Entity\User::CLASS);
+        $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user);
@@ -145,7 +145,7 @@ class TestAccessManager extends Tester\TestCase
             $users
         );
 
-        $user = Mockery::mock(App\Model\Entity\User::CLASS);
+        $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(false);
 
@@ -163,7 +163,7 @@ class TestAccessManager extends Tester\TestCase
         $verificationKey = "abc";
         $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
 
-        $user = Mockery::mock(App\Model\Entity\User::CLASS);
+        $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, ["x", "y"]);
@@ -178,7 +178,7 @@ class TestAccessManager extends Tester\TestCase
         $verificationKey = "abc";
         $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
 
-        $user = Mockery::mock(App\Model\Entity\User::CLASS);
+        $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, "role-eff");
@@ -193,7 +193,7 @@ class TestAccessManager extends Tester\TestCase
         $verificationKey = "abc";
         $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
 
-        $user = Mockery::mock(App\Model\Entity\User::CLASS);
+        $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30);
@@ -208,7 +208,7 @@ class TestAccessManager extends Tester\TestCase
         $verificationKey = "abc";
         $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
 
-        $user = Mockery::mock(App\Model\Entity\User::CLASS);
+        $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);

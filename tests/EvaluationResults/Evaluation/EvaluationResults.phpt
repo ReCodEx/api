@@ -76,7 +76,7 @@ class TestEvaluationResults extends Tester\TestCase
             function () use ($jobConfig) {
                 new EvaluationResults([], $jobConfig);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
 
         // job id different from the one in config
@@ -84,7 +84,7 @@ class TestEvaluationResults extends Tester\TestCase
             function () use ($jobConfig) {
                 new EvaluationResults(["job-id" => "student_ratata"], $jobConfig);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
 
         // missing task results
@@ -93,10 +93,11 @@ class TestEvaluationResults extends Tester\TestCase
                 new EvaluationResults(
                     [
                         "job-id" => "student_bla bla bla"
-                    ], $jobConfig
+                    ],
+                    $jobConfig
                 );
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
 
         // missing task results vol. 2
@@ -106,10 +107,11 @@ class TestEvaluationResults extends Tester\TestCase
                     [
                         "job-id" => "student_bla bla bla",
                         "results" => null
-                    ], $jobConfig
+                    ],
+                    $jobConfig
                 );
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
 
         // missing hardware group id
@@ -119,7 +121,8 @@ class TestEvaluationResults extends Tester\TestCase
                     [
                         "job-id" => "student_bla bla bla",
                         "results" => []
-                    ], $jobConfig
+                    ],
+                    $jobConfig
                 );
             },
             ResultsLoadingException::class
@@ -133,7 +136,8 @@ class TestEvaluationResults extends Tester\TestCase
                         "job-id" => "student_bla bla bla",
                         "hw-group" => "somegroup",
                         "results" => []
-                    ], $jobConfig
+                    ],
+                    $jobConfig
                 );
             }
         );
@@ -145,10 +149,11 @@ class TestEvaluationResults extends Tester\TestCase
                     [
                         "job-id" => "bla bla bla",
                         "results" => [["a" => "b"]]
-                    ], $jobConfig
+                    ],
+                    $jobConfig
                 );
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
 
         // wrong result format
@@ -158,10 +163,11 @@ class TestEvaluationResults extends Tester\TestCase
                     [
                         "job-id" => "student_bla bla bla",
                         "results" => [["a" => "b"]]
-                    ], $jobConfig
+                    ],
+                    $jobConfig
                 );
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
     }
 
@@ -177,7 +183,8 @@ class TestEvaluationResults extends Tester\TestCase
                     ["task-id" => "X", "status" => "OK"],
                     ["task-id" => "Y", "status" => "OK"]
                 ]
-            ], $jobConfig
+            ],
+            $jobConfig
         );
 
         Assert::true($results->initOK());
@@ -219,7 +226,8 @@ class TestEvaluationResults extends Tester\TestCase
                     ["task-id" => "A", "status" => "OK"],
                     ["task-id" => "B", "status" => "SKIPPED"]
                 ]
-            ], $jobConfig
+            ],
+            $jobConfig
         );
 
         Assert::false($results->initOK());
@@ -261,7 +269,8 @@ class TestEvaluationResults extends Tester\TestCase
                     ["task-id" => "A", "status" => "OK"],
                     ["task-id" => "B", "status" => "FAILED"]
                 ]
-            ], $jobConfig
+            ],
+            $jobConfig
         );
 
         Assert::false($results->initOK());
@@ -302,7 +311,8 @@ class TestEvaluationResults extends Tester\TestCase
                 "results" => [
                     ["task-id" => "A", "status" => "OK"]
                 ]
-            ], $jobConfig
+            ],
+            $jobConfig
         );
 
         Assert::false($results->initOK());
@@ -335,12 +345,13 @@ class TestEvaluationResults extends Tester\TestCase
                 "job-id" => "student_bla bla bla",
                 "hw-group" => "A",
                 "results" => [$initRes, $evalRes, $execRes]
-            ], $jobConfig
+            ],
+            $jobConfig
         );
         $testConfig = $jobConfig->getTests()["A"];
 
         $testResult = $results->getTestResult($testConfig);
-        Assert::type(TestResult::CLASS, $testResult);
+        Assert::type(TestResult::class, $testResult);
         Assert::equal("A", $testResult->getId());
         Assert::equal("OK", $testResult->getStatus());
         Assert::equal(true, $testResult->isMemoryOK());
@@ -351,7 +362,6 @@ class TestEvaluationResults extends Tester\TestCase
 
         Assert::equal(1, count($results->getTestsResults()));
     }
-
 }
 
 # Testing methods run

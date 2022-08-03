@@ -28,31 +28,31 @@ class TestExecutionTask extends Tester\TestCase
             function () {
                 new ExecutionTaskResult([]);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new ExecutionTaskResult(['task-id' => 'ABC']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new ExecutionTaskResult(['status' => 'XYZ']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new ExecutionTaskResult(['task-id' => 'ABC', 'status' => 'OK']);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::exception(
             function () {
                 new ExecutionTaskResult(['task-id' => 'ABC', 'status' => 'OK', 'sample_stats' => null]);
             },
-            ResultsLoadingException::CLASS
+            ResultsLoadingException::class
         );
         Assert::noError(
             function () {
@@ -73,7 +73,6 @@ class TestExecutionTask extends Tester\TestCase
         Assert::true($result->isOk());
         Assert::equal(new SandboxResults(self::$sampleStats), $result->getSandboxResults());
     }
-
 }
 
 # Testing methods run
