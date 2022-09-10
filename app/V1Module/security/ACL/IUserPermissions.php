@@ -12,6 +12,8 @@ interface IUserPermissions
 
     public function canCreate(): bool;
 
+    public function canInviteForRegistration(): bool;
+
     public function canViewPublicData(User $user): bool;
 
     public function canViewDetail(User $user): bool;

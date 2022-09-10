@@ -417,6 +417,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/list", "Users:listByIds");
         $router[] = new GetRoute("$prefix/ical/<id>", "UserCalendars:");
         $router[] = new DeleteRoute("$prefix/ical/<id>", "UserCalendars:expireCalendar");
+        $router[] = new PostRoute("$prefix/invite", "Registration:createInvitation");
 
         $router[] = new GetRoute("$prefix/<id>", "Users:detail");
         $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");

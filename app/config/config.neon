@@ -47,7 +47,8 @@ parameters:
     leeway: 60
     issuer: "%webapp.address%"
     audience: "%webapp.address%"
-    expiration: 86400
+    expiration: 86400  # of regular auth tokens (seconds)
+    invitationExpiration: 86400  # of an invitation token (seconds)
     usedAlgorithm: HS256
     verificationKey: "recodex-123"
 
@@ -109,6 +110,7 @@ parameters:
     referenceSolutiontUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
     forgottenPasswordUrl: "%webapp.address%/forgotten-password/change?{token}"  # URL of web application where the password can be changed
     emailVerificationUrl: "%webapp.address%/email-verification?{token}"
+    invitationUrl: "%webapp.address%/accept-invitation?{token}"
 
   assignmentNotifications:
     deadlineThresholdFrom: +1 day
@@ -150,6 +152,10 @@ parameters:
 
   emailVerification:
     tokenExpiration: 600 # 10 minutes
+    emails:
+      from: %emails.from%
+
+  invitationNotification:
     emails:
       from: %emails.from%
 
@@ -366,6 +372,7 @@ services:
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\EmailVerificationHelper(%emailVerification%)
   - App\Helpers\ForgottenPasswordHelper(%forgottenPassword%)
+  - App\Helpers\InvitationHelper(%invitationNotification%)
   - App\Helpers\Notifications\AssignmentEmailsSender(%assignmentNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(%failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(%solutionCommentsNotifications%)

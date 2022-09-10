@@ -299,6 +299,7 @@ permissions:
       actions:
         - viewDetail
         - viewAll
+        - inviteForRegistration
 
     ##########################
     # Assignment permissions #
