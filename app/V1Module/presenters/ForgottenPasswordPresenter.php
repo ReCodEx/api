@@ -40,7 +40,8 @@ class ForgottenPasswordPresenter extends BasePresenter
     /**
      * Request a password reset (user will receive an e-mail that prompts them to reset their password)
      * @POST
-     * @Param(type="post", name="username", validation="string:2..", description="An identifier of the user whose password should be reset")
+     * @Param(type="post", name="username", validation="string:2..",
+     *        description="An identifier of the user whose password should be reset")
      * @throws NotFoundException
      */
     public function actionDefault()

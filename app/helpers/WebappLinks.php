@@ -30,6 +30,9 @@ class WebappLinks
     /** @var string */
     private $emailVerificationUrl;
 
+    /** @var string */
+    private $invitationUrl;
+
     /**
      * Helper function that constructs links from templates.
      * @param string $link template
@@ -71,6 +74,11 @@ class WebappLinks
             $linkTemplates,
             ["emailVerificationUrl"],
             "$webappUrl/email-verification?{token}"
+        );
+        $this->invitationUrl = Arrays::get(
+            $linkTemplates,
+            ["linkTemplates"],
+            "$webappUrl/accept-invitation?{token}"
         );
     }
 
@@ -131,5 +139,14 @@ class WebappLinks
     public function getEmailVerificationUrl(string $token): string
     {
         return self::getLink($this->emailVerificationUrl, [ 'token' => $token ]);
+    }
+
+    /**
+     * @param string $token JWT carrying invitation data
+     * @return string URL that can be used ti register user based on an invitation
+     */
+    public function getInvitationUrl(string $token): string
+    {
+        return self::getLink($this->invitationUrl, [ 'token' => $token ]);
     }
 }

@@ -21,7 +21,6 @@ use Firebase\JWT\BeforeValidException;
 
 class AccessManager
 {
-
     /** @var Users  Users repository */
     protected $users;
 
@@ -40,11 +39,15 @@ class AccessManager
     /** @var int Expiration time of newly issued tokens (in seconds) */
     private $expiration;
 
+    /** @var int Expiration time of newly issued invitation tokens (in seconds) */
+    private $invitationExpiration;
+
     public function __construct(array $parameters, Users $users)
     {
         $this->users = $users;
         $this->verificationKey = Arrays::get($parameters, "verificationKey");
         $this->expiration = Arrays::get($parameters, "expiration", 24 * 60 * 60); // one day in seconds
+        $this->invitationExpiration = Arrays::get($parameters, "invitationExpiration", 24 * 60 * 60); // one day in seconds
         $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.mff.cuni.cz");
         $this->audience = Arrays::get($parameters, "audience", "https://recodex.mff.cuni.cz");
         $this->usedAlgorithm = Arrays::get($parameters, "usedAlgorithm", "HS256");
@@ -78,6 +81,26 @@ class AccessManager
         }
 
         return new AccessToken($decodedToken);
+    }
+
+    /**
+     * Parse and validate a JWT invitation token and extract the payload.
+     * @param string $token The potential JWT token
+     * @return InvitationToken The decoded payload wrapped in token class
+     * @throws ForbiddenRequestException
+     * @throws InvalidAccessTokenException
+     */
+    public function decodeInvitationToken($token): InvitationToken
+    {
+        try {
+            $decodedToken = JWT::decode($token, new Key($this->verificationKey, $this->usedAlgorithm));
+        } catch (DomainException $e) {
+            throw new InvalidAccessTokenException($token, $e);
+        } catch (UnexpectedValueException $e) {
+            throw new InvalidAccessTokenException($token, $e);
+        }
+
+        return new InvitationToken((array)$decodedToken);
     }
 
     /**
@@ -165,6 +188,40 @@ class AccessManager
             $token->getExpirationTime(),
             $token->getPayloadData()
         );
+    }
+
+    /**
+     * Create an invitation for a specific user pre-filling the basic user data and optionally
+     * allowing the user to join selected groups.
+     * @param string $instanceId
+     * @param string $email
+     * @param string $firstName
+     * @param string $lastName
+     * @param string $titlesBefore
+     * @param string $titlesAfter
+     * @param string[] $groupsIds list of IDs where the user is added after registration
+     * @throws InvalidAccessTokenException if the data are not correct
+     */
+    public function issueInvitationToken(
+        string $instanceId,
+        string $email,
+        string $firstName,
+        string $lastName,
+        string $titlesBefore = "",
+        string $titlesAfter = "",
+        array $groupsIds = []
+    ): string {
+        $token = InvitationToken::create(
+            $this->invitationExpiration,
+            $instanceId,
+            $email,
+            $firstName,
+            $lastName,
+            $titlesBefore,
+            $titlesAfter,
+            $groupsIds,
+        );
+        return $token->encode($this->verificationKey, $this->usedAlgorithm);
     }
 
     /**

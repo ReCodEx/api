@@ -20,6 +20,7 @@ parameters:
     issuer: "%webapp.address%"
     audience: "%webapp.address%"
     expiration: 604800  # 7 days in seconds
+    invitationExpiration: 604800  # of an invitation token (7 days in seconds)
     verificationKey: "recodex-123"	# this should be a really secret string
 
   broker:

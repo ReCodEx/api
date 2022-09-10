@@ -19,7 +19,6 @@ use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IExercisePermissions;
 use Exception;
-use Tracy\ILogger;
 
 /**
  * Endpoints for exercise files manipulation
