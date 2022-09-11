@@ -23,6 +23,7 @@ use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
+use App\Security\ACL\IGroupPermissions;
 use Nette\Http\IResponse;
 use Nette\Security\Passwords;
 use ZxcvbnPhp\Zxcvbn;
@@ -86,6 +87,12 @@ class RegistrationPresenter extends BasePresenter
      * @inject
      */
     public $userAcl;
+
+    /**
+     * @var IGroupPermissions
+     * @inject
+     */
+    public $groupAcl;
 
     /**
      * @var RegistrationConfig
@@ -280,6 +287,14 @@ class RegistrationPresenter extends BasePresenter
             throw new BadRequestException("This email address is already taken.");
         }
 
+        $groupsIds = $req->getPost("groups") ?? [];
+        foreach ($groupsIds as $id) {
+            $group = $this->groups->get($id);
+            if (!$group || $group->isOrganizational() || !$this->groupAcl->canInviteStudents($group)) {
+                throw new BadRequestException("Current user cannot invite people in group '$id'");
+            }
+        }
+
         // gather data
         $instanceId = $req->getPost("instanceId");
         $instance = $this->getInstance($instanceId);
@@ -295,7 +310,7 @@ class RegistrationPresenter extends BasePresenter
                 $req->getPost("lastName"),
                 $titlesBeforeName,
                 $titlesAfterName,
-                $req->getPost("groups") ?? [],
+                $groupsIds,
                 $this->getCurrentUser(),
                 $req->getPost("locale") ?? "en",
             );
@@ -309,5 +324,95 @@ class RegistrationPresenter extends BasePresenter
         }
 
         $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Accept invitation and create corresponding user account.
+     * @POST
+     * @Param(type="post", name="token", validation="string:1..",
+     *        description="Token issued in create invitation process.")
+     * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.",
+     *        description="A password for authentication")
+     * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.",
+     *        description="A password confirmation")
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    public function actionAcceptInvitation()
+    {
+        $req = $this->getRequest();
+
+        // decode and validate invitation token
+        try {
+            $token = $this->accessManager->decodeInvitationToken($req->getPost("token"));
+        } catch (InvalidAccessTokenException $e) {
+            throw new BadRequestException(
+                "Invalid invitation token",
+                FrontendErrorMappings::E400_000__BAD_REQUEST,
+                null,
+                $e
+            );
+        }
+        if ($token->hasExpired()) {
+            throw new BadRequestException(
+                "The invitation token has expired",
+                FrontendErrorMappings::E400_000__BAD_REQUEST
+            );
+        }
+
+        // find or create corresponding user
+        $login = $this->logins->getByUsername($token->getEmail());
+        if ($login === null) {
+            // check given passwords
+            $password = $req->getPost("password");
+            $passwordConfirm = $req->getPost("passwordConfirm");
+            if ($password !== $passwordConfirm) {
+                throw new WrongCredentialsException(
+                    "Provided passwords do not match",
+                    FrontendErrorMappings::E400_102__WRONG_CREDENTIALS_PASSWORDS_NOT_MATCH
+                );
+            }
+
+            // create user entity
+            $userData = $token->getUserData();
+            $userData[] = Roles::STUDENT_ROLE;
+            $userData[] = $this->getInstance($token->getInstanceId());
+            $user = new User(...$userData);
+            $user->setVerified(); // the invitation token was sent over email -> email is already verified
+
+            // create local login
+            Login::createLogin($user, $token->getEmail(), $password, $this->passwordsService);
+            $this->users->persist($user);
+        } else {
+            $user = $login->getUser(); // user already exists
+        }
+
+        // add into groups
+        $userGroups = []; // user is already in
+        foreach ($user->getGroups() as $group) {
+            $userGroups[$group->getId()] = $group; // index is ID!
+        };
+
+        foreach ($token->getGroupsIds() as $id) {
+            if (!empty($userGroups[$id])) {
+                continue; // skip groups the user is already involved with
+            }
+
+            // deleted, archived, and organizational groups are silently ignored
+            $group = $this->groups->get($id);
+            if ($group && !$group->isArchived() && !$group->isOrganizational()) {
+                $user->makeStudentOf($group);
+            }
+        }
+        $this->groups->flush();
+
+        // return the user entity and a new access token, so the user can log-in right away
+        $this->sendSuccessResponse(
+            [
+                "user" => $this->userViewFactory->getFullUser($user),
+                "accessToken" => $this->accessManager->issueToken($user),
+            ],
+            IResponse::S201_CREATED
+        );
     }
 }

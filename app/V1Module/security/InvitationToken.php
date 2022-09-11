@@ -54,18 +54,24 @@ class InvitationToken
         $props = [ "iid" => "string", "eml" => "string", "iat" => "integer", "exp" => "integer", "usr" => "array"];
         foreach ($props as $name => $type) {
             if (!array_key_exists($name, $payload) || gettype($payload[$name]) !== $type) {
-                throw new InvalidAccessTokenException("Invitation token payload property '$name' is missing or of a wrong type.");
+                throw new InvalidAccessTokenException(
+                    "Invitation token payload property '$name' is missing or of a wrong type."
+                );
             }
         }
 
         foreach ($payload["usr"] as $value) {
             if (!is_string($value)) {
-                throw new InvalidAccessTokenException("Invitation token payload property 'usr' must be an array of strings.");
+                throw new InvalidAccessTokenException(
+                    "Invitation token payload property 'usr' must be an array of strings."
+                );
             }
         }
 
         if (count($payload["usr"]) !== 4) {
-            throw new InvalidAccessTokenException("Invitation token payload property 'usr' must have exactly four parts.");
+            throw new InvalidAccessTokenException(
+                "Invitation token payload property 'usr' must have exactly four parts."
+            );
         }
 
         if (array_key_exists("grp", $payload)) {
@@ -75,7 +81,9 @@ class InvitationToken
 
             foreach ($payload["grp"] as $id) {
                 if (!is_string($id)) {
-                    throw new InvalidAccessTokenException("Invitation token payload property 'grp' must be an array of group IDs.");
+                    throw new InvalidAccessTokenException(
+                        "Invitation token payload property 'grp' must be an array of group IDs."
+                    );
                 }
             }
         }
@@ -98,6 +106,11 @@ class InvitationToken
         return "$firstName $lastName";
     }
 
+    public function getEmail(): string
+    {
+        return $this->payload["eml"];
+    }
+
     /**
      * Get data needed for constructing the user entity.
      * @return array [ email, first name, last name, titles before, titles after ]
@@ -110,9 +123,9 @@ class InvitationToken
 
     /**
      * Return a list of groups to which the user is being invited.
-     * @return array
+     * @return string[]
      */
-    public function getGroupIds(): array
+    public function getGroupsIds(): array
     {
         return $this->payload["grp"] ?? [];
     }
@@ -138,5 +151,10 @@ class InvitationToken
     public function encode(string $verificationKey, string $usedAlgorithm): string
     {
         return JWT::encode($this->payload, $verificationKey, $usedAlgorithm);
+    }
+
+    public function hasExpired(): bool
+    {
+        return $this->payload["exp"] < time();
     }
 }

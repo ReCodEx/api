@@ -24,6 +24,8 @@ interface IGroupPermissions
 
     public function canAddStudent(Group $group, User $student): bool;
 
+    public function canInviteStudents(Group $group): bool;
+
     public function canRemoveMember(Group $group, User $supervisor): bool;
 
     public function canRemoveStudent(Group $group, User $student): bool;

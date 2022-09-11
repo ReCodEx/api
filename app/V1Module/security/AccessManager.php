@@ -47,7 +47,7 @@ class AccessManager
         $this->users = $users;
         $this->verificationKey = Arrays::get($parameters, "verificationKey");
         $this->expiration = Arrays::get($parameters, "expiration", 24 * 60 * 60); // one day in seconds
-        $this->invitationExpiration = Arrays::get($parameters, "invitationExpiration", 24 * 60 * 60); // one day in seconds
+        $this->invitationExpiration = Arrays::get($parameters, "invitationExpiration", 24 * 60 * 60); // one day in sec
         $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.mff.cuni.cz");
         $this->audience = Arrays::get($parameters, "audience", "https://recodex.mff.cuni.cz");
         $this->usedAlgorithm = Arrays::get($parameters, "usedAlgorithm", "HS256");

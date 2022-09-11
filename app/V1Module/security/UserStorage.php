@@ -12,7 +12,7 @@ class UserStorage implements Nette\Security\UserStorage
 {
     use Nette\SmartObject;
 
-    const AUTH_HEADER = "Authorization";
+    private const AUTH_HEADER = "Authorization";
 
     /** @var Nette\Http\IRequest */
     private $httpRequest;

@@ -206,9 +206,11 @@ class LoginPresenter extends BasePresenter
      * Issue a new access token with a restricted set of scopes
      * @POST
      * @LoggedIn
-     * @Param(type="post", name="effectiveRole", required=false, validation="string", description="Effective user role contained within issued token")
+     * @Param(type="post", name="effectiveRole", required=false, validation="string",
+     *        description="Effective user role contained within issued token")
      * @Param(type="post", name="scopes", validation="list", description="A list of requested scopes")
-     * @Param(type="post", required=false, name="expiration", validation="numericint", description="How long should the token be valid (in seconds)")
+     * @Param(type="post", required=false, name="expiration", validation="numericint",
+     *        description="How long should the token be valid (in seconds)")
      * @throws BadRequestException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
@@ -216,7 +218,7 @@ class LoginPresenter extends BasePresenter
     public function actionIssueRestrictedToken()
     {
         $request = $this->getRequest();
-        // The scopes are not filtered in any way - the ACL won't allow anything that the user cannot do in a full session
+        // The scopes are not filtered in any way - ACL won't allow anything that the user cannot do in a full session
         $scopes = $request->getPost("scopes");
         $effectiveRole = $request->getPost("effectiveRole");
 
@@ -239,8 +241,9 @@ class LoginPresenter extends BasePresenter
     private function validateScopeRoles(?array $scopes, $expiration)
     {
         $forbiddenScopes = [
-            TokenScope::CHANGE_PASSWORD => "Password change tokens can only be issued through the password reset endpoint",
-            TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail"
+            TokenScope::CHANGE_PASSWORD =>
+                "Password change tokens can only be issued through the password reset endpoint",
+            TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail",
         ];
 
         // check if any of given scopes is among the forbidden ones

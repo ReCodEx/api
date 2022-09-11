@@ -22,6 +22,15 @@ class BaseSoftDeleteRepository extends BaseRepository
         $this->softDeleteColumn = $softDeleteColumn;
     }
 
+    /**
+     * @param mixed $id
+     * @return T|null
+     */
+    public function get($id)
+    {
+        return $this->findOneBy(['id' => $id]);
+    }
+
     public function getTotalCount(): int
     {
         return $this->repository->count(
