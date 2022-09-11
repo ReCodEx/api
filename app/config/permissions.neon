@@ -150,6 +150,7 @@ permissions:
       role: supervisor
       actions:
           - addStudent  # requires permissions to read all users' private data
+          - inviteStudents # create future invitations, that the students can use to join
           - removeStudent
       conditions:
           - group.isSupervisor
