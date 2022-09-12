@@ -261,7 +261,7 @@ class RegistrationPresenter extends BasePresenter
      * Create an invitation for a user and send it over via email
      * @POST
      * @Param(type="post", name="email", validation="email", description="An email that will serve as a login name")
-     * @Param(type="post", name="firstName", validation="string:2..", description="First name")
+     * @Param(type="post", name="firstName", required=true, validation="string:2..", description="First name")
      * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
      * @Param(type="post", name="instanceId", validation="string:1..",
      *        description="Identifier of the instance to register in")

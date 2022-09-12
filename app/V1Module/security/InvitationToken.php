@@ -130,9 +130,6 @@ class InvitationToken
         return $this->payload["grp"] ?? [];
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function getIssuedAt(): int
     {
         return $this->payload["iat"];
@@ -143,18 +140,13 @@ class InvitationToken
         return new DateTime('@' . $this->payload["exp"]);
     }
 
-    public function getExpirationTime(): int
+    public function hasExpired(): bool
     {
-        return $this->payload["exp"] - $this->payload["iat"];
+        return $this->payload["exp"] < time();
     }
 
     public function encode(string $verificationKey, string $usedAlgorithm): string
     {
         return JWT::encode($this->payload, $verificationKey, $usedAlgorithm);
-    }
-
-    public function hasExpired(): bool
-    {
-        return $this->payload["exp"] < time();
     }
 }

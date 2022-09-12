@@ -200,6 +200,7 @@ class AccessManager
      * @param string $titlesBefore
      * @param string $titlesAfter
      * @param string[] $groupsIds list of IDs where the user is added after registration
+     * @param int|null $invitationExpiration token expiration duration override (for testing purposes only)
      * @throws InvalidAccessTokenException if the data are not correct
      */
     public function issueInvitationToken(
@@ -209,10 +210,11 @@ class AccessManager
         string $lastName,
         string $titlesBefore = "",
         string $titlesAfter = "",
-        array $groupsIds = []
+        array $groupsIds = [],
+        int $invitationExpiration = null,
     ): string {
         $token = InvitationToken::create(
-            $this->invitationExpiration,
+            $invitationExpiration ?? $this->invitationExpiration,
             $instanceId,
             $email,
             $firstName,

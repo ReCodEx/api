@@ -7,10 +7,14 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
+use App\Helpers\EmailHelper;
+use App\Helpers\WebappLinks;
+use App\Helpers\InvitationHelper;
 use App\Model\Entity\User;
 use App\Model\Entity\Group;
 use App\Model\Repository\Users;
 use App\Model\Repository\Groups;
+use App\Security\AccessManager;
 use App\V1Module\Presenters\RegistrationPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
@@ -51,6 +55,9 @@ class TestRegistrationPresenter extends Tester\TestCase
     /** @var Groups */
     private $groups;
 
+    /** @var Mockery\Mock|EmailHelper */
+    private $emailHelperMock;
+
     public function __construct()
     {
         global $container;
@@ -70,9 +77,17 @@ class TestRegistrationPresenter extends Tester\TestCase
         $this->presenter = PresenterTestHelper::createPresenter($this->container, RegistrationPresenter::class);
         $this->presenter->registrationConfig = new RegistrationConfig(
             [
-                'enabled' => true,
-                'implicitGroupsIds' => []
+            'enabled' => true,
+            'implicitGroupsIds' => []
             ]
+        );
+
+        $this->emailHelperMock = Mockery::mock(EmailHelper::class);
+        $this->presenter->invitationHelper = new InvitationHelper(
+            [],
+            $this->emailHelperMock,
+            $this->container->getByType(AccessManager::class),
+            $this->container->getByType(WebappLinks::class)
         );
     }
 
@@ -101,14 +116,14 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'createAccount'],
             [
-                'email' => $email,
-                'firstName' => $firstName,
-                'lastName' => $lastName,
-                'password' => $password,
-                'passwordConfirm' => $password,
-                'instanceId' => $instanceId,
-                'titlesBeforeName' => $titlesBeforeName,
-                'titlesAfterName' => $titlesAfterName
+            'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'password' => $password,
+            'passwordConfirm' => $password,
+            'instanceId' => $instanceId,
+            'titlesBeforeName' => $titlesBeforeName,
+            'titlesAfterName' => $titlesAfterName
             ]
         );
         $response = $this->presenter->run($request);
@@ -153,20 +168,20 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'createAccount'],
             [
-                'email' => $email,
-                'firstName' => $firstName,
-                'lastName' => $lastName,
-                'password' => $password,
-                'passwordConfirm' => $password,
-                'instanceId' => $instanceId,
-                'titlesBeforeName' => $titlesBeforeName,
-                'titlesAfterName' => $titlesAfterName
+            'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'password' => $password,
+            'passwordConfirm' => $password,
+            'instanceId' => $instanceId,
+            'titlesBeforeName' => $titlesBeforeName,
+            'titlesAfterName' => $titlesAfterName
             ]
         );
         $this->presenter->registrationConfig = new RegistrationConfig(
             [
-                'enabled' => true,
-                'implicitGroupsIds' => [$groupId]
+            'enabled' => true,
+            'implicitGroupsIds' => [$groupId]
             ]
         );
         $response = $this->presenter->run($request);
@@ -209,19 +224,19 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'createAccount'],
             [
-                'email' => $email,
-                'firstName' => $firstName,
-                'lastName' => $lastName,
-                'password' => $password,
-                'passwordConfirm' => $password,
-                'instanceId' => $instanceId,
-                'titlesBeforeName' => $titlesBeforeName,
-                'titlesAfterName' => $titlesAfterName
+            'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'password' => $password,
+            'passwordConfirm' => $password,
+            'instanceId' => $instanceId,
+            'titlesBeforeName' => $titlesBeforeName,
+            'titlesAfterName' => $titlesAfterName
             ]
         );
         $this->presenter->registrationConfig = new RegistrationConfig(
             [
-                'enabled' => false,
+            'enabled' => false,
             ]
         );
 
@@ -248,14 +263,14 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'createAccount'],
             [
-                'email' => $email,
-                'firstName' => $firstName,
-                'lastName' => $lastName,
-                'password' => $password,
-                'passwordConfirm' => $password,
-                'instanceId' => $instanceId,
-                'titlesBeforeName' => $titlesBeforeName,
-                'titlesAfterName' => $titlesAfterName
+            'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'password' => $password,
+            'passwordConfirm' => $password,
+            'instanceId' => $instanceId,
+            'titlesBeforeName' => $titlesBeforeName,
+            'titlesAfterName' => $titlesAfterName
             ]
         );
 
@@ -285,14 +300,14 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'createAccount'],
             [
-                'email' => $email,
-                'firstName' => $firstName,
-                'lastName' => $lastName,
-                'password' => $password,
-                'passwordConfirm' => $passwordConfirm,
-                'instanceId' => $instanceId,
-                'titlesBeforeName' => $titlesBeforeName,
-                'titlesAfterName' => $titlesAfterName
+            'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'password' => $password,
+            'passwordConfirm' => $passwordConfirm,
+            'instanceId' => $instanceId,
+            'titlesBeforeName' => $titlesBeforeName,
+            'titlesAfterName' => $titlesAfterName
             ]
         );
 
@@ -319,14 +334,14 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'createAccount'],
             [
-                'email' => $email,
-                'firstName' => $firstName,
-                'lastName' => $lastName,
-                'password' => $password,
-                'passwordConfirm' => $password,
-                'instanceId' => $instanceId,
-                'titlesBeforeName' => $titlesBeforeName,
-                'titlesAfterName' => $titlesAfterName
+            'email' => $email,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'password' => $password,
+            'passwordConfirm' => $password,
+            'instanceId' => $instanceId,
+            'titlesBeforeName' => $titlesBeforeName,
+            'titlesAfterName' => $titlesAfterName
             ]
         );
 
@@ -346,8 +361,8 @@ class TestRegistrationPresenter extends Tester\TestCase
             'POST',
             ['action' => 'validateRegistrationData'],
             [
-                'email' => "totallyFreeEmail@EmailFreeTotally.freeEmailTotally",
-                'password' => "totallySecurePasswordWhichIsNot123456"
+            'email' => "totallyFreeEmail@EmailFreeTotally.freeEmailTotally",
+            'password' => "totallySecurePasswordWhichIsNot123456"
             ]
         );
         $response = $this->presenter->run($request);
@@ -362,6 +377,337 @@ class TestRegistrationPresenter extends Tester\TestCase
 
         Assert::true(array_key_exists("passwordScore", $result["payload"]));
         Assert::type('int', $result["payload"]["passwordScore"]);
+    }
+
+    public function testCreateInvitationToken()
+    {
+        $email = "newguy@recodex.com";
+        $firstName = "firstName";
+        $lastName = "lastName";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $groups = [];
+        foreach ($this->presenter->groups->findAll() as $group) {
+            if (!$group->isArchived() && !$group->isOrganizational()) {
+                $groups[] = $group->getId();
+            }
+        }
+        Assert::truthy($groups);
+
+        $this->emailHelperMock->shouldReceive("send")
+            ->with("noreply@recodex", [$email], "en", 'User Admin Admin has invited you in ReCodEx!', Mockery::any())
+            ->once()->andReturn(true);
+
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'createInvitation'],
+            [
+                'email' => $email,
+                'firstName' => $firstName,
+                'lastName' => $lastName,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName,
+                'instanceId' => $instanceId,
+                'groups' => $groups,
+                'locale' => 'en',
+            ]
+        );
+
+        Assert::equal("OK", $payload);
+    }
+
+    public function testCreateInvitationTokenExistingEmail()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        Assert::throws(
+            function () {
+                $email = PresenterTestHelper::ADMIN_LOGIN;
+                $firstName = "firstName";
+                $lastName = "lastName";
+                $instances = $this->instances->findAll();
+                $instanceId = array_pop($instances)->getId();
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'POST',
+                    ['action' => 'createInvitation'],
+                    [
+                        'email' => $email,
+                        'firstName' => $firstName,
+                        'lastName' => $lastName,
+                        'instanceId' => $instanceId,
+                        'groups' => [],
+                    ]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testCreateInvitationTokenInvalidData()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        Assert::throws(
+            function () {
+                $email = "newguy@recodex.com";
+                $instances = $this->instances->findAll();
+                $instanceId = array_pop($instances)->getId();
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'POST',
+                    ['action' => 'createInvitation'],
+                    [
+                        'email' => $email,
+                        // missing name!
+                        'titlesBeforeName' => "titlesBeforeName",
+                        'titlesAfterName' => "titlesAfterName",
+                        'instanceId' => $instanceId,
+                        'groups' => [],
+                    ]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testCreateInvitationTokenInvalidGroups()
+    {
+        $groups = [];
+        foreach ($this->presenter->groups->findAll() as $group) {
+            if ($group->isArchived() || $group->isOrganizational()) {
+                $groups[] = $group->getId();
+            }
+        }
+        Assert::truthy($groups);
+
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        Assert::throws(
+            function () use ($groups) {
+                $email = "newguy@recodex.com";
+                $instances = $this->instances->findAll();
+                $instanceId = array_pop($instances)->getId();
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'POST',
+                    ['action' => 'createInvitation'],
+                    [
+                        'email' => $email,
+                        'firstName' => "firstName",
+                        'lastName' => "lastName",
+                        'titlesBeforeName' => "titlesBeforeName",
+                        'titlesAfterName' => "titlesAfterName",
+                        'instanceId' => $instanceId,
+                        'groups' => $groups,
+                    ]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testAcceptInvitation()
+    {
+        $email = "newguy@recodex.com";
+        $firstName = "firstName";
+        $lastName = "lastName";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $groups = [];
+        foreach ($this->presenter->groups->findAll() as $group) {
+            if (!$group->isArchived() && !$group->isOrganizational()) {
+                $groups[$group->getId()] = $group;
+            }
+        }
+        Assert::truthy($groups);
+
+        $token = $this->presenter->accessManager->issueInvitationToken(
+            $instanceId,
+            $email,
+            $firstName,
+            $lastName,
+            $titlesBeforeName,
+            $titlesAfterName,
+            array_keys($groups)
+        );
+
+        $password = "topsecret";
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'acceptInvitation'],
+            [
+                'token' => $token,
+                'password' => $password,
+                'passwordConfirm' => $password,
+            ],
+            201
+        );
+
+        Assert::equal($email, $payload["user"]["privateData"]["email"]);
+        Assert::true($payload["user"]["isVerified"]);
+        $user = $this->presenter->users->get($payload["user"]["id"]);
+        foreach ($groups as $group) {
+            Assert::true($group->isStudentOf($user));
+        }
+        $accessToken = $this->presenter->accessManager->decodeToken($payload["accessToken"]);
+        Assert::equal($payload["user"]["id"], $accessToken->getUserId());
+    }
+
+    public function testAcceptInvitationAlreadyRegistered()
+    {
+        $email = PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN;
+        $firstName = "firstName";
+        $lastName = "lastName";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $groups = [];
+        foreach ($this->presenter->groups->findAll() as $group) {
+            if (!$group->isArchived() && !$group->isOrganizational()) {
+                $groups[$group->getId()] = $group;
+            }
+        }
+        Assert::truthy($groups);
+
+        $token = $this->presenter->accessManager->issueInvitationToken(
+            $instanceId,
+            $email,
+            $firstName,
+            $lastName,
+            $titlesBeforeName,
+            $titlesAfterName,
+            array_keys($groups)
+        );
+
+        $password = "topsecret";
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'acceptInvitation'],
+            [
+                'token' => $token,
+                'password' => $password,
+                'passwordConfirm' => $password,
+            ],
+            201
+        );
+
+        Assert::equal($email, $payload["user"]["privateData"]["email"]);
+        Assert::true($payload["user"]["isVerified"]);
+        $user = $this->presenter->users->get($payload["user"]["id"]);
+        foreach ($groups as $group) {
+            Assert::true($group->isStudentOf($user));
+        }
+        $accessToken = $this->presenter->accessManager->decodeToken($payload["accessToken"]);
+        Assert::equal($payload["user"]["id"], $accessToken->getUserId());
+    }
+
+    public function testAcceptInvitationWrongPassword()
+    {
+        $email = "newguy@recodex.com";
+        $firstName = "firstName";
+        $lastName = "lastName";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $groups = [];
+        foreach ($this->presenter->groups->findAll() as $group) {
+            if (!$group->isArchived() && !$group->isOrganizational()) {
+                $groups[$group->getId()] = $group;
+            }
+        }
+        Assert::truthy($groups);
+
+        $token = $this->presenter->accessManager->issueInvitationToken(
+            $instanceId,
+            $email,
+            $firstName,
+            $lastName,
+            $titlesBeforeName,
+            $titlesAfterName,
+            array_keys($groups)
+        );
+
+        Assert::throws(
+            function () use ($token) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'POST',
+                    ['action' => 'acceptInvitation'],
+                    [
+                        'token' => $token,
+                        'password' => "topsecret",
+                        'passwordConfirm' => "blabla",
+                    ],
+                );
+            },
+            WrongCredentialsException::class
+        );
+    }
+
+    public function testAcceptInvitationExpiredToken()
+    {
+        $email = "newguy@recodex.com";
+        $firstName = "firstName";
+        $lastName = "lastName";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $groups = [];
+        foreach ($this->presenter->groups->findAll() as $group) {
+            if (!$group->isArchived() && !$group->isOrganizational()) {
+                $groups[$group->getId()] = $group;
+            }
+        }
+        Assert::truthy($groups);
+
+        $token = $this->presenter->accessManager->issueInvitationToken(
+            $instanceId,
+            $email,
+            $firstName,
+            $lastName,
+            $titlesBeforeName,
+            $titlesAfterName,
+            array_keys($groups),
+            -60 // 60 seconds late
+        );
+
+        Assert::throws(
+            function () use ($token) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'POST',
+                    ['action' => 'acceptInvitation'],
+                    [
+                        'token' => $token,
+                        'password' => "topsecret",
+                        'passwordConfirm' => "topsecret",
+                    ],
+                );
+            },
+            BadRequestException::class
+        );
     }
 }
 
