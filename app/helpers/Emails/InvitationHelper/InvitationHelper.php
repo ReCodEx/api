@@ -132,7 +132,7 @@ class InvitationHelper
             [
                 "username" => $username,
                 "link" => $this->webappLinks->getInvitationUrl($token),
-                "expireAt" => $expireAt->format("j.n.Y H:i"),
+                "expireAt" => $expireAt,
                 "host" => $host->getName(),
                 "hostmail" => $host->getEmail(),
             ]
