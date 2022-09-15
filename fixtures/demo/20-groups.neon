@@ -126,3 +126,17 @@ App\Model\Entity\Login:
                 - @demoGroupSupervisor2
                 - "demoGroupSupervisor2@example.com"
                 - "password"
+
+App\Model\Entity\GroupInvitation:
+    validInviation:
+        __construct:
+            - @demoChildGroup
+            - @demoAdmin
+            - null
+            - "a1"
+    invalidInviation:
+        __construct:
+            - @demoChildGroup
+            - @demoAdmin
+            - "<dateTimeBetween('-2 months', '-1 months')>"
+            - "f3"
