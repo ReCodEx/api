@@ -66,7 +66,7 @@ class AccessManager
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      */
-    public function decodeToken($token): AccessToken
+    public function decodeToken(string $token): AccessToken
     {
         try {
             $decodedToken = JWT::decode($token, new Key($this->verificationKey, $this->usedAlgorithm));
@@ -90,7 +90,7 @@ class AccessManager
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      */
-    public function decodeInvitationToken($token): InvitationToken
+    public function decodeInvitationToken(string $token): InvitationToken
     {
         try {
             $decodedToken = JWT::decode($token, new Key($this->verificationKey, $this->usedAlgorithm));

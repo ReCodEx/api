@@ -59,4 +59,10 @@ interface IGroupPermissions
     public function canBecomeMember(Group $group): bool;
 
     public function canSendEmail(Group $group): bool;
+
+    public function canViewInvitations(Group $group): bool;
+
+    public function canAcceptInvitation(Group $group): bool;
+
+    public function canEditInvitations(Group $group): bool;
 }
