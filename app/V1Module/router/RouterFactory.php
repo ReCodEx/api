@@ -37,6 +37,7 @@ class RouterFactory
         $router[] = self::createExercisesRoutes("$prefix/exercises");
         $router[] = self::createAssignmentsRoutes("$prefix/exercise-assignments");
         $router[] = self::createGroupsRoutes("$prefix/groups");
+        $router[] = self::createGroupInvitationsRoutes("$prefix/group-invitations");
         $router[] = self::createInstancesRoutes("$prefix/instances");
         $router[] = self::createReferenceSolutionsRoutes("$prefix/reference-solutions");
         $router[] = self::createAssignmentSolutionsRoutes("$prefix/assignment-solutions");
@@ -262,6 +263,26 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/shadow-assignments", "Groups:shadowAssignments");
         $router[] = new GetRoute("$prefix/<id>/exercises", "Groups:exercises");
 
+        // invitations (which cannot be in invitations route)
+        $router[] = new GetRoute("$prefix/<groupId>/invitations", "GroupInvitations:list");
+        $router[] = new PostRoute("$prefix/<groupId>/invitations", "GroupInvitations:create");
+
+        return $router;
+    }
+
+    /**
+     * Adds all group invitations endpoints to given router.
+     * @param string $prefix Route prefix
+     * @return RouteList All endpoint routes
+     */
+    private static function createGroupInvitationsRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+
+        $router[] = new GetRoute("$prefix/<id>", "GroupInvitations:");
+        $router[] = new PostRoute("$prefix/<id>", "GroupInvitations:update");
+        $router[] = new DeleteRoute("$prefix/<id>", "GroupInvitations:remove");
+        $router[] = new PostRoute("$prefix/<id>/accept", "GroupInvitations:accept");
         return $router;
     }
 

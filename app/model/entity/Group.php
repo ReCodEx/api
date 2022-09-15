@@ -37,6 +37,7 @@ class Group
         $this->childGroups = new ArrayCollection();
         $this->assignments = new ArrayCollection();
         $this->shadowAssignments = new ArrayCollection();
+        $this->invitations = new ArrayCollection();
         $this->exercises = new ArrayCollection();
         $this->localizedTexts = new ArrayCollection();
 
@@ -240,6 +241,14 @@ class Group
         );
         return array_merge($this->getChildGroups()->getValues(), ...$subtrees);
     }
+
+    /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="GroupInvitation", mappedBy="group",
+     *                cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OrderBy({"createdAt" = "DESC"})
+     */
+    protected $invitations;
 
     /**
      * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="groups")
@@ -881,5 +890,10 @@ class Group
     public function addShadowAssignment(ShadowAssignment $shadowAssignment): void
     {
         $this->shadowAssignments->add($shadowAssignment);
+    }
+
+    public function getInvitations(): Collection
+    {
+        return $this->invitations;
     }
 }

@@ -66,6 +66,7 @@ permissions:
           - viewStudentStats
           - viewStats
           - viewAll
+          - viewInvitations
 
     - allow: true
       role: student
@@ -92,7 +93,10 @@ permissions:
     - allow: true
       role: student
       resource: group
-      actions: viewPublicDetail
+      actions:
+        - viewPublicDetail
+        - viewInvitations
+        - acceptInvitation
       conditions: group.isInSameInstance
 
     - allow: true # A student can join public groups
@@ -150,7 +154,8 @@ permissions:
       role: supervisor
       actions:
           - addStudent  # requires permissions to read all users' private data
-          - inviteStudents # create future invitations, that the students can use to join
+          - inviteStudents  # create future invitations, that the students can use to join
+          - editInvitations  # add, update, and remove invitation links (for already registered users) 
           - removeStudent
       conditions:
           - group.isSupervisor

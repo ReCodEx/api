@@ -7,7 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait CreateableEntity
 {
-
     /**
      * @ORM\Column(type="datetime")
      * @var DateTime
