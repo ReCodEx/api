@@ -91,6 +91,11 @@ class GroupInvitation implements JsonSerializable
         return $this->expireAt;
     }
 
+    public function hasExpired(): bool
+    {
+        return $this->expireAt !== null && $this->expireAt->getTimestamp() < time();
+    }
+
     public function setExpireAt(?DateTime $expireAt): void
     {
         $this->expireAt = $expireAt;

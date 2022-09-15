@@ -107,7 +107,11 @@ class GroupInvitationsPresenter extends BasePresenter
     public function checkAccept($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
-        if (!$invitation->getGroup() || !$this->groupAcl->canAcceptInvitation($invitation->getGroup())) {
+        if (
+            $invitation->hasExpired()
+            || !$invitation->getGroup()
+            || !$this->groupAcl->canAcceptInvitation($invitation->getGroup())
+        ) {
             throw new ForbiddenRequestException();
         }
     }
