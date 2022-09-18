@@ -96,8 +96,16 @@ permissions:
       actions:
         - viewPublicDetail
         - viewInvitations
-        - acceptInvitation
       conditions: group.isInSameInstance
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+        - acceptInvitation
+      conditions:
+        - group.isInSameInstance
+        - group.isNotArchived
 
     - allow: true # A student can join public groups
       role: student

@@ -111,6 +111,7 @@ class GroupInvitationsPresenter extends BasePresenter
             $invitation->hasExpired()
             || !$invitation->getGroup()
             || !$this->groupAcl->canAcceptInvitation($invitation->getGroup())
+            || $invitation->getGroup()->isOrganizational()
         ) {
             throw new ForbiddenRequestException();
         }
@@ -129,7 +130,7 @@ class GroupInvitationsPresenter extends BasePresenter
             $user->makeStudentOf($group);
             $this->groups->flush();
         }
-        $this->sendSuccessResponse("OK");
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
 
     public function checkList($groupId)
