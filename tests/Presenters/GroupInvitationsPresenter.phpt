@@ -113,7 +113,8 @@ class TestGroupInvitationsPresenter extends Tester\TestCase
             ['action' => 'accept', 'id' => $invitation->getId()],
         );
 
-        Assert::equal("OK", $payload);
+        Assert::equal($group->getId(), $payload["id"]);
+        Assert::contains($user->getId(), $payload["privateData"]["students"]);
         Assert::true($group->isStudentOf($user));
     }
 
