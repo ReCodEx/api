@@ -1,7 +1,7 @@
 App\Model\Entity\PipelineConfig:
     demoCompilationPipelineConfig:
         __construct:
-            - '{variables: [{name: source-files, type: "file[]", value: []}, {name: binary-file, type: file, value: a.out}], boxes: [{name: source, type: file-in, portsIn: [], portsOut: {input: {type: file, value: source-files}}}, {name: compilation, type: gcc, portsIn: {source-files: {type: "file[]", value: source-files}, extra-files: {type: "file[]", value: ""}, args: {type: "string[]", value: ""}}, portsOut: {binary-file: {type: file, value: binary-file}}}, {name: output, type: file-out, portsOut: [], portsIn: {output: {type: file, value: binary-file}}}]}'
+            - '{variables: [{name: source-files, type: "file[]", value: []}, {name: binary-file, type: file, value: a.out}], boxes: [{name: source, type: file-in, portsIn: [], portsOut: {input: {type: file, value: source-files}}}, {name: compilation, type: gcc, portsIn: {compiler-exec-path: {type: string, value: ""}, source-files: {type: "file[]", value: source-files}, extra-files: {type: "file[]", value: ""}, args: {type: "string[]", value: ""}}, portsOut: {binary-file: {type: file, value: binary-file}}}, {name: output, type: file-out, portsOut: [], portsIn: {output: {type: file, value: binary-file}}}]}'
             - @demoAdmin
     demoTestPipelineConfig:
         __construct:

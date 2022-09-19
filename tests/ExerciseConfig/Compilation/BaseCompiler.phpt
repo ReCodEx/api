@@ -136,6 +136,7 @@ class TestBaseCompiler extends Tester\TestCase
                 "name" => "compilation",
                 "type" => "gcc",
                 "portsIn" => [
+                    "compiler-exec-path" => ["type" => "string", "value" => ""],
                     "args" => ["type" => "string[]", "value" => ""],
                     "source-files" => ["type" => "file[]", "value" => "source_files"],
                     "extra-files" => ["type" => "file[]", "value" => "extra_files"]
@@ -454,7 +455,7 @@ class TestBaseCompiler extends Tester\TestCase
             [$initiationSourceTask->getId(), $initiationExtraTask->getId(), $initiationMkdir->getId()],
             $initiationCompilationTask->getDependencies()
         );
-        Assert::equal(GccCompilationBox::$GCC_BINARY, $initiationCompilationTask->getCommandBinary());
+        Assert::equal(GccCompilationBox::$GCC_BINARY_DEFAULT, $initiationCompilationTask->getCommandBinary());
         Assert::equal(
             [
                 ConfigParams::$EVAL_DIR . "source.cpp",
