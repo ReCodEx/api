@@ -164,6 +164,7 @@ class TestPipelinesMerger extends Tester\TestCase
                     "name" => "compilation",
                     "type" => "gcc",
                     "portsIn" => [
+                        "compiler-exec-path" => ["type" => "string", "value" => ""],
                         "args" => ["type" => "string[]", "value" => ""],
                         "source-files" => ["type" => "file[]", "value" => "source_files"],
                         "extra-files" => ["type" => "file[]", "value" => ""]
