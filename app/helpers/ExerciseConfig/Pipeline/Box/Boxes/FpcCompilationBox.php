@@ -20,7 +20,7 @@ class FpcCompilationBox extends CompilationBox
 {
     /** Type key */
     public static $FPC_TYPE = "fpc";
-    public static $FPC_BINARY = "/usr/bin/fpc";
+    public static $FPC_BINARY_DEFAULT = "/usr/bin/fpc";
     public static $DEFAULT_NAME = "FreePascal Compilation";
 
     private static $initialized = false;
@@ -35,6 +35,8 @@ class FpcCompilationBox extends CompilationBox
         if (!self::$initialized) {
             self::$initialized = true;
             self::$defaultInputPorts = array(
+                new Port((new PortMeta())->setName(self::$COMPILER_EXEC_PATH_PORT_KEY)
+                    ->setType(VariableTypes::$STRING_TYPE)),
                 new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
                 new Port(
                     (new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
@@ -111,7 +113,11 @@ class FpcCompilationBox extends CompilationBox
         $extraFiles = $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
         foreach (array_merge($sourceFiles, $extraFiles) as $sourceFile) {
             $task = $this->compileBaseTask($params);
-            $task->setCommandBinary(self::$FPC_BINARY);
+
+            $task->setCommandBinary(
+                $this->hasInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)
+                ? $this->getInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)->getValue() : self::$FPC_BINARY_DEFAULT
+            );
 
             $args = [];
             if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {

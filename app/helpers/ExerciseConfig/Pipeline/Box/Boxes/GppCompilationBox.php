@@ -20,7 +20,7 @@ class GppCompilationBox extends CompilationBox
 {
     /** Type key */
     public static $GPP_TYPE = "g++";
-    public static $GPP_BINARY = "/usr/bin/g++";
+    public static $GPP_BINARY_DEFAULT = "/usr/bin/g++";
     public static $DEFAULT_NAME = "G++ Compilation";
     public static $CPP_EXT_FILTER = '/[.](cpp|c|cc|o|obj|a|so)$/i';
 
@@ -36,6 +36,8 @@ class GppCompilationBox extends CompilationBox
         if (!self::$initialized) {
             self::$initialized = true;
             self::$defaultInputPorts = array(
+                new Port((new PortMeta())->setName(self::$COMPILER_EXEC_PATH_PORT_KEY)
+                    ->setType(VariableTypes::$STRING_TYPE)),
                 new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
                 new Port(
                     (new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
@@ -107,7 +109,11 @@ class GppCompilationBox extends CompilationBox
     public function compile(CompilationParams $params): array
     {
         $task = $this->compileBaseTask($params);
-        $task->setCommandBinary(self::$GPP_BINARY);
+
+        $task->setCommandBinary(
+            $this->hasInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)
+            ? $this->getInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)->getValue() : self::$GPP_BINARY_DEFAULT
+        );
 
         $args = [];
         if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
