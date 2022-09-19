@@ -20,7 +20,7 @@ class GccCompilationBox extends CompilationBox
 {
     /** Type key */
     public static $GCC_TYPE = "gcc";
-    public static $GCC_BINARY = "/usr/bin/gcc";
+    public static $GCC_BINARY_DEFAULT = "/usr/bin/gcc";
     public static $DEFAULT_NAME = "GCC Compilation";
     public static $CPP_EXT_FILTER = '/[.](cpp|c|cc|o|obj|a|so)$/i';
 
@@ -36,6 +36,8 @@ class GccCompilationBox extends CompilationBox
         if (!self::$initialized) {
             self::$initialized = true;
             self::$defaultInputPorts = array(
+                new Port((new PortMeta())->setName(self::$COMPILER_EXEC_PATH_PORT_KEY)
+                    ->setType(VariableTypes::$STRING_TYPE)),
                 new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
                 new Port(
                     (new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
@@ -107,7 +109,11 @@ class GccCompilationBox extends CompilationBox
     public function compile(CompilationParams $params): array
     {
         $task = $this->compileBaseTask($params);
-        $task->setCommandBinary(self::$GCC_BINARY);
+
+        $task->setCommandBinary(
+            $this->hasInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)
+            ? $this->getInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)->getValue() : self::$GCC_BINARY_DEFAULT
+        );
 
         $args = [];
         if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
