@@ -109,6 +109,16 @@ class AssignmentSolutionViewFactory
             $isBestSolution = $this->isBestSolution($solution);
         }
 
+        if ($solution->getReviewStartedAt() !== null) {
+            $review = [
+                "startedAt" => $solution->getReviewStartedAt()->getTimestamp(),
+                "closedAt" => $solution->getReviewedAt() ? $solution->getReviewedAt()->getTimestamp() : null,
+                "issues" => $solution->getIssuesCount(),
+            ];
+        } else {
+            $review = null;
+        }
+
         return [
             "id" => $solution->getId(),
             "attemptIndex" => $solution->getAttemptIndex(),
@@ -119,7 +129,8 @@ class AssignmentSolutionViewFactory
             "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
             "maxPoints" => $solution->getMaxPoints(),
             "accepted" => $solution->isAccepted(),
-            "reviewed" => $solution->isReviewed(),
+            "reviewed" => $solution->isReviewed(), // DEPRECATED, to be removed!
+            "review" => $review,
             "isBestSolution" => $isBestSolution,
             "actualPoints" => $solution->getPoints(),
             "bonusPoints" => $solution->getBonusPoints(),

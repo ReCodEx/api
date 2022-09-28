@@ -247,6 +247,7 @@ acl:
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
     notification: App\Security\Policies\NotificationPermissionPolicy
     asyncJob: App\Security\Policies\AsyncJobPermissionPolicy
+    reviewComment: App\Security\Policies\ReviewCommentPermissionPolicy
 
 extensions:
   console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
@@ -401,6 +402,7 @@ services:
   - App\Model\Repository\AssignmentSolutions
   - App\Model\Repository\AssignmentSolutionSubmissions
   - App\Model\Repository\AssignmentSolvers
+  - App\Model\Repository\ReviewComments
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles

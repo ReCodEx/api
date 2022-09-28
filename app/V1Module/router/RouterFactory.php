@@ -377,6 +377,13 @@ class RouterFactory
             "AssignmentSolutions:evaluationScoreConfig"
         );
 
+        $router[] = new GetRoute("$prefix/<id>/review", "AssignmentSolutionReviews:");
+        $router[] = new PostRoute("$prefix/<id>/review", "AssignmentSolutionReviews:update");
+        $router[] = new DeleteRoute("$prefix/<id>/review", "AssignmentSolutionReviews:remove");
+        $router[] = new PostRoute("$prefix/<id>/review-comment", "AssignmentSolutionReviews:newComment");
+        $router[] = new PostRoute("$prefix/<id>/review-comment/<commentId>", "AssignmentSolutionReviews:editComment");
+        $router[] = new DeleteRoute("$prefix/<id>/review-comment/<commentId>", "AssignmentSolutionReviews:deleteComment");
+
         return $router;
     }
 

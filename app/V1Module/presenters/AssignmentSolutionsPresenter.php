@@ -366,7 +366,6 @@ class AssignmentSolutionsPresenter extends BasePresenter
         // map of boolean flag names with the information about uniqueness
         $knownBoolFlags = [
             "accepted" => true,
-            "reviewed" => false
         ];
 
         if (!array_key_exists($flag, $knownBoolFlags)) {
@@ -377,6 +376,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $unique = $knownBoolFlags[$flag];
         $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
         // handle unique flags
+        /* @phpstan-ignore-next-line */
         if ($unique && $value) {
             // flag has to be set to false for all other solutions of a user
             $assignmentSolutions = $this->assignmentSolutions->findSolutions(

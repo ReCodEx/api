@@ -350,7 +350,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $assignment = $solution->getAssignment();
 
         // set accepted flag
-        $solution->setReviewed(true);
+        $solution->setReviewedAt(new DateTime());
         $this->presenter->assignmentSolutions->flush();
         Assert::true($solution->isReviewed());
 
