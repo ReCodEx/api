@@ -105,7 +105,7 @@ class SolutionEvaluation
      */
     public function __construct(EvaluationResults $results)
     {
-        $this->evaluatedAt = new \DateTime();
+        $this->evaluatedAt = new DateTime();
         $this->initFailed = !$results->initOK();
         $this->score = 0;
         $this->scoreConfig = null;

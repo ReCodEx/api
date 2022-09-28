@@ -399,6 +399,7 @@ permissions:
           - viewEvaluationJudgeStdout
           - viewEvaluationJudgeStderr
           - viewResubmissions
+          - viewReview
 
     - allow: true
       role: student
@@ -406,6 +407,7 @@ permissions:
       actions:
           - viewDetail
           - viewEvaluation
+          - viewReview
       conditions:
           - assignmentSolution.isAuthor
 
@@ -435,6 +437,7 @@ permissions:
           - viewEvaluationDetails
           - viewEvaluationValues
           - viewResubmissions
+          - viewReview
           - downloadResultArchive
       conditions:
           - assignmentSolution.isObserverOrBetter
@@ -448,9 +451,28 @@ permissions:
           - setBonusPoints
           - setAccepted
           - setFlag
+          - review
+          - addReviewComment
       conditions:
           - assignmentSolution.isSupervisorOrAdmin
           - assignmentSolution.isInActiveGroup
+
+    - allow: true
+      resource: assignmentSolution
+      actions:
+          - editReviewComment
+          - deleteReviewComment
+      conditions:
+          or:
+              - reviewComment.isAuthor
+              - assignmentSolution.isAdmin
+
+    - allow: true
+      resource: assignmentSolution
+      actions:
+          - deleteReview
+      conditions:
+          - assignmentSolution.isAdmin
 
     - allow: true
       resource: assignmentSolution

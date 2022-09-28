@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -66,9 +67,23 @@ class AssignmentSolution
     protected $accepted;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="datetime", nullable=true)
+     * Time when a review was started.
      */
-    protected $reviewed;
+    protected $reviewStartedAt = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * Time when a review was closed (and comments made visible to student).
+     * Not null value also marks the solution as "reviewed" (replaces previous bool flag).
+     */
+    protected $reviewedAt = null;
+
+    /**
+     * @ORM\Column(type="integer")
+     * Number of issues made in review comments. This is an aggregated cached value so it can be accessed faster.
+     */
+    protected $issues = 0;
 
     /**
      * @ORM\Column(type="integer")
@@ -152,15 +167,20 @@ class AssignmentSolution
     protected $attemptIndex;
 
     /**
+     * @ORM\OneToMany(targetEntity="ReviewComment", mappedBy="solution")
+     */
+    protected $reviewComments;
+
+    /**
      * AssignmentSolution constructor.
      */
     private function __construct()
     {
         $this->accepted = false;
-        $this->reviewed = false;
         $this->bonusPoints = 0;
         $this->submissions = new ArrayCollection();
         $this->overriddenPoints = null;
+        $this->reviewComments = new ArrayCollection();
     }
 
     /**
@@ -205,12 +225,42 @@ class AssignmentSolution
 
     public function isReviewed(): bool
     {
-        return $this->reviewed;
+        return $this->reviewedAt !== null;
     }
 
-    public function setReviewed(bool $reviewed): void
+    public function getReviewedAt(): ?DateTime
     {
-        $this->reviewed = $reviewed;
+        return $this->reviewedAt;
+    }
+
+    public function setReviewedAt(?DateTime $reviewedAt): void
+    {
+        $this->reviewedAt = $reviewedAt;
+    }
+
+    public function getReviewStartedAt(): ?DateTime
+    {
+        return $this->reviewStartedAt;
+    }
+
+    public function setReviewStartedAt(?DateTime $reviewStartedAt): void
+    {
+        $this->reviewStartedAt = $reviewStartedAt;
+    }
+
+    public function getIssuesCount(): int
+    {
+        return $this->issues;
+    }
+
+    public function setIssuesCount(int $issues): void
+    {
+        $this->issues = $issues;
+    }
+
+    public function getReviewComments(): Collection
+    {
+        return $this->reviewComments;
     }
 
     public function getNote(): ?string

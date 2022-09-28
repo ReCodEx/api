@@ -3,7 +3,7 @@
 namespace App\Security\ACL;
 
 use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\ReviewComment;
 
 interface IAssignmentSolutionPermissions
 {
@@ -36,4 +36,16 @@ interface IAssignmentSolutionPermissions
     public function canDeleteEvaluation(AssignmentSolution $assignmentSolution): bool;
 
     public function canDownloadResultArchive(AssignmentSolution $assignmentSolution): bool;
+
+    public function canViewReview(AssignmentSolution $assignmentSolution): bool;
+
+    public function canReview(AssignmentSolution $assignmentSolution): bool;
+
+    public function canDeleteReview(AssignmentSolution $assignmentSolution): bool;
+
+    public function canAddReviewComment(AssignmentSolution $assignmentSolution): bool;
+
+    public function canEditReviewComment(AssignmentSolution $assignmentSolution, ReviewComment $reviewComment): bool;
+
+    public function canDeleteReviewComment(AssignmentSolution $assignmentSolution, ReviewComment $reviewComment): bool;
 }

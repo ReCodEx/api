@@ -21,7 +21,8 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
     protected $assignmentSolution;
 
     /**
-     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"}, inversedBy="assignmentSolutionSubmission", fetch="EAGER")
+     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"},
+     *               inversedBy="assignmentSolutionSubmission", fetch="EAGER")
      * @var SubmissionFailure
      */
     protected $failure;

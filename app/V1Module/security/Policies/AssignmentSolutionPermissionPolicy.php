@@ -14,6 +14,23 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
         return AssignmentSolution::class;
     }
 
+    public function isAdmin(Identity $identity, AssignmentSolution $solution)
+    {
+        $assignment = $solution->getAssignment();
+        if ($assignment === null) {
+            return false;
+        }
+
+        $group = $assignment->getGroup();
+        $user = $identity->getUserData();
+
+        if ($user === null) {
+            return false;
+        }
+
+        return $group && $group->isAdminOf($user);
+    }
+
     public function isSupervisorOrAdmin(Identity $identity, AssignmentSolution $solution)
     {
         $assignment = $solution->getAssignment();
