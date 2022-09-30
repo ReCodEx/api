@@ -1,0 +1,19 @@
+{emailSubject}Odebrán komentář revize řešení{/emailSubject}
+
+<h3>Z revize řešení {$comment->isIssue() ? 'byla odebrána připomínka k vyřešení' : 'byl odebrán komentář'}!</h3>
+
+<p>
+    Z revize vašeho řešení <strong>#{$attempt}</strong> (odevzdaného <strong>{$submitted|localizedDate:'cs'}</strong>)
+    úlohy <strong>{$assignment}</strong> ze skupiny <strong>{$group}</strong>,
+    kterou vyučující dokončil <strong>{$closed|localizedDate:'cs'}</strong>,
+    <strong>{$comment->isIssue() ? 'byla odebrána připomínka k vyřešení' : 'byl odebrán komentář'}</strong>.
+</p>
+
+<div>
+    <h5>Odebráno od <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    {$comment->getText()|markdown}
+</div>
+
+<p>
+    Kompletní revizi kódu naleznete zde: <a href="{$codeUrl}">{$codeUrl}</a>
+</p>

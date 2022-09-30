@@ -20,6 +20,7 @@ class UserSettings implements JsonSerializable
         $this->assignmentDeadlineEmails = true;
         $this->submissionEvaluatedEmails = true;
         $this->solutionCommentsEmails = true;
+        $this->solutionReviewsEmails = true;
         $this->assignmentCommentsEmails = true;
         $this->pointsChangedEmails = true;
         $this->assignmentSubmitAfterAcceptedEmails = false;
@@ -68,6 +69,11 @@ class UserSettings implements JsonSerializable
     /**
      * @ORM\Column(type="boolean")
      */
+    protected $solutionReviewsEmails;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
     protected $assignmentCommentsEmails;
 
     /**
@@ -93,6 +99,7 @@ class UserSettings implements JsonSerializable
             "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
             "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
             "solutionCommentsEmails" => $this->solutionCommentsEmails,
+            "solutionReviewsEmails" => $this->solutionReviewsEmails,
             "assignmentCommentsEmails" => $this->assignmentCommentsEmails,
             "pointsChangedEmails" => $this->pointsChangedEmails,
             "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
@@ -152,6 +159,16 @@ class UserSettings implements JsonSerializable
     public function setSolutionCommentsEmails(bool $solutionCommentsEmails): void
     {
         $this->solutionCommentsEmails = $solutionCommentsEmails;
+    }
+
+    public function getSolutionReviewsEmails(): bool
+    {
+        return $this->solutionReviewsEmails;
+    }
+
+    public function setSolutionReviewsEmails(bool $solutionReviewsEmails): void
+    {
+        $this->solutionReviewsEmails = $solutionReviewsEmails;
     }
 
     public function getAssignmentCommentsEmails(): bool

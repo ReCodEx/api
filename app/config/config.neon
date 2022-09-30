@@ -111,6 +111,7 @@ parameters:
     forgottenPasswordUrl: "%webapp.address%/forgotten-password/change?{token}"  # URL of web application where the password can be changed
     emailVerificationUrl: "%webapp.address%/email-verification?{token}"
     invitationUrl: "%webapp.address%/accept-invitation?{token}"
+    solutionSourceFilesUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
 
   assignmentNotifications:
     deadlineThresholdFrom: +1 day
@@ -131,6 +132,10 @@ parameters:
     emails:
       from: %emails.from%
 
+  reviewsNotifications:
+    emails:
+      from: %emails.from%
+      
   assignmentCommentsNotifications:
     emails:
       from: %emails.from%
@@ -377,6 +382,7 @@ services:
   - App\Helpers\Notifications\AssignmentEmailsSender(%assignmentNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(%failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(%solutionCommentsNotifications%)
+  - App\Helpers\Notifications\ReviewsEmailsSender(%reviewsNotifications%)
   - App\Helpers\Notifications\AssignmentCommentsEmailsSender(%assignmentCommentsNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(%submissionNotifications%)
   - App\Helpers\Notifications\GeneralStatsEmailsSender(%generalStatsNotifications%)

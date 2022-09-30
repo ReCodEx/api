@@ -1,0 +1,32 @@
+{emailSubject}Review comment updated{/emailSubject}
+
+<h3>{$comment->isIssue() ? 'An issue' : 'A comment'} in a solution review was modified!</h3>
+
+<p>
+    <strong>{$comment->isIssue() ? 'An issue' : 'A comment'} was modified</strong> in the review of solution
+    <strong>#{$attempt}</strong> (submitted at <strong>{$submitted|localizedDate:'en'}</strong>)
+    of the assignment <strong>{$assignment}</strong> in the group <strong>{$group}</strong>
+    that was closed by the teacher at <strong>{$closed|localizedDate:'en'}</strong>.
+</p>
+
+<h5>Updated at <code>{$comment->getFile()}:{$comment->getLine()}</code></h5>
+
+{if $oldText !== $comment->getText()}
+<h6>Previous version:</h6>
+{$oldText|markdown}
+
+<h6>New version:</h6>
+{/if}
+
+{$comment->getText()|markdown}
+
+<p n:if="$issueChanged">
+    The type of the comment changed from
+    <strong>{$comment->isIssue() ? 'a regular comment' : 'an issue'}</strong>
+    to
+    <strong>{$comment->isIssue() ? 'an issue' : 'a regular comment'}</strong>.
+</p>
+
+<p>
+    The complete review is available at: <a href="{$codeUrl}">{$codeUrl}</a>
+</p>

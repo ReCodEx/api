@@ -33,6 +33,9 @@ class WebappLinks
     /** @var string */
     private $invitationUrl;
 
+    /** @var string */
+    private $solutionSourceFilesUrl;
+
     /**
      * Helper function that constructs links from templates.
      * @param string $link template
@@ -79,6 +82,11 @@ class WebappLinks
             $linkTemplates,
             ["linkTemplates"],
             "$webappUrl/accept-invitation?{token}"
+        );
+        $this->solutionSourceFilesUrl = Arrays::get(
+            $linkTemplates,
+            ["solutionSourceFilesUrl"],
+            "$webappUrl/app/assignment/{assignmentId}/solution/{solutionId}/sources"
         );
     }
 
@@ -148,5 +156,18 @@ class WebappLinks
     public function getInvitationUrl(string $token): string
     {
         return self::getLink($this->invitationUrl, [ 'token' => $token ]);
+    }
+
+    /**
+     * @param string $assignmentId
+     * @param string $solutionId
+     * @return string URL to the page with source files of given solution (and the possible code review)
+     */
+    public function getSolutionSourceFilesUrl(string $assignmentId, string $solutionId)
+    {
+        return self::getLink(
+            $this->solutionSourceFilesUrl,
+            [ 'assignmentId' => $assignmentId, 'solutionId' => $solutionId ]
+        );
     }
 }

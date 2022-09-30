@@ -1,0 +1,19 @@
+{emailSubject}Přidán komentář k revizi{/emailSubject}
+
+<h3>K revizi řešení {$comment->isIssue() ? 'byla přidána připomínka k vyřešení' : 'byl přidán nový komentář'}!</h3>
+
+<p>
+    K revizi vašeho řešení <strong>#{$attempt}</strong> (odevzdaného <strong>{$submitted|localizedDate:'cs'}</strong>)
+    úlohy <strong>{$assignment}</strong> ze skupiny <strong>{$group}</strong>,
+    kterou vyučující dokončil <strong>{$closed|localizedDate:'cs'}</strong>,
+    <strong>{$comment->isIssue() ? 'byla přidána připomínka k vyřešení' : 'byl přidán nový komentář'}</strong>.
+</p>
+
+<div>
+    <h5>... k <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    {$comment->getText()|markdown}
+</div>
+
+<p>
+    Kompletní revizi kódu naleznete zde: <a href="{$codeUrl}">{$codeUrl}</a>
+</p>

@@ -1,0 +1,14 @@
+{emailSubject}Revize úlohy odstraněna{/emailSubject}
+
+<h3>Revize úlohy byla odstraněna!</h3>
+
+<p>
+    Revize vašeho řešení <strong>#{$attempt}</strong> (odevzdaného <strong>{$submitted|localizedDate:'cs'}</strong>)
+    úlohy <strong>{$assignment}</strong> ze skupiny <strong>{$group}</strong>,
+    kterou vyučující dokončil <strong>{$closed|localizedDate:'cs'}</strong> byla <strong>odstraněna</strong>.
+    S tím byly také odstraněny všechny připomínky a komentáře ke zdrojovým kódům.
+</p>
+
+<p>
+    Detail vašeho řešení je přístupný přes následující odkaz: <a href="{$detailUrl}">{$detailUrl}</a>
+</p>
