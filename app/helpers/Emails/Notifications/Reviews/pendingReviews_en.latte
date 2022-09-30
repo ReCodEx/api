@@ -1,0 +1,14 @@
+{emailSubject}Incomplete reviews{/emailSubject}
+
+<h3>Some of the code reviews in your groups have not yet been closed!</h3>
+
+<p>
+    The following solutions have opened reviews. Please note that a solution author will not see the review comments until the review is closed.
+</p>
+
+<ul>
+    <li n:for-each="$solutions as $solution">
+        <a href="{$solution->solutionUrl}">solution #{$solution->attempt}</a> (submitted at {$solution->submitted|localizedDate:'en'})
+        of the <a href="{$solution->assignmentUrl}">assignment <em>{$solution->assignment}</em></a> in the group <em>{$solution->group}</em>
+    </li>
+</ul>

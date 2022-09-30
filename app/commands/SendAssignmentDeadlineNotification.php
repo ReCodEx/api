@@ -47,7 +47,7 @@ class SendAssignmentDeadlineNotification extends Command
 
     protected function configure()
     {
-        $this->setName('notifications:assignment-deadlines')->setDescription(
+        $this->setName(self::$defaultName)->setDescription(
             'Send notifications for assignments with imminent deadlines.'
         );
     }

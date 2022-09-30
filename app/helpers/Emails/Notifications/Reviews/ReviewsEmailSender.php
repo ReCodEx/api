@@ -375,4 +375,68 @@ class ReviewsEmailsSender
             }
         );
     }
+
+    /**
+     * Prepare and format body of a comment-updated notification.
+     * @param AssignmentSolution[] $solutions with open reviews
+     * @param string $locale
+     * @return EmailRenderResult
+     */
+    private function createPendingReviewsNotification(
+        array $solutions,
+        string $locale
+    ): EmailRenderResult {
+        // render the HTML to string using Latte engine
+        $latte = EmailLatteFactory::latte();
+        $template = EmailLocalizationHelper::getTemplate(
+            $locale,
+            __DIR__ . "/pendingReviews_{locale}.latte"
+        );
+
+        $params = [
+            "solutions" => array_map(function ($solution) use ($locale) {
+                return (object)[
+                    "assignment" => EmailLocalizationHelper::getLocalization(
+                        $locale,
+                        $solution->getAssignment()->getLocalizedTexts()
+                    )->getName(),
+                    "group" => EmailLocalizationHelper::getLocalization(
+                        $locale,
+                        $solution->getAssignment()->getGroup()->getLocalizedTexts()
+                    )->getName(),
+                    "attempt" => $solution->getAttemptIndex(),
+                    "submitted" => $solution->getSolution()->getCreatedAt(),
+                    "solutionUrl" => $this->webappLinks
+                        ->getSolutionSourceFilesUrl($solution->getAssignment()->getId(), $solution->getId()),
+                    "assignmentUrl" => $this->webappLinks->getAssignmentPageUrl($solution->getAssignment()->getId()),
+                ];
+            }, $solutions),
+        ];
+        return $latte->renderEmail($template, $params);
+    }
+
+    /**
+     * Notify given user that there are solutions with not-yet-closed reviews in some of the groups
+     * under hir administration.
+     * @param User $recipient
+     * @param AssignmentSolution[] $solutions with open reviews
+     * @return bool false in case the email could not have been sent
+     */
+    public function notifyPendingReviews(User $recipient, array $solutions): bool
+    {
+        return $this->localizationHelper->sendLocalizedEmail(
+            [ $recipient ],
+            function ($toUsers, $emails, $locale) use ($solutions) {
+                $result = $this->createPendingReviewsNotification($solutions, $locale);
+                return $this->emailHelper->setShowSettingsInfo()->send(
+                    $this->sender,
+                    [],
+                    $locale,
+                    $result->getSubject(),
+                    $result->getText(),
+                    $emails
+                );
+            }
+        );
+    }
 }

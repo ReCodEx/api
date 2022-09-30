@@ -1,0 +1,14 @@
+{emailSubject}Nedokončené revize kódu{/emailSubject}
+
+<h3>Některé revize kódu ve vašich skupinách čekají na uzavření!</h3>
+
+<p>
+    Následující studentská řešení mají rozpracované revize kódu. Mějte na paměti, že autoři řešení nevidí komentáře z revizí dokud tyto revize nejsou uzavřeny.
+</p>
+
+<ul>
+    <li n:for-each="$solutions as $solution">
+        <a href="{$solution->solutionUrl}">řešení #{$solution->attempt}</a> (odevzdané {$solution->submitted|localizedDate:'cs'})
+        k <a href="{$solution->assignmentUrl}">úloze <em>{$solution->assignment}</em></a> ve skupině <em>{$solution->group}</em>
+    </li>
+</ul>
