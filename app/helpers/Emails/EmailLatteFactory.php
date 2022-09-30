@@ -5,6 +5,7 @@ namespace App\Helpers\Emails;
 use Latte;
 use Latte\Engine;
 use Latte\Essential\Filters;
+use League\CommonMark\CommonMarkConverter;
 
 /**
  * Factory for latte engine which can be used in email senders.
@@ -42,6 +43,19 @@ class EmailLatteFactory
             "relativeDateTime",
             function ($dateDiff, $locale) {
                 return EmailLocalizationHelper::getDateIntervalLocalizedString($dateDiff, $locale);
+            }
+        );
+
+        $latte->addFilter(
+            "markdown",
+            function ($markdown) {
+                $converter = new CommonMarkConverter([
+                    'html_input' => 'strip',
+                    'allow_unsafe_links' => false,
+                ]);
+
+                $html = $converter->convert($markdown);
+                return "<div class=\"markdown\">$html</div>";
             }
         );
 

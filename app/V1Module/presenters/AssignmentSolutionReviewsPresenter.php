@@ -9,7 +9,7 @@ use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Helpers\Notifications\PointsChangedEmailsSender;
+use App\Helpers\Notifications\ReviewsEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ReviewComment;
@@ -55,6 +55,12 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutionViewFactory;
+
+    /**
+     * @var ReviewsEmailsSender
+     * @inject
+     */
+    public $reviewsEmailSender;
 
 
     public function checkDefault(string $id)
@@ -116,15 +122,19 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
                 }
             }
             $solution->setIssuesCount($issues);
+
+            $this->assignmentSolutions->persist($solution);
+            $this->reviewsEmailSender->solutionReviewClosed($solution);
         } elseif ($solution->getReviewedAt() !== null && !$closed) {
             // closed -> opened (reverse) transition
+            $reviewedAt = $solution->getReviewedAt();
             $solution->setReviewedAt(null);
             $solution->setIssuesCount(0);
+
+            $this->assignmentSolutions->persist($solution);
+            $this->reviewsEmailSender->solutionReviewReopened($solution, $reviewedAt);
         }
 
-        // TODO email notifications
-
-        $this->assignmentSolutions->persist($solution);
         $this->sendSuccessResponse([
             "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
             "reviewComments" => $solution->getReviewComments()->toArray(),
@@ -160,7 +170,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     public function actionRemove(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
-        $sendNotification = $solution->getReviewedAt() !== null; // only if the review is closed
+        $closed = $solution->getReviewedAt(); // remember that!
 
         // erase all comments
         $this->reviewComments->deleteCommentsOfSolution($solution);
@@ -171,8 +181,9 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         $solution->setIssuesCount(0);
         $this->assignmentSolutions->persist($solution);
 
-        if ($sendNotification) {
-            // TODO email notifications
+        if ($closed !== null) {
+            // notifications are sent only for closed reviews
+            $this->reviewsEmailSender->solutionReviewRemoved($solution, $closed);
         }
 
         $this->sendSuccessResponse("OK");
@@ -247,7 +258,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
 
             $suppressNotification = filter_var($req->getPost("suppressNotification"), FILTER_VALIDATE_BOOLEAN);
             if (!$suppressNotification) {
-                // TODO send notification
+                $this->reviewsEmailSender->newReviewComment($solution, $comment);
             }
         }
 
@@ -260,6 +271,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         $comment = $this->reviewComments->findOrThrow($commentId);
         if (!$this->assignmentSolutionAcl->canEditReviewComment($solution, $comment)) {
             throw new ForbiddenRequestException("You are not allowed to edit this review comment");
+        }
+
+        if ($comment->getSolution()->getId() !== $id) {
+            throw new BadRequestException("Selected comment does not belong into the review of selected solution");
         }
     }
 
@@ -292,6 +307,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
 
         if ($text !== $comment->getText() || $issueChanged) {
             // modification needed
+            $oldText = $comment->getText();
             $comment->setText($text);
             if ($issue !== null) {
                 $comment->setIssue($issue);
@@ -307,7 +323,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
 
                 $suppressNotification = filter_var($req->getPost("suppressNotification"), FILTER_VALIDATE_BOOLEAN);
                 if (!$suppressNotification) {
-                    // TODO send notification
+                    $this->reviewsEmailSender->changedReviewComment($solution, $comment, $oldText, $issueChanged);
                 }
             }
         }
@@ -322,6 +338,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         if (!$this->assignmentSolutionAcl->canDeleteReviewComment($solution, $comment)) {
             throw new ForbiddenRequestException("You are not allowed to delete this review comment");
         }
+
+        if ($comment->getSolution()->getId() !== $id) {
+            throw new BadRequestException("Selected comment does not belong into the review of selected solution");
+        }
     }
 
     /**
@@ -334,6 +354,12 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     {
         $comment = $this->reviewComments->findOrThrow($commentId);
         $this->reviewComments->remove($comment);
+
+        $solution = $this->assignmentSolutions->findOrThrow($id);
+        if ($solution->getReviewedAt() !== null) {
+            // review has been closed, report the modification
+            $this->reviewsEmailSender->removedReviewComment($solution, $comment);
+        }
         $this->sendSuccessResponse("OK");
     }
 }

@@ -61,7 +61,8 @@
         "limenet/git-version": "v0.1.6",
         "nelmio/alice": "^3.8",
         "ramsey/uuid-doctrine": "^1.8",
-        "eluceo/ical": "^2.7"
+        "eluceo/ical": "^2.7",
+        "league/commonmark": "^2.3"
     },
     "require-dev": {
         "mockery/mockery": "@stable",

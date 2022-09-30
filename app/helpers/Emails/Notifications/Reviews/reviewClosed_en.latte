@@ -1,0 +1,38 @@
+{emailSubject}Solution of {$assignment} reviewed{/emailSubject}
+
+<h3>A solution was reviewed!</h3>
+
+<p>
+    Your solution <strong>#{$attempt}</strong> (submitted at <strong>{$submitted|localizedDate:'en'}</strong>)
+    of the assignment <strong>{$assignment}</strong> in the group <strong>{$group}</strong> was reviewed.
+</p>
+
+{if !$issues && !$comments}
+<p>
+    There are no issues to be resolved no comments in the review.
+</p>
+{else}
+<p>
+    There are {count($issues) ? count($issues) : 'no'} issues to be resolved
+    and {count($comments) ? count($comments) : 'no'} comments in the review:
+    <a href="{$codeUrl}">{$codeUrl}</a>
+</p>
+{/if}
+
+{if $issues}
+<h4>Issues to be resolved:</h4>
+{/if}
+
+<div n:foreach="$issues as $issue">
+    <h5>... at <code>{$issue->getFile()}:{$issue->getLine()}</code> ...</h5>
+    {$issue->getText()|markdown}
+</div>
+
+{if $comments && count($comments) <= 5}
+<h4>Comments:</h4>
+
+<div n:foreach="$comments as $comment">
+    <h5>... at <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    {$comment->getText()|markdown}
+</div>
+{/if}

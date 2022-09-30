@@ -1,0 +1,37 @@
+{emailSubject}Řešení úlohy {$assignment} bylo přezkoumáno{/emailSubject}
+
+<h3>Proběhla revize vašeho řešení!</h3>
+
+<p>
+    Vaše řešení <strong>#{$attempt}</strong> (odevzdané <strong>{$submitted|localizedDate:'cs'}</strong>)
+    úlohy <strong>{$assignment}</strong> ze skupiny <strong>{$group}</strong> bylo revidováno vyučujícím.
+</p>
+
+{if !$issues && !$comments}
+<p>
+    K řešení nebyly uvedeny žádné připomínky ani komentáře.
+</p>
+{else}
+<p>
+    Máte celkem {count($issues)} připomínek k vyřešení a {count($comments)} komentářů:
+    <a href="{$codeUrl}">{$codeUrl}</a>
+</p>
+{/if}
+
+{if $issues}
+<h4>Připomínky k vyřešení:</h4>
+{/if}
+
+<div n:foreach="$issues as $issue">
+    <h5>... k <code>{$issue->getFile()}:{$issue->getLine()}</code> ...</h5>
+    {$issue->getText()|markdown}
+</div>
+
+{if $comments && count($comments) <= 5}
+<h4>Komentáře:</h4>
+
+<div n:foreach="$comments as $comment">
+    <h5>... k <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    {$comment->getText()|markdown}
+</div>
+{/if}

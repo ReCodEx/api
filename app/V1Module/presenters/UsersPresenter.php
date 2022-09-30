@@ -423,6 +423,8 @@ class UsersPresenter extends BasePresenter
      *        description="Flag if email should be sent to user when resubmission was evaluated")
      * @Param(type="post", name="solutionCommentsEmails", validation="bool", required=false,
      *        description="Flag if email should be sent to user when new submission comment is added")
+     * @Param(type="post", name="solutionReviewsEmails", validation="bool", required=false,
+     *        description="Flag enabling review-related email notifications sent to the author of the solution")
      * @Param(type="post", name="pointsChangedEmails", validation="bool", required=false,
      *        description="Flag if email should be sent to user when the points were awarded for assignment")
      * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", required=false,
@@ -445,6 +447,7 @@ class UsersPresenter extends BasePresenter
             "assignmentDeadlineEmails",
             "submissionEvaluatedEmails",
             "solutionCommentsEmails",
+            "solutionReviewsEmails",
             "assignmentCommentsEmails",
             "pointsChangedEmails",
             "assignmentSubmitAfterAcceptedEmails",
