@@ -133,9 +133,10 @@ parameters:
       from: %emails.from%
 
   reviewsNotifications:
+    pendingThreshold: -1 hour
     emails:
       from: %emails.from%
-      
+
   assignmentCommentsNotifications:
     emails:
       from: %emails.from%
@@ -294,6 +295,7 @@ services:
   - App\Console\CleanupExercisesFiles
   - App\Console\CleanupWorkerTmpFiles
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.deadlineThresholdFrom%, %assignmentNotifications.deadlineThresholdTo%)
+  - App\Console\SendPendingReviewsNotification(%reviewsNotifications.pendingThreshold%)
   - App\Console\AsyncJobsUpkeep(%async.upkeep%)
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase

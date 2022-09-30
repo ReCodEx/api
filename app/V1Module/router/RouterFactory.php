@@ -382,7 +382,10 @@ class RouterFactory
         $router[] = new DeleteRoute("$prefix/<id>/review", "AssignmentSolutionReviews:remove");
         $router[] = new PostRoute("$prefix/<id>/review-comment", "AssignmentSolutionReviews:newComment");
         $router[] = new PostRoute("$prefix/<id>/review-comment/<commentId>", "AssignmentSolutionReviews:editComment");
-        $router[] = new DeleteRoute("$prefix/<id>/review-comment/<commentId>", "AssignmentSolutionReviews:deleteComment");
+        $router[] = new DeleteRoute(
+            "$prefix/<id>/review-comment/<commentId>",
+            "AssignmentSolutionReviews:deleteComment"
+        );
 
         return $router;
     }

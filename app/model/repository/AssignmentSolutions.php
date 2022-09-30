@@ -8,6 +8,7 @@ use App\Model\Entity\User;
 use App\Model\Entity\Group;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
+use DateTime;
 
 /**
  * @extends BaseRepository<AssignmentSolution>
@@ -263,5 +264,14 @@ class AssignmentSolutions extends BaseRepository
         }
 
         return array_values($result);
+    }
+
+    public function findPendingReviews(DateTime $threshold): array
+    {
+        $qb = $this->createQueryBuilder('rc');
+        $qb->where($qb->expr()->isNull("rc.reviewedAt"))
+            ->andWhere($qb->expr()->isNotNull("rc.reviewStartedAt"))
+            ->andWhere($qb->expr()->lt("rc.reviewStartedAt", ":threshold"));
+        return $qb->getQuery()->getResult();
     }
 }
