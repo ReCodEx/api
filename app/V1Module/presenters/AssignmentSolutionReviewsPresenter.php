@@ -18,6 +18,7 @@ use App\Model\Repository\Users;
 use App\Model\Repository\ReviewComments;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Security\ACL\IUserPermissions;
 use DateTime;
 
 /**
@@ -49,6 +50,12 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutionAcl;
+
+    /**
+     * @var IUserPermissions
+     * @inject
+     */
+    public $userAcl;
 
     /**
      * @var AssignmentSolutionViewFactory
@@ -376,5 +383,25 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
             $this->reviewsEmailSender->removedReviewComment($solution, $comment);
         }
         $this->sendSuccessResponse("OK");
+    }
+
+    public function checkPending(string $id)
+    {
+        $user = $this->users->findOrThrow($id);
+        if (!$this->userAcl->canListPendingReviews($user)) {
+            throw new ForbiddenRequestException("You are not allowed to list pending reviews of given user");
+        }
+    }
+
+    /**
+     * Return all solutions with pending reviews that given user teaches (is admin/supervisor in corresponding groups).
+     * @GET
+     * @param string $id of the user whose pending reviews are listed
+     */
+    public function actionPending(string $id)
+    {
+        $user = $this->users->findOrThrow($id);
+        $solutions = $this->assignmentSolutions->findPendingReviewsOfTeacher($user);
+        $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions));
     }
 }

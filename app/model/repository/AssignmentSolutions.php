@@ -6,6 +6,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
 use DateTime;
@@ -266,12 +267,35 @@ class AssignmentSolutions extends BaseRepository
         return array_values($result);
     }
 
-    public function findPendingReviews(DateTime $threshold): array
+    /**
+     * Return a list of solutions which are under review for a longer time, awaiting its closure.
+     * @param DateTime $threshold pending reviews opened before the threshold are listed
+     * @return AssignmentSolution[]
+     */
+    public function findLingeringReviews(DateTime $threshold): array
     {
-        $qb = $this->createQueryBuilder('rc');
-        $qb->where($qb->expr()->isNull("rc.reviewedAt"))
-            ->andWhere($qb->expr()->isNotNull("rc.reviewStartedAt"))
-            ->andWhere($qb->expr()->lt("rc.reviewStartedAt", ":threshold"));
+        $qb = $this->createQueryBuilder('s');
+        $qb->where($qb->expr()->isNull("s.reviewedAt"))
+            ->andWhere($qb->expr()->isNotNull("s.reviewStartedAt"))
+            ->andWhere($qb->expr()->lt("s.reviewStartedAt", ":threshold"))
+            ->setParameter('threshold', $threshold);
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Return a list of solutions with pending reviews of given teacher.
+     * @param User $user who is responsible for the pending reviews (admin/supervisor)
+     * @return AssignmentSolution[]
+     */
+    public function findPendingReviewsOfTeacher(User $user): array
+    {
+        $qb = $this->createQueryBuilder('s');
+        $qb->innerJoin("s.assignment", "a")->innerJoin("a.group", "g")->innerJoin("g.memberships", "gm");
+        $qb->where($qb->expr()->eq("gm.user", ":user"))
+            ->andWhere($qb->expr()->in("gm.type", [ GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR ]))
+            ->andWhere($qb->expr()->isNotNull("s.reviewStartedAt"))
+            ->andWhere($qb->expr()->isNull("s.reviewedAt"))
+            ->setParameter('user', $user->getId());
         return $qb->getQuery()->getResult();
     }
 }

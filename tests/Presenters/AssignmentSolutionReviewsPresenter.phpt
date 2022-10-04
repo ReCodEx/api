@@ -551,6 +551,23 @@ class TestAssignmentSolutionReviewsPresenter extends Tester\TestCase
         Assert::count(1, $solution->getReviewComments());
         Assert::same(0, $solution->getIssuesCount());
     }
+
+    public function testGetPendingReviews()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = PresenterTestHelper::getUser($this->container, PresenterTestHelper::ADMIN_LOGIN);
+        $solution = $this->getPendingSolution();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:AssignmentSolutionReviews',
+            'GET',
+            ['action' => 'pending', 'id' => $user->getId() ],
+        );
+
+        Assert::count(1, $payload);
+        Assert::same($solution->getId(), $payload[0]['id']);
+    }
 }
 
 (new TestAssignmentSolutionReviewsPresenter())->run();
