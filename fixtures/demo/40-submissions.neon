@@ -1,5 +1,5 @@
 App\Model\Entity\SolutionEvaluation:
-    "evaluation{1..4}":
+    "evaluation{1..6}":
         __construct: false
         evaluatedAt: "<dateTime()>"
         initFailed: false
@@ -9,13 +9,13 @@ App\Model\Entity\SolutionEvaluation:
         initiationOutputs: ""
 
 App\Model\Entity\Solution:
-     "demoSolution{1..2}":
+     "demoSolution{1..4}":
         __construct:
             - @submitUser1
             - @CRuntime
 
 App\Model\Entity\SolutionFile:
-    "uploadedFile{1..2}":
+    "uploadedFile{1..4}":
         __construct:
             - "filename.ext"
             - "<dateTime()>"
@@ -42,6 +42,24 @@ App\Model\Entity\AssignmentSolution:
                 - 2
         bonusPoints: 1
         lastSubmission: @submission4
+    "solution3":
+        __construct:
+            createSolution:
+                - "pending"
+                - @demoAssignment
+                - "@demoSolution3"
+                - 3
+        reviewStartedAt: "<dateTimeBetween('-5 day', '-4 day')>"
+    "solution4":
+        __construct:
+            createSolution:
+                - "review done"
+                - @demoAssignment
+                - "@demoSolution4"
+                - 4
+        reviewStartedAt: "<dateTimeBetween('-6 day', '-5 day')>"
+        reviewedAt: "<dateTimeBetween('-5 day', '-4 day')>"
+        setIssuesCount: 1
 
 App\Model\Entity\SubmissionFailure:
     "resolvedSubmissionFailure":
@@ -79,11 +97,39 @@ App\Model\Entity\AssignmentSolutionSubmission:
             - "@solution1"
             - @submitUser1
         failure: "@unresolvedSubmissionFailure"
-
+    "submission7":
+        __construct:
+            - "@solution3"
+            - @submitUser1
+        evaluation: "@evaluation5"
+    "submission8":
+        __construct:
+            - "@solution4"
+            - @submitUser1
+        evaluation: "@evaluation6"
+ 
 App\Model\Entity\AssignmentSolver:
     "assignmentSolver1":
         __construct:
             - @demoAssignment
             - @submitUser1
-            - 2
             - 4
+            - 6
+
+App\Model\Entity\ReviewComment:
+    "issue1":
+        __construct:
+            - @solution4
+            - @demoAdmin
+            - "filename.ext"
+            - 42
+            - "Really bad piece of code, fix it!"
+            - true
+    "comment1":
+        __construct:
+            - @solution4
+            - @demoAdmin
+            - "filename.ext"
+            - 42
+            - "Good job!"
+            - false

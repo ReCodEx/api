@@ -64,7 +64,7 @@ class TestAssignmentSolversPresenter extends Tester\TestCase
 
         Assert::count(1, $result);
         Assert::equal($assignment->getId(), $result[0]->getAssignment()->getId());
-        Assert::equal(2, $result[0]->getLastAttemptIndex());
+        Assert::equal(4, $result[0]->getLastAttemptIndex());
     }
 
     public function testFetchGroup()
@@ -81,7 +81,7 @@ class TestAssignmentSolversPresenter extends Tester\TestCase
 
         Assert::count(1, $result);
         Assert::equal($assignment->getId(), $result[0]->getAssignment()->getId());
-        Assert::equal(2, $result[0]->getLastAttemptIndex());
+        Assert::equal(4, $result[0]->getLastAttemptIndex());
     }
 
     public function testFetchAssignmentWrongUser()

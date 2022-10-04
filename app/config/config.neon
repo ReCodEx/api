@@ -445,7 +445,7 @@ services:
 
 nettrine.dbal:
   debug:
-    panel: %debugMode%
+    panel: false
     sourcePaths: [%appDir%]
   connection:
     driver: pdo_mysql
