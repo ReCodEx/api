@@ -458,7 +458,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
         $assignment = null;
         $totalSubmissionCount = count($this->presenter->assignmentSubmissions->findAll());
-        $solutionCount = 2;
+        $solutionCount = 4;
 
         // Find an assignment with desired amount of submissions
         /** @var Assignment $candidate */

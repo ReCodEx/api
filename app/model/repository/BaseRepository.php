@@ -36,6 +36,11 @@ class BaseRepository
         $this->repository = $repository;
     }
 
+    public function getEntityManagerForDebugging(): EntityManagerInterface
+    {
+        return $this->em;
+    }
+
     /**
      * @param mixed $id
      * @return T|null

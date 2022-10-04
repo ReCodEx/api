@@ -97,7 +97,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Update the state of the review process of the solution.
      * @POST
-     * @Param(type="post", name="closed", validation="bool"
+     * @Param(type="post", name="close", validation="bool"
      *        description="If true, the review is closed. If false, the review is (re)opened.")
      * @param string $id identifier of the solution
      * @throws InternalServerException
@@ -105,13 +105,14 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     public function actionUpdate(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
-        $closed = filter_var($this->getRequest()->getPost("closed"), FILTER_VALIDATE_BOOLEAN);
+        $close = filter_var($this->getRequest()->getPost("close"), FILTER_VALIDATE_BOOLEAN);
+        $reviewedAt = $solution->getReviewedAt();
 
         if ($solution->getReviewStartedAt() === null) {
             $solution->setReviewStartedAt(new DateTime()); // the review is marked as opened in any case
         }
 
-        if ($solution->getReviewedAt() === null && $closed) {
+        if ($close && $reviewedAt === null) {
             // opened -> closed transition
             $solution->setReviewedAt(new DateTime());
 
@@ -122,16 +123,19 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
                 }
             }
             $solution->setIssuesCount($issues);
-
-            $this->assignmentSolutions->persist($solution);
-            $this->reviewsEmailSender->solutionReviewClosed($solution);
-        } elseif ($solution->getReviewedAt() !== null && !$closed) {
+        } elseif (!$close && $reviewedAt !== null) {
             // closed -> opened (reverse) transition
-            $reviewedAt = $solution->getReviewedAt();
             $solution->setReviewedAt(null);
             $solution->setIssuesCount(0);
+        }
 
-            $this->assignmentSolutions->persist($solution);
+        // make sure modifications are saved first
+        $this->assignmentSolutions->persist($solution);
+
+        // handle mail notifications
+        if ($close && $reviewedAt === null) {
+            $this->reviewsEmailSender->solutionReviewClosed($solution);
+        } elseif (!$close && $reviewedAt !== null) {
             $this->reviewsEmailSender->solutionReviewReopened($solution, $reviewedAt);
         }
 
@@ -207,6 +211,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         if (!$file) {
             throw new BadRequestException("The text of the comment must not be empty.");
         }
+
+        if ($line < 0) {
+            throw new BadRequestException("Invalid line number.");
+        }
     }
 
     /**
@@ -217,9 +225,9 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      *        description="Identification of the file to which the comment is related to.")
      * @Param(type="post", name="line", validation="numericint", required=true,
      *        description="Line in the designated file to which the comment is related to.")
-     * @Param(type="post", name="issue", validation="bool"
+     * @Param(type="post", name="issue", validation="bool", required=false,
      *        description="Whether the comment is an issue (expected to be resolved by the student)")
-     * @Param(type="post", name="suppressNotification", validation="bool"
+     * @Param(type="post", name="suppressNotification", validation="bool", required=false,
      *        description="If true, no email notification will be sent (only applies when the review has been closed)")
      * @param string $id identifier of the solution
      * @throws InternalServerException
@@ -282,9 +290,9 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * Update existing comment within a review.
      * @POST
      * @Param(type="post", name="text", validation="string:1..65535", required=true, description="The comment itself.")
-     * @Param(type="post", name="issue", validation="bool"
+     * @Param(type="post", name="issue", validation="bool", required=false,
      *        description="Whether the comment is an issue (expected to be resolved by the student)")
-     * @Param(type="post", name="suppressNotification", validation="bool"
+     * @Param(type="post", name="suppressNotification", validation="bool", required=false,
      *        description="If true, no email notification will be sent (only applies when the review has been closed)")
      * @param string $id identifier of the solution
      * @param string $commentId identifier of the review comment
@@ -353,10 +361,17 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     public function actionDeleteComment(string $id, string $commentId)
     {
         $comment = $this->reviewComments->findOrThrow($commentId);
+        $isIssue = $comment->isIssue();
         $this->reviewComments->remove($comment);
 
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if ($solution->getReviewedAt() !== null) {
+            if ($isIssue) {
+                $solution->setIssuesCount($solution->getIssuesCount() - 1);
+                $this->assignmentSolutions->persist($solution);
+            }
+            $this->reviewComments->flush();
+
             // review has been closed, report the modification
             $this->reviewsEmailSender->removedReviewComment($solution, $comment);
         }

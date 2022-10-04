@@ -28,7 +28,7 @@ class ReviewComment implements JsonSerializable
 
     /**
      * @var AssignmentSolution
-     * @ORM\ManyToOne(targetEntity="AssignmentSolution", cascade={"persist", "remove"}, inversedBy="reviewComments")
+     * @ORM\ManyToOne(targetEntity="AssignmentSolution", cascade={"persist"}, inversedBy="reviewComments")
      */
     protected $solution;
 
@@ -77,6 +77,7 @@ class ReviewComment implements JsonSerializable
         $this->line = $line;
         $this->text = $text;
         $this->issue = $issue;
+        $this->createdAt = new DateTime();
     }
 
     public function jsonSerialize(): mixed
