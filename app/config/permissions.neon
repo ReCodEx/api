@@ -255,6 +255,7 @@ permissions:
         - viewDetail
         - viewList
         - viewAll
+        - listPendingReviews
 
     - allow: true
       role: student
@@ -306,6 +307,13 @@ permissions:
       actions:
         - viewDetail
       conditions: user.isReaderOfJoinedGroup
+
+    - allow: true
+      role: supervisor-student
+      resource: user
+      actions:
+          - listPendingReviews
+      conditions: user.isSameUser
 
     - allow: true
       role: supervisor

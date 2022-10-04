@@ -58,7 +58,7 @@ class SendPendingReviewsNotification extends Command
         if ($this->threshold) {
             $threshold->modify($this->threshold); // only reviews opened before treshold are reported
         }
-        $pendingReviews = $this->assignmentSolutions->findPendingReviews($threshold);
+        $pendingReviews = $this->assignmentSolutions->findLingeringReviews($threshold);
 
         $pendingPerUser = [];
         $users = [];

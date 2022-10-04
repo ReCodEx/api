@@ -466,6 +466,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/allowed", "Users:setAllowed");
         $router[] = new GetRoute("$prefix/<id>/calendar-tokens", "UserCalendars:userCalendars");
         $router[] = new PostRoute("$prefix/<id>/calendar-tokens", "UserCalendars:createCalendar");
+        $router[] = new GetRoute("$prefix/<id>/pending-reviews", "AssignmentSolutionReviews:pending");
         return $router;
     }
 
