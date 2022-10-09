@@ -39,7 +39,7 @@ class SendPendingReviewsNotification extends Command
     protected function configure()
     {
         $this->setName(self::$defaultName)->setDescription(
-            'Send notifications for pending (not closed) code revirews to group admins.'
+            'Send notifications for pending (not closed) code reviews to group admins.'
         );
     }
 
@@ -48,6 +48,11 @@ class SendPendingReviewsNotification extends Command
     private function getGroupAdmins(Group $group): array
     {
         if (!array_key_exists($group->getId(), $this->groupAdminsCache)) {
+            $admins = [];
+            foreach ($group->getPrimaryAdmins() as $admin) {
+                $admins[$admin->getId()] = $admin;
+            }
+            $this->groupAdminsCache[$group->getId()] = $admins;
         }
         return $this->groupAdminsCache[$group->getId()];
     }
@@ -56,7 +61,7 @@ class SendPendingReviewsNotification extends Command
     {
         $threshold = new DateTime();
         if ($this->threshold) {
-            $threshold->modify($this->threshold); // only reviews opened before treshold are reported
+            $threshold->modify($this->threshold); // only reviews opened before threshold are reported
         }
         $pendingReviews = $this->assignmentSolutions->findLingeringReviews($threshold);
 

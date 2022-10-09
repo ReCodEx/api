@@ -74,7 +74,7 @@ class AssignmentSolution
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * Time when a review was closed (and comments made visible to student).
+     * Time when a review was closed (and the students were duly notified the comments are complete).
      * Not null value also marks the solution as "reviewed" (replaces previous bool flag).
      */
     protected $reviewedAt = null;
@@ -82,6 +82,8 @@ class AssignmentSolution
     /**
      * @ORM\Column(type="integer")
      * Number of issues made in review comments. This is an aggregated cached value so it can be accessed faster.
+     * The number of issues is computed when (and updated after) the review is closed.
+     * When the review is open, the number of issues is kept 0, regardless of how many issue comments exist.
      */
     protected $issues = 0;
 

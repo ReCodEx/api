@@ -123,7 +123,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
             // opened -> closed transition
             $solution->setReviewedAt(new DateTime());
 
-            $issues = 0; // issues are duly counter only when the review is closed
+            $issues = 0; // issues are duly counted only when the review is closed
             foreach ($solution->getReviewComments() as $comment) {
                 if ($comment->isIssue()) {
                     ++$issues;
@@ -203,7 +203,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     public function checkNewComment(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
-        if (!$this->assignmentSolutionAcl->canReview($solution)) {
+        if (!$this->assignmentSolutionAcl->canAddReviewComment($solution)) {
             throw new ForbiddenRequestException("You cannot perform a review of this solution");
         }
     }
@@ -373,13 +373,14 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
 
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if ($solution->getReviewedAt() !== null) {
+            // review is already closed, this needs special treatement
             if ($isIssue) {
                 $solution->setIssuesCount($solution->getIssuesCount() - 1);
                 $this->assignmentSolutions->persist($solution);
             }
             $this->reviewComments->flush();
 
-            // review has been closed, report the modification
+            // deletions are always reported (if the review is closed)
             $this->reviewsEmailSender->removedReviewComment($solution, $comment);
         }
         $this->sendSuccessResponse("OK");
