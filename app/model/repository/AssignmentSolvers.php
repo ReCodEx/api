@@ -105,9 +105,8 @@ class AssignmentSolvers extends BaseRepository
      */
     public function getTotalSolutionsCount(): int
     {
-        $query = $this->em->createQuery("SELECT SUM(s.lastAttemptIndex) FROM App\Model\Entity\AssignmentSolver s");
-        $result = $query->getResult();
-        return count($result) === 0 ? 0 : current($result);
+        $qb = $this->createQueryBuilder("s")->select('SUM(s.lastAttemptIndex)');
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -116,8 +115,7 @@ class AssignmentSolvers extends BaseRepository
      */
     public function getTotalEvaluationsCount(): int
     {
-        $query = $this->em->createQuery("SELECT SUM(s.evaluationsCount) FROM App\Model\Entity\AssignmentSolver s");
-        $result = $query->getResult();
-        return count($result) === 0 ? 0 : current($result);
+        $qb = $this->createQueryBuilder("s")->select('SUM(s.evaluationsCount)');
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
 }
