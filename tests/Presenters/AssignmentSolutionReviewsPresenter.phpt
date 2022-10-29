@@ -565,8 +565,10 @@ class TestAssignmentSolutionReviewsPresenter extends Tester\TestCase
             ['action' => 'pending', 'id' => $user->getId() ],
         );
 
-        Assert::count(1, $payload);
-        Assert::same($solution->getId(), $payload[0]['id']);
+        Assert::count(1, $payload['solutions']);
+        Assert::count(1, $payload['assignments']);
+        Assert::same($solution->getId(), $payload['solutions'][0]['id']);
+        Assert::same($solution->getAssignment()->getId(), $payload['assignments'][0]['id']);
     }
 }
 

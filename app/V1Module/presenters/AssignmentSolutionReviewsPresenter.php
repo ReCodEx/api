@@ -16,6 +16,7 @@ use App\Model\Entity\ReviewComment;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Users;
 use App\Model\Repository\ReviewComments;
+use App\Model\View\AssignmentViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IUserPermissions;
@@ -56,6 +57,12 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @inject
      */
     public $userAcl;
+
+    /**
+     * @var AssignmentViewFactory
+     * @inject
+     */
+    public $assignmentsViewFactory;
 
     /**
      * @var AssignmentSolutionViewFactory
@@ -396,6 +403,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
 
     /**
      * Return all solutions with pending reviews that given user teaches (is admin/supervisor in corresponding groups).
+     * Along with that it returns all assignment entities of the corresponding solutions.
      * @GET
      * @param string $id of the user whose pending reviews are listed
      */
@@ -403,6 +411,18 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     {
         $user = $this->users->findOrThrow($id);
         $solutions = $this->assignmentSolutions->findPendingReviewsOfTeacher($user);
-        $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions));
+
+        $assignments = [];
+        foreach ($solutions as $solution) {
+            $assignment = $solution->getAssignment();
+            if ($assignment) {
+                $assignments[$assignment->getId()] = $assignment;
+            }
+        }
+
+        $this->sendSuccessResponse([
+            'solutions' => $this->assignmentSolutionViewFactory->getUserSolutionsData($solutions),
+            'assignments' => $this->assignmentsViewFactory->getAssignments(array_values($assignments)),
+        ]);
     }
 }
