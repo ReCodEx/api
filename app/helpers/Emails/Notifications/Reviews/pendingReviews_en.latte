@@ -7,7 +7,7 @@
 </p>
 
 <ul>
-    <li n:for-each="$solutions as $solution">
+    <li n:foreach="$solutions as $solution">
         <a href="{$solution->solutionUrl}">solution #{$solution->attempt}</a> (submitted at {$solution->submitted|localizedDate:'en'})
         of the <a href="{$solution->assignmentUrl}">assignment <em>{$solution->assignment}</em></a> in the group <em>{$solution->group}</em>
     </li>

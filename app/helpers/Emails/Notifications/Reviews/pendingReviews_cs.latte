@@ -7,7 +7,7 @@
 </p>
 
 <ul>
-    <li n:for-each="$solutions as $solution">
+    <li n:foreach="$solutions as $solution">
         <a href="{$solution->solutionUrl}">řešení #{$solution->attempt}</a> (odevzdané {$solution->submitted|localizedDate:'cs'})
         k <a href="{$solution->assignmentUrl}">úloze <em>{$solution->assignment}</em></a> ve skupině <em>{$solution->group}</em>
     </li>

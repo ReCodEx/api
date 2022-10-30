@@ -111,7 +111,7 @@ parameters:
     forgottenPasswordUrl: "%webapp.address%/forgotten-password/change?{token}"  # URL of web application where the password can be changed
     emailVerificationUrl: "%webapp.address%/email-verification?{token}"
     invitationUrl: "%webapp.address%/accept-invitation?{token}"
-    solutionSourceFilesUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
+    solutionSourceFilesUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}/sources"
 
   assignmentNotifications:
     deadlineThresholdFrom: +1 day
