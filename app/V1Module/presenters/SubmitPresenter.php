@@ -217,12 +217,11 @@ class SubmitPresenter extends BasePresenter
         $assignment = $this->assignments->findOrThrow($id);
         $user = $this->getUserOrCurrent($userId);
 
-        $this->sendSuccessResponse(
-            [
-                "canSubmit" => $this->canReceiveSubmissions($assignment, $user),
-                "submittedCount" => count($this->assignmentSolutions->findValidSolutions($assignment, $user))
-            ]
-        );
+        $response = $this->assignmentSolutions->getSolutionStats($assignment, $user);
+        $response['canSubmit'] = $this->canReceiveSubmissions($assignment, $user);
+        $response['submittedCount'] = $response['evaluated']; // BC, DEPRECATED, will be removed in future
+
+        $this->sendSuccessResponse($response);
     }
 
     /**

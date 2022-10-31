@@ -101,7 +101,7 @@ class TestSubmitPresenter extends Tester\TestCase
         }
     }
 
-    public function testCanSubmit()
+    public function testCanSubmitAdmin()
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -119,9 +119,36 @@ class TestSubmitPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
 
         $payload = $result['payload'];
-        Assert::count(2, $payload);
+        Assert::count(5, $payload);
         Assert::equal(true, $payload["canSubmit"]);
-        Assert::equal(0, $payload["submittedCount"]);
+        Assert::equal(0, $payload["total"]);
+        Assert::equal(0, $payload["evaluated"]);
+        Assert::equal(0, $payload["failed"]);
+    }
+
+    public function testCanSubmitUser()
+    {
+        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+
+        $assignment = current($this->assignments->findAll());
+
+        $request = new Nette\Application\Request(
+            'V1:Submit',
+            'GET',
+            ['action' => 'canSubmit', 'id' => $assignment->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+
+        $payload = $result['payload'];
+        Assert::count(5, $payload);
+        Assert::equal(true, $payload["canSubmit"]);
+        Assert::equal(2, $payload["total"]);
+        Assert::equal(1, $payload["evaluated"]);
+        Assert::equal(1, $payload["failed"]);
     }
 
     public function testSubmit()

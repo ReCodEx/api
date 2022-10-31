@@ -298,4 +298,31 @@ class AssignmentSolutions extends BaseRepository
             ->setParameter('user', $user->getId());
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Get statistics about submitted solutions for a particular user and assignment.
+     * @param Assignment $assignment
+     * @param User $user
+     * @return array associative array with 'total', 'evaluated', and 'failed' keys (each holding a counter)
+     */
+    public function getSolutionStats(Assignment $assignment, User $user): array
+    {
+        $query = 'WITH selsols (evaluation_id, failure_id) AS (
+            SELECT asub.evaluation_id, asub.failure_id FROM solution AS sol
+                JOIN assignment_solution AS asol ON asol.solution_id = sol.id
+                JOIN assignment_solution_submission AS asub ON asol.last_submission_id = asub.id
+                WHERE asol.assignment_id = :assignmentId AND sol.author_id = :authorId
+            )
+            SELECT
+                (SELECT COUNT(*) FROM selsols) AS total,  
+                (SELECT COUNT(*) FROM selsols WHERE evaluation_id IS NOT NULL AND failure_id IS NULL) AS evaluated,
+                (SELECT COUNT(*) FROM selsols WHERE evaluation_id IS NULL AND failure_id IS NOT NULL) AS failed';
+
+        $conn = $this->em->getConnection();
+        $stmt = $conn->prepare($query);
+        return $stmt->execute([
+            'assignmentId' => $assignment->getId(),
+            'authorId' => $user->getId(),
+        ])->fetchAssociative();
+    }
 }
