@@ -50,6 +50,11 @@ class Comment implements JsonSerializable
         $this->isPrivate = !$this->isPrivate;
     }
 
+    public function setPrivate(bool $private): void
+    {
+        $this->isPrivate = $private;
+    }
+
     public function isPrivate(): bool
     {
         return $this->isPrivate;

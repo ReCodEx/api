@@ -236,20 +236,20 @@ class TestCommentsPresenter extends Tester\TestCase
         Assert::equal("5d45dcd0-50e7-4b2a-a291-cfe4b5fb5cbb", $comment->getCommentThread()->getId());
     }
 
-    public function testTogglePrivate()
+    public function testSetPrivate()
     {
         PresenterTestHelper::login($this->container, $this->userLogin);
 
         $comments = $this->presenter->comments->findAll();
         $exampleComment = array_pop($comments);
-        $oldPrivateFlag = $exampleComment->isPrivate();
-        $oldId = $exampleComment->getId();
+        $newPrivate = !$exampleComment->isPrivate();
+        $id = $exampleComment->getId();
 
         $request = new Nette\Application\Request(
             'V1:Comments',
             'POST',
-            ['action' => 'togglePrivate', 'threadId' => '6b89a6df-f7e8-4c2c-a216-1b7cb4391647',
-                'commentId' => $exampleComment->getId()]
+            ['action' => 'setPrivate', 'threadId' => '6b89a6df-f7e8-4c2c-a216-1b7cb4391647', 'commentId' => $id],
+            ['isPrivate' => $newPrivate]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -257,8 +257,8 @@ class TestCommentsPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         $comment = $result['payload'];
-        Assert::equal($comment->getId(), $oldId);
-        Assert::true($comment->isPrivate() !== $oldPrivateFlag);
+        Assert::equal($comment->getId(), $id);
+        Assert::true($comment->isPrivate() === $newPrivate);
     }
 }
 
