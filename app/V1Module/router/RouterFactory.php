@@ -121,6 +121,7 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>", "Comments:default");
         $router[] = new PostRoute("$prefix/<id>", "Comments:addComment");
         $router[] = new PostRoute("$prefix/<threadId>/comment/<commentId>/toggle", "Comments:togglePrivate");
+        $router[] = new PostRoute("$prefix/<threadId>/comment/<commentId>/private", "Comments:setPrivate");
         $router[] = new DeleteRoute("$prefix/<threadId>/comment/<commentId>", "Comments:delete");
         return $router;
     }

@@ -125,7 +125,8 @@ class CommentsPresenter extends BasePresenter
      * Add a comment to a thread
      * @POST
      * @Param(type="post", name="text", validation="string:1..65535", description="Text of the comment")
-     * @Param(type="post", name="isPrivate", validation="string", description="True if the comment is private")
+     * @Param(type="post", name="isPrivate", validation="bool", required=false,
+     *        description="True if the comment is private")
      * @param string $id Identifier of the comment thread
      * @throws ForbiddenRequestException
      */
@@ -155,7 +156,7 @@ class CommentsPresenter extends BasePresenter
         } else {
             // Nothing to do at the moment...
         }
-        
+
 
         $this->sendSuccessResponse($comment);
     }
@@ -176,6 +177,7 @@ class CommentsPresenter extends BasePresenter
 
     /**
      * Make a private comment public or vice versa
+     * @DEPRECATED
      * @POST
      * @param string $threadId Identifier of the comment thread
      * @param string $commentId Identifier of the comment
@@ -189,6 +191,43 @@ class CommentsPresenter extends BasePresenter
         $comment->togglePrivate();
         $this->comments->persist($comment);
         $this->comments->flush();
+
+        $this->sendSuccessResponse($comment);
+    }
+
+    public function checkSetPrivate(string $threadId, string $commentId)
+    {
+        /** @var Comment $comment */
+        $comment = $this->comments->findOrThrow($commentId);
+
+        if ($comment->getThread()->getId() !== $threadId) {
+            throw new NotFoundException();
+        }
+
+        if (!$this->commentAcl->canAlter($comment)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Set the private flag of a comment
+     * @POST
+     * @param string $threadId Identifier of the comment thread
+     * @param string $commentId Identifier of the comment
+     * @Param(type="post", name="isPrivate", validation="bool", description="True if the comment is private")
+     * @throws NotFoundException
+     */
+    public function actionSetPrivate(string $threadId, string $commentId)
+    {
+        /** @var Comment $comment */
+        $comment = $this->comments->findOrThrow($commentId);
+        $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
+
+        if ($comment->isPrivate() !== $isPrivate) {
+            $comment->setPrivate($isPrivate);
+            $this->comments->persist($comment);
+            $this->comments->flush();
+        }
 
         $this->sendSuccessResponse($comment);
     }
