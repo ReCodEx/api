@@ -19,13 +19,13 @@ use Nette\Utils\Arrays;
 class BrokerProxy
 {
 
-    const EXPECTED_RESULT = "accept";
-    const REJECTED_RESULT = "reject";
-    const EXPECTED_ACK = "ack";
+    private const EXPECTED_RESULT = "accept";
+    private const REJECTED_RESULT = "reject";
+    private const EXPECTED_ACK = "ack";
 
-    const COMMAND_STATS = "get-runtime-stats";
-    const COMMAND_FREEZE = "freeze";
-    const COMMAND_UNFREEZE = "unfreeze";
+    private const COMMAND_STATS = "get-runtime-stats";
+    private const COMMAND_FREEZE = "freeze";
+    private const COMMAND_UNFREEZE = "unfreeze";
 
     /** @var string IP address or hostname (with port) of ReCodEx broker */
     private $brokerAddress;
@@ -108,7 +108,8 @@ class BrokerProxy
         if ($ack[0] !== self::EXPECTED_ACK) {
             $queue->disconnect($this->brokerAddress);
             throw new SubmissionFailedException(
-                "Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack[0]' instead."
+                "Broker did not send correct acknowledgement message, expected '"
+                    . self::EXPECTED_ACK . "', but received '$ack[0]' instead."
             );
         }
 

@@ -81,6 +81,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $asyncJob = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:AsyncJobs', 'POST', ['action' => 'ping']);
+        $asyncJobId = $asyncJob->getId();
 
         Assert::type(AsyncJob::class, $asyncJob);
         Assert::equal('ping', $asyncJob->getCommand());
@@ -89,6 +90,7 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         $worker = $this->createWorker();
         $worker->run('w1');
 
+        $asyncJob = $this->asyncJobs->findOrThrow($asyncJobId); // complete reload since worker erases em caches
         $asyncJob2 = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:AsyncJobs',
@@ -98,8 +100,6 @@ class TestAsyncJobsPresenter extends Tester\TestCase
 
         Assert::type(AsyncJob::class, $asyncJob2);
         Assert::equal($asyncJob->getId(), $asyncJob2->getId());
-
-        $this->asyncJobs->refresh($asyncJob);
         Assert::truthy($asyncJob->getFinishedAt());
         Assert::null($asyncJob->getError());
     }

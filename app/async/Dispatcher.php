@@ -112,9 +112,15 @@ class Dispatcher
             throw new InvalidArgumentException("Unknown async job type '$command'.");
         }
 
+        // clear entity cache to make sure the job will load fresh data from DB
+        $jobId = $job->getId();
+        $this->entityManager->clear();
+        $jobReloaded = $this->asyncJobs->findOrThrow($jobId);
+
+
         // pending handler is set so it can be interrupted by async handler
         $this->pendingHandler = $this->knownHandlers[$command];
-        $this->pendingHandler->execute($job);
+        $this->pendingHandler->execute($jobReloaded);
         $this->pendingHandler = null;
     }
 

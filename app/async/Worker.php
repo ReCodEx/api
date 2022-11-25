@@ -178,25 +178,33 @@ class Worker
             // this job has been beaten to death...
             $job->setFinishedNow();
             $this->asyncJobs->persist($job);
-            $this->asyncJobs->flush();
             return;
         }
 
         --$this->jobsRemaining; // this counter goes down even in case of failure
 
+        $id = $job->getId();
+        $error = null;
         try {
             $this->dispatcher->dispatch($job);
-            $job->setFinishedNow();
         } catch (Exception $e) {
-            $job->appendError($e->getMessage());
+            $error = $e->getMessage();
             $this->logger->log(
                 sprintf("Job '%s' failed (try #%d): %s", $job->getCommand(), $job->getRetries(), $e->getMessage()),
                 ILogger::ERROR
             );
         }
 
-        $this->asyncJobs->persist($job);
-        $this->asyncJobs->flush();
+        // we need to relaod the job since the dispatcher might cleared the caches...
+        $jobReloaded = $this->asyncJobs->get($id);
+        if ($jobReloaded) {
+            if ($error) {
+                $jobReloaded->appendError($error);
+            } else {
+                $jobReloaded->setFinishedNow();
+            }
+            $this->asyncJobs->persist($jobReloaded);
+        }
     }
 
     /**
