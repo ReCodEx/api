@@ -70,7 +70,7 @@ class AssignmentViewFactory
             "exerciseSynchronizationInfo" => [
                 "isSynchronizationPossible" => $exercise && !$exercise->isBroken(),
                 "updatedAt" => [
-                    "assignment" => $assignment->getUpdatedAt()->getTimestamp(),
+                    "assignment" => $assignment->getSyncedAt()->getTimestamp(),
                     "exercise" => $exercise ? $exercise->getUpdatedAt()->getTimestamp() : null,
                 ],
                 "exerciseConfig" => [

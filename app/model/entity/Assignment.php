@@ -68,7 +68,8 @@ class Assignment extends AssignmentBase implements IExercise
         $this->isBonus = $isBonus;
         $this->pointsPercentualThreshold = $pointsPercentualThreshold;
         $this->createdAt = new DateTime();
-        $this->updatedAt = new DateTime();
+        $this->updatedAt = $this->createdAt;
+        $this->syncedAt = $this->createdAt;
         $this->configurationType = $exercise->getConfigurationType();
         $this->supplementaryEvaluationFiles = $exercise->getSupplementaryEvaluationFiles();
         $this->attachmentFiles = $exercise->getAttachmentFiles();
@@ -328,6 +329,16 @@ class Assignment extends AssignmentBase implements IExercise
         )->getValues();
     }
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $syncedAt;
+
+    public function getSyncedAt(): DateTime
+    {
+        return $this->syncedAt;
+    }
+
     public function areRuntimeEnvironmentConfigsInSync(): bool
     {
         $exercise = $this->getExercise();
@@ -380,11 +391,8 @@ class Assignment extends AssignmentBase implements IExercise
 
         $missingOurs = (bool)$theirLocales; // some exercise locales were not processed
 
-        // if some locales are missing on either side, the exercise must have been modified after the assignment
-        return (!$missingTheirs && !$missingOurs) || $this->getUpdatedAt() >= $exercise->getUpdatedAt();
-        // TODO: this should be replaced with some better condition, but we need to modify the data model first
-        // Either we need a separate updatedAt just for localized texts, or we need to keep placeholders
-        // for deleted localized texts
+        // if some locales are missing on either side, the exercise must have been modified after the last sync
+        return (!$missingTheirs && !$missingOurs) || $this->getSyncedAt() >= $exercise->getUpdatedAt();
     }
 
     public function areLimitsInSync(): bool
@@ -506,6 +514,8 @@ class Assignment extends AssignmentBase implements IExercise
         foreach ($exercise->getRuntimeEnvironments() as $env) {
             $this->runtimeEnvironments->add($env);
         }
+
+        $this->syncedAt = new DateTime();
     }
 
     /*
