@@ -174,6 +174,14 @@ class AssignmentSolution
     protected $reviewComments;
 
     /**
+     * @var PlagiarismDetectionBatch|null
+     * @ORM\ManyToOne(targetEntity="PlagiarismDetectionBatch")
+     * Refers to last plagarism detection batch, in which similarities were detected for this solution.
+     * If null, no similarities were detected (yet).
+     */
+    protected $plagiarismBatch = null;
+
+    /**
      * AssignmentSolution constructor.
      */
     private function __construct()
@@ -318,5 +326,15 @@ class AssignmentSolution
     public function getAttemptIndex(): int
     {
         return $this->attemptIndex;
+    }
+
+    public function getPlagiarismBatch(): ?PlagiarismDetectionBatch
+    {
+        return $this->plagiarismBatch;
+    }
+
+    public function setPlagiarismBatch(?PlagiarismDetectionBatch $batch = null)
+    {
+        $this->plagiarismBatch = $batch;
     }
 }

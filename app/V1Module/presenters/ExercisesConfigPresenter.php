@@ -185,7 +185,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * Configurations can be added or deleted here, based on what is provided in arguments.
      * @POST
      * @param string $id identification of exercise
-     * @Param(type="post", name="environmentConfigs", validation="array", description="Environment configurations for the exercise")
+     * @Param(type="post", name="environmentConfigs", validation="array",
+     *        description="Environment configurations for the exercise")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws ExerciseConfigException
@@ -302,7 +303,8 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Set basic exercise configuration
      * @POST
-     * @Param(type="post", name="config", description="A list of basic high level exercise configuration", validation="array")
+     * @Param(type="post", name="config", validation="array",
+     *        description="A list of basic high level exercise configuration")
      * @param string $id Identifier of the exercise
      * @throws ExerciseConfigException
      * @throws ForbiddenRequestException
@@ -450,7 +452,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set resource limits for an exercise for given hwgroup.
      * @DEPRECATED
      * @POST
-     * @Param(type="post", name="limits", description="A list of resource limits for the given environment and hardware group", validation="array")
+     * @Param(type="post", name="limits", validation="array",
+     *        description="A list of resource limits for the given environment and hardware group")
      * @param string $id Identifier of the exercise
      * @param string $runtimeEnvironmentId
      * @param string $hwGroupId
@@ -603,7 +606,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * If limits for particular hwGroup or environment are not posted, no change occurs.
      * If limits for particular hwGroup or environment are posted as null, they are removed.
      * @POST
-     * @Param(type="post", name="limits", description="A list of resource limits in the same format as getLimits endpoint yields.", validation="array")
+     * @Param(type="post", name="limits", validation="array",
+     *        description="A list of resource limits in the same format as getLimits endpoint yields.")
      * @param string $id Identifier of the exercise
      * @throws ForbiddenRequestException
      * @throws NotFoundException
@@ -688,7 +692,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set score configuration for exercise.
      * @POST
      * @Param(type="post", name="scoreCalculator", validation="string", description="ID of the score calculator")
-     * @Param(type="post", name="scoreConfig", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
+     * @Param(type="post", name="scoreConfig",
+     *        description="A configuration of the score calculator (the format depends on the calculator type)")
      * @param string $id Identifier of the exercise
      * @throws ExerciseConfigException
      */
@@ -751,7 +756,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set tests for exercise based on given identification.
      * @POST
      * @param string $id Identifier of the exercise
-     * @Param(type="post", name="tests", validation="array", description="An array of tests which will belong to exercise")
+     * @Param(type="post", name="tests", validation="array",
+     *        description="An array of tests which will belong to exercise")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws ExerciseConfigException
