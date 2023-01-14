@@ -408,6 +408,7 @@ permissions:
           - viewEvaluationJudgeStderr
           - viewResubmissions
           - viewReview
+          - viewDetectedPlagiarisms
 
     - allow: true
       role: student
@@ -446,6 +447,7 @@ permissions:
           - viewEvaluationValues
           - viewResubmissions
           - viewReview
+          - viewDetectedPlagiarisms
           - downloadResultArchive
       conditions:
           - assignmentSolution.isObserverOrBetter
@@ -979,3 +981,14 @@ permissions:
       resource: asyncJob
       actions:
         - list
+
+    ####################################
+    # Plagiarism detection permissions #
+    ####################################
+
+    - allow: true
+      role: scope-plagiarisms
+      resource: plagiarism
+      actions:
+          - createBatch
+          - updateBatch

@@ -234,6 +234,7 @@ acl:
     notification: App\Security\ACL\INotificationPermissions
     broker: App\Security\ACL\IBrokerPermissions
     asyncJob: App\Security\ACL\IAsyncJobPermissions
+    plagiarism: App\Security\ACL\IPlagiarismPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -307,6 +308,7 @@ services:
   - App\Console\RuntimeImport
   - App\Console\FixExerciseConfigs
   - App\Console\FixConfigVariables
+  - App\Console\PlagiarismDectectionAccessToken
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -429,6 +431,9 @@ services:
   - App\Model\Repository\ShadowAssignments
   - App\Model\Repository\ShadowAssignmentPointsRepository
   - App\Model\Repository\Notifications
+  - App\Model\Repository\PlagiarismDetectionBatches
+  - App\Model\Repository\PlagiarismDetectedSimilarities
+  - App\Model\Repository\PlagiarismDetectedSimilarFiles
 
   # views factories
   - App\Model\View\ExerciseViewFactory

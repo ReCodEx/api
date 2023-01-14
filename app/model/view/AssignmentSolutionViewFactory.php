@@ -142,6 +142,7 @@ class AssignmentSolutionViewFactory
                 "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
                 "last" => $this->comments->getThreadLastComment($thread, $user),
             ] : null,
+            "plagiarism" => $solution->getPlagiarismBatch() ? $solution->getPlagiarismBatch()->getId() : null,
             "permissionHints" => PermissionHints::get($this->assignmentSolutionAcl, $solution)
         ];
     }

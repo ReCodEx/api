@@ -48,4 +48,6 @@ interface IAssignmentSolutionPermissions
     public function canEditReviewComment(AssignmentSolution $assignmentSolution, ReviewComment $reviewComment): bool;
 
     public function canDeleteReviewComment(AssignmentSolution $assignmentSolution, ReviewComment $reviewComment): bool;
+
+    public function canViewDetectedPlagiarisms(AssignmentSolution $assignmentSolution): bool;
 }

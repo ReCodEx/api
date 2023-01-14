@@ -22,7 +22,6 @@ use Eluceo\iCal\Domain\Entity\Calendar;
 use Eluceo\iCal\Presentation\Factory\CalendarFactory;
 use Eluceo\iCal\Domain\ValueObject;
 use DateTime;
-use DateTimeImmutable;
 
 /**
  * User iCal management endpoints
