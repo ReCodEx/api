@@ -13,14 +13,18 @@ use App\Helpers\FileStorage\FileStorageException;
 use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\UploadedPartialFiles;
+use App\Model\Repository\PlagiarismDetectedSimilarFiles;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
+use App\Model\Entity\SolutionFile;
 use App\Model\Entity\SolutionZipFile;
 use App\Security\ACL\IUploadedFilePermissions;
 use App\Security\ACL\IUploadedPartialFilePermissions;
+use App\Security\ACL\IAssignmentSolutionPermissions;
 use ForceUTF8\Encoding;
 use Nette\Utils\Strings;
 use Nette\Http\IResponse;
@@ -60,6 +64,12 @@ class UploadedFilesPresenter extends BasePresenter
     public $assignments;
 
     /**
+     * @var AssignmentSolutions
+     * @inject
+     */
+    public $assignmentSolutions;
+
+    /**
      * @var IUploadedFilePermissions
      * @inject
      */
@@ -72,10 +82,22 @@ class UploadedFilesPresenter extends BasePresenter
     public $uploadedPartialFileAcl;
 
     /**
+     * @var IAssignmentSolutionPermissions
+     * @inject
+     */
+    public $assignmentSolutionAcl;
+
+    /**
      * @var SupplementaryExerciseFiles
      * @inject
      */
     public $supplementaryFiles;
+
+    /**
+     * @var PlagiarismDetectedSimilarFiles
+     * @inject
+     */
+    public $detectedSimilarFiles;
 
     /**
      * @var UploadsConfig
@@ -109,12 +131,30 @@ class UploadedFilesPresenter extends BasePresenter
         $this->sendSuccessResponse($file);
     }
 
-    public function checkDownload(string $id)
+    public function checkDownload(string $id, ?string $entry = null, ?string $similarSolutionId = null)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
-        if (!$this->uploadedFileAcl->canDownload($file)) {
-            throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
+        if ($this->uploadedFileAcl->canDownload($file)) {
+            return;  // this is sufficient check for most downloads
         }
+
+        if ($file instanceof SolutionFile && $similarSolutionId) {
+            // special check using similar solution hint
+            // similar solution refers to anoter solution which has detected similarities in this file
+            // (so whoever can see plagiarisms of the original solution may see this file)
+            $similarSolution = $this->assignmentSolutions->findOrThrow($similarSolutionId);
+            $fileSolution = $this->assignmentSolutions->findOneBy([ 'solution' => $file->getSolution() ]);
+
+            if (
+                $fileSolution &&
+                $this->assignmentSolutionAcl->canViewDetectedPlagiarisms($similarSolution) &&
+                $this->detectedSimilarFiles->findByTestedAndSimilarSolution($similarSolution, $fileSolution, $entry)
+            ) {
+                return;  // the user can see plagiarisms of given solution and the file is detected as similar
+            }
+        }
+
+        throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
 
     /**
@@ -123,6 +163,9 @@ class UploadedFilesPresenter extends BasePresenter
      * @param string $id Identifier of the file
      * @Param(type="query", name="entry", required=false, validation="string:1..",
      *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
+     * @Param(type="query", name="similarSolutionId", required=false, validation="string:36",
+     *        description="Id of an assignment solution which has detected possible plagiarism in this file.
+     *                     This is basically a shortcut (hint) for ACLs.")
      * @throws \Nette\Application\AbortException
      * @throws \Nette\Application\BadRequestException
      */
@@ -151,12 +194,9 @@ class UploadedFilesPresenter extends BasePresenter
         $this->sendStorageFileResponse($file, $name);
     }
 
-    public function checkContent(string $id)
+    public function checkContent(string $id, ?string $entry = null, ?string $similarSolutionId = null)
     {
-        $file = $this->uploadedFiles->findOrThrow($id);
-        if (!$this->uploadedFileAcl->canDownload($file)) {
-            throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
-        }
+        $this->checkDownload($id, $entry, $similarSolutionId);
     }
 
     /**
@@ -165,6 +205,9 @@ class UploadedFilesPresenter extends BasePresenter
      * @param string $id Identifier of the file
      * @Param(type="query", name="entry", required=false, validation="string:1..",
      *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
+     * @Param(type="query", name="similarSolutionId", required=false, validation="string:36",
+     *        description="Id of an assignment solution which has detected possible plagiarism in this file.
+     *                     This is basically a shortcut (hint) for ACLs.")
      */
     public function actionContent(string $id, ?string $entry = null)
     {
