@@ -56,7 +56,46 @@ class PlagiarismPresenter extends BasePresenter
      * @var IAssignmentSolutionPermissions
      * @inject
      */
-    public $assignmentSolutinoAcl;
+    public $assignmentSolutionAcl;
+
+    public function checkListBatches(?string $detectionTool, ?string $solutionId): void
+    {
+        if (!$this->plagiarismAcl->canViewBatches()) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Get a list of all batches, optionally filtered by query params.
+     * @GET
+     * @Param(type="query", name="detectionTool", required=false, validation="string:1..255",
+     *        description="Requests only batches created by a particular detection tool.")
+     * @Param(type="query", name="solutionId", required=false, validation="string:36",
+     *        description="Requests only batches where particular solution has detected similarities.")
+     */
+    public function actionListBatches(?string $detectionTool, ?string $solutionId): void
+    {
+        $solution = $solutionId ? $this->assignmentSolutions->findOrThrow($solutionId) : null;
+        $batches = $this->detectionBatches->findByToolAndSolution($detectionTool, $solution);
+        $this->sendSuccessResponse($batches);
+    }
+
+    public function checkBatchDetail(string $id): void
+    {
+        if (!$this->plagiarismAcl->canViewBatches()) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Fetch a detail of a particular batch record.
+     * @GET
+     */
+    public function actionBatchDetail(string $id): void
+    {
+        $batch = $this->detectionBatches->findOrThrow($id);
+        $this->sendSuccessResponse($batch);
+    }
 
     public function checkCreateBatch(): void
     {
@@ -110,7 +149,7 @@ class PlagiarismPresenter extends BasePresenter
     public function checkGetSimilarities(string $id, string $solutionId): void
     {
         $solution = $this->assignmentSolutions->findOrThrow($solutionId);
-        if (!$this->assignmentSolutinoAcl->canViewDetectedPlagiarisms($solution)) {
+        if (!$this->assignmentSolutionAcl->canViewDetectedPlagiarisms($solution)) {
             throw new ForbiddenRequestException();
         }
     }

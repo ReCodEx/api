@@ -119,7 +119,7 @@ class AssignmentSolutionViewFactory
             $review = null;
         }
 
-        return [
+        $result = [
             "id" => $solution->getId(),
             "attemptIndex" => $solution->getAttemptIndex(),
             "note" => $solution->getNote(),
@@ -142,9 +142,14 @@ class AssignmentSolutionViewFactory
                 "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
                 "last" => $this->comments->getThreadLastComment($thread, $user),
             ] : null,
-            "plagiarism" => $solution->getPlagiarismBatch() ? $solution->getPlagiarismBatch()->getId() : null,
             "permissionHints" => PermissionHints::get($this->assignmentSolutionAcl, $solution)
         ];
+
+        if ($this->assignmentSolutionAcl->canViewDetectedPlagiarisms($solution)) {
+            $result["plagiarism"] = $solution->getPlagiarismBatch() ? $solution->getPlagiarismBatch()->getId() : null;
+        }
+
+        return $result;
     }
 
     /**

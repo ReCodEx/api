@@ -629,6 +629,8 @@ class RouterFactory
     private static function createPlagiarismRoutes(string $prefix): RouteList
     {
         $router = new RouteList();
+        $router[] = new GetRoute("$prefix", "Plagiarism:listBatches");
+        $router[] = new GetRoute("$prefix/<id>", "Plagiarism:batchDetail");
         $router[] = new PostRoute("$prefix", "Plagiarism:createBatch");
         $router[] = new PostRoute("$prefix/<id>", "Plagiarism:updateBatch");
         $router[] = new GetRoute("$prefix/<id>/<solutionId>", "Plagiarism:getSimilarities");

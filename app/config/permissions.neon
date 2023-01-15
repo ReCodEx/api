@@ -992,3 +992,9 @@ permissions:
       actions:
           - createBatch
           - updateBatch
+
+    - allow: true
+      role: supervisor-student
+      resource: plagiarism
+      actions:
+        - viewBatches
