@@ -9,6 +9,9 @@ use DateTime;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={
+ *   "detected_similarity_id", "solution_file_id", "file_entry"
+ * })})
  * A record representing a similarity detected in two compared files, which is part of one
  * detected similarity record.
  * The detected similarity holds the reference to the tested file, this entity holds reference
@@ -43,10 +46,19 @@ class PlagiarismDetectedSimilarFile implements JsonSerializable
     protected $solution;
 
     /**
-     * @ORM\Column(type="string")
-     * A submitted file name (of the second solution) where the similarities were detected.
+     * @var SolutionFile
+     * @ORM\ManyToOne(targetEntity="SolutionFile")
+     * Reference to a solution file where similarities were found.
+     * If missing, external sources for comparison were used (and fileEntry is the only identification)
      */
-    protected $file;
+    protected $solutionFile;
+
+    /**
+     * @ORM\Column(type="string")
+     * Either a relative path within a ZIP file (if the solution file refers to the only ZIP archive),
+     * or a reference to external file soure that were used for comparison (preferably an URL).
+     */
+    protected $fileEntry;
 
     /**
      * @ORM\Column(type="text", length=65535)
@@ -59,18 +71,21 @@ class PlagiarismDetectedSimilarFile implements JsonSerializable
      * Similarity file record constructor
      * @param PlagiarismDetectedSimilarity $detectedSimilarity
      * @param AssignmentSolution|null $solution
-     * @param string $file
+     * @param SolutionFile|null $solutionFile
+     * @param string $fileEntry
      * @param array $fragments
      */
     public function __construct(
         PlagiarismDetectedSimilarity $detectedSimilarity,
         ?AssignmentSolution $solution,
-        string $file,
+        ?SolutionFile $solutionFile,
+        string $fileEntry,
         array $fragments,
     ) {
         $this->detectedSimilarity = $detectedSimilarity;
         $this->solution = $solution;
-        $this->file = $file;
+        $this->solutionFile = $solutionFile;
+        $this->fileEntry = $fileEntry;
         $this->setFragments($fragments);
 
         $detectedSimilarity->addSimilarFile($this);
@@ -81,7 +96,8 @@ class PlagiarismDetectedSimilarFile implements JsonSerializable
         return [
             "id" => $this->getId(),
             "solutionId" => $this->getSolution() ? $this->getSolution()->getId() : null,
-            "file" => $this->getFile(),
+            "solutionFileId" => $this->getSolutionFile() ? $this->getSolutionFile()->getId() : null,
+            "fileEntry" => $this->getFileEntry(),
             "fragments" => $this->getFragments(),
         ];
     }
@@ -105,9 +121,14 @@ class PlagiarismDetectedSimilarFile implements JsonSerializable
         return $this->solution;
     }
 
-    public function getFile(): string
+    public function getSolutionFile(): ?SolutionFile
     {
-        return $this->file;
+        return $this->solutionFile;
+    }
+
+    public function getFileEntry(): string
+    {
+        return $this->fileEntry;
     }
 
     public function getFragments(): array

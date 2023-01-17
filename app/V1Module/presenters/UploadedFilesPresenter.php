@@ -148,7 +148,12 @@ class UploadedFilesPresenter extends BasePresenter
             if (
                 $fileSolution &&
                 $this->assignmentSolutionAcl->canViewDetectedPlagiarisms($similarSolution) &&
-                $this->detectedSimilarFiles->findByTestedAndSimilarSolution($similarSolution, $fileSolution, $entry)
+                $this->detectedSimilarFiles->findByTestedAndSimilarSolution(
+                    $similarSolution,
+                    $fileSolution,
+                    $file,
+                    $entry
+                )
             ) {
                 return;  // the user can see plagiarisms of given solution and the file is detected as similar
             }

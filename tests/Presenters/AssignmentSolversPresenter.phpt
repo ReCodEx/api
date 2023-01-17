@@ -53,7 +53,11 @@ class TestAssignmentSolversPresenter extends Tester\TestCase
     public function testFetchAssignment()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-        $assignment = $this->assignments->findAll()[0];
+        $assignments = array_filter($this->assignments->findAll(), function ($a) {
+            return $a->getAssignmentSolutions()->count() >= 4;
+        });
+        Assert::count(1, $assignments);
+        $assignment = current($assignments);
 
         $result = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -62,15 +66,25 @@ class TestAssignmentSolversPresenter extends Tester\TestCase
             ['assignmentId' => $assignment->getId()]
         );
 
-        Assert::count(1, $result);
-        Assert::equal($assignment->getId(), $result[0]->getAssignment()->getId());
-        Assert::equal(4, $result[0]->getLastAttemptIndex());
+        Assert::count(2, $result);
+        $indices = [];
+        foreach ($result as $r) {
+            Assert::equal($assignment->getId(), $r->getAssignment()->getId());
+            $indices[] = $r->getLastAttemptIndex();
+        }
+        sort($indices, SORT_NUMERIC);
+        Assert::equal(1, $indices[0]);
+        Assert::equal(4, $indices[1]);
     }
 
     public function testFetchGroup()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-        $assignment = $this->assignments->findAll()[0];
+        $assignments = array_filter($this->assignments->findAll(), function ($a) {
+            return $a->getAssignmentSolutions()->count() >= 4;
+        });
+        Assert::count(1, $assignments);
+        $assignment = current($assignments);
 
         $result = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -79,15 +93,25 @@ class TestAssignmentSolversPresenter extends Tester\TestCase
             ['groupId' => $assignment->getGroup()->getId()]
         );
 
-        Assert::count(1, $result);
-        Assert::equal($assignment->getId(), $result[0]->getAssignment()->getId());
-        Assert::equal(4, $result[0]->getLastAttemptIndex());
+        Assert::count(2, $result);
+        $indices = [];
+        foreach ($result as $r) {
+            Assert::equal($assignment->getId(), $r->getAssignment()->getId());
+            $indices[] = $r->getLastAttemptIndex();
+        }
+        sort($indices, SORT_NUMERIC);
+        Assert::equal(1, $indices[0]);
+        Assert::equal(4, $indices[1]);
     }
 
     public function testFetchAssignmentWrongUser()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-        $assignment = $this->assignments->findAll()[0];
+        $assignments = array_filter($this->assignments->findAll(), function ($a) {
+            return $a->getAssignmentSolutions()->count() >= 4;
+        });
+        Assert::count(1, $assignments);
+        $assignment = current($assignments);
 
         $result = PresenterTestHelper::performPresenterRequest(
             $this->presenter,

@@ -99,7 +99,7 @@ App\Model\Entity\User:
             - ""
             - supervisor
             - @demoInstance
-        makeSupervisorOf: @demoGroup
+        makeSupervisorOf: @demoChildGroup
         setVerified: true
 
     "submitUser1":

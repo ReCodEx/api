@@ -693,6 +693,44 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         Assert::equal('sha1', $response['algorithm']);
         Assert::equal(sha1($contents), $response['digest']);
     }
+
+    public function testDownloadDetectedPlagiarismSource()
+    {
+        $token = PresenterTestHelper::login($this->container, 'demoGroupSupervisor@example.com');
+
+        $similarFileEnt = current($this->presenter->detectedSimilarFiles->findAll());
+        $file = $similarFileEnt->getSolutionFile();
+        $similarity = $similarFileEnt->getDetectedSimilarity();
+
+        // direct access by demoGroupSupervisor is forbidden (the file is in the child group in demoAssignment2)
+        Assert::exception(
+            function () use ($file) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    $this->presenterPath,
+                    'GET',
+                    ['action' => 'download', 'id' => $file->getId()]
+                );
+            },
+            ForbiddenRequestException::class
+        );
+
+        // but the file is in detected plagiarism candidates for a solution5 (accessible by demoGroupSupervisor),
+        // so if we add a proper hint to the request, the download must succeed
+        $mockFile = Mockery::mock(LocalImmutableFile::class);
+        $mockFileStorage = Mockery::mock(FileStorageManager::class);
+        $mockFileStorage->shouldReceive("getSolutionFile")->withArgs([$file->getSolution(), $file->getName()])->andReturn($mockFile)->once();
+        $this->presenter->fileStorage = $mockFileStorage;
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'GET',
+            ['action' => 'download', 'id' => $file->getId(),
+                'similarSolutionId' => $similarity->getTestedSolution()->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($file->getName(), $response->getName());
+    }
 }
 
 $testCase = new TestUploadedFilesPresenter();

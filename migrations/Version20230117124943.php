@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20230114002813 extends AbstractMigration
+final class Version20230117124943 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,14 +20,16 @@ final class Version20230114002813 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE TABLE plagiarism_detected_similar_file (id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', detected_similarity_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', solution_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', file VARCHAR(255) NOT NULL, fragments TEXT NOT NULL, INDEX IDX_44236D1819466293 (detected_similarity_id), INDEX IDX_44236D181C0BE183 (solution_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE plagiarism_detected_similarity (id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', batch_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', author_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', tested_solution_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', tested_file VARCHAR(255) NOT NULL, similarity DOUBLE PRECISION NOT NULL, INDEX IDX_626C38E7F39EBE7A (batch_id), INDEX IDX_626C38E7F675F31B (author_id), INDEX IDX_626C38E7A7494B3B (tested_solution_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE plagiarism_detected_similar_file (id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', detected_similarity_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', solution_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', solution_file_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', file_entry VARCHAR(255) NOT NULL, fragments TEXT NOT NULL, INDEX IDX_44236D1819466293 (detected_similarity_id), INDEX IDX_44236D181C0BE183 (solution_id), INDEX IDX_44236D1837694BD6 (solution_file_id), UNIQUE INDEX UNIQ_44236D181946629337694BD681A22D47 (detected_similarity_id, solution_file_id, file_entry), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE plagiarism_detected_similarity (id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', batch_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', author_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', tested_solution_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', solution_file_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', file_entry VARCHAR(255) NOT NULL, similarity DOUBLE PRECISION NOT NULL, INDEX IDX_626C38E7F39EBE7A (batch_id), INDEX IDX_626C38E7F675F31B (author_id), INDEX IDX_626C38E7A7494B3B (tested_solution_id), INDEX IDX_626C38E737694BD6 (solution_file_id), UNIQUE INDEX UNIQ_626C38E7F39EBE7AF675F31B37694BD681A22D47 (batch_id, author_id, solution_file_id, file_entry), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE plagiarism_detection_batch (id CHAR(36) NOT NULL COMMENT \'(DC2Type:uuid)\', supervisor_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\', detection_tool VARCHAR(255) NOT NULL, detection_tool_parameters VARCHAR(255) NOT NULL, upload_completed_at DATETIME DEFAULT NULL, created_at DATETIME NOT NULL, INDEX IDX_C35646BF19E9AC5F (supervisor_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE plagiarism_detected_similar_file ADD CONSTRAINT FK_44236D1819466293 FOREIGN KEY (detected_similarity_id) REFERENCES plagiarism_detected_similarity (id)');
         $this->addSql('ALTER TABLE plagiarism_detected_similar_file ADD CONSTRAINT FK_44236D181C0BE183 FOREIGN KEY (solution_id) REFERENCES assignment_solution (id)');
+        $this->addSql('ALTER TABLE plagiarism_detected_similar_file ADD CONSTRAINT FK_44236D1837694BD6 FOREIGN KEY (solution_file_id) REFERENCES `uploaded_file` (id)');
         $this->addSql('ALTER TABLE plagiarism_detected_similarity ADD CONSTRAINT FK_626C38E7F39EBE7A FOREIGN KEY (batch_id) REFERENCES plagiarism_detection_batch (id)');
         $this->addSql('ALTER TABLE plagiarism_detected_similarity ADD CONSTRAINT FK_626C38E7F675F31B FOREIGN KEY (author_id) REFERENCES user (id)');
         $this->addSql('ALTER TABLE plagiarism_detected_similarity ADD CONSTRAINT FK_626C38E7A7494B3B FOREIGN KEY (tested_solution_id) REFERENCES assignment_solution (id)');
+        $this->addSql('ALTER TABLE plagiarism_detected_similarity ADD CONSTRAINT FK_626C38E737694BD6 FOREIGN KEY (solution_file_id) REFERENCES `uploaded_file` (id)');
         $this->addSql('ALTER TABLE plagiarism_detection_batch ADD CONSTRAINT FK_C35646BF19E9AC5F FOREIGN KEY (supervisor_id) REFERENCES user (id)');
         $this->addSql('ALTER TABLE assignment_solution ADD plagiarism_batch_id CHAR(36) DEFAULT NULL COMMENT \'(DC2Type:uuid)\'');
         $this->addSql('ALTER TABLE assignment_solution ADD CONSTRAINT FK_5B315D2E5B4CC7BF FOREIGN KEY (plagiarism_batch_id) REFERENCES plagiarism_detection_batch (id)');

@@ -1,0 +1,31 @@
+App\Model\Entity\PlagiarismDetectionBatch:
+    "plagirasimBatch1":
+        __construct:
+            - "demoTool"
+            - "--all"
+            - @demoAdmin
+        setUploadCompleted: true
+    "plagirasimBatch2":
+        __construct:
+            - "demoTool"
+            - "--all"
+            - @demoAdmin
+
+App\Model\Entity\PlagiarismDetectedSimilarity:
+    "plagirasimSimilarity1":
+        __construct:
+            - @plagirasimBatch1
+            - @demoGroupMember1
+            - @solution4
+            - @uploadedFile4
+            - ""
+            - 0.5
+
+App\Model\Entity\PlagiarismDetectedSimilarFile:
+    "similarFile1":
+        __construct:
+            - @plagirasimSimilarity1
+            - @solution5
+            - @uploadedFile5
+            - ""
+            - [ [ { o: 0, l: 42 }, { o: 1, l: 54 } ], [ { o: 128, l: 666 }, { o: 256, l: 666 } ] ]
