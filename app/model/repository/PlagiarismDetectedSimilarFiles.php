@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use App\Model\Entity\PlagiarismDetectedSimilarFile;
 use App\Model\Entity\PlagiarismDetectedSimilarity;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\SolutionFile;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -23,13 +24,15 @@ class PlagiarismDetectedSimilarFiles extends BaseRepository
      * and specified similar solution. Used in ACLs to determine, whether a user can see a similar file.
      * @param AssignmentSolution $testedSolution a related similarity detection record must exist
      * @param AssignmentSolution $solution similar solution to be found
-     * @param string|null $file name of the similar file to be found
+     * @param SolutionFile|null $file reference to the similar file to be found
+     * @param string|null $fileEntry a file entry or referene to an external source to be found
      * @return PlagiarismDetectedSimilarFile[]
      */
     public function findByTestedAndSimilarSolution(
         AssignmentSolution $testedSolution,
         AssignmentSolution $solution,
-        ?string $file = null
+        ?SolutionFile $file = null,
+        ?string $fileEntry = null
     ): array {
         $qb = $this->createQueryBuilder("f");
         $qb->andWhere("f.solution = :solution")->setParameter("solution", $solution->getId());
@@ -37,12 +40,15 @@ class PlagiarismDetectedSimilarFiles extends BaseRepository
         $sub = $qb->getEntityManager()->createQueryBuilder()
             ->select("ds")->from(PlagiarismDetectedSimilarity::class, "ds")
             ->where("ds.testedSolution = :testedSolution")
-            ->andWhere("ds.id = f.detectedSimilarity")
+            ->andWhere("ds.id = f.detectedSimilarity");
+        $qb->andWhere($qb->expr()->exists($sub->getDQL()))
             ->setParameter("testedSolution", $testedSolution->getId());
-        $qb->andWhere($qb->expr()->exists($sub->getDQL()));
 
         if ($file) {
-            $qb->andWhere("f.file = :file")->setParameter("file", $file);
+            $qb->andWhere("f.solutionFile = :solutionFile")->setParameter("solutionFile", $file->getId());
+        }
+        if ($fileEntry) {
+            $qb->andWhere("f.fileEntry = :entry")->setParameter("entry", $fileEntry);
         }
         return $qb->getQuery()->getResult();
     }

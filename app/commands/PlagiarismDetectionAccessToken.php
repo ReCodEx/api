@@ -19,7 +19,7 @@ use Exception;
  * A console command that removes inactive users.
  * A user is inactive if no authentication (nor token renewal) is recorded for given period of time.
  */
-class PlagiarismDectectionAccessToken extends Command
+class PlagiarismDetectionAccessToken extends Command
 {
     protected static $defaultName = 'plagiarism:create-access-token';
 

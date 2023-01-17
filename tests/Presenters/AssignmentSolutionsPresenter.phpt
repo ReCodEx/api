@@ -152,12 +152,14 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     public function testGetSubmission()
     {
         PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $submissionsWithEval = array_filter(
             $this->presenter->assignmentSolutionSubmissions->findAll(),
-            function ($submission) {
-                return $submission->getEvaluation() !== null;
+            function ($submission) use ($user) {
+                return $submission->getEvaluation() !== null && $submission->getSubmittedBy() === $user;
             }
         );
+        Assert::count(6, $submissionsWithEval);
         $submission = array_pop($submissionsWithEval);
         $evaluation = $submission->getEvaluation();
         Assert::truthy($evaluation);
@@ -174,12 +176,14 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     public function testGetEvaluationScoreConfig()
     {
         PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $submissionsWithEval = array_filter(
             $this->presenter->assignmentSolutionSubmissions->findAll(),
-            function ($submission) {
-                return $submission->getEvaluation() !== null;
+            function ($submission) use ($user) {
+                return $submission->getEvaluation() !== null && $submission->getSubmittedBy() === $user;
             }
         );
+        Assert::count(6, $submissionsWithEval);
         $submission = array_pop($submissionsWithEval);
         $evaluation = $submission->getEvaluation();
         Assert::truthy($evaluation);

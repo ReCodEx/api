@@ -10,9 +10,13 @@ use DateTime;
 
 /**
  * @ORM\Entity
- * A record representing a similarity detected between a file and a set of files of a particular user.
- * This entity holds the tested file and a reference to the author of similar files.
- * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarty.
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={
+ *   "batch_id", "author_id", "solution_file_id", "file_entry"
+ * })})
+ * A record (node) representing a similarity detected between a file and a set of files of a particular user.
+ * This entity holds the tested file and a reference to the author of similar files (possible sources of plagiarism).
+ * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarty
+ * (i.e., all possible sources of plagiarism of one author).
  */
 class PlagiarismDetectedSimilarity implements JsonSerializable
 {
@@ -35,7 +39,8 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
     /**
      * @var User
      * @ORM\ManyToOne(targetEntity="User")
-     * Author of all solutions refered in related similar files.
+     * Author of all solutions refered in related PlagiarismDetectedSimilarFile entities.
+     * (i.e., this is just a denormalization pull-up to increase efficiency).
      */
     protected $author;
 
@@ -47,10 +52,19 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
     protected $testedSolution;
 
     /**
+     * @var SolutionFile
+     * @ORM\ManyToOne(targetEntity="SolutionFile")
+     * Reference to a solution file where similarities were found.
+     * If missing, external sources for comparison were used (and fileEntry is the only identification)
+     */
+    protected $solutionFile;
+
+    /**
      * @ORM\Column(type="string")
      * A submitted file name (of the solution) that was tested for similarities.
+     * This is filled only if solution file is a ZIP that was scanned internally.
      */
-    protected $testedFile;
+    protected $fileEntry;
 
     /**
      * @ORM\Column(type="float")
@@ -66,24 +80,27 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
     protected $similarFiles;
 
     /**
-     * Similarity with another user entity constructor.
+     * Constructor of similarity node representing aggregated references to sources of another user.
      * @param PlagiarismDetectionBatch $batch
      * @param User|null $author
      * @param AssignmentSolution $testedSolution
-     * @param string $testedFile
+     * @param SolutionFile $solutionFile
+     * @param string $fileEntry
      * @param float $similarity
      */
     public function __construct(
         PlagiarismDetectionBatch $batch,
         ?User $author,
         AssignmentSolution $testedSolution,
-        string $testedFile,
+        SolutionFile $solutionFile,
+        string $fileEntry,
         float $similarity,
     ) {
         $this->batch = $batch;
         $this->author = $author;
         $this->testedSolution = $testedSolution;
-        $this->testedFile = $testedFile;
+        $this->solutionFile = $solutionFile;
+        $this->fileEntry = $fileEntry;
         $this->similarity = $similarity;
         $this->similarFiles = new ArrayCollection();
     }
@@ -95,7 +112,8 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
             "batchId" => $this->getBatch()->getId(),
             "authorId" => $this->getAuthor() ? $this->getAuthor()->getId() : null,
             "testedSolutionId" => $this->getTestedSolution()->getId(),
-            "testedFile" => $this->getTestedFile(),
+            "solutionFileId" => $this->getSolutionFile()->getId(),
+            "fileEntry" => $this->getFileEntry(),
             "similarity" => $this->getSimilarity(),
             "files" => $this->getSimilarFiles()->toArray(),
         ];
@@ -125,9 +143,14 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
         return $this->testedSolution;
     }
 
-    public function getTestedFile(): string
+    public function getSolutionFile(): SolutionFile
     {
-        return $this->testedFile;
+        return $this->solutionFile;
+    }
+
+    public function getFileEntry(): string
+    {
+        return $this->fileEntry;
     }
 
     public function getSimilarity(): float

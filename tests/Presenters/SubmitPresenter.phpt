@@ -485,13 +485,14 @@ class TestSubmitPresenter extends Tester\TestCase
 
         $assignment = null;
         $totalSubmissionCount = count($this->presenter->assignmentSubmissions->findAll());
-        $solutionCount = 4;
+        $solutionCount = 0;
 
-        // Find an assignment with desired amount of submissions
+        // Find an assignment with maximal amount of submissions
         /** @var Assignment $candidate */
         foreach ($assignments->findAll() as $candidate) {
-            if ($candidate->getAssignmentSolutions()->count() == $solutionCount) {
+            if ($candidate->getAssignmentSolutions()->count() > $solutionCount) {
                 $assignment = $candidate;
+                $solutionCount = $candidate->getAssignmentSolutions()->count();
                 break;
             }
         }

@@ -105,6 +105,11 @@ class PlagiarismDetectionBatch implements JsonSerializable
         return $this->detectionTool;
     }
 
+    public function getDetectionToolParameters(): string
+    {
+        return $this->detectionToolParameters;
+    }
+
     public function getUploadCompletedAt(): ?DateTime
     {
         return $this->uploadCompletedAt;

@@ -1,5 +1,5 @@
 App\Model\Entity\SolutionEvaluation:
-    "evaluation{1..6}":
+    "evaluation{1..7}":
         __construct: false
         evaluatedAt: "<dateTime()>"
         initFailed: false
@@ -13,6 +13,10 @@ App\Model\Entity\Solution:
         __construct:
             - @submitUser1
             - @CRuntime
+     "demoSolution5":
+        __construct:
+            - @demoGroupMember1
+            - @CRuntime
 
 App\Model\Entity\SolutionFile:
     "uploadedFile{1..4}":
@@ -22,6 +26,13 @@ App\Model\Entity\SolutionFile:
             - 0
             - @submitUser1
             - "@demoSolution<current()>"
+    "uploadedFile5":
+        __construct:
+            - "filename2.ext"
+            - "<dateTime()>"
+            - 0
+            - @demoGroupMember1
+            - @demoSolution5
 
 App\Model\Entity\AssignmentSolution:
     "solution1":
@@ -60,6 +71,13 @@ App\Model\Entity\AssignmentSolution:
         reviewStartedAt: "<dateTimeBetween('-6 day', '-5 day')>"
         reviewedAt: "<dateTimeBetween('-5 day', '-4 day')>"
         setIssuesCount: 1
+    "solution5":
+        __construct:
+            createSolution:
+                - "plagiarism by another student"
+                - @demoAssignment2
+                - "@demoSolution5"
+                - 1
 
 App\Model\Entity\SubmissionFailure:
     "resolvedSubmissionFailure":
@@ -107,6 +125,11 @@ App\Model\Entity\AssignmentSolutionSubmission:
             - "@solution4"
             - @submitUser1
         evaluation: "@evaluation6"
+    "submission9":
+        __construct:
+            - "@solution5"
+            - @demoGroupMember1
+        evaluation: "@evaluation7"
  
 App\Model\Entity\AssignmentSolver:
     "assignmentSolver1":
@@ -115,6 +138,12 @@ App\Model\Entity\AssignmentSolver:
             - @submitUser1
             - 4
             - 6
+    "assignmentSolver2":
+        __construct:
+            - @demoAssignment
+            - @demoGroupMember1
+            - 1
+            - 1
 
 App\Model\Entity\ReviewComment:
     "issue1":

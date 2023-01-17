@@ -4,6 +4,8 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\ParseException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\Model\Entity\PlagiarismDetectionBatch;
@@ -13,6 +15,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\PlagiarismDetectionBatches;
 use App\Model\Repository\PlagiarismDetectedSimilarities;
 use App\Model\Repository\PlagiarismDetectedSimilarFiles;
+use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IPlagiarismPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use DateTime;
@@ -45,6 +48,12 @@ class PlagiarismPresenter extends BasePresenter
      * @inject
      */
     public $detectedSimilarFiles;
+
+    /**
+     * @var UploadedFiles
+     * @inject
+     */
+    public $uploadedFiles;
 
     /**
      * @var IPlagiarismPermissions
@@ -179,8 +188,10 @@ class PlagiarismPresenter extends BasePresenter
      * Appends one detected similarity record (similarities associated with one file and one other author)
      * into a detected batch. This division was selected to make the appends relatively small and managable.
      * @POST
-     * @Param(type="post", name="file", validation="string:1..255",
-     *   description="Name of the file of the solution to which this similarities apply.")
+     * @Param(type="post", name="solutionFileId", validation="string:36",
+     *   description="Id of the uploaded solution file.")
+     * @Param(type="post", name="fileEntry", validation="string:0..255", required=false,
+     *   description="Entry (relative path) within a ZIP package (if the uploaded file is a ZIP).")
      * @Param(type="post", name="authorId", validation="string:36",
      *   description="Id of the author of the similar solutions/files.")
      * @Param(type="post", name="similarity", validation="numeric",
@@ -194,23 +205,46 @@ class PlagiarismPresenter extends BasePresenter
         $solution = $this->assignmentSolutions->findOrThrow($solutionId);
 
         $req = $this->getRequest();
-        $testedFile = $req->getPost("file");
+        $testedFile = $this->uploadedFiles->findOrThrow($req->getPost("solutionFileId"));
+        $testedFileEntry = $req->getPost("fileEntry") ?? '';
         $author = $this->users->findOrThrow($req->getPost('authorId'));
         $similarity = min(1.0, max(0.0, (float)$req->getPost("similarity")));
 
-        $detectedSimilarity = new PlagiarismDetectedSimilarity($batch, $author, $solution, $testedFile, $similarity);
-        foreach ($req->getPost("files") as $file) {
-            $similarSolution = array_key_exists('solution', $file)
-                ? $this->assignmentSolutions->findOrThrow($file['solution']) : null;
-            $similarFile = new PlagiarismDetectedSimilarFile(
-                $detectedSimilarity,
-                $similarSolution,
-                $file['file'] ?? '',
-                $file['fragments'] ?? []
+        $detectedSimilarity = new PlagiarismDetectedSimilarity(
+            $batch,
+            $author,
+            $solution,
+            $testedFile,
+            $testedFileEntry,
+            $similarity
+        );
+        try {
+            foreach ($req->getPost("files") as $file) {
+                $similarSolution = array_key_exists('solutionId', $file)
+                    ? $this->assignmentSolutions->findOrThrow($file['solutionId']) : null;
+                $similarFile = array_key_exists('solutionFileId', $file)
+                    ? $this->uploadedFiles->findOrThrow($file['solutionFileId']) : null;
+                $detectedFile = new PlagiarismDetectedSimilarFile(
+                    $detectedSimilarity,
+                    $similarSolution,
+                    $similarFile,
+                    $file['fileEntry'] ?? '',
+                    $file['fragments'] ?? []
+                );
+                // actually, nothing else to do with detected file (it is automatically added to detected similarity)
+            }
+        } catch (ParseException $e) {
+            throw new BadRequestException(
+                "File fragments structure is not correct. " . $e->getMessage(),
+                FrontendErrorMappings::E400_000__BAD_REQUEST,
+                null,
+                $e
             );
         }
 
-        $this->detectedSimilarities->persist($detectedSimilarity);
+        $this->detectedSimilarities->persist($detectedSimilarity, false);
+        $solution->setPlagiarismBatch($batch);
+        $this->assignmentSolutions->persist($solution);
         $this->sendSuccessResponse($detectedSimilarity);
     }
 }
