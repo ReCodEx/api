@@ -11,6 +11,7 @@ use App\Model\Entity\User;
 use App\Model\Entity\PlagiarismDetectionBatch;
 use App\Model\Entity\PlagiarismDetectedSimilarity;
 use App\Model\Entity\PlagiarismDetectedSimilarFile;
+use App\Model\Entity\SolutionFile;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\PlagiarismDetectionBatches;
 use App\Model\Repository\PlagiarismDetectedSimilarities;
@@ -206,6 +207,13 @@ class PlagiarismPresenter extends BasePresenter
 
         $req = $this->getRequest();
         $testedFile = $this->uploadedFiles->findOrThrow($req->getPost("solutionFileId"));
+        if (
+            !($testedFile instanceof SolutionFile) ||
+            $testedFile->getSolution()->getId() !== $solution->getSolution()->getId()
+        ) {
+            throw new BadRequestException("Given solutionFileId must refer to a file related to selected solution.");
+        }
+
         $testedFileEntry = $req->getPost("fileEntry") ?? '';
         $author = $this->users->findOrThrow($req->getPost('authorId'));
         $similarity = min(1.0, max(0.0, (float)$req->getPost("similarity")));
@@ -218,12 +226,29 @@ class PlagiarismPresenter extends BasePresenter
             $testedFileEntry,
             $similarity
         );
-        try {
-            foreach ($req->getPost("files") as $file) {
-                $similarSolution = array_key_exists('solutionId', $file)
-                    ? $this->assignmentSolutions->findOrThrow($file['solutionId']) : null;
-                $similarFile = array_key_exists('solutionFileId', $file)
-                    ? $this->uploadedFiles->findOrThrow($file['solutionFileId']) : null;
+
+        foreach ($req->getPost("files") as $file) {
+            $similarSolution = array_key_exists('solutionId', $file)
+                ? $this->assignmentSolutions->findOrThrow($file['solutionId']) : null;
+            $similarFile = array_key_exists('solutionFileId', $file)
+                ? $this->uploadedFiles->findOrThrow($file['solutionFileId']) : null;
+
+            // correctness checks
+            if ($similarSolution && $similarSolution->getSolution()->getAuthor()->getId() !== $author->getId()) {
+                throw new BadRequestException(
+                    "All similar solutions referred in 'files' must be of the given author."
+                );
+            }
+            if (
+                $similarFile && (!($similarFile instanceof SolutionFile) || !$similarSolution
+                || $similarFile->getSolution()->getId() !== $similarSolution->getSolution()->getId())
+            ) {
+                throw new BadRequestException(
+                    "In the similar files record, every solutionFileId must refer to a file related to the corresponding selected solution."
+                );
+            }
+
+            try {
                 $detectedFile = new PlagiarismDetectedSimilarFile(
                     $detectedSimilarity,
                     $similarSolution,
@@ -232,14 +257,14 @@ class PlagiarismPresenter extends BasePresenter
                     $file['fragments'] ?? []
                 );
                 // actually, nothing else to do with detected file (it is automatically added to detected similarity)
+            } catch (ParseException $e) {
+                throw new BadRequestException(
+                    "File fragments structure is not correct. " . $e->getMessage(),
+                    FrontendErrorMappings::E400_000__BAD_REQUEST,
+                    null,
+                    $e
+                );
             }
-        } catch (ParseException $e) {
-            throw new BadRequestException(
-                "File fragments structure is not correct. " . $e->getMessage(),
-                FrontendErrorMappings::E400_000__BAD_REQUEST,
-                null,
-                $e
-            );
         }
 
         $this->detectedSimilarities->persist($detectedSimilarity, false);
