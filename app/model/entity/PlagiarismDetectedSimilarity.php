@@ -54,8 +54,7 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
     /**
      * @var SolutionFile
      * @ORM\ManyToOne(targetEntity="SolutionFile")
-     * Reference to a solution file where similarities were found.
-     * If missing, external sources for comparison were used (and fileEntry is the only identification)
+     * Reference to a solution file that was tested for similarities (is a suspected plagiarism).
      */
     protected $solutionFile;
 

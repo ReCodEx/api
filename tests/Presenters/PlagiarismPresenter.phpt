@@ -484,6 +484,129 @@ class TestPlagiarismPresenter extends Tester\TestCase
             BadRequestException::class
         );
     }
+
+    public function testAddSimilarityFileOfDifferentSolution()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $batch = current(array_filter($this->presenter->detectionBatches->findAll(), function ($b) {
+            return $b->getUploadCompletedAt() === null;
+        }));
+        Assert::notNull($batch);
+
+        $similarity = current($this->presenter->detectedSimilarities->findAll());
+        Assert::notNull($similarity);
+        $similarSolution = $similarity->getTestedSolution();
+
+        $similarFile = current($this->presenter->detectedSimilarFiles->findAll());
+        Assert::notNull($similarFile);
+        $testedSolution = $similarFile->getSolution();
+        Assert::equal(null, $testedSolution->getPlagiarismBatch());
+
+        Assert::exception(
+            function () use ($batch, $testedSolution, $similarSolution, $similarity, $similarFile) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:PlagiarismPresenter',
+                    'POST',
+                    ['action' => 'addSimilarities', 'id' => $batch->getId(), 'solutionId' => $similarSolution->getId()],
+                    [
+                        'authorId' => $similarSolution->getSolution()->getAuthor()->getId(),
+                        'similarity' => 0.42,
+                        'files' => [[
+                            'solutionId' => $similarSolution->getId(),
+                            'solutionFileId' => $similarity->getSolutionFile()->getId(),
+                            'fileEntry' => $similarity->getFileEntry(),
+                            'fragments' => []
+                        ]],
+                    ]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testAddSimilaritySimilarFileOfDifferentSolution()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $batch = current(array_filter($this->presenter->detectionBatches->findAll(), function ($b) {
+            return $b->getUploadCompletedAt() === null;
+        }));
+        Assert::notNull($batch);
+
+        $similarity = current($this->presenter->detectedSimilarities->findAll());
+        Assert::notNull($similarity);
+        $similarSolution = $similarity->getTestedSolution();
+
+        $similarFile = current($this->presenter->detectedSimilarFiles->findAll());
+        Assert::notNull($similarFile);
+        $testedSolution = $similarFile->getSolution();
+        Assert::equal(null, $testedSolution->getPlagiarismBatch());
+
+        Assert::exception(
+            function () use ($batch, $testedSolution, $similarSolution, $similarity, $similarFile) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:PlagiarismPresenter',
+                    'POST',
+                    ['action' => 'addSimilarities', 'id' => $batch->getId(), 'solutionId' => $testedSolution->getId()],
+                    [
+                        'authorId' => $similarSolution->getSolution()->getAuthor()->getId(),
+                        'similarity' => 0.42,
+                        'files' => [[
+                            'solutionId' => $testedSolution->getId(),
+                            'solutionFileId' => $similarity->getSolutionFile()->getId(),
+                            'fileEntry' => $similarity->getFileEntry(),
+                            'fragments' => []
+                        ]],
+                    ]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testAddSimilaritySolutionOfDifferentAuthor()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $batch = current(array_filter($this->presenter->detectionBatches->findAll(), function ($b) {
+            return $b->getUploadCompletedAt() === null;
+        }));
+        Assert::notNull($batch);
+
+        $similarity = current($this->presenter->detectedSimilarities->findAll());
+        Assert::notNull($similarity);
+        $similarSolution = $similarity->getTestedSolution();
+
+        $similarFile = current($this->presenter->detectedSimilarFiles->findAll());
+        Assert::notNull($similarFile);
+        $testedSolution = $similarFile->getSolution();
+        Assert::equal(null, $testedSolution->getPlagiarismBatch());
+
+        Assert::exception(
+            function () use ($batch, $testedSolution, $similarSolution, $similarity, $similarFile) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:PlagiarismPresenter',
+                    'POST',
+                    ['action' => 'addSimilarities', 'id' => $batch->getId(), 'solutionId' => $testedSolution->getId()],
+                    [
+                        'authorId' => $testedSolution->getSolution()->getAuthor()->getId(),
+                        'similarity' => 0.42,
+                        'files' => [[
+                            'solutionId' => $similarSolution->getId(),
+                            'solutionFileId' => $similarity->getSolutionFile()->getId(),
+                            'fileEntry' => $similarity->getFileEntry(),
+                            'fragments' => []
+                        ]],
+                    ]
+                );
+            },
+            BadRequestException::class
+        );
+    }
 }
 
 (new TestPlagiarismPresenter())->run();
