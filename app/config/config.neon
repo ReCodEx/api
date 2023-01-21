@@ -447,6 +447,7 @@ services:
   - App\Model\View\PipelineViewFactory
   - App\Model\View\InstanceViewFactory
   - App\Model\View\SolutionFilesViewFactory
+  - App\Model\View\PlagiarismViewFactory
 
 nettrine.dbal:
   debug:

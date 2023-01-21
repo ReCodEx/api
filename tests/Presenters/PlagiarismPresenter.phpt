@@ -193,8 +193,10 @@ class TestPlagiarismPresenter extends Tester\TestCase
         Assert::count(1, $sim['files']);
 
         $file = $sim['files'][0];
-        Assert::equal($similarFile->getSolution()->getId(), $file['solutionId']);
-        Assert::equal($similarFile->getSolutionFile()->getId(), $file['solutionFileId']);
+        Assert::equal($similarFile->getSolution()->getId(), $file['solution']['id']);
+        Assert::equal($similarFile->getSolution()->getAssignment()->getId(), $file['assignment']['id']);
+        Assert::equal($similarFile->getSolution()->getAssignment()->getGroup()->getId(), $file['groupId']);
+        Assert::equal($similarFile->getSolutionFile()->getId(), $file['solutionFile']['id']);
         Assert::equal('', $file['fileEntry']);
         Assert::count(2, $file['fragments']);
     }
@@ -260,8 +262,8 @@ class TestPlagiarismPresenter extends Tester\TestCase
         Assert::count(1, $payload['files']);
 
         $file = $payload['files'][0];
-        Assert::equal($similarSolution->getId(), $file['solutionId']);
-        Assert::equal($similarity->getSolutionFile()->getId(), $file['solutionFileId']);
+        Assert::equal($similarSolution->getId(), $file['solution']['id']);
+        Assert::equal($similarity->getSolutionFile()->getId(), $file['solutionFile']['id']);
         Assert::equal('', $file['fileEntry']);
         Assert::count(3, $file['fragments']);
 

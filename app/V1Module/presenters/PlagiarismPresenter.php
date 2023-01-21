@@ -19,6 +19,7 @@ use App\Model\Repository\PlagiarismDetectedSimilarFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IPlagiarismPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Model\View\PlagiarismViewFactory;
 use DateTime;
 
 /**
@@ -67,6 +68,12 @@ class PlagiarismPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutionAcl;
+
+    /**
+     * @var PlagiarismViewFactory
+     * @inject
+     */
+    public $plagiarismViewFatory;
 
     public function checkListBatches(?string $detectionTool, ?string $solutionId): void
     {
@@ -173,7 +180,10 @@ class PlagiarismPresenter extends BasePresenter
     {
         $batch = $this->detectionBatches->findOrThrow($id);
         $solution = $this->assignmentSolutions->findOrThrow($solutionId);
-        $similarities = $this->detectedSimilarities->getSolutionSimilarities($batch, $solution);
+        $similarities = array_map(
+            [$this->plagiarismViewFatory, 'getPlagiarismSimilaityData'],
+            $this->detectedSimilarities->getSolutionSimilarities($batch, $solution)
+        );
         $this->sendSuccessResponse($similarities);
     }
 
@@ -270,6 +280,6 @@ class PlagiarismPresenter extends BasePresenter
         $this->detectedSimilarities->persist($detectedSimilarity, false);
         $solution->setPlagiarismBatch($batch);
         $this->assignmentSolutions->persist($solution);
-        $this->sendSuccessResponse($detectedSimilarity);
+        $this->sendSuccessResponse($this->plagiarismViewFatory->getPlagiarismSimilaityData($detectedSimilarity));
     }
 }
