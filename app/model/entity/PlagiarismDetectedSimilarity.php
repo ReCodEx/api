@@ -18,7 +18,7 @@ use DateTime;
  * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarty
  * (i.e., all possible sources of plagiarism of one author).
  */
-class PlagiarismDetectedSimilarity implements JsonSerializable
+class PlagiarismDetectedSimilarity
 {
     /**
      * @ORM\Id
@@ -102,20 +102,6 @@ class PlagiarismDetectedSimilarity implements JsonSerializable
         $this->fileEntry = $fileEntry;
         $this->similarity = $similarity;
         $this->similarFiles = new ArrayCollection();
-    }
-
-    public function jsonSerialize(): mixed
-    {
-        return [
-            "id" => $this->getId(),
-            "batchId" => $this->getBatch()->getId(),
-            "authorId" => $this->getAuthor() ? $this->getAuthor()->getId() : null,
-            "testedSolutionId" => $this->getTestedSolution()->getId(),
-            "solutionFileId" => $this->getSolutionFile()->getId(),
-            "fileEntry" => $this->getFileEntry(),
-            "similarity" => $this->getSimilarity(),
-            "files" => $this->getSimilarFiles()->toArray(),
-        ];
     }
 
     /*

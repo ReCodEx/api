@@ -19,7 +19,7 @@ use DateTime;
  * A similarity can comprise multiple text blocks, the details about similar code fragments are
  * encoded in internal JSON record 'fragments' (violating 1NF).
  */
-class PlagiarismDetectedSimilarFile implements JsonSerializable
+class PlagiarismDetectedSimilarFile
 {
     /**
      * @ORM\Id
@@ -89,17 +89,6 @@ class PlagiarismDetectedSimilarFile implements JsonSerializable
         $this->setFragments($fragments);
 
         $detectedSimilarity->addSimilarFile($this);
-    }
-
-    public function jsonSerialize(): mixed
-    {
-        return [
-            "id" => $this->getId(),
-            "solutionId" => $this->getSolution() ? $this->getSolution()->getId() : null,
-            "solutionFileId" => $this->getSolutionFile() ? $this->getSolutionFile()->getId() : null,
-            "fileEntry" => $this->getFileEntry(),
-            "fragments" => $this->getFragments(),
-        ];
     }
 
     /*
