@@ -39,7 +39,7 @@ class PlagiarismViewFactory
      * @return array
      * @throws InternalServerException
      */
-    public function getPlagiarismSimilaityData(PlagiarismDetectedSimilarity $similarity)
+    public function getPlagiarismSimilarityData(PlagiarismDetectedSimilarity $similarity)
     {
         // transform nested similar files
         $files = array_map(function (PlagiarismDetectedSimilarFile $file) {

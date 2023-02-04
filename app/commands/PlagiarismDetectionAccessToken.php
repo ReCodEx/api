@@ -16,8 +16,8 @@ use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Exception;
 
 /**
- * A console command that removes inactive users.
- * A user is inactive if no authentication (nor token renewal) is recorded for given period of time.
+ * A console command that generates token restricted for plagiarism detection tools.
+ * This token can be used to create plagiarism detection batches and upload their data regarding detected similarities.
  */
 class PlagiarismDetectionAccessToken extends Command
 {

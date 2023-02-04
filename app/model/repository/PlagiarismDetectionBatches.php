@@ -34,7 +34,8 @@ class PlagiarismDetectionBatches extends BaseRepository
         if ($solution) {
             $sub = $qb->getEntityManager()->createQueryBuilder()
                 ->select("ds")->from(PlagiarismDetectedSimilarity::class, "ds");
-            $sub->andWhere("ds.batch = b.id");
+            $sub->andWhere("ds.batch = b.id")
+                ->andWhere("ds.testedSolution = :sid")->setParameter("sid", $solution->getId());
             $qb->andWhere($qb->expr()->exists($sub->getDQL()));
         }
         $qb->orderBy("b.createdAt", "DESC");
