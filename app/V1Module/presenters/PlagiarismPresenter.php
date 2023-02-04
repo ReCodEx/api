@@ -181,7 +181,7 @@ class PlagiarismPresenter extends BasePresenter
         $batch = $this->detectionBatches->findOrThrow($id);
         $solution = $this->assignmentSolutions->findOrThrow($solutionId);
         $similarities = array_map(
-            [$this->plagiarismViewFatory, 'getPlagiarismSimilaityData'],
+            [$this->plagiarismViewFatory, 'getPlagiarismSimilarityData'],
             $this->detectedSimilarities->getSolutionSimilarities($batch, $solution)
         );
         $this->sendSuccessResponse($similarities);
@@ -280,6 +280,6 @@ class PlagiarismPresenter extends BasePresenter
         $this->detectedSimilarities->persist($detectedSimilarity, false);
         $solution->setPlagiarismBatch($batch);
         $this->assignmentSolutions->persist($solution);
-        $this->sendSuccessResponse($this->plagiarismViewFatory->getPlagiarismSimilaityData($detectedSimilarity));
+        $this->sendSuccessResponse($this->plagiarismViewFatory->getPlagiarismSimilarityData($detectedSimilarity));
     }
 }
