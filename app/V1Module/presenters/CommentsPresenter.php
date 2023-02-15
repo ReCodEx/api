@@ -152,7 +152,7 @@ class CommentsPresenter extends BasePresenter
         } elseif ($assignmentSolution) {
             $this->solutionCommentsEmailsSender->assignmentSolutionComment($assignmentSolution, $comment);
         } elseif ($referenceSolution) {
-                $this->solutionCommentsEmailsSender->referenceSolutionComment($referenceSolution, $comment);
+            $this->solutionCommentsEmailsSender->referenceSolutionComment($referenceSolution, $comment);
         } else {
             // Nothing to do at the moment...
         }

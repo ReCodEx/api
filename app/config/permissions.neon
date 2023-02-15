@@ -57,7 +57,6 @@ permissions:
       actions:
           - viewAssignments
           - viewExercises
-          - viewStudents
           - viewPublicDetail
           - viewDetail
           - viewSubgroups
@@ -67,6 +66,16 @@ permissions:
           - viewStats
           - viewAll
           - viewInvitations
+
+    - allow: true
+      role: scope-plagiarism
+      resource: group
+      actions:
+          - viewAssignments
+          - viewStudents
+          - viewAll
+          - viewPublicDetail
+          - viewDetail
 
     - allow: true
       role: student
@@ -258,6 +267,13 @@ permissions:
         - listPendingReviews
 
     - allow: true
+      role: scope-plagiarism
+      resource: user
+      actions:
+        - viewPublicData
+        - viewList
+
+    - allow: true
       role: student
       resource: user
       actions:
@@ -336,6 +352,12 @@ permissions:
         - viewAssignmentSolutions
 
     - allow: true
+      role: scope-plagiarism
+      resource: assignment
+      actions:
+        - viewAssignmentSolutions
+
+    - allow: true
       role: student
       resource: assignment
       actions:
@@ -409,6 +431,12 @@ permissions:
           - viewResubmissions
           - viewReview
           - viewDetectedPlagiarisms
+
+    - allow: true
+      role: scope-plagiarism
+      resource: assignmentSolution
+      actions:
+          - viewDetail
 
     - allow: true
       role: student
@@ -987,7 +1015,7 @@ permissions:
     ####################################
 
     - allow: true
-      role: scope-plagiarisms
+      role: scope-plagiarism
       resource: plagiarism
       actions:
           - createBatch
