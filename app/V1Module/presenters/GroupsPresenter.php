@@ -44,7 +44,6 @@ use Nette\Application\Request;
  */
 class GroupsPresenter extends BasePresenter
 {
-
     /**
      * @var Groups
      * @inject

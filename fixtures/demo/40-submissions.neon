@@ -71,6 +71,7 @@ App\Model\Entity\AssignmentSolution:
         reviewStartedAt: "<dateTimeBetween('-6 day', '-5 day')>"
         reviewedAt: "<dateTimeBetween('-5 day', '-4 day')>"
         setIssuesCount: 1
+    
     "solution5":
         __construct:
             createSolution:
@@ -97,37 +98,37 @@ App\Model\Entity\SubmissionFailure:
 App\Model\Entity\AssignmentSolutionSubmission:
     "submission{1..2}":
         __construct:
-            - "@solution1"
+            - @solution1
             - @submitUser1
         evaluation: "@evaluation<current()>"
     "submission{3..4}":
         __construct:
-            - "@solution2"
+            - @solution2
             - @submitUser1
         evaluation: "@evaluation<current()>"
     "submission5":
         __construct:
-            - "@solution1"
+            - @solution1
             - @submitUser1
         failure: "@resolvedSubmissionFailure"
     "submission6":
         __construct:
-            - "@solution1"
+            - @solution1
             - @submitUser1
         failure: "@unresolvedSubmissionFailure"
     "submission7":
         __construct:
-            - "@solution3"
+            - @solution3
             - @submitUser1
         evaluation: "@evaluation5"
     "submission8":
         __construct:
-            - "@solution4"
+            - @solution4
             - @submitUser1
         evaluation: "@evaluation6"
     "submission9":
         __construct:
-            - "@solution5"
+            - @solution5
             - @demoGroupMember1
         evaluation: "@evaluation7"
  

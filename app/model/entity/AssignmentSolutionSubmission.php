@@ -35,6 +35,10 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
     ) {
         parent::__construct($submittedBy, $isDebug);
         $this->assignmentSolution = $assignmentSolution;
+        if ($assignmentSolution->getLastSubmission() === null) {
+            // this is mainly for the fixtures, the caller is responsible for updating last submission anyway
+            $assignmentSolution->setLastSubmission($this);
+        }
     }
 
     /*

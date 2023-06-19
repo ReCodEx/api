@@ -16,7 +16,6 @@ use DateTime;
  */
 class AssignmentSolutions extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, AssignmentSolution::class);
@@ -125,14 +124,13 @@ class AssignmentSolutions extends BaseRepository
             $assignments
         );
 
-        $qb = $this->createQueryBuilder("asol");
+        $qb = $this->createQueryBuilder("asol")->leftJoin("asol.solution", "sol");
         $qb->andWhere($qb->expr()->in("asol.assignment", $assignmentIds));
         if ($user !== null) {
-            $qb->leftJoin("asol.solution", "sol");
             $qb->andWhere("sol.author = :author");
             $qb->setParameter('author', $user->getId());
         }
-
+        $qb->orderBy("sol.createdAt", "DESC");
         $solutions = $qb->getQuery()->getResult();
         return self::filterValidSolutions($solutions);
     }

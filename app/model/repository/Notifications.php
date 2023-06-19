@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class Notifications extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Notification::class);

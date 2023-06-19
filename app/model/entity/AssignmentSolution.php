@@ -143,7 +143,7 @@ class AssignmentSolution
      * The reference should speed up loading in many cases since the last submission is the only one that counts.
      * However, this behavior might be altered in the future, so we can actively select which submission is relevant.
      *
-     * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER")
+     * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER", cascade={"persist"})
      * @var AssignmentSolutionSubmission|null
      */
     protected $lastSubmission = null;

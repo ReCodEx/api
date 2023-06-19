@@ -286,7 +286,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
     }
 
     /**
-     * Set new amount of bonus points for a solution
+     * Set new amount of bonus points for a solution (and optionally points override)
+     * Returns array of solution entities that has been changed by this.
      * @POST
      * @Param(type="post", name="bonusPoints", validation="numericint",
      *        description="New amount of bonus points, can be negative number")
@@ -300,11 +301,19 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public function actionSetBonusPoints(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
+        $assignment = $solution->getAssignment();
+        $author = $solution->getSolution()->getAuthor();
         $oldBonusPoints = $solution->getBonusPoints();
         $oldOverridenPoints = $solution->getOverriddenPoints();
 
         $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
         $overriddenPoints = $this->getRequest()->getPost("overriddenPoints");
+
+        // remember, who was the best in case the new points will change that
+        $oldBest = null;
+        if ($assignment && ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints)) {
+            $oldBest = $this->assignmentSolutions->findBestSolution($assignment, $author);
+        }
 
         $solution->setBonusPoints($newBonusPoints);
 
@@ -324,12 +333,26 @@ class AssignmentSolutionsPresenter extends BasePresenter
             }
         }
 
+        $this->assignmentSolutions->flush();
+
+        $changedSolutions = []; // list of changed solutions reported back in payload
         if ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints) {
             $this->pointsChangedEmailsSender->solutionPointsUpdated($solution);
+            $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($solution);
+            if ($assignment) {
+                $best = $this->assignmentSolutions->findBestSolution($assignment, $author);
+                if ($best->getId() !== $oldBest->getId()) {
+                    // best solution has changed, we need to report this
+                    if ($best->getId() !== $id) {
+                        $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($best);
+                    }
+                    if ($oldBest->getId() !== $id) {
+                        $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($oldBest);
+                    }
+                }
+            }
         }
-
-        $this->assignmentSolutions->flush();
-        $this->sendSuccessResponse("OK");
+        $this->sendSuccessResponse($changedSolutions);
     }
 
     public function checkSetFlag(string $id)

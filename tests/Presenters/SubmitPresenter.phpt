@@ -146,8 +146,8 @@ class TestSubmitPresenter extends Tester\TestCase
         $payload = $result['payload'];
         Assert::count(5, $payload);
         Assert::equal(true, $payload["canSubmit"]);
-        Assert::equal(2, $payload["total"]);
-        Assert::equal(1, $payload["evaluated"]);
+        Assert::equal(4, $payload["total"]);
+        Assert::equal(3, $payload["evaluated"]);
         Assert::equal(1, $payload["failed"]);
     }
 
