@@ -203,8 +203,14 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
-        $submission = reset($allSubmissions);
         $submissionsCount = count($allSubmissions);
+        $solutions = array_filter($this->presenter->assignmentSolutions->findAll(), function ($s) {
+            return count($s->getSubmissions()) > 1;
+        });
+        $solution = reset($solutions);
+
+        $submission = $solution->getLastSubmission();
+        $submissionId = $submission->getId();
 
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
         $mockFileStorage->shouldReceive("deleteResultsArchive")->withArgs([$submission])->once();
@@ -217,7 +223,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             'DELETE',
             [
                 'action' => 'deleteSubmission',
-                'submissionId' => $submission->getId()
+                'submissionId' => $submissionId
             ]
         );
 
@@ -232,12 +238,27 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
                 $remainingSubmissions
             )
         );
+        Assert::notEqual($submissionId, $solution->getLastSubmission()->getId());
     }
 
     public function testSetBonusPoints()
     {
         $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
-        $solution = current($this->presenter->assignmentSolutions->findAll());
+        $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
+        $solutions = array_filter($this->presenter->assignmentSolutions->findAll(), function ($s) use ($user) {
+            return $s->getSolution()->getAuthor()->getId() === $user->getId();
+        });
+        $assignment = $solutions[0]->getAssignment();
+        $solutions = $this->presenter->assignmentSolutions->findValidSolutions($assignment, $user);
+
+        $best = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
+        $rest = array_filter($solutions, function ($s) use ($best) {
+            return $s->getId() !== $best->getId();
+        });
+        $solution = current($rest);
+
+        $correctIds = [ $best->getId(), $solution->getId() ];
+        sort($correctIds);
 
         /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
         $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
@@ -256,7 +277,11 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         // Check invariants
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
-        Assert::equal("OK", $result['payload']);
+        Assert::count(2, $result['payload']);
+
+        $ids = [ $result['payload'][0]['id'], $result['payload'][1]['id'] ];
+        sort($ids);
+        Assert::equal($correctIds, $ids);
 
         $solution = $this->presenter->assignmentSolutions->get($solution->getId());
         Assert::equal(4, $solution->getBonusPoints());

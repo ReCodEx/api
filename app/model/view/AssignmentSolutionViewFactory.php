@@ -17,7 +17,6 @@ use App\Exceptions\InternalServerException;
  */
 class AssignmentSolutionViewFactory
 {
-
     /**
      * @var IAssignmentSolutionPermissions
      */
