@@ -17,6 +17,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
+use App\Model\Repository\ReviewComments;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\SolutionFilesViewFactory;
@@ -95,6 +96,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public $pointsChangedEmailsSender;
 
+    /**
+     * @var ReviewComments
+     * @inject
+     */
+    public $reviewComments;
+
 
     public function checkSolution(string $id)
     {
@@ -169,6 +176,9 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public function actionDeleteSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
+
+        // delete review (if any)
+        $this->reviewComments->deleteCommentsOfSolution($solution);
 
         // delete files of submissions that will be deleted in cascade
         $submissions = $solution->getSubmissions()->getValues();
