@@ -138,18 +138,19 @@ class TestAssignmentSolutionReviewsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $solution = $this->getSolutionWithoutReview();
+        $fileName = $solution->getSolution()->getFiles()->first()->getName();
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:AssignmentSolutionReviews',
             'POST',
             ['action' => 'newComment', 'id' => $solution->getId()],
-            [ 'text' => 'Blabla', 'file' => 'filename.ext', 'line' => 42 ]
+            [ 'text' => 'Blabla', 'file' => $fileName, 'line' => 42 ]
         );
 
         Assert::same($solution->getId(), $payload->getSolution()->getId());
         Assert::same('Blabla', $payload->getText());
-        Assert::same('filename.ext', $payload->getFile());
+        Assert::same($fileName, $payload->getFile());
         Assert::same(42, $payload->getLine());
         Assert::false($payload->isIssue());
     }
@@ -158,18 +159,19 @@ class TestAssignmentSolutionReviewsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $solution = $this->getSolutionWithoutReview();
+        $fileName = $solution->getSolution()->getFiles()->first()->getName();
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:AssignmentSolutionReviews',
             'POST',
             ['action' => 'newComment', 'id' => $solution->getId()],
-            [ 'text' => 'Blabla', 'file' => 'filename.ext', 'line' => 42, 'issue' => true ]
+            [ 'text' => 'Blabla', 'file' => $fileName, 'line' => 42, 'issue' => true ]
         );
 
         Assert::same($solution->getId(), $payload->getSolution()->getId());
         Assert::same('Blabla', $payload->getText());
-        Assert::same('filename.ext', $payload->getFile());
+        Assert::same($fileName, $payload->getFile());
         Assert::same(42, $payload->getLine());
         Assert::true($payload->isIssue());
     }
