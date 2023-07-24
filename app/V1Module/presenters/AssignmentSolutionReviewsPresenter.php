@@ -222,12 +222,21 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     private function verifyCodeLocation(AssignmentSolution $solution, string $file, int $line)
     {
-        if (!$file) {
-            throw new BadRequestException("The text of the comment must not be empty.");
-        }
-
         if ($line < 0) {
             throw new BadRequestException("Invalid line number.");
+        }
+
+        if ($file) {
+            $exists = $solution->getSolution()->getFiles()->exists(function ($_, $f) use ($file) {
+                return $f->getName() === $file;
+            });
+            if (!$exists) {
+                throw new BadRequestException(
+                    "No file named '$file' was submitted for given solution -- unable to associate a review comment."
+                );
+            }
+        } elseif ($line !== 0) {
+            throw new BadRequestException("Global comment (with no file) must have a line value set to zero.");
         }
     }
 
