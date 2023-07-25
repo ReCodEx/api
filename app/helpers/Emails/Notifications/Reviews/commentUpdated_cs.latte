@@ -9,7 +9,8 @@
     <strong>{$comment->isIssue() ? 'byla upravena připomínka k vyřešení' : 'byl upraven komentář'}</strong>.
 </p>
 
-<h5>Aktualizováno u <code>{$comment->getFile()}:{$comment->getLine()}</code></h5>
+<h5 n:if="$comment->getFile()">Aktualizováno u <code>{$comment->getFile()}:{$comment->getLine()}</code></h5>
+<h5 n:if="!$comment->getFile()">Aktualizováno shrnutí revize</h5>
 
 {if $oldText !== $comment->getText()}
 <h6>Předchozí verze</h6>

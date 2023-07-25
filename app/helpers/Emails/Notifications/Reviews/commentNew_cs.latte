@@ -10,7 +10,8 @@
 </p>
 
 <div>
-    <h5>... k <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    <h5 n:if="$comment->getFile()">... k <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    <h5 n:if="!$comment->getFile()">Shrnutí revize</h5>
     {$comment->getText()|markdown}
 </div>
 

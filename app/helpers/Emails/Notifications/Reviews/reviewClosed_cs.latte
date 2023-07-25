@@ -18,6 +18,14 @@
 </p>
 {/if}
 
+{if $summary}
+<h4>Shrnutí revize:</h4>
+{/if}
+
+<div n:foreach="$summary as $summaryComment">
+    {$summaryComment->getText()|markdown}
+</div>
+
 {if $issues}
 <h4>Připomínky k vyřešení:</h4>
 {/if}

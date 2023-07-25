@@ -130,11 +130,14 @@ class ReviewsEmailsSender
                 $res = strcmp($a->getFile(), $b->getFile());
                 return $res === 0 ? ($a->getLine() - $b->getLine()) : $res;
             });
+            $params["summary"] = array_filter($comments, function ($c) {
+                return !$c->getFile();
+            });
             $params["issues"] = array_filter($comments, function ($c) {
-                return $c->isIssue();
+                return $c->getFile() && $c->isIssue();
             });
             $params["comments"] = array_filter($comments, function ($c) {
-                return !$c->isIssue();
+                return $c->getFile() && !$c->isIssue();
             });
         }
 

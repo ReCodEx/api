@@ -19,6 +19,14 @@
 </p>
 {/if}
 
+{if $summary}
+<h4>Review summary:</h4>
+{/if}
+
+<div n:foreach="$summary as $summaryComment">
+    {$summaryComment->getText()|markdown}
+</div>
+
 {if $issues}
 <h4>Issues to be resolved:</h4>
 {/if}
