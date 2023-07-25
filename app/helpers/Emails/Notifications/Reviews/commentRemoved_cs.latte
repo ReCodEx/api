@@ -10,7 +10,8 @@
 </p>
 
 <div>
-    <h5>Odebráno od <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    <h5 n:if="$comment->getFile()">Odebráno od <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
+    <h5 n:if="!$comment->getFile()">Odebráno shrnutí revize</h5>
     {$comment->getText()|markdown}
 </div>
 

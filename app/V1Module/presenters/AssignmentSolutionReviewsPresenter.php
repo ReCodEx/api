@@ -244,7 +244,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * Create a new comment within a review.
      * @POST
      * @Param(type="post", name="text", validation="string:1..65535", required=true, description="The comment itself.")
-     * @Param(type="post", name="file", validation="string:1..256", required=true,
+     * @Param(type="post", name="file", validation="string:0..256", required=true,
      *        description="Identification of the file to which the comment is related to.")
      * @Param(type="post", name="line", validation="numericint", required=true,
      *        description="Line in the designated file to which the comment is related to.")

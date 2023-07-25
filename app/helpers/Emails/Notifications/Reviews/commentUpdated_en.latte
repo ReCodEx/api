@@ -9,7 +9,8 @@
     that was closed by the teacher at <strong>{$closed|localizedDate:'en'}</strong>.
 </p>
 
-<h5>Updated at <code>{$comment->getFile()}:{$comment->getLine()}</code></h5>
+<h5 n:if="$comment->getFile()">Updated at <code>{$comment->getFile()}:{$comment->getLine()}</code></h5>
+<h5 n:if="!$comment->getFile()">Review summary updated</h5>
 
 {if $oldText !== $comment->getText()}
 <h6>Previous version:</h6>
