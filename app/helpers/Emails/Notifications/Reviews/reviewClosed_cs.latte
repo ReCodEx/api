@@ -23,7 +23,7 @@
 {/if}
 
 <div n:foreach="$summary as $summaryComment">
-    {$summaryComment->getText()|markdown}
+    {$summaryComment->getText()|markdown|noescape}
 </div>
 
 {if $issues}
@@ -32,7 +32,7 @@
 
 <div n:foreach="$issues as $issue">
     <h5>... k <code>{$issue->getFile()}:{$issue->getLine()}</code> ...</h5>
-    {$issue->getText()|markdown}
+    {$issue->getText()|markdown|noescape}
 </div>
 
 {if $comments && count($comments) <= 5}
@@ -40,6 +40,6 @@
 
 <div n:foreach="$comments as $comment">
     <h5>... k <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
-    {$comment->getText()|markdown}
+    {$comment->getText()|markdown|noescape}
 </div>
 {/if}
