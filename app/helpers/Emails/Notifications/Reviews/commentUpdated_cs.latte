@@ -14,12 +14,12 @@
 
 {if $oldText !== $comment->getText()}
 <h6>Předchozí verze</h6>
-{$oldText|markdown}
+{$oldText|markdown|noescape}
 
 <h6>Nová verze:</h6>
 {/if}
 
-{$comment->getText()|markdown}
+{$comment->getText()|markdown|noescape}
 
 <p n:if="$issueChanged">
     Typ komentáře byl změměn z

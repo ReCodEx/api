@@ -12,7 +12,7 @@
 <div>
     <h5 n:if="!$comment->getFile()">Removed from <code>{$comment->getFile()}:{$comment->getLine()}</code> ...</h5>
     <h5 n:if="!$comment->getFile()">Review summary removed</h5>
-    {$comment->getText()|markdown}
+    {$comment->getText()|markdown|noescape}
 </div>
 
 <p>
