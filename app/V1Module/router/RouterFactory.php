@@ -226,6 +226,8 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/resubmit-all", "Submit:resubmitAllAsyncJobStatus");
         $router[] = new PostRoute("$prefix/<id>/resubmit-all", "Submit:resubmitAll");
         $router[] = new PostRoute("$prefix/<id>/pre-submit", "Submit:preSubmit");
+
+        $router[] = new GetRoute("$prefix/<id>/async-jobs", "AsyncJobs:assignmentJobs");
         return $router;
     }
 

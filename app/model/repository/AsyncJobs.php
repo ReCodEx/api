@@ -6,6 +6,7 @@ use App\Model\Entity\AsyncJob;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Collections\Criteria;
 use Exception;
 use DateTime;
 
@@ -128,6 +129,22 @@ class AsyncJobs extends BaseRepository
         // presort them in the most likely order the jobs should be processed
         $qb->addOrderBy('j.retries')->addOrderBy('j.createdAt');
 
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Find jobs related to given assignment.
+     * @param string $assignmentId
+     * @param bool $includePast
+     */
+    public function findAssignmentJobs(string $assignmentId, bool $includePast = false): array
+    {
+        $qb = $this->repository->createQueryBuilder("j");
+        $qb->where($qb->expr()->eq('j.associatedAssignment', ':assignmentId'));
+        $qb->setParameter('assignmentId', $assignmentId);
+        if (!$includePast) {
+            $qb->andWhere($qb->expr()->isNull('j.startedAt'));
+        }
         return $qb->getQuery()->getResult();
     }
 }

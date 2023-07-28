@@ -24,4 +24,6 @@ interface IAssignmentPermissions
     public function canResubmitSubmissions(Assignment $assignment): bool;
 
     public function canViewAssignmentSolutions(Assignment $assignment): bool;
+
+    public function canViewAssignmentAsyncJobs(Assignment $assignment): bool;
 }
