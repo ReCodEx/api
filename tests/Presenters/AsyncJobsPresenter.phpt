@@ -8,11 +8,13 @@ use App\Helpers\FileStorageManager;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
+use App\Helpers\SubmissionHelper;
 use App\Model\Entity\AsyncJob;
 use App\Model\Repository\AsyncJobs;
 use App\Async\Dispatcher;
 use App\Async\Worker;
 use App\Async\Handler\PingAsyncJobHandler;
+use App\Async\Handler\ResubmitAllAsyncJobHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use Tracy\ILogger;
@@ -44,8 +46,6 @@ class TestAsyncJobsPresenter extends Tester\TestCase
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->asyncJobs = $this->container->getByType(AsyncJobs::class);
         $entityManager = $this->container->getByType(EntityManagerInterface::class);
-        $this->dispatcher = new Dispatcher([], ['ping' => new PingAsyncJobHandler()], $this->asyncJobs, $entityManager);
-
         // patch container, since we cannot create actual file storage manarer
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
@@ -55,6 +55,10 @@ class TestAsyncJobsPresenter extends Tester\TestCase
             Mockery::mock(TmpFilesHelper::class),
             ""
         ));
+        $this->dispatcher = new Dispatcher([], [
+            PingAsyncJobHandler::ID => new PingAsyncJobHandler(),
+            ResubmitAllAsyncJobHandler::ID => new ResubmitAllAsyncJobHandler($this->container->getByType(SubmissionHelper::class)),
+        ], $this->asyncJobs, $entityManager);
     }
 
     protected function setUp()
@@ -166,6 +170,30 @@ class TestAsyncJobsPresenter extends Tester\TestCase
             }
         }
         Assert::equal(1, $terminated);
+    }
+
+    public function testGetAsyncJobs()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $assignment = current($this->presenter->assignments->findAll());
+        $user = PresenterTestHelper::getUser($this->container);
+
+        $asyncJob = ResubmitAllAsyncJobHandler::dispatchAsyncJob(
+            $this->dispatcher,
+            $user,
+            $assignment
+        );
+        Assert::notNull($asyncJob);
+
+        $response = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:AsyncJobs',
+            'GET',
+            ['action' => 'assignmentJobs', 'id' => $assignment->getId()]
+        );
+
+        Assert::count(1, $response);
+        Assert::equal($asyncJob->getId(), $response[0]->getId());
     }
 }
 

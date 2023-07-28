@@ -394,6 +394,7 @@ permissions:
           - remove
           - submit
           - resubmitSubmissions
+          - viewAssignmentAsyncJobs
       conditions:
           - assignment.isInActiveGroup
           - assignment.isSupervisorOrAdmin

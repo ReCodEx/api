@@ -4,8 +4,11 @@ namespace App\V1Module\Presenters;
 
 use App\Async\Dispatcher;
 use App\Async\Handler\PingAsyncJobHandler;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AsyncJobs;
+use App\Model\Entity\Assignment;
 use App\Model\Entity\AsyncJob;
+use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAsyncJobPermissions;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
@@ -28,6 +31,12 @@ class AsyncJobsPresenter extends BasePresenter
     public $dispatcher;
 
     /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
+
+    /**
      * @var AsyncJobs
      * @inject
      */
@@ -38,6 +47,12 @@ class AsyncJobsPresenter extends BasePresenter
      * @inject
      */
     public $asyncJobsAcl;
+
+    /**
+     * @var IAssignmentPermissions
+     * @inject
+     */
+    public $assignmentsAcl;
 
     public function checkDefault(string $id)
     {
@@ -159,5 +174,23 @@ class AsyncJobsPresenter extends BasePresenter
     {
         $asyncJob = PingAsyncJobHandler::dispatchAsyncJob($this->dispatcher, $this->getCurrentUser());
         $this->sendSuccessResponse($asyncJob);
+    }
+
+    public function checkAssignmentJobs($id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+        if (!$this->assignmentsAcl->canViewAssignmentAsyncJobs($assignment)) {
+            throw new ForbiddenRequestException("You cannot list async jobs of given assignment");
+        }
+    }
+
+    /**
+     * Get all pending async jobs related to a particular assignment.
+     * @GET
+     */
+    public function actionAssignmentJobs($id)
+    {
+        $asyncJobs = $this->asyncJobs->findAssignmentJobs($id);
+        $this->sendSuccessResponse($asyncJobs);
     }
 }
