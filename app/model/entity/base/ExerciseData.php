@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
@@ -68,9 +69,9 @@ trait ExerciseData
 
     /**
      * Get all runtime environments associated with the object
-     * @return Collection
+     * @return ReadableCollection
      */
-    public function getRuntimeEnvironments(): Collection
+    public function getRuntimeEnvironments(): ReadableCollection
     {
         return $this->runtimeEnvironments;
     }

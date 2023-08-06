@@ -56,6 +56,7 @@ class BaseCommand extends Command
             return true; // assume "yes"
         }
 
+        /** @var QuestionHelper */
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion($text, $default);
         return $helper->ask($this->input, $this->output, $question);
@@ -112,6 +113,7 @@ class BaseCommand extends Command
 
         // make the inquery
         QuestionHelper::disableStty();
+        /** @var QuestionHelper */
         $helper = $this->getHelper('question');
         $question = new ChoiceQuestion($text, $internalOptions, 0);
         $question->setErrorMessage('Invalid input.');

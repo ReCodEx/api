@@ -18,7 +18,6 @@ use Nette\Utils\Arrays;
  */
 class BrokerProxy
 {
-
     private const EXPECTED_RESULT = "accept";
     private const REJECTED_RESULT = "reject";
     private const EXPECTED_ACK = "ack";
@@ -285,7 +284,6 @@ class BrokerProxy
             }
         } while (microtime(true) <= $limit);
 
-        // @phpstan-ignore-next-line
         return null;
     }
 }

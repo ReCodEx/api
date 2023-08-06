@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Evaluation\IExercise;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -294,7 +295,7 @@ class Assignment extends AssignmentBase implements IExercise
      */
     protected $disabledRuntimeEnvironments;
 
-    public function getRuntimeEnvironments(): Collection
+    public function getRuntimeEnvironments(): ReadableCollection
     {
         return $this->runtimeEnvironments->filter(
             function (RuntimeEnvironment $environment) {
