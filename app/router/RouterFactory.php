@@ -3,6 +3,7 @@
 namespace App;
 
 use Nette;
+use Nette\Routing\Router;
 use Nette\Application\Routers\RouteList;
 
 /**
@@ -14,9 +15,8 @@ class RouterFactory
 
     /**
      * Create list of routes from all modules.
-     * @return Nette\Routing\Router
      */
-    public static function createRouter()
+    public static function createRouter(): Router
     {
         $router = new RouteList();
         $router[] = V1Module\RouterFactory::createRouter();

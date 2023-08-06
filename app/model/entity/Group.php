@@ -4,9 +4,10 @@ namespace App\Model\Entity;
 
 use DateTime;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use LogicException;
 
@@ -382,9 +383,9 @@ class Group
     /**
      * Get all members of the group of given type
      * @param string[] ...$types
-     * @return ArrayCollection|Collection
+     * @return ReadableCollection
      */
-    public function getMembers(...$types)
+    public function getMembers(...$types): ReadableCollection
     {
         $members = $this->getMemberships(...$types);
         return $members->map(
@@ -485,9 +486,9 @@ class Group
     }
 
     /**
-     * @return Collection
+     * @return ReadableCollection
      */
-    public function getPrimaryAdmins(): Collection
+    public function getPrimaryAdmins(): ReadableCollection
     {
         return $this->getMembers(GroupMembership::TYPE_ADMIN);
     }
@@ -778,7 +779,7 @@ class Group
         )->getValues();
     }
 
-    public function getPublicChildGroups(): Collection
+    public function getPublicChildGroups(): ReadableCollection
     {
         return $this->getChildGroups()->filter(
             function (Group $group) {

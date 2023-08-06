@@ -192,8 +192,8 @@ parameters:
     solutionSizeLimitDefault: 262144  # 256 KiB is the maximal size for all submitted files
 
   anonymization:
-    anonymizedName: "@@anonymized"  # String used as replacement for anonymized name a user
-    deletedEmailSuffix: "@@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
+    anonymizedName: "@anonymized"  # String used as replacement for anonymized name a user
+    deletedEmailSuffix: "@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
 
   removeInactiveUsers:
     # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).

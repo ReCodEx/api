@@ -9,6 +9,7 @@ use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\RuntimeEnvironment;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ReadableCollection;
 
 /**
  * Interface defining operations which exercise and its instance (assignment)
@@ -25,9 +26,9 @@ interface IExercise
 
     /**
      * Get all runtime environments associated with the exercise
-     * @return Collection
+     * @return ReadableCollection
      */
-    public function getRuntimeEnvironments(): Collection;
+    public function getRuntimeEnvironments(): ReadableCollection;
 
     /**
      * Get tests which belongs to exercise.

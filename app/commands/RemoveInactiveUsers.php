@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 /**
  * A console command that removes inactive users.
@@ -70,6 +71,7 @@ class RemoveInactiveUsers extends Command
 
         // confirm the deletion (when in interactive mode)
         if (!$silent) {
+            /** @var QuestionHelper */
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion(
                 "Total $count inactive users found. Do you wish to remove them? ",

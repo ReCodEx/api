@@ -7,5 +7,5 @@ services:
 	- App\Helpers\ZenifyFixtures\Alice\CustomNativeLoader
 
 	# Faker
-	- class: Faker\Generator
+	- type: Faker\Generator
 	  factory: Faker\Factory::create
