@@ -35,7 +35,7 @@ final class Version20200421000600 extends AbstractMigration
             if (!isset($yaml['testWeights']) || !is_array($yaml['testWeights'])) {
                 return false;
             }
-            
+
             $lastValue = null;
             foreach ($yaml['testWeights'] as $value) {
                 if (!is_integer($value)) {
@@ -91,7 +91,7 @@ final class Version20200421000600 extends AbstractMigration
                 // get list of tests so we can use it to construct config
                 $tests = $this->connection->executeQuery(
                     "SELECT et.name AS `name` FROM exercise_test AS et
-                    JOIN ${table}_exercise_test AS eet ON eet.exercise_test_id = et.id WHERE eet.${table}_id = :tid",
+                    JOIN {$table}_exercise_test AS eet ON eet.exercise_test_id = et.id WHERE eet.{$table}_id = :tid",
                     [ 'tid' => $config['tid'] ]
                 )->fetchFirstColumn();
 

@@ -117,15 +117,15 @@ class BisonCompilationBox extends CompilationBox
         if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
             $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
         }
-        $args[] = "--defines=${inputBaseName}.hpp";
+        $args[] = "--defines={$inputBaseName}.hpp";
         $args[] = "-o";
-        $args[] = "${inputBaseName}.cpp";
+        $args[] = "{$inputBaseName}.cpp";
         $args[] = $inputFile;
         $task->setCommandArguments($args);
 
         // Set output names correctly and create task that will check their existence
         $output = $this->getOutputPortValue(self::$OUTPUT_FILES_PORT_KEY);
-        $output->setValue(["${inputBaseName}.cpp", "${inputBaseName}.hpp"]);
+        $output->setValue(["{$inputBaseName}.cpp", "{$inputBaseName}.hpp"]);
         $exists = $this->compileExistsTask($output->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
 
         return [$task, $exists];

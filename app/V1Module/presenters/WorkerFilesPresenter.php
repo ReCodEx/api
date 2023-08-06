@@ -106,7 +106,7 @@ class WorkerFilesPresenter extends BasePresenter
                 );
             }
         }
-        $this->sendStorageFileResponse($file, "${type}_${id}.zip");
+        $this->sendStorageFileResponse($file, "{$type}_{$id}.zip");
     }
 
     /**

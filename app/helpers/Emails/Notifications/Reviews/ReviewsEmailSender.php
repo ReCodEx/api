@@ -118,7 +118,7 @@ class ReviewsEmailsSender
         $latte = EmailLatteFactory::latte();
         $template = EmailLocalizationHelper::getTemplate(
             $locale,
-            __DIR__ . "/review${notificationType}_{locale}.latte"
+            __DIR__ . "/review{$notificationType}_{locale}.latte"
         );
 
         $params = $this->prepareSolutionEmailParams($locale, $solution, $closed);
@@ -248,7 +248,7 @@ class ReviewsEmailsSender
         $latte = EmailLatteFactory::latte();
         $template = EmailLocalizationHelper::getTemplate(
             $locale,
-            __DIR__ . "/comment${notificationType}_{locale}.latte"
+            __DIR__ . "/comment{$notificationType}_{locale}.latte"
         );
 
         $params = $this->prepareSolutionEmailParams($locale, $solution);

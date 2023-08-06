@@ -46,7 +46,7 @@ class TestUsersPresenter extends Tester\TestCase
     protected $externalLogins;
 
     /** @var App\Helpers\AnonymizationHelper */
-    protected $annonymizationHelper;
+    protected $anonymizationHelper;
 
     /** @var  Nette\DI\Container */
     protected $container;

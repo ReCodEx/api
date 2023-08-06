@@ -39,7 +39,6 @@ class TestUserCalendarsPresenter extends Tester\TestCase
     {
         global $container;
         $this->container = $container;
-        $this->em = PresenterTestHelper::getEntityManager($container);
         $this->assignments = $container->getByType(Assignments::class);
         $this->userCalendars = $container->getByType(UserCalendars::class);
     }
