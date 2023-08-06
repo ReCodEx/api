@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use forxer\Gravatar\Gravatar;
+use Gravatar\Gravatar;
 use App\Exceptions\ApiException;
 
 /**
@@ -110,7 +110,7 @@ class User
     public function setGravatar(bool $useGravatar = true)
     {
         $this->avatarUrl = !$useGravatar ? null :
-            Gravatar::image($this->email, 200, "retro", "g", "png", false)->getUrl();
+            Gravatar::image($this->email, 200, "retro", "g", "png", false)->url();
     }
 
     /**

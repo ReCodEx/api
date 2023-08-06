@@ -165,19 +165,6 @@ parameters:
     emails:
       from: %emails.from%
 
-  mail:  # configuration of sending mails
-    smtp: true  # using SMTP server, have to be "true"
-    host: "your.smtp.domain"  # address of the server
-    port: 587  # sending port (common values are 25, 465, 587)
-    username: ""  # login to the server
-    password: ""  # password to the server
-    secure: "tls"  # security, values are empty for no security, "ssl" or "tls"
-    context:  # additional parameters, depending on used mail engine
-      ssl:  # examle self-signed certificates can be allowed as verify_peer and verify_peer_name to false and allow_self_signed to true under ssl key (see example)
-        verify_peer: false
-        verify_peer_name: false
-        allow_self_signed: true
-
   assignmentRestrictions:
     submissionsCountMetaLimit: 100  # maximum value for assignment.submissionCountLimit
     maxPointsLimit: 10000  # limit for maximal points (both before first and second deadline)
@@ -200,16 +187,28 @@ parameters:
     # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
     threshold: null
 
+
 application:
   errorPresenter: V1:ApiError
   mapping:
     *: App\*Module\Presenters\*Presenter
 
-
 session:
   autoStart: false
   useCookies: 0
 
+mail:  # configuration of sending mails
+  smtp: true  # using SMTP server, have to be "true"
+  host: "your.smtp.domain"  # address of the server
+  port: 587  # sending port (common values are 25, 465, 587)
+  username: ""  # login to the server
+  password: ""  # password to the server
+  secure: "tls"  # security, values are empty for no security, "ssl" or "tls"
+  context:  # additional parameters, depending on used mail engine
+    ssl:  # examle self-signed certificates can be allowed as verify_peer and verify_peer_name to false and allow_self_signed to true under ssl key (see example)
+      verify_peer: false
+      verify_peer_name: false
+      allow_self_signed: true
 
 acl:
   config: %appDir%/config/permissions.neon
@@ -275,7 +274,6 @@ extensions:
 services:
   http.requestFactory: App\RequestFactory
   router: App\RouterFactory::createRouter
-  nette.mailer: Nette\Mail\SmtpMailer(%mail%)
   security.passwords: Nette\Security\Passwords(::PASSWORD_BCRYPT, [cost: 12])
   
   # async
@@ -379,7 +377,7 @@ services:
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper
-  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
+  - App\Helpers\EmailHelper(%emails%)
   - App\Helpers\EmailVerificationHelper(%emailVerification%)
   - App\Helpers\ForgottenPasswordHelper(%forgottenPassword%)
   - App\Helpers\InvitationHelper(%invitationNotification%)

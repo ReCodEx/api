@@ -55,19 +55,6 @@ parameters:
     #debugMode: true  # in debug mode, no messages are sent via SMPT (you should also active archiving)
     #archivingDir: "%appDir%/../log/email-debug"  # a directory where copies of all emails sent are stored (in text files)
     
-  mail:
-    host: "your.smtp.forwarding.server"
-    clientHost: "your.recodex.domain"
-    port: 587
-    username: "user"
-    password: "pass"
-    secure: "tls"
-    context:
-      ssl:
-        verify_peer: false
-        verify_peer_name: false
-        allow_self_signed: true
-
   exercises:
     # Restrictions
     testCountLimit: 100                    # maximal number of tests in one exercise
@@ -90,3 +77,17 @@ nettrine.dbal:
     user: "recodex"
     password: "someSecretPasswordYouNeedToSetYourself"
     dbname: "recodex"
+
+# configure mailing module
+mail:
+  host: "your.smtp.forwarding.server"
+  clientHost: "your.recodex.domain"
+  port: 587
+  username: "user"
+  password: "pass"
+  secure: "tls"
+  context:
+    ssl:
+      verify_peer: false
+      verify_peer_name: false
+      allow_self_signed: true

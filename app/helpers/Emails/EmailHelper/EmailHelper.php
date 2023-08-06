@@ -17,7 +17,6 @@ use Exception;
  */
 class EmailHelper
 {
-
     /** @var Mailer Nette mailer component */
     private $mailer;
 
@@ -53,7 +52,7 @@ class EmailHelper
      * @param Mailer $mailer Created and configured (TLS verification, etc.) mailer object
      * @param array $params Array of params used to fill information into predefined mail template
      */
-    public function __construct(Mailer $mailer, array $params)
+    public function __construct(array $params, Mailer $mailer)
     {
         $this->mailer = $mailer;
         $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.mff.cuni.cz/api");
