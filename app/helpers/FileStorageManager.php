@@ -119,7 +119,7 @@ class FileStorageManager
         $dir = self::PARTIAL_UPLOADS;
         $id = $file->getId();
         $name = $file->getName();
-        return "$dir/${id}_${name}_$chunk";
+        return "$dir/{$id}_{$name}_$chunk";
     }
 
     /**
@@ -185,7 +185,7 @@ class FileStorageManager
         $dir = self::UPLOADS;
         $id = $file->getId();
         $name = $file->getName();
-        return "$dir/${id}_$name";
+        return "$dir/{$id}_$name";
     }
 
     /**
@@ -359,7 +359,7 @@ class FileStorageManager
         $userDir = $user ? "user_$user" : "_system"; // files without user are treated as sys. files
         $id = $file->getId();
         $name = $file->getName();
-        return "$dir/$userDir/${id}_${name}";
+        return "$dir/$userDir/{$id}_{$name}";
     }
 
     /**
@@ -406,7 +406,7 @@ class FileStorageManager
         $dir = self::augmentDir(self::JOB_CONFIGS, $submission);
         $type = $submission::JOB_TYPE;
         $id = $submission->getId();
-        return "$dir/${id}_${type}.yml";
+        return "$dir/{$id}_{$type}.yml";
     }
 
     /**
@@ -450,7 +450,7 @@ class FileStorageManager
     {
         $dir = self::augmentDir(self::SOLUTIONS, $solution);
         $id = $solution->getId();
-        return "$dir/${id}.zip";
+        return "$dir/{$id}.zip";
     }
 
     /**
@@ -508,7 +508,7 @@ class FileStorageManager
      */
     private function getWorkerSubmissionArchivePath(string $type, string $id): string
     {
-        return self::WORKER_DOWNLOADS . "/${id}_${type}.zip";
+        return self::WORKER_DOWNLOADS . "/{$id}_{$type}.zip";
     }
 
     /**
@@ -562,7 +562,7 @@ class FileStorageManager
      */
     private function getWorkerUploadResultsArchivePath(string $type, string $submissionId): string
     {
-        return self::WORKER_UPLOADS . "/${submissionId}_${type}.zip";
+        return self::WORKER_UPLOADS . "/{$submissionId}_{$type}.zip";
     }
 
     /**
@@ -599,7 +599,7 @@ class FileStorageManager
         $dir = self::augmentDir(self::RESULTS, $submission);
         $type = $submission::JOB_TYPE;
         $id = $submission->getId();
-        return "$dir/${id}_${type}.zip";
+        return "$dir/{$id}_{$type}.zip";
     }
 
     /**
