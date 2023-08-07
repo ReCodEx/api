@@ -65,29 +65,40 @@ class SolutionCommentsEmailsSender
         }
 
         $baseSolution = $solution->getSolution();
-        $recipients = [];
         $authorId = $comment->getUser()->getId();
-        if ($baseSolution->getAuthor() !== null && $baseSolution->getAuthor()->getId() !== $authorId) {
-            $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
+
+        // author or the solution (owner of the thread) is always added
+        $recipients = [ $baseSolution->getAuthor() ];
+
+        // add all other users who contributted to the thread
+        foreach ($comment->getThread()->findAllPublic() as $pComment) {
+            $recipients[] = $pComment->getUser();
         }
 
-        foreach ($comment->getThread()->findAllPublic() as $pComment) {
-            $user = $pComment->getUser();
-            // filter out the author of the comment, it is pointless to send email to that user
+        // add all authors of review comments (if this is an assignment solution with a review)
+        if ($solution instanceof AssignmentSolution && $solution->isReviewed()) {
+            foreach ($solution->getReviewComments() as $rComment) {
+                $recipients[] = $rComment->getAuthor();
+            }
+        }
+
+        // dedulplicate and filter (only valid recipients)
+        $filteredRecipients = [];
+        foreach ($recipients as $user) {
             if (
                 $user !== null && $user->isVerified() && $user->getId() !== $authorId
                 && $user->getSettings()->getSolutionCommentsEmails()
             ) {
-                $recipients[$user->getEmail()] = $user;
+                $filteredRecipients[$user->getEmail()] = $user;
             }
         }
 
-        if (count($recipients) === 0) {
+        if (count($filteredRecipients) === 0) {
             return true;
         }
 
         return $this->localizationHelper->sendLocalizedEmail(
-            $recipients,
+            $filteredRecipients,
             function ($toUsers, $emails, $locale) use ($solution, $comment) {
                 if ($solution instanceof AssignmentSolution) {
                     $result = $this->createAssignmentSolutionComment($solution, $comment, $locale);
