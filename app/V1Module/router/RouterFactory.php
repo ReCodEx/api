@@ -265,7 +265,6 @@ class RouterFactory
 
         $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
         $router[] = new GetRoute("$prefix/<id>/shadow-assignments", "Groups:shadowAssignments");
-        $router[] = new GetRoute("$prefix/<id>/exercises", "Groups:exercises");
 
         // invitations (which cannot be in invitations route)
         $router[] = new GetRoute("$prefix/<groupId>/invitations", "GroupInvitations:list");
@@ -461,7 +460,6 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
         $router[] = new GetRoute("$prefix/<id>/groups/all", "Users:allGroups");
         $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
-        $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
         $router[] = new PostRoute("$prefix/<id>", "Users:updateProfile");
         $router[] = new PostRoute("$prefix/<id>/settings", "Users:updateSettings");
         $router[] = new PostRoute("$prefix/<id>/ui-data", "Users:updateUiData");

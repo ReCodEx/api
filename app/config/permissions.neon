@@ -56,7 +56,6 @@ permissions:
       resource: group
       actions:
           - viewAssignments
-          - viewExercises
           - viewPublicDetail
           - viewDetail
           - viewSubgroups
@@ -157,7 +156,6 @@ permissions:
       resource: group
       role: supervisor-student
       actions:
-          - viewExercises
           - viewStats
           - viewStudentStats
           - viewPublicDetail
@@ -258,7 +256,6 @@ permissions:
       resource: user
       actions:
         - viewPublicData
-        - viewExercises
         - viewInstances
         - viewGroups
         - viewDetail
@@ -292,7 +289,6 @@ permissions:
       resource: user
       actions:
           - updateProfile
-          - viewExercises
           - viewInstances
           - viewGroups
           - viewDetail

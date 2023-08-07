@@ -15,7 +15,6 @@ use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\AnonymizationHelper;
-use App\Model\View\ExerciseViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;
@@ -29,7 +28,6 @@ use DateTime;
  */
 class UsersPresenter extends BasePresenter
 {
-
     /**
      * @var Logins
      * @inject
@@ -65,12 +63,6 @@ class UsersPresenter extends BasePresenter
      * @inject
      */
     public $userAcl;
-
-    /**
-     * @var ExerciseViewFactory
-     * @inject
-     */
-    public $exerciseViewFactory;
 
     /**
      * @var Roles
@@ -640,28 +632,6 @@ class UsersPresenter extends BasePresenter
         $user = $this->users->findOrThrow($id);
 
         $this->sendSuccessResponse($this->instanceViewFactory->getInstances($user->getInstances()->toArray()));
-    }
-
-    public function checkExercises(string $id)
-    {
-        $user = $this->users->findOrThrow($id);
-
-        if (!$this->userAcl->canViewExercises($user)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Get a list of exercises authored by a user
-     * @GET
-     * @param string $id Identifier of the user
-     */
-    public function actionExercises(string $id)
-    {
-        $user = $this->users->findOrThrow($id);
-        $this->sendSuccessResponse(
-            array_map([$this->exerciseViewFactory, "getExercise"], $user->getExercises()->getValues())
-        );
     }
 
     public function checkSetRole(string $id)
