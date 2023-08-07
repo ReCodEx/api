@@ -34,7 +34,6 @@ use Exception;
  */
 class PipelinesPresenter extends BasePresenter
 {
-
     /**
      * @var IPipelinePermissions
      * @inject

@@ -731,31 +731,6 @@ class TestGroupsPresenter extends Tester\TestCase
         }
     }
 
-    public function testExercises()
-    {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
-        // Find the only group with exercises....
-        $group = null;
-        foreach ($this->presenter->groups->findAll() as $g) {
-            if (count($g->getExercises()) > 0) {
-                $group = $g;
-                break;
-            }
-        }
-
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:Groups',
-            'GET',
-            ['action' => 'exercises', 'id' => $group->getId()]
-        );
-
-        $correctIds = PresenterTestHelper::extractIdsMap($group->getExercises()->toArray());
-        $payloadIds = PresenterTestHelper::extractIdsMap($payload);
-        Assert::equal($correctIds, $payloadIds);
-    }
-
     public function testStats()
     {
         PresenterTestHelper::login($this->container, $this->adminLogin);

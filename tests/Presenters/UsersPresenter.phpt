@@ -730,43 +730,6 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal($user->getInstances()->first()->getId(), $instance['id']);
     }
 
-    public function testExercises()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container);
-        $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
-
-        $request = new Nette\Application\Request(
-            $this->presenterPath,
-            'GET',
-            ['action' => 'exercises', 'id' => $user->getId()]
-        );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
-        $exercises = $result["payload"];
-        Assert::equal(
-            array_map(
-                function (Exercise $exercise) {
-                    return $exercise->getId();
-                },
-                $user->getExercises()->getValues()
-            ),
-            array_map(
-                function ($exercise) {
-                    return $exercise["id"];
-                },
-                $exercises
-            )
-        );
-
-        foreach ($exercises as $exercise) {
-            Assert::same($user->getId(), $exercise["authorId"]);
-        }
-    }
-
     public function testUnauthenticatedUserCannotViewUserDetail()
     {
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);

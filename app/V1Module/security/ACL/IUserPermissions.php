@@ -20,8 +20,6 @@ interface IUserPermissions
 
     public function canUpdateProfile(User $user): bool;
 
-    public function canViewExercises(User $user): bool;
-
     public function canViewGroups(User $user): bool;
 
     public function canViewInstances(User $user): bool;

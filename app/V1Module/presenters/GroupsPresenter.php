@@ -10,7 +10,6 @@ use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\ShadowAssignment;
-use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
@@ -21,7 +20,6 @@ use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
 use App\Model\Repository\AssignmentSolutions;
-use App\Model\View\ExerciseViewFactory;
 use App\Model\View\AssignmentViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
@@ -30,7 +28,6 @@ use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
-use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\Identity;
 use App\Security\Loader;
@@ -81,12 +78,6 @@ class GroupsPresenter extends BasePresenter
     public $groupAcl;
 
     /**
-     * @var IExercisePermissions
-     * @inject
-     */
-    public $exerciseAcl;
-
-    /**
      * @var IAssignmentPermissions
      * @inject
      */
@@ -128,12 +119,6 @@ class GroupsPresenter extends BasePresenter
      * @inject
      */
     public $userViewFactory;
-
-    /**
-     * @var ExerciseViewFactory
-     * @inject
-     */
-    public $exerciseViewFactory;
 
     /**
      * @var AssignmentViewFactory
@@ -780,40 +765,6 @@ class GroupsPresenter extends BasePresenter
                 }
             )->getValues()
         );
-    }
-
-    public function checkExercises(string $id)
-    {
-        $group = $this->groups->findOrThrow($id);
-
-        if (!$this->groupAcl->canViewExercises($group)) {
-            throw new ForbiddenRequestException();
-        }
-    }
-
-    /**
-     * Get all exercises for a group
-     * @GET
-     * @param string $id Identifier of the group
-     * @DEPRECATED
-     */
-    public function actionExercises(string $id)
-    {
-        $group = $this->groups->findOrThrow($id);
-        $exercises = array();
-
-        while ($group !== null) {
-            $groupExercises = $group->getExercises()->filter(
-                function (Exercise $exercise) {
-                    return $this->exerciseAcl->canViewDetail($exercise);
-                }
-            )->toArray();
-
-            $exercises = array_merge($groupExercises, $exercises);
-            $group = $group->getParentGroup();
-        }
-
-        $this->sendSuccessResponse(array_map([$this->exerciseViewFactory, "getExercise"], $exercises));
     }
 
     public function checkStats(string $id)
