@@ -5,6 +5,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
@@ -107,6 +108,9 @@ class TestExercisesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default']);
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $exercises = array_values(array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived();
+        }));
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
@@ -115,7 +119,7 @@ class TestExercisesPresenter extends Tester\TestCase
                 function (Exercise $exercise) {
                     return $exercise->getId();
                 },
-                $this->presenter->exercises->findAll()
+                $exercises
             ),
             array_map(
                 function ($item) {
@@ -124,13 +128,88 @@ class TestExercisesPresenter extends Tester\TestCase
                 $result['payload']['items']
             )
         );
-        Assert::count(count($this->presenter->exercises->findAll()), $result['payload']['items']);
-        Assert::count($result['payload']['totalCount'], $this->presenter->exercises->findAll());
+        Assert::count(count($exercises), $result['payload']['items']);
+        Assert::count($result['payload']['totalCount'], $exercises);
+        foreach ($result['payload']['items'] as $e) {
+            Assert::null($e['archivedAt']);
+        }
+    }
+
+    public function testListAllExercisesIncludingArchivedOnes()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+        $request = new Nette\Application\Request('V1:Exercises', 'GET', [
+            'action' => 'default',
+            'filters' => [ 'archived' => true ]
+        ]);
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $exercises = $this->presenter->exercises->findAll();
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::same(
+            array_map(
+                function (Exercise $exercise) {
+                    return $exercise->getId();
+                },
+                $exercises
+            ),
+            array_map(
+                function ($item) {
+                    return $item["id"];
+                },
+                $result['payload']['items']
+            )
+        );
+        Assert::count(count($exercises), $result['payload']['items']);
+        Assert::count($result['payload']['totalCount'], $exercises);
+    }
+
+    public function testListArchivedExercisesOnly()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+        $request = new Nette\Application\Request('V1:Exercises', 'GET', [
+            'action' => 'default',
+            'filters' => [ 'archived' => false ]
+        ]);
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $exercises = array_values(array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return $e->isArchived();
+        }));
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::same(
+            array_map(
+                function (Exercise $exercise) {
+                    return $exercise->getId();
+                },
+                $exercises
+            ),
+            array_map(
+                function ($item) {
+                    return $item["id"];
+                },
+                $result['payload']['items']
+            )
+        );
+        Assert::count(count($exercises), $result['payload']['items']);
+        Assert::count($result['payload']['totalCount'], $exercises);
+        foreach ($result['payload']['items'] as $e) {
+            Assert::truthy($e['archivedAt']);
+        }
     }
 
     public function testListAllExercisesPagination()
     {
         $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $exercises = array_values(array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived();
+        }));
 
         $request = new Nette\Application\Request(
             'V1:Exercises',
@@ -142,9 +221,9 @@ class TestExercisesPresenter extends Tester\TestCase
 
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
-        Assert::same($this->presenter->exercises->findAll()[1]->getId(), $result['payload']['items'][0]['id']);
+        Assert::same($exercises[1]->getId(), $result['payload']['items'][0]['id']);
         Assert::count(1, $result['payload']['items']);
-        Assert::count($result['payload']['totalCount'], $this->presenter->exercises->findAll());
+        Assert::count($result['payload']['totalCount'], $exercises);
     }
 
     public function testAdminListSearchExercises()
@@ -272,8 +351,8 @@ class TestExercisesPresenter extends Tester\TestCase
             ['action' => 'authors', 'instanceId' => $instance->getId()]
         );
 
-        Assert::count(2, $payload);
-        $emails = ['admin@admin.com', 'demoGroupSupervisor2@example.com'];
+        $emails = ['admin@admin.com', 'demoGroupSupervisor@example.com', 'demoGroupSupervisor2@example.com'];
+        Assert::count(count($emails), $payload);
         Assert::contains($payload[0]['privateData']['email'], $emails);
         Assert::contains($payload[1]['privateData']['email'], $emails);
     }
@@ -293,8 +372,8 @@ class TestExercisesPresenter extends Tester\TestCase
             ['action' => 'authors', 'groupId' => $group->getId()]
         );
 
-        Assert::count(2, $payload);
-        $emails = ['admin@admin.com', 'demoGroupSupervisor2@example.com'];
+        $emails = ['admin@admin.com', 'demoGroupSupervisor@example.com', 'demoGroupSupervisor2@example.com'];
+        Assert::count(count($emails), $payload);
         Assert::contains($payload[0]['privateData']['email'], $emails);
         Assert::contains($payload[1]['privateData']['email'], $emails);
     }
@@ -417,6 +496,43 @@ class TestExercisesPresenter extends Tester\TestCase
         );
         Assert::equal(3, $result['payload']['solutionFilesLimit']);
         Assert::equal(42, $result['payload']['solutionSizeLimit']);
+    }
+
+    public function testCannotUpdateArchived()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        $archivedExercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return $e->isArchived();
+        });
+        $exercise = array_pop($archivedExercises);
+
+        Assert::exception(
+            function () use ($exercise) {
+                $this->presenter->run(new Nette\Application\Request(
+                    'V1:Exercises',
+                    'POST',
+                    ['action' => 'updateDetail', 'id' => $exercise->getId()],
+                    [
+                        'version' => 1,
+                        'difficulty' => 'super hard',
+                        'isPublic' => false,
+                        'localizedTexts' => [
+                            [
+                                'locale' => 'cs',
+                                'text' => 'new descr',
+                                'name' => 'new name',
+                                'description' => 'some neaty description'
+                            ]
+                        ],
+                        'solutionFilesLimit' => 3,
+                        'solutionSizeLimit' => 42,
+                        'mergeJudgeLogs' => false,
+                    ]
+                ));
+            },
+            ForbiddenRequestException::class
+        );
     }
 
     public function testValidatePipeline()

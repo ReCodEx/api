@@ -471,6 +471,48 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         Assert::equal(0, count($errors));
     }
 
+    public function testSubmitToArchivedExercise()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        /** @var Exercise $exercise */
+        $exercise = array_values(array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return $e->isArchived();
+        }))[0];
+        $environment = $exercise->getRuntimeEnvironments()->first();
+        $user = current($this->presenter->users->findAll());
+
+        // save fake files into db
+        $ext = current($environment->getExtensionsList());
+        $file1 = new UploadedFile("file1.$ext", new \DateTime(), 0, $user);
+        $this->presenter->files->persist($file1);
+        $this->presenter->files->flush();
+        $files = [$file1->getId()];
+
+        // prepare return variables for mocked objects
+        $jobId = 'jobId';
+
+        $request = new Nette\Application\Request(
+            'V1:ReferenceExerciseSolutions',
+            'POST',
+            [
+            'action' => 'submit',
+            'exerciseId' => $exercise->getId()
+            ],
+            [
+                'note' => 'new reference solution',
+                'files' => $files,
+                'runtimeEnvironmentId' => $environment->getId()
+            ]
+        );
+        Assert::exception(
+            function () use ($request) {
+                $this->presenter->run($request);
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
     public function testResubmit()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);

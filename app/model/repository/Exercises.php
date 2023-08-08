@@ -19,7 +19,6 @@ use App\Security\Roles;
  */
 class Exercises extends BaseSoftDeleteRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Exercise::class);
@@ -126,6 +125,17 @@ class Exercises extends BaseSoftDeleteRepository
         // Welcome to Doctrine HELL! Put your sickbags on standby!
 
         $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+
+        if ($pagination->hasFilter("archived")) {
+            // archived == false -> show only archived
+            if (!$pagination->getFilter("archived")) {
+                $qb->andWhere($qb->expr()->isNotNull('e.archivedAt'));
+            }
+            // archived == true -> show everything (no condition added)
+        } else {
+            // no archived filter -> show only regular exercises
+            $qb->andWhere($qb->expr()->isNull('e.archivedAt'));
+        }
 
         // Filter by instance Id (through group membership) ...
         if ($pagination->hasFilter("instanceId")) {
@@ -305,6 +315,7 @@ class Exercises extends BaseSoftDeleteRepository
         // select the exercises corresponding to those configs
         $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
         $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+        $qb->andWhere($qb->expr()->isNull('e.archivedAt'));
         $qb->setParameter("like", "%$pipelineId%");
         return $qb->getQuery()->getResult();
     }
