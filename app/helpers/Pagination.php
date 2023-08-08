@@ -11,7 +11,6 @@ use App\Exceptions\InternalServerException;
  */
 class Pagination
 {
-
     /**
      * @var int
      */
@@ -52,9 +51,10 @@ class Pagination
      * Pagination constructor.
      * @param int $offset Index of the first item to be returned.
      * @param int|null $limit Total amount of items being returned.
-     * @param string|null $locale Selected locale ('en', 'cs, ...) which could affect ordering and possibly some filters.
-     * @param string|null $orderBy String representing the ordering (typically a column name).
-     *                             If the ordering identifier is prefixed with '!', DESC ordering is used instead of ASC.
+     * @param string|null $locale Selected locale ('en', 'cs, ...) which could affect ordering
+     *                            and possibly some filters.
+     * @param string|null $orderBy String representing the ordering (typically a column name). If the ordering
+     *                             identifier is prefixed with '!', DESC ordering is used instead of ASC.
      * @param array $filters Array of filters and their values. Filters are endpoint-specific.
      * @param array|null $knownFilters Array of known filter names. If present, unknown filters will trigger exception.
      * @throws InvalidArgumentException

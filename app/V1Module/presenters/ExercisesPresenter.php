@@ -38,6 +38,7 @@ use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
 use Nette\Utils\Arrays;
+use DateTime;
 
 /**
  * Endpoints for exercise manipulation
@@ -178,7 +179,7 @@ class ExercisesPresenter extends BasePresenter
             $locale,
             $orderBy,
             ($filters === null) ? [] : $filters,
-            ['search', 'instanceId', 'groupsIds', 'authorsIds', 'tags', 'runtimeEnvironments']
+            ['search', 'instanceId', 'groupsIds', 'authorsIds', 'tags', 'runtimeEnvironments', 'archived']
         );
 
         // Get all matching exercises and filter them by ACLs...
@@ -850,6 +851,36 @@ class ExercisesPresenter extends BasePresenter
 
         $exercise->removeTag($tag);
         $this->exercises->flush();
+        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+    }
+
+    public function checkSetArchived(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        if (!$this->exerciseAcl->canArchive($exercise)) {
+            throw new ForbiddenRequestException("You are not allowed to change the archived state of the exercise");
+        }
+    }
+
+    /**
+     * (Un)mark the exercise as archived. Nothing happens if the exercise is already in the requested state.
+     * @POST
+     * @param string $id identifier of the exercise
+     * @Param(type="post", name="archived", required=true, validation=boolean,
+     *        description="Whether the exercise should be marked or unmarked")
+     * @throws NotFoundException
+     */
+    public function actionSetArchived(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $req = $this->getRequest();
+        $archived = filter_var($req->getPost("archived"), FILTER_VALIDATE_BOOLEAN);
+
+        if ($exercise->isArchived() !== $archived) {
+            $exercise->setArchivedAt($archived ? new DateTime() : null);
+            $this->exercises->persist($exercise);
+        }
+
         $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
     }
 }

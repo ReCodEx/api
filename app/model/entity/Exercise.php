@@ -49,11 +49,6 @@ class Exercise implements IExercise
      */
     protected $exercise;
 
-    public function getForkedFrom(): ?Exercise
-    {
-        return $this->exercise && $this->exercise->isDeleted() ? null : $this->exercise;
-    }
-
     /**
      * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
      */
@@ -63,16 +58,6 @@ class Exercise implements IExercise
      * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
      */
     protected $author;
-
-    public function isAuthor(User $user)
-    {
-        return $this->author && $this->author->getId() === $user->getId();
-    }
-
-    public function getAuthor()
-    {
-        return $this->author->isDeleted() ? null : $this->author;
-    }
 
     /**
      * @ORM\Column(type="boolean")
@@ -89,45 +74,10 @@ class Exercise implements IExercise
      */
     protected $isBroken = false;
 
-    public function isPublic()
-    {
-        return $this->isPublic;
-    }
-
-    public function isLocked()
-    {
-        return $this->isLocked;
-    }
-
-    public function isBroken()
-    {
-        return $this->isBroken;
-    }
-
-    public function setBroken(string $message)
-    {
-        $this->isBroken = true;
-        $this->validationError = $message;
-    }
-
-    public function setNotBroken()
-    {
-        $this->isBroken = false;
-    }
-
     /**
      * @ORM\Column(type="text", length=65535)
      */
     protected $validationError;
-
-    public function getValidationError(): ?string
-    {
-        if ($this->isBroken) {
-            return $this->validationError;
-        }
-
-        return null;
-    }
 
     /**
      * @ORM\ManyToMany(targetEntity="Group", inversedBy="exercises")
@@ -135,33 +85,9 @@ class Exercise implements IExercise
     protected $groups;
 
     /**
-     * @return Collection
-     */
-    public function getGroups()
-    {
-        return $this->groups->filter(
-            function (Group $group) {
-                return !$group->isDeleted();
-            }
-        );
-    }
-
-    /**
      * @ORM\OneToMany(targetEntity="Assignment", mappedBy="exercise")
      */
     protected $assignments;
-
-    /**
-     * @return Collection
-     */
-    public function getAssignments()
-    {
-        return $this->assignments->filter(
-            function (Assignment $assignment) {
-                return !$assignment->isDeleted();
-            }
-        );
-    }
 
     /**
      * @var Collection
@@ -175,15 +101,10 @@ class Exercise implements IExercise
      */
     protected $mergeJudgeLogs;
 
-    public function getMergeJudgeLogs(): bool
-    {
-        return $this->mergeJudgeLogs;
-    }
-
-    public function setMergeJudgeLogs(bool $value): void
-    {
-        $this->mergeJudgeLogs = $value;
-    }
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $archivedAt = null;
 
     /**
      * Constructor
@@ -289,7 +210,7 @@ class Exercise implements IExercise
         );
     }
 
-    public static function forkFrom(Exercise $exercise, User $user, Group $group)
+    public static function forkFrom(Exercise $exercise, User $user, Group $group): Exercise
     {
         return new self(
             1,
@@ -315,62 +236,62 @@ class Exercise implements IExercise
         );
     }
 
-    public function setRuntimeEnvironments(Collection $runtimeEnvironments)
+    public function setRuntimeEnvironments(Collection $runtimeEnvironments): void
     {
         $this->runtimeEnvironments = $runtimeEnvironments;
     }
 
-    public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment)
+    public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment): void
     {
         $this->runtimeEnvironments->add($runtimeEnvironment);
     }
 
-    public function removeRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment)
+    public function removeRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment): void
     {
         $this->runtimeEnvironments->removeElement($runtimeEnvironment);
     }
 
-    public function setExerciseTests(Collection $exerciseTests)
+    public function setExerciseTests(Collection $exerciseTests): void
     {
         $this->exerciseTests = $exerciseTests;
     }
 
-    public function addExerciseTest(ExerciseTest $test)
+    public function addExerciseTest(ExerciseTest $test): void
     {
         $this->exerciseTests->add($test);
     }
 
-    public function removeExerciseTest(?ExerciseTest $test)
+    public function removeExerciseTest(?ExerciseTest $test): void
     {
         $this->exerciseTests->remove($test);
     }
 
-    public function addHardwareGroup(HardwareGroup $hardwareGroup)
+    public function addHardwareGroup(HardwareGroup $hardwareGroup): void
     {
         $this->hardwareGroups->add($hardwareGroup);
     }
 
-    public function removeHardwareGroup(?HardwareGroup $hardwareGroup)
+    public function removeHardwareGroup(?HardwareGroup $hardwareGroup): void
     {
         $this->hardwareGroups->removeElement($hardwareGroup);
     }
 
-    public function addExerciseLimits(ExerciseLimits $exerciseLimits)
+    public function addExerciseLimits(ExerciseLimits $exerciseLimits): void
     {
         $this->exerciseLimits->add($exerciseLimits);
     }
 
-    public function removeExerciseLimits(?ExerciseLimits $exerciseLimits)
+    public function removeExerciseLimits(?ExerciseLimits $exerciseLimits): void
     {
         $this->exerciseLimits->removeElement($exerciseLimits);
     }
 
-    public function addExerciseEnvironmentConfig(ExerciseEnvironmentConfig $exerciseEnvironmentConfig)
+    public function addExerciseEnvironmentConfig(ExerciseEnvironmentConfig $exerciseEnvironmentConfig): void
     {
         $this->exerciseEnvironmentConfigs->add($exerciseEnvironmentConfig);
     }
 
-    public function removeExerciseEnvironmentConfig(?ExerciseEnvironmentConfig $runtimeConfig)
+    public function removeExerciseEnvironmentConfig(?ExerciseEnvironmentConfig $runtimeConfig): void
     {
         $this->exerciseEnvironmentConfigs->removeElement($runtimeConfig);
     }
@@ -386,11 +307,6 @@ class Exercise implements IExercise
                 return $group->getId();
             }
         )->getValues();
-    }
-
-    public function setLocked($value = true)
-    {
-        $this->isLocked = $value;
     }
 
     public function clearExerciseLimits()
@@ -419,6 +335,21 @@ class Exercise implements IExercise
     public function getId(): ?string
     {
         return $this->id === null ? null : (string)$this->id;
+    }
+
+    public function getForkedFrom(): ?Exercise
+    {
+        return $this->exercise && $this->exercise->isDeleted() ? null : $this->exercise;
+    }
+
+    public function isAuthor(User $user): bool
+    {
+        return $this->author && $this->author->getId() === $user->getId();
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author->isDeleted() ? null : $this->author;
     }
 
     public function getExerciseLimits(): Collection
@@ -456,6 +387,24 @@ class Exercise implements IExercise
         return $this->exerciseTests;
     }
 
+    public function getGroups(): Collection
+    {
+        return $this->groups->filter(
+            function (Group $group) {
+                return !$group->isDeleted();
+            }
+        );
+    }
+
+    public function getAssignments(): Collection
+    {
+        return $this->assignments->filter(
+            function (Assignment $assignment) {
+                return !$assignment->isDeleted();
+            }
+        );
+    }
+
     public function getTags(): Collection
     {
         return $this->tags;
@@ -471,9 +420,49 @@ class Exercise implements IExercise
         $this->tags->removeElement($tag);
     }
 
+    public function isPublic()
+    {
+        return $this->isPublic;
+    }
+
     public function setIsPublic(bool $isPublic): void
     {
         $this->isPublic = $isPublic;
+    }
+
+    public function isLocked()
+    {
+        return $this->isLocked;
+    }
+
+    public function setLocked($value = true)
+    {
+        $this->isLocked = $value;
+    }
+
+    public function isBroken()
+    {
+        return $this->isBroken;
+    }
+
+    public function getValidationError(): ?string
+    {
+        if ($this->isBroken) {
+            return $this->validationError;
+        }
+
+        return null;
+    }
+
+    public function setBroken(string $message): void
+    {
+        $this->isBroken = true;
+        $this->validationError = $message;
+    }
+
+    public function setNotBroken(): void
+    {
+        $this->isBroken = false;
     }
 
     public function setExerciseConfig(ExerciseConfig $exerciseConfig): void
@@ -496,8 +485,28 @@ class Exercise implements IExercise
         $this->groups->removeElement($group);
     }
 
-    public function setIsLocked(bool $isLocked): void
+    public function getMergeJudgeLogs(): bool
     {
-        $this->isLocked = $isLocked;
+        return $this->mergeJudgeLogs;
+    }
+
+    public function setMergeJudgeLogs(bool $value): void
+    {
+        $this->mergeJudgeLogs = $value;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archivedAt !== null;
+    }
+
+    public function getArchivedAt(): ?DateTime
+    {
+        return $this->archivedAt;
+    }
+
+    public function setArchivedAt(?DateTime $archivedAt = null): void
+    {
+        $this->archivedAt = $archivedAt;
     }
 }

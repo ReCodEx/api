@@ -56,8 +56,33 @@ App\Model\Entity\Exercise:
             - @demoExerciseTest1
             - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
-        isLocked: false
         isPublic: true
+        __calls:
+            - setLocked: [ false ]
+
+    archivedExercise:
+        __construct:
+            create:
+                - @demoGroupSupervisor
+                - @demoGroup
+                - @weightedTwoTests
+        difficulty: "moderate"
+        addLocalizedText: @demoExerciseText
+        runtimeEnvironments:
+            - @JavaRuntime
+        hardwareGroups:
+            - @demoHWGroup
+        addExerciseLimits: @demoExerciseLimits
+        exerciseEnvironmentConfigs:
+            - @demoJavaEnvironmentConfig
+        exerciseTests:
+            - @demoExerciseTest1
+            - @demoExerciseTest2
+        exerciseConfig: @demoExerciseConfig
+        isPublic: true
+        __calls:
+            - setLocked: [ false ]
+            - setArchivedAt: [ "<dateTimeBetween('-10 months', '-1 months')>" ]
 
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
@@ -81,8 +106,9 @@ App\Model\Entity\Exercise:
             - @demoExerciseTest1
             - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
-        isLocked: false
         isPublic: true
+        __calls:
+            - setLocked: [ false ]
 
     privateAdminExercise:
         __construct:
@@ -108,8 +134,9 @@ App\Model\Entity\Exercise:
             - @demoExerciseTest1
             - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
-        isLocked: false
         isPublic: false
+        __calls:
+            - setLocked: [ false ]
 
     publicSupervisor2Exercise:
         __construct:
@@ -133,8 +160,9 @@ App\Model\Entity\Exercise:
             - @demoExerciseTest1
             - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
-        isLocked: false
         isPublic: true
+        __calls:
+            - setLocked: [ false ]
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:

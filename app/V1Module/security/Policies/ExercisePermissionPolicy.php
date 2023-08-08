@@ -8,10 +8,19 @@ use App\Security\Identity;
 
 class ExercisePermissionPolicy implements IPermissionPolicy
 {
-
     public function getAssociatedClass()
     {
         return Exercise::class;
+    }
+
+    public function notArchived(Identity $identity, Exercise $exercise)
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        return !$exercise->isArchived();
     }
 
     public function isAuthor(Identity $identity, Exercise $exercise)

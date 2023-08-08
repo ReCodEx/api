@@ -585,23 +585,6 @@ permissions:
     # method (it was necessary for performance optimizations).
     # If the viewDetail rules change, they must be changed in Exercises repository class as well.
     - allow: true
-      resource: exercise
-      actions:
-          - viewDetail
-          - viewConfig
-          - viewLimits
-          - viewScoreConfig
-          - viewAssignments
-          - addReferenceSolution
-          - fork
-          - assign
-      conditions:
-          or:
-            - exercise.isAuthor
-            - exercise.isSubGroupNonStudentMember
-            - exercise.isSuperGroupAdmin
-
-    - allow: true
       role: supervisor-student
       resource: exercise
       actions:
@@ -609,6 +592,32 @@ permissions:
       conditions:
           - exercise.isGloballyPublic
 
+    - allow: true
+      resource: exercise
+      actions:
+          - viewDetail
+          - viewConfig
+          - viewLimits
+          - viewScoreConfig
+          - viewAssignments
+      conditions:
+          or:
+            - exercise.isAuthor
+            - exercise.isSubGroupNonStudentMember
+            - exercise.isSuperGroupAdmin
+
+    - allow: true
+      resource: exercise
+      actions:
+          - addReferenceSolution
+          - fork
+          - assign
+      conditions:
+          - exercise.notArchived
+          - or:
+              - exercise.isAuthor
+              - exercise.isSubGroupNonStudentMember
+              - exercise.isSuperGroupAdmin
 
     - allow: true # Admin of the group of an exercise has most of the rights to the exercise
       resource: exercise
@@ -619,32 +628,42 @@ permissions:
           - addTag
           - removeTag
       conditions:
-          or:
-            - exercise.isSuperGroupAdmin
-            - exercise.isAuthor
+          - exercise.notArchived
+          - or:
+              - exercise.isSuperGroupAdmin
+              - exercise.isAuthor
+
+    - allow: true
+      resource: exercise
+      actions:
+          - archive
+      conditions:
+          - or:
+              - exercise.isSuperGroupAdmin
+              - exercise.isAuthor
 
     - allow: true
       resource: exercise
       actions:
           - attachGroup
       conditions:
-          and:
-            - or:
-              - exercise.isSuperGroupAdmin
-              - exercise.isAuthor
-            - group.isSupervisor
+          - exercise.notArchived
+          - group.isSupervisor
+          - or:
+            - exercise.isSuperGroupAdmin
+            - exercise.isAuthor
 
     - allow: true
       resource: exercise
       actions:
           - detachGroup
       conditions:
-          and:
-            - or:
-              - exercise.isSuperGroupAdmin
-              - exercise.isAuthor
-            - exercise.hasAtLeastTwoAttachedGroups
-            - group.isSupervisor
+          - exercise.notArchived
+          - group.isSupervisor
+          - or:
+            - exercise.isSuperGroupAdmin
+            - exercise.isAuthor
+          - exercise.hasAtLeastTwoAttachedGroups
 
     - allow: true
       resource: exercise
@@ -659,28 +678,23 @@ permissions:
           - evaluate
           - deleteEvaluation
       conditions:
-          or:
-            - referenceExerciseSolution.isExerciseAuthor
-            - referenceExerciseSolution.isExerciseSubGroupSupervisor
-            - referenceExerciseSolution.isExerciseSuperGroupAdmin
-
-    - allow: true
-      resource: referenceExerciseSolution
-      actions:
-          - delete
-          - evaluate
-          - deleteEvaluation
-      conditions:
-          - referenceExerciseSolution.isAuthor
+          - referenceExerciseSolution.isExerciseNotArchived
+          - or:
+              - referenceExerciseSolution.isAuthor
+              - referenceExerciseSolution.isExerciseAuthor
+              - referenceExerciseSolution.isExerciseSubGroupSupervisor
+              - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       resource: referenceExerciseSolution
       actions:
           - delete
       conditions:
-          or:
-            - referenceExerciseSolution.isExerciseAuthor
-            - referenceExerciseSolution.isExerciseSuperGroupAdmin
+          - referenceExerciseSolution.isExerciseNotArchived
+          - or:
+              - referenceExerciseSolution.isAuthor
+              - referenceExerciseSolution.isExerciseAuthor
+              - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       role: supervisor-student

@@ -525,6 +525,32 @@ class TestAssignmentsPresenter extends Tester\TestCase
         );
     }
 
+    public function testCreateAssignmentFromArchivedExercise()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        /** @var Exercise $exercise */
+        $exercise = array_values(array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return $e->isArchived();
+        }))[0];
+        /** @var Group $group */
+        $group = $this->presenter->groups->findAll()[0];
+
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'create'],
+            ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
+        );
+
+        Assert::exception(
+            function () use ($request) {
+                $this->presenter->run($request);
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
     public function testCreateAssignmentInOrganizationalGroup()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);

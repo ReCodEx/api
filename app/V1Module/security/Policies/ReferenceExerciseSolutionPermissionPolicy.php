@@ -90,4 +90,21 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
 
         return false;
     }
+
+    public function isExerciseNotArchived(
+        Identity $identity,
+        ReferenceExerciseSolution $referenceExerciseSolution = null
+    ) {
+        if ($referenceExerciseSolution === null) {
+            return false;
+        }
+
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        $exercise = $referenceExerciseSolution->getExercise();
+        return $exercise && !$exercise->isArchived();
+    }
 }
