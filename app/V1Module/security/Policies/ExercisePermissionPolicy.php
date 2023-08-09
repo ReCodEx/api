@@ -23,6 +23,10 @@ class ExercisePermissionPolicy implements IPermissionPolicy
         return !$exercise->isArchived();
     }
 
+    /**
+     * This is possibly deprecated as admins should have the same right as the author.
+     * However, let's keep it for now and we shall see whether this holds (or not) in the future.
+     */
     public function isAuthor(Identity $identity, Exercise $exercise)
     {
         $user = $identity->getUserData();
@@ -32,6 +36,17 @@ class ExercisePermissionPolicy implements IPermissionPolicy
 
         return $user === $exercise->getAuthor();
     }
+
+    public function isAuthorOrAdmin(Identity $identity, Exercise $exercise)
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        return $user === $exercise->getAuthor() || $exercise->getAdmins()->contains($user);
+    }
+
 
     public function isSubGroupSupervisor(Identity $identity, Exercise $exercise)
     {

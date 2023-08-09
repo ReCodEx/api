@@ -24,6 +24,7 @@ use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\User;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseTags;
 use App\Model\Repository\Pipelines;
@@ -37,6 +38,8 @@ use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
+use App\Security\Identity;
+use App\Security\Loader;
 use Nette\Utils\Arrays;
 use DateTime;
 
@@ -95,6 +98,12 @@ class ExercisesPresenter extends BasePresenter
     public $assignmentAcl;
 
     /**
+     * @var Loader
+     * @inject
+     */
+    public $aclLoader;
+
+    /**
      * @var ScoreCalculatorAccessor
      * @inject
      */
@@ -148,6 +157,14 @@ class ExercisesPresenter extends BasePresenter
      */
     public $exerciseTags;
 
+    private function getExercisePermissionsOfUser(User $user): IExercisePermissions
+    {
+        return $this->aclLoader->loadACLModule(
+            IExercisePermissions::class,
+            $this->authorizator,
+            new Identity($user, null)
+        );
+    }
 
     public function checkDefault()
     {
@@ -878,6 +895,101 @@ class ExercisesPresenter extends BasePresenter
 
         if ($exercise->isArchived() !== $archived) {
             $exercise->setArchivedAt($archived ? new DateTime() : null);
+            $this->exercises->persist($exercise);
+        }
+
+        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+    }
+
+    public function checkSetAuthor(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        if (!$this->exerciseAcl->canChangeAuthor($exercise)) {
+            throw new ForbiddenRequestException("You are not allowed to change the author of the exercise");
+        }
+    }
+
+    /**
+     * Change the author of the exercise. This is a very special operation reserved for powerful users.
+     * @POST
+     * @param string $id identifier of the exercise
+     * @Param(type="post", name="author", required=true, validation="string:36",
+     *        description="Id of the new author of the exercise.")
+     * @throws NotFoundException
+     * @throws ForbiddenRequestException
+     */
+    public function actionSetAuthor(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $newAuthorId = $this->getRequest()->getPost("author");
+
+        if ($exercise->getAuthor()->getId() !== $newAuthorId) {
+            $newAuthor = $this->users->findOrThrow($newAuthorId);
+            if (!$this->getExercisePermissionsOfUser($newAuthor)->canCreate()) {
+                throw new ForbiddenRequestException("Given user is not allowed to be an author of an exercise.");
+            }
+
+            $exercise->setAuthor($newAuthor);
+            if ($exercise->getAdmins()->contains($newAuthor)) {
+                $exercise->removeAdmin($newAuthor); // author is promoted from admins
+            }
+            $this->exercises->persist($exercise);
+        }
+
+        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+    }
+
+    public function checkSetAdmins(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        if (!$this->exerciseAcl->canUpdateAdmins($exercise)) {
+            throw new ForbiddenRequestException("You are not allowed to modify admins of the exercise");
+        }
+    }
+
+    /**
+     * Change who the admins of an exercise are (all users on the list are added,
+     * prior admins not on the list are removed).
+     * @POST
+     * @param string $id identifier of the exercise
+     * @Param(type="post", name="admins", required=true, validation=array, description="List of user IDs.")
+     * @throws NotFoundException
+     */
+    public function actionSetAdmins(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+
+        // prepare a list of new admins
+        $newAdmins = [];
+        foreach ($this->getRequest()->getPost("admins") as $id) {
+            $user = $this->users->findOrThrow($id);
+            if (!$this->getExercisePermissionsOfUser($user)->canCreate()) {
+                throw new ForbiddenRequestException("Given user is not allowed to be administrator of an exercise.");
+            }
+            if ($id === $exercise->getAuthor()->getId()) {
+                throw new ForbiddenRequestException("Given user is already the author (cannot become also and admin).");
+            }
+            $newAdmins[$id] = $user;
+        }
+
+        // create a list of admins to be removed and prune current admins from newAdmins
+        $toRemove = [];
+        foreach ($exercise->getAdmins() as $admin) {
+            if (!array_key_exists($admin->getId(), $newAdmins)) {
+                $toRemove[] = $admin; // not on the new list, needs to be removed
+            } else {
+                unset($newAdmins[$admin->getId()]); // no need to add, already present
+            }
+        }
+
+        // update the exercise
+        foreach ($toRemove as $admin) {
+            $exercise->removeAdmin($admin);
+        }
+        foreach ($newAdmins as $newAdmin) {
+            $exercise->addAdmin($newAdmin);
+        }
+        if ($toRemove || $newAdmins) {
             $this->exercises->persist($exercise);
         }
 

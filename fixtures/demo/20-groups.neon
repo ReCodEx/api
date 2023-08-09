@@ -102,6 +102,17 @@ App\Model\Entity\User:
         makeSupervisorOf: @demoChildGroup
         setVerified: true
 
+    anotherSupervisor:
+        __construct:
+            - "anotherSupervisor@example.com"
+            - "<firstName()>"
+            - "<lastName()>"
+            - ""
+            - ""
+            - supervisor
+            - @demoInstance
+        setVerified: true
+
     "submitUser1":
         __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", student, @demoInstance]
         makeStudentOf: @demoGroup
@@ -125,6 +136,12 @@ App\Model\Entity\Login:
             createLogin:
                 - @demoGroupSupervisor2
                 - "demoGroupSupervisor2@example.com"
+                - "password"
+    anotherSupervisorLogin:
+        __construct:
+            createLogin:
+                - @anotherSupervisor
+                - "anotherSupervisor@example.com"
                 - "password"
 
 App\Model\Entity\GroupInvitation:

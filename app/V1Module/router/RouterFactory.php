@@ -156,6 +156,8 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/tags/<name>", "Exercises:addTag");
         $router[] = new DeleteRoute("$prefix/<id>/tags/<name>", "Exercises:removeTag");
         $router[] = new PostRoute("$prefix/<id>/archived", "Exercises:setArchived");
+        $router[] = new PostRoute("$prefix/<id>/author", "Exercises:setAuthor");
+        $router[] = new PostRoute("$prefix/<id>/admins", "Exercises:setAdmins");
 
         $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getSupplementaryFiles");
         $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadSupplementaryFiles");

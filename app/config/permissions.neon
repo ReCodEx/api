@@ -602,7 +602,7 @@ permissions:
           - viewAssignments
       conditions:
           or:
-            - exercise.isAuthor
+            - exercise.isAuthorOrAdmin
             - exercise.isSubGroupNonStudentMember
             - exercise.isSuperGroupAdmin
 
@@ -615,7 +615,7 @@ permissions:
       conditions:
           - exercise.notArchived
           - or:
-              - exercise.isAuthor
+              - exercise.isAuthorOrAdmin
               - exercise.isSubGroupNonStudentMember
               - exercise.isSuperGroupAdmin
 
@@ -631,7 +631,7 @@ permissions:
           - exercise.notArchived
           - or:
               - exercise.isSuperGroupAdmin
-              - exercise.isAuthor
+              - exercise.isAuthorOrAdmin
 
     - allow: true
       resource: exercise
@@ -640,7 +640,7 @@ permissions:
       conditions:
           - or:
               - exercise.isSuperGroupAdmin
-              - exercise.isAuthor
+              - exercise.isAuthorOrAdmin
 
     - allow: true
       resource: exercise
@@ -651,7 +651,7 @@ permissions:
           - group.isSupervisor
           - or:
             - exercise.isSuperGroupAdmin
-            - exercise.isAuthor
+            - exercise.isAuthorOrAdmin
 
     - allow: true
       resource: exercise
@@ -662,15 +662,16 @@ permissions:
           - group.isSupervisor
           - or:
             - exercise.isSuperGroupAdmin
-            - exercise.isAuthor
+            - exercise.isAuthorOrAdmin
           - exercise.hasAtLeastTwoAttachedGroups
 
     - allow: true
       resource: exercise
       actions:
+          - updateAdmins
           - remove
       conditions:
-          - exercise.isAuthor
+          - exercise.isAuthorOrAdmin
 
     - allow: true
       resource: referenceExerciseSolution
@@ -703,12 +704,13 @@ permissions:
           - viewAll
           - viewAllAuthors
           - viewAllTags
+          - create  # this is a generic rule (used to determine whether the user can be admin/author)
 
     - allow: true
       role: supervisor-student
       resource: group
       actions:
-          - createExercise
+          - createExercise  # this is an explicit rule tested in creation endpoint (exercise is always created in a group)
       conditions:
           - group.isSupervisor
           - group.isNotArchived

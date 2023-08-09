@@ -52,6 +52,7 @@ class ExerciseViewFactory
             "hardwareGroups" => $exercise->getHardwareGroups()->getValues(),
             "forkedFrom" => $forkedFrom ? $forkedFrom->getId() : null,
             "authorId" => $exercise->getAuthor() ? $exercise->getAuthor()->getId() : null,
+            "adminsIds" => $exercise->getAdminsIds(),
             "groupsIds" => $exercise->getGroupsIds(),
             "mergeJudgeLogs" => $exercise->getMergeJudgeLogs(),
             "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC
