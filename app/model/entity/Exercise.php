@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use App\Helpers\Evaluation\IExercise;
 use DateTime;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine;
@@ -58,6 +59,11 @@ class Exercise implements IExercise
      * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
      */
     protected $author;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="User")
+     */
+    protected $admins;
 
     /**
      * @ORM\Column(type="boolean")
@@ -158,6 +164,7 @@ class Exercise implements IExercise
         $this->runtimeEnvironments = $runtimeEnvironments;
         $this->exercise = $exercise;
         $this->author = $user;
+        $this->admins = new ArrayCollection();
         $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
         $this->isPublic = $isPublic;
         $this->isLocked = $isLocked;
@@ -297,6 +304,17 @@ class Exercise implements IExercise
     }
 
     /**
+     * Get a list of admin IDs.
+     * @return string[]
+     */
+    public function getAdminsIds(): array
+    {
+        return $this->getAdmins()->map(function (User $admin) {
+            return $admin->getId();
+        })->getValues();
+    }
+
+    /**
      * Get IDs of all assigned groups.
      * @return string[]
      */
@@ -350,6 +368,32 @@ class Exercise implements IExercise
     public function getAuthor(): ?User
     {
         return $this->author->isDeleted() ? null : $this->author;
+    }
+
+    public function setAuthor(User $author): void
+    {
+        $this->author = $author;
+    }
+
+    public function getAdmins(): ReadableCollection
+    {
+        return $this->admins->filter(
+            function (User $user) {
+                return $user->getDeletedAt() === null;
+            }
+        );
+    }
+
+    public function addAdmin(User $admin): void
+    {
+        if ($admin->getId() !== $this->author->getId()) {
+            $this->admins->add($admin);
+        }
+    }
+
+    public function removeAdmin(User $admin): void
+    {
+        $this->admins->removeElement($admin);
     }
 
     public function getExerciseLimits(): Collection

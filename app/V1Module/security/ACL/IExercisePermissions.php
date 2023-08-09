@@ -56,4 +56,8 @@ interface IExercisePermissions
     public function canAssign(Exercise $exercise): bool;
 
     public function canArchive(Exercise $exercise): bool;
+
+    public function canChangeAuthor(Exercise $exercise): bool;
+
+    public function canUpdateAdmins(Exercise $exercise): bool;
 }

@@ -11,6 +11,7 @@ use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\Group;
+use App\Model\Repository\Users;
 use App\Security\AccessManager;
 use App\V1Module\Presenters\ExercisesPresenter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,9 +23,6 @@ use Tester\Assert;
  */
 class TestExercisesPresenter extends Tester\TestCase
 {
-    private $adminLogin = "admin@admin.com";
-    private $groupSupervisorLogin = "demoGroupSupervisor@example.com";
-
     /** @var ExercisesPresenter */
     protected $presenter;
 
@@ -103,7 +101,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testListAllExercises()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default']);
         $response = $this->presenter->run($request);
@@ -137,7 +135,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testListAllExercisesIncludingArchivedOnes()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', [
             'action' => 'default',
@@ -169,7 +167,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testListArchivedExercisesOnly()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', [
             'action' => 'default',
@@ -206,7 +204,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testListAllExercisesPagination()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercises = array_values(array_filter($this->presenter->exercises->findAll(), function ($e) {
             return !$e->isArchived();
         }));
@@ -228,7 +226,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAdminListSearchExercises()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $request = new Nette\Application\Request(
             'V1:Exercises',
@@ -245,7 +243,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testSupervisorListSearchExercises()
     {
-        $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin);
+        $token = PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
 
         $request = new Nette\Application\Request(
             'V1:Exercises',
@@ -262,7 +260,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAdminListFilterGroupsExercises()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $groups = array_filter(
             $this->presenter->groups->findAll(),
@@ -292,7 +290,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAdminListFilterEnvExercises()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -304,7 +302,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAdminListFilterTagsExercises1()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -316,7 +314,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAdminListFilterTagsExercises2()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -328,7 +326,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAdminListFilterTagsExercises3()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -343,7 +341,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $instances = $this->instances->findAll();
         $instance = reset($instances);
 
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -364,7 +362,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $groups = $this->groups->findByName("en", "Demo group", $instance);
         $group = reset($groups);
 
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -385,7 +383,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $groups = $this->groups->findByName("en", "Private group", $instance);
         $group = reset($groups);
 
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -398,7 +396,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testListExercisesByIds()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercises = $this->exercises->findAll();
         $first = $exercises[0];
         $second = $exercises[1];
@@ -419,7 +417,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testDetail()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $allExercises = $this->presenter->exercises->findAll();
         $exercise = array_pop($allExercises);
@@ -435,7 +433,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testUpdateDetail()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $allExercises = $this->presenter->exercises->findAll();
         $exercise = array_pop($allExercises);
@@ -561,7 +559,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testCreate()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
         /** @var AccessManager $accessManager */
         $accessManager = $this->container->getByType(AccessManager::class);
@@ -593,7 +591,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testRemove()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
 
@@ -661,7 +659,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testForkFromToGroup()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
         $exercise = current($this->presenter->exercises->findAll());
@@ -693,7 +691,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testHardwareGroups()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
 
@@ -720,7 +718,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAttachGroup()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
         $group = current($this->presenter->groups->findAll());
@@ -744,7 +742,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testLastDetachGroup()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
         $group = $exercise->getGroups()->first();
@@ -766,7 +764,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testDetachGroup()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
         $group1 = $this->presenter->groups->findAll()[0];
@@ -793,7 +791,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAllTags()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -807,7 +805,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testTagsStats()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -819,7 +817,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testTagsRename()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $tag = 'tag3';
         $renameTo = 'tagX';
         $exercises = array_filter(
@@ -845,7 +843,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testTagsRenameCollide()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         Assert::exception(
             function () {
                 PresenterTestHelper::performPresenterRequest(
@@ -861,7 +859,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testTagsRenameForce()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $tag = 'tag3';
         $renameTo = 'tag2';
         $exercises = array_filter(
@@ -891,7 +889,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testTagsRemove()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $tag = 'tag3';
         $exercises = array_filter(
             $this->presenter->exercises->findAll(),
@@ -920,7 +918,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testAddTag()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
         $newTagName = "newAddTagName";
@@ -936,7 +934,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testRemoveTag()
     {
-        PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $exercise = current($this->presenter->exercises->findAll());
         $user = current($this->presenter->users->findAll());
@@ -952,6 +950,225 @@ class TestExercisesPresenter extends Tester\TestCase
         );
 
         Assert::notContains($tagName, $payload["tags"]);
+    }
+
+    public function testSetArchived()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN);
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived() && $e->getAuthor()->getEmail() === PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN;
+        });
+        $exercise = current($exercises);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'POST',
+            ['action' => 'setArchived', 'id' => $exercise->getId()],
+            ['archived' => 'true']
+        );
+
+        $this->presenter->exercises->refresh($exercise);
+        Assert::truthy($payload['archivedAt']);
+        Assert::true($exercise->isArchived());
+    }
+
+    public function testSetArchivedUnauthorized()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN);
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived() && $e->getAuthor()->getEmail() !== PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN;
+        });
+        $exercise = current($exercises);
+
+        Assert::exception(
+            function () use ($exercise) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Exercises',
+                    'POST',
+                    ['action' => 'setArchived', 'id' => $exercise->getId()],
+                    ['archived' => 'true']
+                );
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testSetNotArchived()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return $e->isArchived();
+        });
+        $exercise = current($exercises);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'POST',
+            ['action' => 'setArchived', 'id' => $exercise->getId()],
+            ['archived' => 'false']
+        );
+
+        $this->presenter->exercises->refresh($exercise);
+        Assert::null($payload['archivedAt']);
+        Assert::false($exercise->isArchived());
+    }
+
+    public function testChangeAuthor()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $newAuthor = $this->container->getByType(Users::class)->getByEmail(PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+        $exercise = current($this->presenter->exercises->findAll());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'POST',
+            ['action' => 'setAuthor', 'id' => $exercise->getId()],
+            ['author' => $newAuthor->getId()]
+        );
+
+        $this->presenter->exercises->refresh($exercise);
+        Assert::equal($newAuthor->getId(), $payload['authorId']);
+        Assert::equal($newAuthor->getId(), $exercise->getAuthor()->getId());
+    }
+
+    public function testChangeAuthorUnauthorized()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $newAuthor = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
+        $exercise = current($this->presenter->exercises->findAll());
+
+        Assert::exception(
+            function () use ($exercise, $newAuthor) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Exercises',
+                    'POST',
+                    ['action' => 'setAuthor', 'id' => $exercise->getId()],
+                    ['author' => $newAuthor->getId()]
+                );
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testSetAdmins()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN);
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived() && $e->getAuthor()->getEmail() === PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN;
+        });
+        $exercise = current($exercises);
+
+        $groupSupervisor = $this->container->getByType(Users::class)->getByEmail(PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        $exercise->addAdmin($groupSupervisor);
+        $this->presenter->exercises->persist($exercise);
+        Assert::count(1, $exercise->getAdmins());
+
+        $anotherSupervisor = $this->container->getByType(Users::class)->getByEmail(PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'POST',
+            ['action' => 'setAdmins', 'id' => $exercise->getId()],
+            ['admins' => [ $anotherSupervisor->getId() ]]
+        );
+
+        $this->presenter->exercises->refresh($exercise);
+        Assert::count(1, $payload['adminsIds']);
+        Assert::count(1, $exercise->getAdmins());
+        Assert::equal($anotherSupervisor->getId(), $payload['adminsIds'][0]);
+        Assert::equal($anotherSupervisor->getId(), $exercise->getAdmins()->first()->getId());
+    }
+
+    public function testAdminCanAlsoUpdate()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived() && $e->getAuthor()->getEmail() !== PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN;
+        });
+        $exercise = current($exercises);
+
+        // another supervisor cannot update this exercise
+        Assert::exception(
+            function () use ($exercise) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Exercises',
+                    'POST',
+                    ['action' => 'updateDetail', 'id' => $exercise->getId()],
+                    []
+                );
+            },
+            ForbiddenRequestException::class
+        );
+
+        // but when we make him one the admins...
+        $anotherSupervisor = $this->container->getByType(Users::class)->getByEmail(PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+        $exercise->addAdmin($anotherSupervisor);
+        $this->presenter->exercises->persist($exercise);
+
+        // ... it will become possible
+        $request = new Nette\Application\Request(
+            'V1:Exercises',
+            'POST',
+            ['action' => 'updateDetail', 'id' => $exercise->getId()],
+            [
+                'version' => 1,
+                'difficulty' => 'super hard',
+                'isPublic' => false,
+                'localizedTexts' => [
+                    [
+                        'locale' => 'cs',
+                        'text' => 'new descr',
+                        'name' => 'new name',
+                        'description' => 'some neaty description'
+                    ]
+                ],
+                'solutionFilesLimit' => 3,
+                'solutionSizeLimit' => 42,
+                'mergeJudgeLogs' => false,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal('super hard', $result['payload']['difficulty']);
+        Assert::equal(false, $result['payload']['isPublic']);
+
+        $updatedLocalizedTexts = $result['payload']['localizedTexts'];
+        Assert::count(count($exercise->getLocalizedTexts()), $updatedLocalizedTexts);
+
+        /** @var LocalizedExercise $localized */
+        foreach ($exercise->getLocalizedTexts() as $localized) {
+            Assert::count(
+                1,
+                array_filter(
+                    $updatedLocalizedTexts,
+                    function (LocalizedExercise $text) use ($localized) {
+                        return $text->getLocale() === $localized->getLocale();
+                    }
+                )
+            );
+        }
+
+        Assert::count(
+            1,
+            array_filter(
+                $updatedLocalizedTexts,
+                function (LocalizedExercise $text) {
+                    return $text->getLocale() === "cs" && $text->getAssignmentText() === "new descr";
+                }
+            )
+        );
+        Assert::equal(3, $result['payload']['solutionFilesLimit']);
+        Assert::equal(42, $result['payload']['solutionSizeLimit']);
     }
 }
 
