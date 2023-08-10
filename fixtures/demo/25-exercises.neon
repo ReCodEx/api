@@ -168,9 +168,17 @@ App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:
         __construct:
             - @demoExercise
-            - @demoAdmin
+            - @demoGroupSupervisor
             - Brute force solution
             - @CRuntime
+        visibility: 1
+    privateReferenceExerciseSolution:
+        __construct:
+            - @demoExercise
+            - @anotherSupervisor
+            - Private solution of another supervisor
+            - @CRuntime
+        visibility: 0
 
 App\Model\Entity\SolutionEvaluation:
     "demoReferenceExerciseSolutionEvaluationEvaluation{1..2}":

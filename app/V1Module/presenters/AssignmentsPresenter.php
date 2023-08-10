@@ -20,6 +20,7 @@ use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\Exercises;
@@ -518,7 +519,7 @@ class AssignmentsPresenter extends BasePresenter
             );
         }
 
-        if ($exercise->getReferenceSolutions()->isEmpty()) {
+        if ($exercise->getReferenceSolutions(ReferenceExerciseSolution::VISIBILITY_PRIVATE)->isEmpty()) {
             throw new BadRequestException("Exercise '$exerciseId' does not have any reference solutions");
         }
 

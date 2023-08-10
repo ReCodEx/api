@@ -676,26 +676,42 @@ permissions:
     - allow: true
       resource: referenceExerciseSolution
       actions:
-          - evaluate
-          - deleteEvaluation
+          - viewDetail
       conditions:
           - referenceExerciseSolution.isExerciseNotArchived
           - or:
               - referenceExerciseSolution.isAuthor
-              - referenceExerciseSolution.isExerciseAuthor
-              - referenceExerciseSolution.isExerciseSubGroupSupervisor
-              - referenceExerciseSolution.isExerciseSuperGroupAdmin
+              - and:
+                  - referenceExerciseSolution.isPublic
+                  - or:
+                      - referenceExerciseSolution.isExerciseAuthorOrAdmin
+                      - referenceExerciseSolution.isExerciseSuperGroupAdmin
+                      - referenceExerciseSolution.isExerciseSubGroupNonStudentMember
 
     - allow: true
       resource: referenceExerciseSolution
       actions:
+          - evaluate
+          - deleteEvaluation
+          - setVisibility
           - delete
       conditions:
           - referenceExerciseSolution.isExerciseNotArchived
           - or:
               - referenceExerciseSolution.isAuthor
-              - referenceExerciseSolution.isExerciseAuthor
-              - referenceExerciseSolution.isExerciseSuperGroupAdmin
+              - and:
+                  - referenceExerciseSolution.isPublic
+                  - or:
+                      - referenceExerciseSolution.isExerciseAuthorOrAdmin
+                      - referenceExerciseSolution.isExerciseSuperGroupAdmin
+
+    - allow: true
+      resource: referenceExerciseSolution
+      actions:
+          - promote
+      conditions:
+          - referenceExerciseSolution.isExerciseNotArchived
+          - referenceExerciseSolution.isExerciseAuthorOrAdmin
 
     - allow: true
       role: supervisor-student

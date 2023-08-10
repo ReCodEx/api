@@ -7,6 +7,7 @@ use App\Helpers\PermissionHints;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\ReferenceExerciseSolution;
 use App\Security\ACL\IExercisePermissions;
 
 class ExerciseViewFactory
@@ -63,7 +64,8 @@ class ExerciseViewFactory
             "isLocked" => $exercise->isLocked(),
             "isBroken" => $exercise->isBroken(),
             "validationError" => $exercise->getValidationError(),
-            "hasReferenceSolutions" => !$exercise->getReferenceSolutions()->isEmpty(),
+            "hasReferenceSolutions" => !$exercise->getReferenceSolutions(ReferenceExerciseSolution::VISIBILITY_PRIVATE)
+                ->isEmpty(), // temporary solutions are skipped
             "tags" => array_values(
                 $exercise->getTags()->map(
                     function (ExerciseTag $tag) {

@@ -175,9 +175,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function actionSolutions(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
+        $solutions = array_filter(
+            $exercise->getReferenceSolutions()->getValues(),
+            function ($solution) {
+                return $this->referenceSolutionAcl->canViewDetail($solution);
+            }
+        );
+
         $this->sendSuccessResponse(
             $this->referenceSolutionViewFactory->getReferenceSolutionList(
-                $exercise->getReferenceSolutions()->getValues()
+                array_values($solutions)
             )
         );
     }
@@ -185,7 +192,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function checkDetail(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
+        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -239,8 +246,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function checkSubmissions(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        $exercise = $solution->getExercise();
-        if (!$this->exerciseAcl->canViewDetail($exercise)) {
+        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
             throw new ForbiddenRequestException("You cannot access this reference solution submissions");
         }
     }
@@ -266,8 +272,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function checkSubmission(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $exercise = $submission->getReferenceSolution()->getExercise();
-        if (!$this->exerciseAcl->canViewDetail($exercise)) {
+        $solution = $submission->getReferenceSolution();
+        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
             throw new ForbiddenRequestException("You cannot access this exercise evaluations");
         }
     }
@@ -461,8 +467,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($exerciseId);
+        $solutions = array_filter(
+            $exercise->getReferenceSolutions()->getValues(),
+            function ($solution) {
+                return $this->referenceSolutionAcl->canViewDetail($solution);
+            }
+        );
 
-        foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
+        foreach ($solutions as $referenceSolution) {
             if (!$this->referenceSolutionAcl->canEvaluate($referenceSolution)) {
                 throw new ForbiddenRequestException();
             }
@@ -493,7 +505,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
         }
 
-        foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
+        $solutions = array_filter(
+            $exercise->getReferenceSolutions()->getValues(),
+            function ($solution) {
+                return $this->referenceSolutionAcl->canViewDetail($solution);
+            }
+        );
+        foreach ($solutions as $referenceSolution) {
             $result[] = $this->finishSubmission($referenceSolution, $isDebug);
         }
 
@@ -557,7 +575,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function checkDownloadSolutionArchive(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
+        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
             throw new ForbiddenRequestException("You cannot access archive of reference solution files");
         }
     }
@@ -583,7 +601,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function checkFiles(string $id)
     {
         $solution = $this->referenceSolutions->findOrThrow($id);
-        if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
+        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
             throw new ForbiddenRequestException("You cannot access the reference solution files metadata");
         }
     }
@@ -642,8 +660,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public function checkEvaluationScoreConfig(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $exercise = $submission->getReferenceSolution()->getExercise();
-        if (!$this->exerciseAcl->canViewDetail($exercise)) {
+        if (!$this->referenceSolutionAcl->canViewDetail($submission->getReferenceSolution())) {
             throw new ForbiddenRequestException("You cannot access this exercise evaluations");
         }
     }
@@ -663,5 +680,48 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $evaluation = $submission->getEvaluation();
         $scoreConfig = $evaluation !== null ? $evaluation->getScoreConfig() : null;
         $this->sendSuccessResponse($scoreConfig);
+    }
+
+    public function checkSetVisibility(string $solutionId)
+    {
+        $solution = $this->referenceSolutions->findOrThrow($solutionId);
+        if (!$this->referenceSolutionAcl->canSetVisibility($solution)) {
+            throw new ForbiddenRequestException("You cannot change visibility of given reference solution");
+        }
+    }
+
+    /**
+     * Set visibility of given reference solution.
+     * @POST
+     * @param string $solutionId of reference solution
+     * @Param(type="post", name="visibility", required=true, validation="numericint",
+     *        description="New visibility level.")
+     * @throws NotFoundException
+     * @throws ForbiddenRequestException
+     * @throws BadRequestException
+     */
+    public function actionSetVisibility(string $solutionId)
+    {
+        $solution = $this->referenceSolutions->findOrThrow($solutionId);
+        $visibility = (int)$this->getRequest()->getPost("visibility");
+        if (
+            $visibility < ReferenceExerciseSolution::VISIBILITY_TEMP
+            || $visibility > ReferenceExerciseSolution::VISIBILITY_PROMOTED
+        ) {
+            throw new ForbiddenRequestException("Invalid visibility level given");
+        }
+
+        if (
+            $visibility >= ReferenceExerciseSolution::VISIBILITY_PROMOTED
+            && !$this->referenceSolutionAcl->canPromote($solution)
+        ) {
+            throw new ForbiddenRequestException(
+                "You cannot change visibility of given reference solution to the promoted level"
+            );
+        }
+
+        $solution->setVisibility($visibility);
+        $this->referenceSolutions->persist($solution);
+        $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
     }
 }

@@ -3,6 +3,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\FileStorageManager;
@@ -18,6 +19,7 @@ use App\Model\Entity\SolutionFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
+use App\Model\Repository\Users;
 use App\V1Module\Presenters\ReferenceExerciseSolutionsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
@@ -108,26 +110,36 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     public function testListSolutionsByExercise()
     {
-        PresenterTestHelper::loginDefaultAdmin($this->container);
-
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
         /** @var Exercise $exercise */
         $exercise = $this->exercises->searchByName("Convex hull")[0];
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:ReferenceExerciseSolutions',
             'GET',
-            [
-            'action' => 'solutions',
-            'exerciseId' => $exercise->getId()
-            ]
+            [ 'action' => 'solutions', 'exerciseId' => $exercise->getId() ]
         );
 
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        Assert::count(1, $payload);
+    }
 
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-        Assert::equal(1, count($result['payload']));
+    public function testListSolutionsByExercise2()
+    {
+        // another supervisor can see his private ref. solution
+        PresenterTestHelper::login($this->container, PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+        /** @var Exercise $exercise */
+        $exercise = $this->exercises->searchByName("Convex hull")[0];
+        $exercise->addAdmin($this->container->getByType(Users::class)->getByEmail(PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN));
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'GET',
+            [ 'action' => 'solutions', 'exerciseId' => $exercise->getId() ]
+        );
+
+        Assert::count(2, $payload);
     }
 
     public function testGetSolutionSubmissions()
@@ -644,6 +656,61 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         );
 
         Assert::same(json_encode($solution->getSolution()->getFiles()->toArray()), json_encode($result));
+    }
+
+    public function testSetVisibilityPrivate()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        $solution = current(array_filter($this->referenceSolutions->findAll(), function ($rs) {
+            return $rs->getVisibility() >= ReferenceExerciseSolution::VISIBILITY_PUBLIC;
+        }));
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'POST',
+            [ 'action' => 'setVisibility', 'solutionId' => $solution->getId() ],
+            [ 'visibility' => ReferenceExerciseSolution::VISIBILITY_PRIVATE ]
+        );
+
+        $this->referenceSolutions->refresh($solution);
+        Assert::equal(ReferenceExerciseSolution::VISIBILITY_PRIVATE, $payload['visibility']);
+        Assert::equal(ReferenceExerciseSolution::VISIBILITY_PRIVATE, $solution->getVisibility());
+    }
+
+    public function testSetVisibilityPromoted()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        $solution = current(array_filter($this->referenceSolutions->findAll(), function ($rs) {
+            return $rs->getVisibility() >= ReferenceExerciseSolution::VISIBILITY_PUBLIC;
+        }));
+
+        // not-owner of the exercise cannot promote
+        Assert::exception(
+            function () use ($solution) {
+                $payload = PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:ReferenceExerciseSolutions',
+                    'POST',
+                    [ 'action' => 'setVisibility', 'solutionId' => $solution->getId() ],
+                    [ 'visibility' => ReferenceExerciseSolution::VISIBILITY_PROMOTED ]
+                );
+            },
+            ForbiddenRequestException::class
+        );
+
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'POST',
+            [ 'action' => 'setVisibility', 'solutionId' => $solution->getId() ],
+            [ 'visibility' => ReferenceExerciseSolution::VISIBILITY_PROMOTED ]
+        );
+
+        $this->referenceSolutions->refresh($solution);
+        Assert::equal(ReferenceExerciseSolution::VISIBILITY_PROMOTED, $payload['visibility']);
+        Assert::equal(ReferenceExerciseSolution::VISIBILITY_PROMOTED, $solution->getVisibility());
     }
 }
 
