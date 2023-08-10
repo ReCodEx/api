@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use InvalidArgumentException;
 
 /**
  * @ORM\Entity
@@ -55,6 +56,20 @@ class ReferenceExerciseSolution
      */
     protected $lastSubmission = null;
 
+    public const VISIBILITY_PROMOTED = 2;
+    public const VISIBILITY_PUBLIC = 1;
+    public const VISIBILITY_PRIVATE = 0;
+    public const VISIBILITY_TEMP = -1;
+
+    /**
+     * Visibility is extended boolean. Values > 0 mean, the solution is public, otherwise it is private.
+     * Private temp denotes the solution should also be garbage collected in the future.
+     * Promoted solutions are public ones explicitly marked as "you should see this"
+     * (e.g., a sample solution of the author of the exercise).
+     * @ORM\Column(type="integer")
+     */
+    protected $visibility = 0;
+
     /**
      * Add submission to solution entity.
      * @param ReferenceSolutionSubmission $submission
@@ -104,5 +119,18 @@ class ReferenceExerciseSolution
     public function setLastSubmission(?ReferenceSolutionSubmission $lastSubmission): void
     {
         $this->lastSubmission = $lastSubmission;
+    }
+
+    public function getVisibility(): int
+    {
+        return $this->visibility;
+    }
+
+    public function setVisibility(int $visibility): void
+    {
+        if ($visibility > self::VISIBILITY_PROMOTED || $visibility < self::VISIBILITY_TEMP) {
+            throw new InvalidArgumentException("Visibility value out of range.");
+        }
+        $this->visibility = $visibility;
     }
 }

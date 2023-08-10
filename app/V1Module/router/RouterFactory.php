@@ -337,6 +337,7 @@ class RouterFactory
             "$prefix/<solutionId>/download-solution",
             "ReferenceExerciseSolutions:downloadSolutionArchive"
         );
+        $router[] = new PostRoute("$prefix/<solutionId>/visibility", "ReferenceExerciseSolutions:setVisibility");
 
         $router[] = new GetRoute("$prefix/submission/<submissionId>", "ReferenceExerciseSolutions:submission");
         $router[] = new DeleteRoute("$prefix/submission/<submissionId>", "ReferenceExerciseSolutions:deleteSubmission");

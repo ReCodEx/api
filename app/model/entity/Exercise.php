@@ -421,9 +421,17 @@ class Exercise implements IExercise
         $this->scoreConfig = $scoreConfig;
     }
 
-    public function getReferenceSolutions(): Collection
+    public function getReferenceSolutions(int $minimalVisibility = null): Collection
     {
-        return $this->referenceSolutions;
+        if ($minimalVisibility !== null) {
+            return $this->referenceSolutions->filter(
+                function (ReferenceExerciseSolution $rs) use ($minimalVisibility) {
+                    return $rs->getVisibility() >= $minimalVisibility;
+                }
+            );
+        } else {
+            return $this->referenceSolutions;
+        }
     }
 
     public function getExerciseTests(): Collection

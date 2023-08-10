@@ -28,6 +28,7 @@ class ReferenceExerciseSolutionViewFactory
             "authorId" => $solution->getSolution()->getAuthorId(),
             "createdAt" => $solution->getSolution()->getCreatedAt()->getTimestamp(),
             "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
+            "visibility" => $solution->getVisibility(),
             "submissions" => $solution->getSubmissions()->map(
                 function (ReferenceSolutionSubmission $evaluation) {
                     return $evaluation->getId();
