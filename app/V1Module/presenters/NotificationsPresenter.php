@@ -17,7 +17,6 @@ use Nette\Utils\Arrays;
 
 class NotificationsPresenter extends BasePresenter
 {
-
     /**
      * @var INotificationPermissions
      * @inject

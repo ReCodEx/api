@@ -83,7 +83,8 @@ class TestNotificationsPresenter extends Tester\TestCase
         );
 
         $request = new Nette\Application\Request(
-            "V1:Notifications", "GET",
+            "V1:Notifications",
+            "GET",
             ["action" => "default", "groupsIds" => [$group->getId()]]
         );
         $response = $this->presenter->run($request);
@@ -133,7 +134,8 @@ class TestNotificationsPresenter extends Tester\TestCase
         ];
 
         $request = new Nette\Application\Request(
-            "V1:Notifications", "POST",
+            "V1:Notifications",
+            "POST",
             ["action" => "create"],
             [
                 "groupsIds" => $groupsIds,
@@ -182,7 +184,8 @@ class TestNotificationsPresenter extends Tester\TestCase
         ];
 
         $request = new Nette\Application\Request(
-            "V1:Notifications", "POST",
+            "V1:Notifications",
+            "POST",
             ["action" => "update", "id" => $notification->getId()],
             [
                 "groupsIds" => $groupsIds,
@@ -221,7 +224,8 @@ class TestNotificationsPresenter extends Tester\TestCase
         $notificationId = current($this->presenter->notifications->findAll())->getId();
 
         $request = new Nette\Application\Request(
-            "V1:Notifications", "DELETE",
+            "V1:Notifications",
+            "DELETE",
             ["action" => "remove", "id" => $notificationId]
         );
         $response = $this->presenter->run($request);

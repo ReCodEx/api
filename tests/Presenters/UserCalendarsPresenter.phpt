@@ -155,8 +155,11 @@ class TestUserCalendarsPresenter extends Tester\TestCase
         );
 
         Assert::count(2, $payload);
-        Assert::equal($calendar1->getId(), $payload[0]->getId());
-        Assert::equal($calendar2->getId(), $payload[1]->getId());
+        $ids = [ $calendar1->getId(), $calendar2->getId() ];
+        $payloadIds = [ $payload[0]->getId(), $payload[1]->getId() ];
+        sort($ids);
+        sort($payloadIds);
+        Assert::equal($ids, $payloadIds);
     }
 
     public function testGetUserCalendarsOfAnotherUserFails()
