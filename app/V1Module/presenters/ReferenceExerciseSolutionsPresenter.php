@@ -708,7 +708,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             $visibility < ReferenceExerciseSolution::VISIBILITY_TEMP
             || $visibility > ReferenceExerciseSolution::VISIBILITY_PROMOTED
         ) {
-            throw new ForbiddenRequestException("Invalid visibility level given");
+            throw new ForbiddenRequestException("Invalid visibility level ($visibility) given");
         }
 
         if (
@@ -722,6 +722,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
 
         $solution->setVisibility($visibility);
         $this->referenceSolutions->persist($solution);
-        $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
+
+        $this->sendSuccessResponse(
+            $this->referenceSolutionAcl->canViewDetail($solution) ?
+            $this->referenceSolutionViewFactory->getReferenceSolution($solution) : null
+        );
     }
 }

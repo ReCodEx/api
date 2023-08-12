@@ -13,6 +13,7 @@ use App\Model\Entity\GroupMembership;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
 use App\Security\Roles;
+use App\Exceptions\BadRequestException;
 
 /**
  * @extends BaseSoftDeleteRepository<Exercise>
@@ -127,11 +128,16 @@ class Exercises extends BaseSoftDeleteRepository
         $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
 
         if ($pagination->hasFilter("archived")) {
-            // archived == false -> show only archived
-            if (!$pagination->getFilter("archived")) {
+            $archived = $pagination->getFilter("archived");
+            if ($archived === 'only') {
                 $qb->andWhere($qb->expr()->isNotNull('e.archivedAt'));
+            } elseif ($archived === 'all') {
+                // archived == 'all' -> show everything (no condition added)
+            } else {
+                throw new BadRequestException(
+                    "Unknown filter option archived='$archived' (either 'all' or 'only' was expected)."
+                );
             }
-            // archived == true -> show everything (no condition added)
         } else {
             // no archived filter -> show only regular exercises
             $qb->andWhere($qb->expr()->isNull('e.archivedAt'));

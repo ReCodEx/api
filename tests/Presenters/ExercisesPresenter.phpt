@@ -139,7 +139,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', [
             'action' => 'default',
-            'filters' => [ 'archived' => true ]
+            'filters' => [ 'archived' => 'all' ]
         ]);
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -171,7 +171,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', [
             'action' => 'default',
-            'filters' => [ 'archived' => false ]
+            'filters' => [ 'archived' => 'only' ]
         ]);
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
