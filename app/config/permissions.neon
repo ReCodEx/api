@@ -593,6 +593,7 @@ permissions:
           - exercise.isGloballyPublic
 
     - allow: true
+      role: supervisor-student
       resource: exercise
       actions:
           - viewDetail
@@ -607,6 +608,7 @@ permissions:
             - exercise.isSuperGroupAdmin
 
     - allow: true
+      role: supervisor-student
       resource: exercise
       actions:
           - addReferenceSolution
@@ -620,6 +622,7 @@ permissions:
               - exercise.isSuperGroupAdmin
 
     - allow: true # Admin of the group of an exercise has most of the rights to the exercise
+      role: supervisor-student
       resource: exercise
       actions:
           - setLimits
@@ -634,6 +637,7 @@ permissions:
               - exercise.isAuthorOrAdmin
 
     - allow: true
+      role: supervisor-student
       resource: exercise
       actions:
           - archive
@@ -643,6 +647,7 @@ permissions:
               - exercise.isAuthorOrAdmin
 
     - allow: true
+      role: supervisor-student
       resource: exercise
       actions:
           - attachGroup
@@ -654,6 +659,7 @@ permissions:
             - exercise.isAuthorOrAdmin
 
     - allow: true
+      role: supervisor-student
       resource: exercise
       actions:
           - detachGroup
@@ -666,19 +672,28 @@ permissions:
           - exercise.hasAtLeastTwoAttachedGroups
 
     - allow: true
+      role: supervisor-student
       resource: exercise
       actions:
           - updateAdmins
+      conditions:
+          - exercise.notArchived
+          - exercise.isAuthorOrAdmin
+
+    - allow: true
+      role: supervisor-student
+      resource: exercise
+      actions:
           - remove
       conditions:
           - exercise.isAuthorOrAdmin
 
     - allow: true
+      role: supervisor-student
       resource: referenceExerciseSolution
       actions:
           - viewDetail
       conditions:
-          - referenceExerciseSolution.isExerciseNotArchived
           - or:
               - referenceExerciseSolution.isAuthor
               - and:
@@ -689,6 +704,7 @@ permissions:
                       - referenceExerciseSolution.isExerciseSubGroupNonStudentMember
 
     - allow: true
+      role: supervisor-student
       resource: referenceExerciseSolution
       actions:
           - evaluate
@@ -706,6 +722,7 @@ permissions:
                       - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
+      role: supervisor-student
       resource: referenceExerciseSolution
       actions:
           - promote
