@@ -26,7 +26,6 @@ use Exception;
  */
 class ExerciseFilesPresenter extends BasePresenter
 {
-
     /**
      * @var Exercises
      * @inject
