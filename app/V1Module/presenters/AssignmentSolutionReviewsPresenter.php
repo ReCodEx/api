@@ -227,6 +227,12 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         }
 
         if ($file) {
+            $entry = null;
+            $tokens = explode('#', $file, 2);
+            if (count($tokens) > 1) {
+                list($file, $entry) = $tokens;
+            }
+
             $exists = $solution->getSolution()->getFiles()->exists(function ($_, $f) use ($file) {
                 return $f->getName() === $file;
             });
@@ -235,6 +241,8 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
                     "No file named '$file' was submitted for given solution -- unable to associate a review comment."
                 );
             }
+
+            // TODO - in the future, we might want to check the entry as well
         } elseif ($line !== 0) {
             throw new BadRequestException("Global comment (with no file) must have a line value set to zero.");
         }
