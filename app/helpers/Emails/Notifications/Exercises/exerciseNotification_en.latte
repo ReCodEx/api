@@ -1,0 +1,18 @@
+{emailSubject}Exercise notification - {$exercise}{/emailSubject}
+<h3>Exercise notification - {$exercise}</h3>
+
+{if $message}
+<p>
+    User {$user} (<a href="mailto:{$email}">{$email}</a>) sent the following notification to all teachers who assigned exercise '{$exercise}' in their groups:
+</p>
+<p><strong>{$message}</strong></p>
+{else}
+<p>
+    User {$user} (<a href="mailto:{$email}">{$email}</a>) sent a change notification to all teachers who assigned exercise '{$exercise}' in their groups.
+    The notification bears no additional message.
+</p>
+{/if}
+
+<p>
+    The exercise link is <a href="{$link}">{$link}</a>.
+</p>

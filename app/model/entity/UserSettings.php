@@ -25,6 +25,7 @@ class UserSettings implements JsonSerializable
         $this->pointsChangedEmails = true;
         $this->assignmentSubmitAfterAcceptedEmails = false;
         $this->assignmentSubmitAfterReviewedEmails = false;
+        $this->exerciseNotificationEmails = true;
     }
 
     /**
@@ -91,6 +92,11 @@ class UserSettings implements JsonSerializable
      */
     protected $assignmentSubmitAfterReviewedEmails;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $exerciseNotificationEmails;
+
     public function jsonSerialize(): mixed
     {
         return [
@@ -104,6 +110,7 @@ class UserSettings implements JsonSerializable
             "pointsChangedEmails" => $this->pointsChangedEmails,
             "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
             "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
+            "exerciseNotificationEmails" => $this->exerciseNotificationEmails,
         ];
     }
 
@@ -209,5 +216,15 @@ class UserSettings implements JsonSerializable
     public function setAssignmentSubmitAfterReviewedEmails(bool $assignmentSubmitAfterReviewedEmails): void
     {
         $this->assignmentSubmitAfterReviewedEmails = $assignmentSubmitAfterReviewedEmails;
+    }
+
+    public function getExerciseNotificationEmails(): bool
+    {
+        return $this->exerciseNotificationEmails;
+    }
+
+    public function setExerciseNotificationEmails(bool $exerciseNotificationEmails): void
+    {
+        $this->exerciseNotificationEmails = $exerciseNotificationEmails;
     }
 }

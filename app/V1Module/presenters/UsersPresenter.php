@@ -425,6 +425,8 @@ class UsersPresenter extends BasePresenter
      * @Param(type="post", name="assignmentSubmitAfterReviewedEmails", validation="bool", required=false,
      *        description="Flag if email should be sent to group supervisor if a student submits new solution
      *                     for already reviewed and not accepted assignment")
+     * @Param(type="post", name="exerciseNotificationEmails", validation="bool", required=false,
+     *        description="Flag if notifications sent by authors of exercises should be sent via email.")
      * @throws NotFoundException
      */
     public function actionUpdateSettings(string $id)
@@ -443,7 +445,8 @@ class UsersPresenter extends BasePresenter
             "assignmentCommentsEmails",
             "pointsChangedEmails",
             "assignmentSubmitAfterAcceptedEmails",
-            "assignmentSubmitAfterReviewedEmails"
+            "assignmentSubmitAfterReviewedEmails",
+            "exerciseNotificationEmails",
         ];
 
         foreach ($knownBoolFlags as $flag) {

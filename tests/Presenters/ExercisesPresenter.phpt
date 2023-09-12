@@ -12,6 +12,10 @@ use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\Group;
 use App\Model\Repository\Users;
+use App\Helpers\Notifications\ExerciseNotificationSender;
+use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\EmailHelper;
+use App\Helpers\WebappLinks;
 use App\Security\AccessManager;
 use App\V1Module\Presenters\ExercisesPresenter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -65,6 +69,9 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var App\Model\Repository\Groups */
     protected $groups;
 
+    /** @var EmailHelper */
+    protected $emailHelperMock;
+
     public function __construct()
     {
         global $container;
@@ -86,8 +93,14 @@ class TestExercisesPresenter extends Tester\TestCase
     protected function setUp()
     {
         PresenterTestHelper::fillDatabase($this->container);
-
         $this->presenter = PresenterTestHelper::createPresenter($this->container, ExercisesPresenter::class);
+        $this->emailHelperMock = Mockery::mock(EmailHelper::class);
+        $this->presenter->notificationSender = new ExerciseNotificationSender(
+            ["emails" => ["from" => 'a@b.c']],
+            $this->emailHelperMock,
+            new EmailLocalizationHelper(),
+            new WebappLinks('', [])
+        );
     }
 
     protected function tearDown()
@@ -1169,6 +1182,29 @@ class TestExercisesPresenter extends Tester\TestCase
         );
         Assert::equal(3, $result['payload']['solutionFilesLimit']);
         Assert::equal(42, $result['payload']['solutionSizeLimit']);
+    }
+
+    public function testSendNotification()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = current(array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return count($e->getAssignments()) > 0;
+        }));
+
+        $this->emailHelperMock->shouldReceive("setShowSettingsInfo")->andReturn($this->emailHelperMock)->once();
+        $emails = ['demoGroupSupervisor@example.com', 'demoGroupSupervisor2@example.com'];
+        $this->emailHelperMock->shouldReceive("send")
+            ->with('a@b.c', [], 'en', 'Exercise notification - Convex hull', Mockery::any(), $emails)->andReturn(true)->once();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'POST',
+            ['action' => 'sendNotification', 'id' => $exercise->getId()],
+            ['message' => "The cake is a lie!"]
+        );
+
+        Assert::equal(2, $payload);
     }
 }
 
