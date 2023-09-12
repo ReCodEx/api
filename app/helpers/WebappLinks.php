@@ -16,6 +16,9 @@ class WebappLinks
     private $assignmentUrl;
 
     /** @var string */
+    private $exerciseUrl;
+
+    /** @var string */
     private $shadowAssignmentUrl;
 
     /** @var string */
@@ -53,6 +56,7 @@ class WebappLinks
     public function __construct(string $webappUrl, array $linkTemplates)
     {
         $this->assignmentUrl = Arrays::get($linkTemplates, ["assignmentUrl"], "$webappUrl/app/assignment/{id}");
+        $this->exerciseUrl = Arrays::get($linkTemplates, ["exerciseUrl"], "$webappUrl/app/exercises/{id}");
         $this->shadowAssignmentUrl = Arrays::get(
             $linkTemplates,
             ["shadowAssignmentUrl"],
@@ -97,6 +101,15 @@ class WebappLinks
     public function getAssignmentPageUrl(string $assignmentId): string
     {
         return self::getLink($this->assignmentUrl, [ 'id' => $assignmentId ]);
+    }
+
+    /**
+     * @param string $exerciseId
+     * @return string URL to the exercise page
+     */
+    public function getExercisePageUrl(string $exerciseId): string
+    {
+        return self::getLink($this->exerciseUrl, [ 'id' => $exerciseId ]);
     }
 
     /**

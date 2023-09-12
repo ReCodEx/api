@@ -105,6 +105,7 @@ parameters:
 
   linkTemplates:
     assignmentUrl: "%webapp.address%/app/assignment/{id}"
+    exerciseUrl: "%webapp.address%/app/exercises/{id}"
     shadowAssignmentUrl: "%webapp.address%/app/shadow-assignment/{id}"
     solutionUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
     referenceSolutiontUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
@@ -116,6 +117,10 @@ parameters:
   assignmentNotifications:
     deadlineThresholdFrom: +1 day
     deadlineThresholdTo: +2 days
+    emails:
+      from: %emails.from%
+
+  exerciseNotifications:
     emails:
       from: %emails.from%
 
@@ -382,6 +387,7 @@ services:
   - App\Helpers\ForgottenPasswordHelper(%forgottenPassword%)
   - App\Helpers\InvitationHelper(%invitationNotification%)
   - App\Helpers\Notifications\AssignmentEmailsSender(%assignmentNotifications%)
+  - App\Helpers\Notifications\ExerciseNotificationSender(%exerciseNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(%failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(%solutionCommentsNotifications%)
   - App\Helpers\Notifications\ReviewsEmailsSender(%reviewsNotifications%)

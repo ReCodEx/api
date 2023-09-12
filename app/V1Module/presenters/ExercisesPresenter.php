@@ -17,6 +17,7 @@ use App\Helpers\Localizations;
 use App\Helpers\Pagination;
 use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
+use App\Helpers\Notifications\ExerciseNotificationSender;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseScoreConfig;
@@ -156,6 +157,12 @@ class ExercisesPresenter extends BasePresenter
      * @inject
      */
     public $exerciseTags;
+
+    /**
+     * @var ExerciseNotificationSender
+     * @inject
+     */
+    public $notificationSender;
 
     private function getExercisePermissionsOfUser(User $user): IExercisePermissions
     {
@@ -994,5 +1001,31 @@ class ExercisesPresenter extends BasePresenter
         }
 
         $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+    }
+
+    public function checkSendNotification(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        if (!$this->exerciseAcl->canUpdate($exercise)) {
+            // who can update may also need to notify others about the change
+            throw new ForbiddenRequestException("You are not allowed to notify users who assigned this exercise");
+        }
+    }
+
+    /**
+     * Sends an email to all group admins and supervisors, where the exercise is assigned.
+     * The purpose of this is to quickly notify all relevant teachers when a bug is found
+     * or the exercise is modified significantly.
+     * The response is number of emails sent (number of notified users).
+     * @POST
+     * @param string $id identifier of the exercise
+     * @Param(type="post", name="message", validation=string, description="Message sent to notified users.")
+     */
+    public function actionSendNotification(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $message = trim($this->getRequest()->getPost("message"));
+        $notified = $this->notificationSender->sendNotification($exercise, $this->getCurrentUser(), $message);
+        $this->sendSuccessResponse($notified);
     }
 }
