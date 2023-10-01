@@ -42,12 +42,20 @@ class AssignmentSolution
     }
 
     /**
-     * Determine if submission was made after deadline.
+     * Determine if submission was made after deadline (the last one).
      * @return bool
      */
-    public function isAfterDeadline()
+    public function isAfterDeadline(): bool
     {
         return $this->assignment->isAfterDeadline($this->solution->getCreatedAt());
+    }
+
+    /**
+     * Determine if the submission was made after the first deadline.
+     */
+    public function isAfterFirstDeadline(): bool
+    {
+        return $this->assignment->isAfterFirstDeadline($this->solution->getCreatedAt());
     }
 
     public function getMaxPoints()
