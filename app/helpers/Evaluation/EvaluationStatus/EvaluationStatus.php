@@ -7,11 +7,10 @@ namespace App\Helpers\EvaluationStatus;
  */
 class EvaluationStatus
 {
-
-    const EVALUATION_STATUS_IN_PROGRESS = "work-in-progress";
-    const EVALUATION_STATUS_EVALUATION_FAILED = "evaluation-failed";
-    const EVALUATION_STATUS_DONE = "done";
-    const EVALUATION_STATUS_FAILED = "failed";
+    private const EVALUATION_STATUS_IN_PROGRESS = "work-in-progress";
+    private const EVALUATION_STATUS_EVALUATION_FAILED = "evaluation-failed";
+    private const EVALUATION_STATUS_DONE = "done";
+    private const EVALUATION_STATUS_FAILED = "failed";
 
     /**
      * Helper method for converting IEvaluable object to human readable string status

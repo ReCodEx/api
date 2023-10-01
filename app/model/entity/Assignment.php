@@ -180,7 +180,7 @@ class Assignment extends AssignmentBase implements IExercise
      */
     protected $secondDeadline;
 
-    public function isAfterDeadline(DateTime $now = null)
+    public function isAfterDeadline(DateTime $now = null): bool
     {
         if ($now === null) {
             $now = new DateTime();
@@ -191,6 +191,14 @@ class Assignment extends AssignmentBase implements IExercise
         } else {
             return $this->firstDeadline < $now;
         }
+    }
+
+    public function isAfterFirstDeadline(DateTime $now = null): bool
+    {
+        if ($now === null) {
+            $now = new DateTime();
+        }
+        return $this->firstDeadline < $now;
     }
 
     /**
