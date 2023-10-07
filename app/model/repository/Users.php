@@ -94,26 +94,26 @@ class Users extends BaseSoftDeleteRepository
     }
 
     /**
-     * Find all users who have their last authentication activity before and after given two dates.
-     * A null value in the lastAuthenticationAt property bares the meaning of "never", so it satisfies any
-     * $before value and no (not null) $after value.
+     * Find all users who have not authenticated to the system for some time.
      * @param DateTime|null $before Only users with last activity before given date
      *                              (i.e., not active after given date) are returned.
-     * @param DateTime|null $after Only users with last activity after given date
-     *                             (i.e., have been active after give date) are returned.
+     * @param bool|null $allowed if not null, only users with particular isAllowed state are returned
+     * @param string[] $roles only users of these roles are listed
      * @return User[]
      */
-    public function findByLastAuthentication(?DateTime $before, ?DateTime $after = null): array
+    public function findByLastAuthentication(?DateTime $before, ?bool $allowed = null, array $roles = []): array
     {
         $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
         if ($before) {
-            $qb->andWhere('u.lastAuthenticationAt <= :before OR u.lastAuthenticationAt IS NULL')->setParameter(
-                'before',
-                $before
-            );
+            $qb->andWhere(
+                'u.createdAt <= :before AND (u.lastAuthenticationAt <= :before OR u.lastAuthenticationAt IS NULL)'
+            )->setParameter('before', $before);
         }
-        if ($after) {
-            $qb->andWhere('u.lastAuthenticationAt >= :after')->setParameter('after', $after);
+        if ($allowed !== null) {
+            $qb->andWhere('u.isAllowed = :allowed')->setParameter('allowed', $allowed);
+        }
+        if ($roles) {
+            $qb->andWhere('u.role IN (:roles)')->setParameter('roles', $roles);
         }
         return $qb->getQuery()->getResult();
     }
