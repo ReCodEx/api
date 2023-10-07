@@ -190,7 +190,10 @@ parameters:
   removeInactiveUsers:
     # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).
     # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
-    threshold: null
+    disableAfter: "2 years"
+    deleteAfter: null   # null = never, if not null, better be > disableAfter
+    roles:  # restrict the cleanup to the following roles
+      - "student"
 
 
 application:
@@ -306,7 +309,7 @@ services:
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
   - App\Console\CleanupPipelineConfigs
-  - App\Console\RemoveInactiveUsers(%removeInactiveUsers.threshold%)
+  - App\Console\RemoveInactiveUsers(%removeInactiveUsers%)
   - App\Console\RuntimeExport
   - App\Console\RuntimeImport
   - App\Console\FixExerciseConfigs
@@ -373,7 +376,7 @@ services:
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
   - App\Helpers\AnonymizationHelper(@App\Model\Repository\Users, @App\Model\Repository\Logins, @App\Model\Repository\ExternalLogins, %anonymization%)
-  - App\Helpers\GeneralStatsHelper(%removeInactiveUsers.threshold%)
+  - App\Helpers\GeneralStatsHelper(%removeInactiveUsers.disableAfter%)
   - App\Helpers\TmpFilesHelper(%tempDir%)
   - App\Helpers\FileStorage\LocalFileStorage(@App\Helpers\TmpFilesHelper, %fileStorage.local%)
   - App\Helpers\FileStorage\LocalHashFileStorage(%fileStorage.hash%)

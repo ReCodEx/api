@@ -397,10 +397,11 @@ class User
 
     /**
      * Update the last authentication time to present.
+     * @param DateTime|null $time the authentication time (if null, current time is set)
      */
-    public function updateLastAuthenticationAt()
+    public function updateLastAuthenticationAt(DateTime $time = null)
     {
-        $this->lastAuthenticationAt = new DateTime();
+        $this->lastAuthenticationAt = $time ?? new DateTime();
     }
 
     /**

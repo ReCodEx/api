@@ -35,7 +35,11 @@ class TestRemoveInactiveUsers extends Tester\TestCase
     {
         PresenterTestHelper::fillDatabase($this->container);
         $this->command = new RemoveInactiveUsers(
-            "1 month",
+            [
+                "disableAfter" => "1 month",
+                "deleteAfter" => "1 year",
+                "roles" => [ 'student' ],
+            ],
             $this->users,
             $this->container->getByType(AnonymizationHelper::class)
         );
@@ -46,19 +50,39 @@ class TestRemoveInactiveUsers extends Tester\TestCase
         Mockery::close();
     }
 
+    private static function getTime($sub)
+    {
+        $res = new DateTime();
+        $res->sub(DateInterval::createFromDateString($sub));
+        return $res;
+    }
+
     public function testCleanup()
     {
-        $user = current($this->users->findAll());
-        $user->updateLastAuthenticationAt(); // make sure this user is active
+        $users = $this->users->findByRoles('student');
+        $count = count($users);
+        foreach ($users as $user) {
+            $user->overrideCreatedAt(self::getTime("5 years"));
+            $user->updateLastAuthenticationAt(); // make sure user is active
+        }
+
+        // one to be disabled, one to be deleted
+        $disabled = $users[0];
+        $disabled->updateLastAuthenticationAt(self::getTime("2 month"));
+
+        $users[1]->updateLastAuthenticationAt(self::getTime("2 years"));
+        $users[1]->setIsAllowed(false);
+        $users[2]->updateLastAuthenticationAt(self::getTime("2 years"));
         $this->users->flush();
 
         $this->command->run(
-            new Symfony\Component\Console\Input\StringInput("--silent"),
+            new Symfony\Component\Console\Input\StringInput("--silent --really-delete"),
             new Symfony\Component\Console\Output\NullOutput()
         );
 
-        Assert::count(1, $this->users->findAll());
-        Assert::equal($user->getId(), current($this->users->findAll())->getId());
+        $this->users->refresh($disabled);
+        Assert::false($disabled->isAllowed());
+        Assert::count($count - 1, $this->users->findByRoles('student'));
     }
 }
 
