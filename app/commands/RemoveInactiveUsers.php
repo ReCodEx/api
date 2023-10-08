@@ -98,7 +98,7 @@ class RemoveInactiveUsers extends Command
                 $output->writeln("Disabling users not authenticated since: "
                     . $this->disableThreshold->format("j.n.Y (H:i:s)"));
             }
-            if ($this->deleteThreshold) {
+            if ($this->deleteThreshold && $reallyDelete) {
                 $output->writeln("Deleting disabled users not authenticated since: "
                     . $this->deleteThreshold->format("j.n.Y (H:i:s)"));
             }
@@ -119,7 +119,7 @@ class RemoveInactiveUsers extends Command
             return Command::SUCCESS;
         }
 
-        if ($disableCount === 0 && $deleteCount) {
+        if (!$usersToDisable && !$usersToDelete) {
             if (!$silent) {
                 $output->writeln("No inactive users found.");
             }
@@ -135,7 +135,7 @@ class RemoveInactiveUsers extends Command
             if ($deleteCount) {
                 $questionText[] = "Total $deleteCount inactive disabled users will be deleted.";
             }
-            $questionText[] = "Do you wish to proceed?";
+            $questionText[] = "Do you wish to proceed? ";
 
             /** @var QuestionHelper */
             $helper = $this->getHelper('question');
