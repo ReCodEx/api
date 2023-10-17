@@ -166,12 +166,20 @@ permissions:
 
     - allow: true
       resource: group
-      role: supervisor
+      role: supervisor-student
       actions:
-          - addStudent  # requires permissions to read all users' private data
           - inviteStudents  # create future invitations, that the students can use to join
           - editInvitations  # add, update, and remove invitation links (for already registered users) 
           - removeStudent
+      conditions:
+          - group.isSupervisor
+          - group.isNotArchived
+
+    - allow: true
+      resource: group
+      role: supervisor
+      actions:
+          - addStudent  # requires permissions to read all users' private data
       conditions:
           - group.isSupervisor
           - group.isNotArchived
@@ -328,12 +336,17 @@ permissions:
       conditions: user.isSameUser
 
     - allow: true
+      role: supervisor-student
+      resource: user
+      actions:
+        - inviteForRegistration
+
+    - allow: true
       role: supervisor
       resource: user
       actions:
         - viewDetail
         - viewAll
-        - inviteForRegistration
 
     ##########################
     # Assignment permissions #
