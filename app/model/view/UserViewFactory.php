@@ -14,7 +14,6 @@ use App\Security\Identity;
  */
 class UserViewFactory
 {
-
     /**
      * @var IUserPermissions
      */

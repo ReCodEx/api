@@ -33,7 +33,6 @@ use ZxcvbnPhp\Zxcvbn;
  */
 class RegistrationPresenter extends BasePresenter
 {
-
     /**
      * @var Logins
      * @inject
