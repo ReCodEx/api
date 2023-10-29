@@ -381,6 +381,7 @@ permissions:
       actions:
           - submit
       conditions:
+          - assignment.acceptsSubmissions
           - assignment.isInActiveGroup
           - assignment.isAssignee
           - assignment.isVisible
@@ -405,6 +406,7 @@ permissions:
           - resubmitSubmissions
           - viewAssignmentAsyncJobs
       conditions:
+          - assignment.acceptsSubmissions
           - assignment.isInActiveGroup
           - assignment.isSupervisorOrAdmin
 
@@ -601,7 +603,14 @@ permissions:
           - viewAssignments
           - viewList
           - viewAllTags
+
+    - allow: true
+      role: scope-ref-solutions
+      resource: exercise
+      actions:
           - addReferenceSolution
+      conditions:
+          - exercise.acceptsSubmissions
 
     - allow: true
       role: student
@@ -643,6 +652,7 @@ permissions:
           - fork
           - assign
       conditions:
+          - exercise.acceptsSubmissions
           - exercise.notArchived
           - or:
               - exercise.isAuthorOrAdmin
@@ -760,6 +770,7 @@ permissions:
           - setVisibility
           - delete
       conditions:
+          - referenceExerciseSolution.canEvaluate
           - referenceExerciseSolution.isExerciseNotArchived
           - or:
               - referenceExerciseSolution.isAuthor
@@ -793,6 +804,7 @@ permissions:
           - setVisibility
           - delete
       conditions:
+          - referenceExerciseSolution.canEvaluate
           - referenceExerciseSolution.isExerciseNotArchived
           - or:
               - referenceExerciseSolution.isAuthor

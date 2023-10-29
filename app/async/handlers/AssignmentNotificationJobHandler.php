@@ -8,7 +8,6 @@ use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
 use App\Async\IAsyncJobHandler;
 use App\Async\Dispatcher;
-use App\Helpers\SubmissionHelper;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use InvalidArgumentException;
 

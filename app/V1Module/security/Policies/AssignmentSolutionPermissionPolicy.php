@@ -8,7 +8,6 @@ use App\Security\Identity;
 
 class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
 {
-
     public function getAssociatedClass()
     {
         return AssignmentSolution::class;

@@ -38,6 +38,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use Nette\Http\IResponse;
 use Nette\Utils\Strings;
+use Nette\Utils\Arrays;
 use ZMQSocketException;
 use Exception;
 
@@ -47,6 +48,9 @@ use Exception;
  */
 class SubmissionHelper
 {
+    /** @var SubmissionConfigHelper */
+    private $config;
+
     /** @var BackendSubmitHelper */
     private $backendSubmitHelper;
 
@@ -82,6 +86,7 @@ class SubmissionHelper
      * @param BackendSubmitHelper $backendSubmitHelper
      */
     public function __construct(
+        SubmissionConfigHelper $config,
         BackendSubmitHelper $backendSubmitHelper,
         AssignmentSolutions $assignmentSolutions,
         AssignmentSolutionSubmissions $assignmentSubmissions,
@@ -93,6 +98,7 @@ class SubmissionHelper
         FileStorageManager $fileStorage,
         UploadedFiles $uploadedFiles
     ) {
+        $this->config = $config;
         $this->backendSubmitHelper = $backendSubmitHelper;
         $this->assignmentSolutions = $assignmentSolutions;
         $this->assignmentSubmissions = $assignmentSubmissions;
@@ -163,6 +169,22 @@ class SubmissionHelper
             $this->failureHelper->report($reportType, $reportMessage);
         }
         throw $exception; // rethrow
+    }
+
+    /**
+     * @return bool True if the backend is locked out in the configuration and submissions are not possible.
+     */
+    public function isLocked(): bool
+    {
+        return $this->config->isLocked();
+    }
+
+    /**
+     * @return string|string[] Message with locked reason. Either a string or localized strings [ locale => message ].
+     */
+    public function getLockedReason(): mixed
+    {
+        return $this->config->getLockedReason();
     }
 
     /**
@@ -283,6 +305,10 @@ class SubmissionHelper
      */
     public function submit(AssignmentSolution $solution, User $user, bool $isDebug = false): array
     {
+        if ($this->config->isLocked()) {
+            throw new ForbiddenRequestException("The submissions are locked out in the configuration.");
+        }
+
         if ($solution->getId() === null) {
             throw new InvalidArgumentException("The solution object is missing an id");
         }
@@ -361,6 +387,10 @@ class SubmissionHelper
         User $user,
         bool $isDebug = false
     ): array {
+        if ($this->config->isLocked()) {
+            throw new ForbiddenRequestException("The submissions are locked out in the configuration.");
+        }
+
         $compilationParams = CompilationParams::create(
             $referenceSolution->getSolution()->getFileNames(),
             $isDebug,

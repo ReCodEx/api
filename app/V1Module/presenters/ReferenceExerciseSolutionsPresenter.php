@@ -625,7 +625,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $refSolution = $submission->getReferenceSolution();
 
-        if (!$this->referenceSolutionAcl->canEvaluate($refSolution)) {
+        if (!$this->referenceSolutionAcl->canViewDetail($refSolution)) {
             throw new ForbiddenRequestException();
         }
     }

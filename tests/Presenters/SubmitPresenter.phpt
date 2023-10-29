@@ -70,6 +70,7 @@ class TestSubmitPresenter extends Tester\TestCase
     private function createSubmissionHelper($mockBrokerProxy, $mockFileStorage, $mockGenerator = null)
     {
         return new SubmissionHelper(
+            $this->container->getByType(App\Helpers\SubmissionConfigHelper::class),
             new BackendSubmitHelper($mockBrokerProxy, $mockFileStorage),
             $this->container->getByType(App\Model\Repository\AssignmentSolutions::class),
             $this->container->getByType(App\Model\Repository\AssignmentSolutionSubmissions::class),
@@ -107,6 +108,8 @@ class TestSubmitPresenter extends Tester\TestCase
 
         $assignment = current($this->assignments->findAll());
 
+        $this->presenter->submissionHelper->shouldReceive("isLocked")->andReturn(false);
+
         $request = new Nette\Application\Request(
             'V1:Submit',
             'GET',
@@ -131,6 +134,8 @@ class TestSubmitPresenter extends Tester\TestCase
         PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
 
         $assignment = current($this->assignments->findAll());
+
+        $this->presenter->submissionHelper->shouldReceive("isLocked")->andReturn(false);
 
         $request = new Nette\Application\Request(
             'V1:Submit',

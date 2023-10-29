@@ -220,6 +220,10 @@ class SubmitPresenter extends BasePresenter
         $response = $this->assignmentSolutions->getSolutionStats($assignment, $user);
         $response['canSubmit'] = $this->canReceiveSubmissions($assignment, $user);
         $response['submittedCount'] = $response['evaluated']; // BC, DEPRECATED, will be removed in future
+        if ($this->submissionHelper->isLocked()) {
+            $response['canSubmit'] = false;  // override
+            $response['lockedReason'] = $this->submissionHelper->getLockedReason();
+        }
 
         $this->sendSuccessResponse($response);
     }
