@@ -76,6 +76,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     private function createSubmissionHelper($mockBackendSubmitHelper, $mockGenerator = null, $mockFileStorage = null)
     {
         return new SubmissionHelper(
+            $this->container->getByType(App\Helpers\SubmissionConfigHelper::class),
             $mockBackendSubmitHelper,
             $this->container->getByType(App\Model\Repository\AssignmentSolutions::class),
             $this->container->getByType(App\Model\Repository\AssignmentSolutionSubmissions::class),

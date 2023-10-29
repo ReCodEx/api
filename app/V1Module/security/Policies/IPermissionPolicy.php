@@ -4,5 +4,5 @@ namespace App\Security\Policies;
 
 interface IPermissionPolicy
 {
-    function getAssociatedClass();
+    public function getAssociatedClass();
 }

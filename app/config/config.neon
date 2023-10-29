@@ -43,6 +43,12 @@ parameters:
   webapp:
     address: "https://your.recodex.domain"
 
+  submissions:
+    locked: false  # if set to true, the API will not be accepting submissions (and it will be incidated in can-submit/permission hints)
+    lockedReason:  # Localized message with reason displayed in UI, why the submissions are locked (ignored if locked == false)
+      cs: "Odevzdávání řešení bylo zablokováno v konfiguraci aplikace."
+      en: "Submitting new solutions is currently locked out in the application configuration."
+
   accessManager:  # configuration of access token in JWT standard. Do not modify unless you really know what are you doing.
     leeway: 60
     issuer: "%webapp.address%"
@@ -341,6 +347,7 @@ services:
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\BackendSubmitHelper
   - App\Helpers\SubmissionHelper
+  - App\Helpers\SubmissionConfigHelper(%submissions%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\EvaluationPointsLoader
   - App\Helpers\JobConfig\Loader

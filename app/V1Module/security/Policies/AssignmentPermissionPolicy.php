@@ -4,10 +4,24 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\Assignment;
 use App\Security\Identity;
+use App\Helpers\SubmissionConfigHelper;
 use DateTime;
 
 class AssignmentPermissionPolicy implements IPermissionPolicy
 {
+    /** @var SubmissionConfigHelper */
+    private $submissionHelper;
+
+    public function __construct(SubmissionConfigHelper $submissionHelper)
+    {
+        $this->submissionHelper = $submissionHelper;
+    }
+
+    public function acceptsSubmissions(Identity $identity, Assignment $assignment)
+    {
+        return !$this->submissionHelper->isLocked();
+    }
+
     public function getAssociatedClass()
     {
         return Assignment::class;

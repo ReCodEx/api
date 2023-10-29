@@ -4,16 +4,28 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\Group;
 use App\Model\Entity\ReferenceExerciseSolution;
+use App\Helpers\SubmissionConfigHelper;
 use App\Security\Identity;
 
 class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
 {
+    /** @var SubmissionConfigHelper */
+    private $submissionHelper;
+
     /** @var ExercisePermissionPolicy */
     private $exercisePermissionPolicy;
 
-    public function __construct(ExercisePermissionPolicy $exercisePermissionPolicy)
-    {
+    public function __construct(
+        SubmissionConfigHelper $submissionHelper,
+        ExercisePermissionPolicy $exercisePermissionPolicy
+    ) {
+        $this->submissionHelper = $submissionHelper;
         $this->exercisePermissionPolicy = $exercisePermissionPolicy;
+    }
+
+    public function canEvaluate(Identity $identity, ReferenceExerciseSolution $referenceExerciseSolution)
+    {
+        return !$this->submissionHelper->isLocked();
     }
 
     public function getAssociatedClass()

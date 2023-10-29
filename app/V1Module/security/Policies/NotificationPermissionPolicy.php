@@ -9,7 +9,6 @@ use App\Security\Roles;
 
 class NotificationPermissionPolicy implements IPermissionPolicy
 {
-
     /** @var Roles */
     private $roles;
 

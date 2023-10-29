@@ -4,10 +4,24 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
+use App\Helpers\SubmissionConfigHelper;
 use App\Security\Identity;
 
 class ExercisePermissionPolicy implements IPermissionPolicy
 {
+    /** @var SubmissionConfigHelper */
+    private $submissionHelper;
+
+    public function __construct(SubmissionConfigHelper $submissionHelper)
+    {
+        $this->submissionHelper = $submissionHelper;
+    }
+
+    public function acceptsSubmissions(Identity $identity, Exercise $exercise)
+    {
+        return !$this->submissionHelper->isLocked();
+    }
+
     public function getAssociatedClass()
     {
         return Exercise::class;

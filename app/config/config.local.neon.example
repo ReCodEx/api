@@ -16,6 +16,12 @@ parameters:
     hash:
       root: %appDir%/../storage/hash # this should be replaced with path to existing directory
 
+  submissions:
+    locked: false  # if set to true, the API will not be accepting submissions (and it will be incidated in can-submit/permission hints)
+    lockedReason:  # Localized message with reason displayed in UI, why the submissions are locked (ignored if locked == false)
+      cs: "Odevzdávání řešení bylo zablokováno v konfiguraci aplikace."
+      en: "Submitting new solutions is currently locked out in the application configuration."
+
   accessManager:
     issuer: "%webapp.address%"
     audience: "%webapp.address%"
