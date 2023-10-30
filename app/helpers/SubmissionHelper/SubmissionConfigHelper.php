@@ -37,4 +37,14 @@ class SubmissionConfigHelper
     {
         return $this->lockedReason;
     }
+
+    /**
+     * Flip the configuration into locked state. This is for debugging purposes only.
+     * @param string|string[] $reason
+     */
+    public function setLocked(mixed $reason): void
+    {
+        $this->locked = true;
+        $this->lockedReason = $reason;
+    }
 }
