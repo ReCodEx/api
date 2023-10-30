@@ -1206,6 +1206,36 @@ class TestExercisesPresenter extends Tester\TestCase
 
         Assert::equal(2, $payload);
     }
+
+    public function testLockedSubmissionsPermissionHints()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived() && $e->getAuthor()->getEmail() !== PresenterTestHelper::GROUP_SUPERVISOR_LOGIN;
+        });
+        $exercise = current($exercises);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'GET',
+            ['action' => 'detail', 'id' => $exercise->getId()]
+        );
+        Assert::same($exercise->getId(), $payload['id']);
+        Assert::true($payload['permissionHints']['addReferenceSolution']);
+
+        $submissionConfig = $this->container->getByType(\App\Helpers\SubmissionConfigHelper::class)->setLocked("Because!");
+        $this->presenter->exercises->refresh($exercise);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'GET',
+            ['action' => 'detail', 'id' => $exercise->getId()]
+        );
+        Assert::same($exercise->getId(), $payload['id']);
+        Assert::false($payload['permissionHints']['addReferenceSolution']);
+    }
 }
 
 $testCase = new TestExercisesPresenter();

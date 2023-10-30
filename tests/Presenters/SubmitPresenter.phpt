@@ -156,6 +156,26 @@ class TestSubmitPresenter extends Tester\TestCase
         Assert::equal(1, $payload["failed"]);
     }
 
+    public function testCanSubmitLockedUser()
+    {
+        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+
+        $assignment = current($this->assignments->findAll());
+
+        $this->presenter->submissionHelper->shouldReceive("isLocked")->andReturn(true);
+        $this->presenter->submissionHelper->shouldReceive("getLockedReason")->andReturn("BECAUSE");
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Submit',
+            'GET',
+            ['action' => 'canSubmit', 'id' => $assignment->getId()]
+        );
+
+        Assert::equal(false, $payload["canSubmit"]);
+        Assert::equal("BECAUSE", $payload["lockedReason"]);
+    }
+
     public function testSubmit()
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
