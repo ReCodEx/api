@@ -364,6 +364,8 @@ permissions:
       role: scope-plagiarism
       resource: assignment
       actions:
+        - viewDetail
+        - viewSubmissions
         - viewAssignmentSolutions
 
     - allow: true
