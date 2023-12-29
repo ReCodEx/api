@@ -13,7 +13,6 @@ use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\ZipFileStorage;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Validator as ConfigValidator;
-use ZipArchive;
 use DateTime;
 use Exception;
 use RuntimeException;
