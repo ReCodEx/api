@@ -141,11 +141,6 @@ class SubmissionFailure implements JsonSerializable
         return $this->assignmentSolutionSubmission;
     }
 
-    public function isConfigErrorFailure(): bool
-    {
-        return $this->type === self::TYPE_CONFIG_ERROR || $this->type === self::TYPE_SOFT_CONFIG_ERROR;
-    }
-
     /*
      * Accessors
      */
