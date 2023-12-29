@@ -41,11 +41,7 @@ class AssignmentSolutionSubmissionViewFactory
         }
 
         $failure = $submission->getFailure();
-        if ($failure && $failure->isConfigErrorFailure()) {
-            $failure = $failure->toSimpleArray();
-        } else {
-            $failure = null;
-        }
+        $failure = $failure ? $failure->toSimpleArray() : null;
 
         return [
             "id" => $submission->getId(),
