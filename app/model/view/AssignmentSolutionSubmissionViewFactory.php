@@ -46,8 +46,6 @@ class AssignmentSolutionSubmissionViewFactory
         return [
             "id" => $submission->getId(),
             "assignmentSolutionId" => $solution->getId(),
-            "evaluationStatus" => EvaluationStatus::getStatus($submission), // DEPRECATED
-            "isCorrect" => $submission->isCorrect(), // DEPRECATED
             "evaluation" => $evaluationData,
             "submittedAt" => $submission->getSubmittedAt()->getTimestamp(),
             "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null,
