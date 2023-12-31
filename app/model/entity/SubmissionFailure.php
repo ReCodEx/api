@@ -148,6 +148,7 @@ class SubmissionFailure implements JsonSerializable
     public function toSimpleArray()
     {
         return [
+            "type" => $this->type,
             "description" => $this->description,
             "createdAt" => $this->createdAt->getTimestamp(),
             "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : null,

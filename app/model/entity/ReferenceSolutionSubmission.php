@@ -58,8 +58,6 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
         return [
             "id" => $this->getId(),
             "referenceSolutionId" => $this->referenceSolution->getId(),
-            "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-            "isCorrect" => $this->isCorrect(),
             "evaluation" => $evaluationData,
             "submittedAt" => $this->submittedAt->getTimestamp(),
             "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null,
