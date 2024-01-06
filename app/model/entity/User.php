@@ -3,7 +3,6 @@
 namespace App\Model\Entity;
 
 use App\Security\Roles;
-use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -11,6 +10,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Gravatar\Gravatar;
 use App\Exceptions\ApiException;
+use InvalidArgumentException;
+use DateTime;
+use DateTimeInterface;
+use DateTimeImmutable;
 
 /**
  * @ORM\Entity
@@ -409,21 +412,126 @@ class User
      */
     protected $uiData = null;
 
-    /**
-     * @return UserUiData|null
+    /*
+     * Additional security stuff, locking the user for one IP and/or one group.
+     * This stuff is used when a student have an exam in particular group.
      */
-    public function getUiData(): ?UserUiData
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     * IP address (either IPv4 or IPv6) the user is locked to. API requests from different addresses
+     * will be treated as unauthorized.
+     */
+    protected $ipLock = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @var DateTime|null
+     * When the current IP lock expires (null = never, or lock is not set).
+     */
+    protected $ipLockExpiration = null;
+
+    public function getIpLockRaw(): ?string
     {
-        return $this->uiData;
+        return $this->ipLock;
+    }
+
+    public function getIpLockExpiration(): ?DateTimeInterface
+    {
+        return $this->ipLockExpiration ? DateTimeImmutable::createFromMutable($this->ipLockExpiration) : null;
     }
 
     /**
-     * @param UserUiData|null $uiData
+     * Is the user currently under IP lock?
+     * @return bool true if so
      */
-    public function setUiData(?UserUiData $uiData)
+    public function isIpLocked(): bool
     {
-        $this->uiData = $uiData;
+        return $this->ipLock !== null &&
+            ($this->ipLockExpiration === null || $this->ipLockExpiration > (new DateTime()));
     }
+
+    /**
+     * Set a new IP lock.
+     * @param string $ip addres in IPv4 or IPv6 human-readable format (e.g., '192.168.1.2')
+     * @param DateTime|null $expiration of the IP lock, if null, the lock will never expire
+     */
+    public function setIpLock(string $ip, DateTime $expiration = null): void
+    {
+        $ipNum = inet_pton($ip);
+        if ($ipNum === false) {
+            throw new InvalidArgumentException("Unable to parse IP address '$ip'.");
+        }
+
+        $this->ipLock = inet_ntop($ipNum);  // normalization
+        $this->ipLockExpiration = $expiration;
+    }
+
+    /**
+     * Release current IP lock.
+     */
+    public function removeIpLock(): void
+    {
+        $this->ipLock = null;
+        $this->ipLockExpiration = null;
+    }
+
+    /**
+     * Verify whether current IP lock is holding.
+     * @param string $currentIp address from which a request has been made
+     * @return bool true if the address is acceptable, false the lock is being violated
+     */
+    public function verifyIpLock(string $currentIp): bool
+    {
+        if (!$this->isIpLocked()) {
+            return true;
+        }
+
+        $currentNum = inet_pton($currentIp);
+        if ($currentNum === false) {
+            throw new InvalidArgumentException("Unable to parse IP address '$currentIp'.");
+        }
+
+        $lockNum = inet_pton($this->ipLock);
+        return $lockNum === $currentNum;
+    }
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Group")
+     * If set, any user actions will be restricted to this group only.
+     * (except for fundamental operations like listing groups or getting group name)
+     */
+    protected $groupLock = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @var DateTime
+     * When the current group lock expires (null = never, or lock is not set).
+     */
+    protected $groupLockExpiration = null;
+
+    /**
+     * @return bool True if there is an active group lock for this user.
+     */
+    public function isGroupLocked(): bool
+    {
+        return $this->groupLock !== null &&
+            ($this->groupLockExpiration === null || $this->groupLockExpiration > (new DateTime()));
+    }
+
+    /**
+     * @return Group|null The group in which the user is currently locked, null if no lock is active.
+     */
+    public function getGroupLock(): ?Group
+    {
+        return $this->isGroupLocked() ? $this->groupLock : null;
+    }
+
+    public function getGroupLockExpiration(): ?DateTimeInterface
+    {
+        return $this->groupLockExpiration ? DateTimeImmutable::createFromMutable($this->groupLockExpiration) : null;
+    }
+
 
     /*
      * Accessors
@@ -537,5 +645,21 @@ class User
     public function getLastAuthenticationAt(): ?DateTime
     {
         return $this->lastAuthenticationAt;
+    }
+
+    /**
+     * @return UserUiData|null
+     */
+    public function getUiData(): ?UserUiData
+    {
+        return $this->uiData;
+    }
+
+    /**
+     * @param UserUiData|null $uiData
+     */
+    public function setUiData(?UserUiData $uiData)
+    {
+        $this->uiData = $uiData;
     }
 }

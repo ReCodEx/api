@@ -124,7 +124,7 @@ class AccessManager
             throw new ForbiddenRequestException(
                 "Forbidden Request - User account was disabled",
                 IResponse::S403_FORBIDDEN,
-                FrontendErrorMappings::E403_001__USER_NOT_ALLOWED
+                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
             );
         }
 
@@ -152,7 +152,7 @@ class AccessManager
             throw new ForbiddenRequestException(
                 "Forbidden Request - User account was disabled",
                 IResponse::S403_FORBIDDEN,
-                FrontendErrorMappings::E403_001__USER_NOT_ALLOWED
+                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
             );
         }
 

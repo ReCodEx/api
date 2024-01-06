@@ -93,6 +93,15 @@ class UserViewFactory
                 $uiData = $user->getUiData();
                 $privateData["uiData"] = $uiData ? $uiData->getData() : null;
                 $privateData["settings"] = $user->getSettings();
+                $privateData["ipLock"] = $user->isIpLocked() ? $user->getIpLockRaw() : null;
+                $privateData["ipLockExpiration"] = $user->isIpLocked()
+                    ? $user->getIpLockExpiration()?->getTimestamp() : null;
+                $privateData["groupLock"] = $user->getGroupLock();
+                $privateData["groupLockExpiration"] = $user->isGroupLocked()
+                    ? $user->getGroupLockExpiration()?->getTimestamp() : null;
+            } else {
+                $privateData["ipLock"] = $user->isIpLocked();
+                $privateData["groupLock"] = $user->isGroupLocked();
             }
         }
 

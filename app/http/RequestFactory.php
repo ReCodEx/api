@@ -9,7 +9,7 @@ use Nette\Utils\JsonException;
 use App\Exceptions\BadRequestException;
 
 /**
- * Main router factory which is used to create all possible routes.
+ * Request factory responsible for creating HTTP request object wrappers.
  * @return Request
  */
 class RequestFactory extends Nette\Http\RequestFactory
