@@ -942,6 +942,69 @@ class GroupsPresenter extends BasePresenter
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
 
+    public function checkLockStudent(string $id, string $userId)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $user = $this->users->findOrThrow($userId);
+        if ($user->isGroupLocked()) {
+            throw new InvalidArgumentException("The user is already locked in a group.");
+        }
+
+        if (!$this->groupAcl->canLockStudent($group, $user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Lock student in a group and with an IP from which the request was made.
+     * @POST
+     * @param string $id Identifier of the group
+     * @param string $userId Identifier of the student
+     */
+    public function actionLockStudent(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+        $group = $this->groups->findOrThrow($id);
+
+        $expiration = $group->getExamEnd();
+        $user->setIpLock($this->getHttpRequest()->getRemoteAddress(), $expiration);
+        $user->setGroupLock($group, $expiration);
+        $this->users->persist($user);
+
+        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    }
+
+    public function checkUnlockStudent(string $id, string $userId)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $user = $this->users->findOrThrow($userId);
+        if ($user->getGroupLock()?->getId() !== $group->getId()) {
+            throw new InvalidArgumentException("The user not locked in given group.");
+        }
+
+        if (!$this->groupAcl->canUnlockStudent($group, $user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Unlock a student currently locked in a group.
+     * @DELETE
+     * @param string $id Identifier of the group
+     * @param string $userId Identifier of the student
+     */
+    public function actionUnlockStudent(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+
+        $user->removeIpLock();
+        $user->removeGroupLock();
+        $this->users->persist($user);
+
+        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    }
+
+
     /**
      * @param Request $req
      * @param Group $group

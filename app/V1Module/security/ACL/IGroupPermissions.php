@@ -63,4 +63,8 @@ interface IGroupPermissions
     public function canAcceptInvitation(Group $group): bool;
 
     public function canEditInvitations(Group $group): bool;
+
+    public function canLockStudent(Group $group, User $student): bool;
+
+    public function canUnlockStudent(Group $group, User $student): bool;
 }

@@ -6,6 +6,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Repository\Groups;
 use App\Security\Identity;
+use DateTIme;
 
 class GroupPermissionPolicy implements IPermissionPolicy
 {
@@ -95,5 +96,11 @@ class GroupPermissionPolicy implements IPermissionPolicy
                 return $instance->getId() === $group->getInstance()->getId();
             }
         );
+    }
+
+    public function isExamInProgress(Identity $identity, Group $group): bool
+    {
+        $now = new DateTime();
+        return $group->isExam() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd();
     }
 }
