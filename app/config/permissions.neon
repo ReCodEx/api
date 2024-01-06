@@ -80,7 +80,8 @@ permissions:
       role: student
       resource: group
       actions: viewAssignments
-      conditions: group.isMember
+      conditions:
+          - group.isMember
 
     - allow: true
       role: student
@@ -227,6 +228,27 @@ permissions:
       actions:
           - archive
       conditions: group.isAdmin
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+        - lockStudent  # students lock themselves
+      conditions:
+        - group.isNotArchived
+        - group.isExamInProgress
+        - group.isMember
+        - student.isSameUser
+        - student.isNotGroupLocked
+
+    - allow: true
+      role: supervisor-student
+      resource: group
+      actions:
+        - unlockStudent  # only a supervisor of the same group can unlock the student
+      conditions:
+        - group.isExamInProgress
+        - group.isSupervisor
 
     ########################
     # Instance permissions #

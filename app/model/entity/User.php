@@ -505,7 +505,7 @@ class User
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @var DateTime
+     * @var DateTime|null
      * When the current group lock expires (null = never, or lock is not set).
      */
     protected $groupLockExpiration = null;
@@ -530,6 +530,31 @@ class User
     public function getGroupLockExpiration(): ?DateTimeInterface
     {
         return $this->groupLockExpiration ? DateTimeImmutable::createFromMutable($this->groupLockExpiration) : null;
+    }
+
+    /**
+     * Lock the user within a group.
+     * @param Group $group
+     * @param DateTime|null $expiration of the lock, if null, the lock will never expire
+     */
+    public function setGroupLock(Group $group, DateTime $expiration = null): void
+    {
+        // basic asserts to be on the safe side
+        if (!$group->isExam()) {
+            throw new InvalidArgumentException("Unable to lock user in a non-exam group.");
+        }
+        if ($group->isArchived()) {
+            throw new InvalidArgumentException("Unable to lock user in an archived group.");
+        }
+
+        $this->groupLock = $group;
+        $this->groupLockExpiration = $expiration;
+    }
+
+    public function removeGroupLock(): void
+    {
+        $this->groupLock = null;
+        $this->groupLockExpiration = null;
     }
 
 
