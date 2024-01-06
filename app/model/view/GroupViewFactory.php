@@ -28,7 +28,6 @@ use Nette\Utils\Arrays;
  */
 class GroupViewFactory
 {
-
     /** @var AssignmentSolutions */
     private $assignmentSolutions;
 
@@ -242,7 +241,9 @@ class GroupViewFactory
                 "publicStats" => $group->getPublicStats(),
                 "detaining" => $group->isDetaining(),
                 "threshold" => $group->getThreshold(),
-                "bindings" => $this->bindings->getBindingsForGroup($group)
+                "bindings" => $this->bindings->getBindingsForGroup($group),
+                "examBegin" => $group->getExamBegin()?->getTimestamp(),
+                "examEnd" => $group->getExamEnd()?->getTimestamp(),
             ];
         }
 
@@ -256,6 +257,7 @@ class GroupViewFactory
             "id" => $group->getId(),
             "externalId" => $group->getExternalId(),
             "organizational" => $group->isOrganizational(),
+            "exam" => $group->isExam(),
             "archived" => $group->isArchived(),
             "public" => $group->isPublic(),
             "directlyArchived" => $group->isDirectlyArchived(),

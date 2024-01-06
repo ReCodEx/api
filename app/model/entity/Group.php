@@ -10,11 +10,17 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use LogicException;
+use InvalidArgumentException;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="`group`")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ * Regular groups have students and offer them assignments. There are two special group types:
+ * - organizational (cannot have students nor assignments, but may have sub-groups)
+ *   indicated by isOrganizational column (flag)
+ * - exam (activity in this group is restricted to very short period in time when an exam is scheduled)
+ *   indicated by non-null values of examBegin and examEnd columns
  */
 class Group
 {
@@ -217,6 +223,61 @@ class Group
     public function setDetaining($value = true)
     {
         $this->isDetaining = $value;
+    }
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * When an exam in this groups begins. If not null, the group is in special "exam" state.
+     */
+    protected $examBegin = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * When an exam in this groups ends. If not null, the group is in special "exam" state.
+     */
+    protected $examEnd = null;
+
+    /**
+     * Switch the group into an exam group by setting the begin and end dates of the exam.
+     * @param DateTime $begin when the exam starts
+     * @param DateTime $end when the exam ends
+     */
+    public function setExam(DateTime $begin, DateTime $end): void
+    {
+        // asserts
+        if ($begin >= $end) {
+            throw new InvalidArgumentException("The begin date must be before the end date.");
+        }
+
+        if ($this->isArchived()) {
+            throw new LogicException("Unable to set exam in an archived group.");
+        }
+
+        if (count($this->getChildGroups()) > 0) {
+            throw new LogicException("Exam group must have no sub-groups.");
+        }
+
+        $this->examBegin = $begin;
+        $this->examEnd = $end;
+        $this->isOrganizational = false;
+    }
+
+    /**
+     * Clear the exam status (the begin and end date).
+     */
+    public function removeExam(): void
+    {
+        $this->examBegin = null;
+        $this->examEnd = null;
+    }
+
+    /**
+     * Whether this is an exam group.
+     * @return bool true if an exam is set in this group
+     */
+    public function isExam(): bool
+    {
+        return $this->examBegin !== null || $this->examEnd !== null;
     }
 
     /**
@@ -896,5 +957,15 @@ class Group
     public function getInvitations(): Collection
     {
         return $this->invitations;
+    }
+
+    public function getExamBegin(): ?DateTime
+    {
+        return $this->examBegin;
+    }
+
+    public function getExamEnd(): ?DateTime
+    {
+        return $this->examEnd;
     }
 }
