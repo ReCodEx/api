@@ -565,6 +565,7 @@ class GroupsPresenter extends BasePresenter
      * Get a list of subgroups of a group
      * @GET
      * @param string $id Identifier of the group
+     * @DEPRECTATED Subgroup list is part of group view.
      */
     public function actionSubgroups(string $id)
     {
@@ -595,6 +596,7 @@ class GroupsPresenter extends BasePresenter
      * Get a list of members of a group
      * @GET
      * @param string $id Identifier of the group
+     * @DEPRECATED Members are listed in group view.
      */
     public function actionMembers(string $id)
     {

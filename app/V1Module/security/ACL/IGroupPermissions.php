@@ -16,8 +16,6 @@ interface IGroupPermissions
 
     public function canViewSubgroups(Group $group): bool;
 
-    public function canViewStudents(Group $group): bool;
-
     public function canViewMembers(Group $group): bool;
 
     public function canAddMember(Group $group, User $supervisor): bool;

@@ -83,4 +83,10 @@ class CommentPermissionPolicy implements IPermissionPolicy
         $group = $assignment->getGroup();
         return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
     }
+
+    public function userIsNotGroupLocked(Identity $identity, Comment $comment): bool
+    {
+        $user = $identity->getUserData();
+        return $user && !$user->isGroupLocked();
+    }
 }

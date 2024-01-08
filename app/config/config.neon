@@ -254,6 +254,7 @@ acl:
     user: App\Security\Policies\UserPermissionPolicy
     assignment: App\Security\Policies\AssignmentPermissionPolicy
     comment: App\Security\Policies\CommentPermissionPolicy
+    thread: App\Security\Policies\CommentThreadPermissionPolicy
     exercise: App\Security\Policies\ExercisePermissionPolicy
     referenceExerciseSolution: App\Security\Policies\ReferenceExerciseSolutionPermissionPolicy
     assignmentSolution: App\Security\Policies\AssignmentSolutionPermissionPolicy

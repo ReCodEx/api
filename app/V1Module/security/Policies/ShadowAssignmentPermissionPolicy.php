@@ -4,6 +4,7 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\ShadowAssignment;
 use App\Security\Identity;
+use DateTime;
 
 class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
 {
@@ -45,5 +46,41 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
         }
 
         return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+    }
+
+    /**
+     * Current user is either not locked at all, or locked to this group (where the assignment is).
+     */
+    public function userIsNotLockedElsewhere(Identity $identity, ShadowAssignment $assignment): bool
+    {
+        $user = $identity->getUserData();
+        $group = $assignment->getGroup();
+        if ($user === null || $group === null || $group->isArchived()) {
+            return false;
+        }
+
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId();
+    }
+
+    /**
+     * The assignment is not in an exam group, or it is already after the exam.
+     */
+    public function isNotForExam(Identity $identity, ShadowAssignment $assignment): bool
+    {
+        $group = $assignment->getGroup();
+        $now = new DateTime();
+        return $group && (!$group->isExam() || $group->getExamEnd() < $now);
+    }
+
+    /**
+     * The assignment is for an exam in progress and the student is already locked in the group.
+     */
+    public function isExamInProgressAndStudentLocked(Identity $identity, ShadowAssignment $assignment): bool
+    {
+        $user = $identity->getUserData();
+        $group = $assignment->getGroup();
+        $now = new DateTime();
+        return $group && $group->isExam() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd()
+            && $user->getGroupLock()->getId() === $group->getId();
     }
 }
