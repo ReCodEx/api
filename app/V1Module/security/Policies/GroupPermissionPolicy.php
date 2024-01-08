@@ -25,7 +25,7 @@ class GroupPermissionPolicy implements IPermissionPolicy
         return $group->isMemberOf($user) || $group->isAdminOf($user);
     }
 
-    public function isSupervisor(Identity $identity, Group $group): bool
+    public function isSupervisorOrAdmin(Identity $identity, Group $group): bool
     {
         $user = $identity->getUserData();
         if (!$user) {
@@ -98,9 +98,46 @@ class GroupPermissionPolicy implements IPermissionPolicy
         );
     }
 
+    public function isNotExam(Identity $identity, Group $group): bool
+    {
+        return !$group->isExam();
+    }
+
     public function isExamInProgress(Identity $identity, Group $group): bool
     {
         $now = new DateTime();
         return $group->isExam() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd();
+    }
+
+    public function isExamOver(Identity $identity, Group $group): bool
+    {
+        $now = new DateTime();
+        return $group->isExam() && $group->getExamEnd() < $now;
+    }
+
+    /**
+     * Current user is locked to the selected group.
+     */
+    public function userIsLockedInThisGroup(Identity $identity, Group $group): bool
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->getGroupLock()?->getId() === $group->getId();
+    }
+
+    /**
+     * Current user is either not locked at all, or locked to this group.
+     */
+    public function userIsNotLockedElsewhere(Identity $identity, Group $group): bool
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId();
     }
 }
