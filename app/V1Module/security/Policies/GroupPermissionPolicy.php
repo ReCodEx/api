@@ -70,6 +70,11 @@ class GroupPermissionPolicy implements IPermissionPolicy
         return !$group->isArchived();
     }
 
+    public function isNotOrganizational(Identity $identity, Group $group): bool
+    {
+        return !$group->isOrganizational();
+    }
+
     public function areStatsPublic(Identity $identity, Group $group): bool
     {
         return $group->statsArePublic();
@@ -101,6 +106,12 @@ class GroupPermissionPolicy implements IPermissionPolicy
     public function isNotExam(Identity $identity, Group $group): bool
     {
         return !$group->isExam();
+    }
+
+    public function isBeforeExam(Identity $identity, Group $group): bool
+    {
+        $now = new DateTime();
+        return $group->isExam() && $now < $group->getExamBegin();
     }
 
     public function isExamInProgress(Identity $identity, Group $group): bool

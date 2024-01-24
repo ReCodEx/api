@@ -331,7 +331,7 @@ class GroupsPresenter extends BasePresenter
     {
         $group = $this->groups->findOrThrow($id);
 
-        if (!$this->groupAcl->canUpdate($group)) {
+        if (!$this->groupAcl->canSetOrganizational($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -433,6 +433,115 @@ class GroupsPresenter extends BasePresenter
             }
         }
 
+        $this->groups->persist($group);
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+    public function checkSetExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        if (!$group->getChildGroups()->isEmpty()) {
+            throw new BadRequestException("Exam group must have no sub-groups.");
+        }
+
+        if (!$this->groupAcl->canSetExam($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Change the group into an exam group and set the beginning and the end timestamp for the exam.
+     * It can be also used to modify exam begin-end interval, but the beginning can be changed only
+     * if the exam has not started yet and end can be changed only before the end of the exam.
+     * @POST
+     * @Param(type="post", name="begin", validation="timestamp|null",
+     *        description="When the exam begins (unix ts in the future, optional if update is performed).")
+     * @Param(type="post", name="end", validation="timestamp", required=true,
+     *        description="When the exam ends (unix ts in the future, no more than a day after 'begin').")
+     * @param string $id An identifier of the updated group
+     * @throws NotFoundException
+     */
+    public function actionSetExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+
+        $req = $this->getRequest();
+        $begin = (int)$req->getPost("begin");
+        $end = (int)$req->getPost("end");
+        $now = (new DateTime())->getTimestamp();
+        if ($group->isExam() && $group->getExamEnd()->getTimestamp() < $now) {
+            throw new BadRequestException("Cannot modify exam that already ended.");
+        }
+
+        $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
+
+        // beginning must be in the future (or must not be modified)
+        if ((!$group->isExam() || $begin) && $begin < $now - 60) {
+            throw new BadRequestException("The exam must be set in the future.");
+        }
+
+        // if begin was not sent, or the exam already started, use old begin value
+        $begin = ($group->isExam() && (!$begin || $group->getExamBegin()->getTimestamp() <= $now))
+            ? $group->getExamBegin()->getTimestamp() : $begin;
+
+        // an exam should not last more than a day (yes, we hardcode the day interval here for safety)
+        if ($begin >= $end || $end - $begin > 86400) {
+            throw new BadRequestException("The [begin,end] interval must be valid and less than a day wide.");
+        }
+
+        // the end should also be in the future (this is necessary only for updates)
+        if ($end < $now - 60) {
+            throw new BadRequestException("The exam end must be set in the future.");
+        }
+
+        $begin = DateTime::createFromFormat('U', $begin);
+        $end = DateTime::createFromFormat('U', $end);
+
+        if ($group->isExam() && $group->getExamBegin()->getTimestamp() <= $now) {
+            // the exam already begun, we need to fix any group-locked users
+            foreach ($group->getStudents() as $student) {
+                if ($student->getGroupLock()?->getId() === $id) {
+                    $student->setGroupLock($group, $end);
+                    if ($student->isIpLocked()) {
+                        $student->setIpLock($student->getIpLockRaw(), $end);
+                    }
+                    $this->users->persist($student, false);
+                }
+            }
+        }
+
+        $group->setExam($begin, $end);
+        $this->groups->persist($group);
+
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+    public function checkRemoveExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        if (!$group->isExam()) {
+            throw new BadRequestException("The group is not set up for an exam.");
+        }
+
+        if ($group->getExamBegin() <= (new DateTime())) {
+            throw new BadRequestException("The exam that already started cannot be removed.");
+        }
+
+        if (!$this->groupAcl->canRemoveExam($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Change the group back to regular group (remove information about an exam).
+     * @DELETE
+     * @param string $id An identifier of the updated group
+     * @throws NotFoundException
+     */
+    public function actionRemoveExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $group->removeExam();
         $this->groups->persist($group);
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }

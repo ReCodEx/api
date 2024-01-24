@@ -224,7 +224,7 @@ permissions:
       actions:
           - sendEmail
       conditions:
-          - group.isAdmin
+          - group.isSupervisorOrAdmin
 
     - allow: true
       resource: group
@@ -232,7 +232,6 @@ permissions:
       actions:
           - update
           - remove
-          - addSubgroup
           - removeMember
       conditions:
           - group.isAdmin
@@ -257,10 +256,41 @@ permissions:
 
     - allow: true
       resource: group
+      role: supervisor-student
+      actions:
+          - setOrganizational
+          - addSubgroup  # note: exam groups must have no sub-groups
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isNotExam
+
+    - allow: true
+      resource: group
       role: empowered-supervisor
       actions:
           - archive
       conditions: group.isAdmin
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - setExam
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isNotOrganizational
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - removeExam
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isBeforeExam
 
     - allow: true
       role: student

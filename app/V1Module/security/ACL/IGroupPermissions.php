@@ -38,7 +38,13 @@ interface IGroupPermissions
 
     public function canRemove(Group $group): bool;
 
+    public function canSetOrganizational(Group $group): bool;
+
     public function canArchive(Group $group): bool;
+
+    public function canSetExam(Group $group): bool;
+
+    public function canRemoveExam(Group $group): bool;
 
     public function canRelocate(Group $group): bool;
 
