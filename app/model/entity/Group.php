@@ -253,7 +253,7 @@ class Group
             throw new LogicException("Unable to set exam in an archived group.");
         }
 
-        if (count($this->getChildGroups()) > 0) {
+        if (!$this->getChildGroups()->isEmpty()) {
             throw new LogicException("Exam group must have no sub-groups.");
         }
 
