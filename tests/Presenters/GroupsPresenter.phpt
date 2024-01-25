@@ -3,6 +3,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
@@ -26,6 +27,9 @@ class TestGroupsPresenter extends Tester\TestCase
 
     private $groupSupervisorLogin = "demoGroupSupervisor@example.com";
     private $groupSupervisorPassword = "password";
+
+    private $groupSupervisor2Login = "demoGroupSupervisor2@example.com";
+    private $groupSupervisor2Password = "password";
 
     /** @var GroupsPresenter */
     protected $presenter;
@@ -1289,6 +1293,364 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(200, $result["code"]);
 
         Assert::equal(false, $group->isAdminOf($user));
+    }
+
+    private function prepExamGroup(): Group
+    {
+        PresenterTestHelper::login($this->container, $this->groupSupervisor2Login, $this->groupSupervisor2Password);
+        $admin = $this->presenter->users->getByEmail($this->groupSupervisor2Login);
+        $groups = $this->getAllGroupsInDepth(
+            2,
+            function (Group $g) {
+                return !$g->isArchived();
+            }
+        );
+        Assert::count(1, $groups);
+        $group = $groups[0];
+        $group->addPrimaryAdmin($admin);
+        return $group;
+    }
+
+    public function testSetExam()
+    {
+        $group = $this->prepExamGroup();
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExam', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $end]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        Assert::equal($end, $payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->isExam());
+        Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
+        Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+    }
+
+    public function testSetExamInPastFail()
+    {
+        $group = $this->prepExamGroup();
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExam', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end]
+                );
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testUpdateExam()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $begin += 100;
+        $end += 100;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExam', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $end]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        Assert::equal($end, $payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->isExam());
+        Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
+        Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+    }
+
+    public function testUpdatePendingExam()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+        $end = $now;  // truncate the rest of the exam
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExam', 'id' => $group->getId()],
+            ['end' => $end]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        Assert::equal($end, $payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->isExam());
+        Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
+        Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+    }
+
+    public function testUpdatePendingExamBeginFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $begin += 100;
+        $end += 100;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExam', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end]
+                );
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testUpdateFinishedExamEndFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $end = $now;
+
+        Assert::exception(
+            function () use ($group, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExam', 'id' => $group->getId()],
+                    ['end' => $end]
+                );
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testRemoveExam()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'DELETE',
+            ['action' => 'removeExam', 'id' => $group->getId()],
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::null($payload['privateData']['examBegin']);
+        Assert::null($payload['privateData']['examEnd']);
+        $this->presenter->groups->refresh($group);
+        Assert::false($group->isExam());
+    }
+
+    public function testRemovePendingExamFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'DELETE',
+                    ['action' => 'removeExam', 'id' => $group->getId()],
+                );
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testRemoveFinishedExamFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'DELETE',
+                    ['action' => 'removeExam', 'id' => $group->getId()],
+                );
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testExamGroupCannotCreateSubgroups()
+    {
+        /** @var Instance $instance */
+        $instance = $this->presenter->instances->findAll()[0];
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($instance, $group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'addGroup'],
+                    [
+                        'localizedTexts' => [
+                            [
+                                'locale' => 'en',
+                                'name' => 'new name',
+                                'description' => 'some neaty description'
+                            ]
+                        ],
+                        'instanceId' => $instance->getId(),
+                        'externalId' => 'external identification of exercise',
+                        'parentGroupId' => $group->getId(),
+                        'publicStats' => true,
+                        'isPublic' => true,
+                        'hasThreshold' => false,
+                        'isOrganizational' => false,
+                        'detaining' => true,
+                    ]
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
+    public function testExamSetFailIfSubgroups()
+    {
+        $group = $this->prepExamGroup();
+        $group = $group->getParentGroup();
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExam', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end]
+                );
+            },
+            App\Exceptions\BadRequestException::class
+        );
+    }
+
+    public function testExamSetFailIfOrganizational()
+    {
+        $group = $this->prepExamGroup();
+        $group->setOrganizational();
+        $this->presenter->groups->persist($group);
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExam', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end]
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
+    public function testExamGroupCannotSwitchToOrganizational()
+    {
+        $group = $this->prepExamGroup();
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setOrganizational', 'id' => $group->getId()],
+                    ['value' => true]
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
     }
 }
 

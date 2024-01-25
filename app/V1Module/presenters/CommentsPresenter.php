@@ -20,7 +20,6 @@ use App\Security\ACL\ICommentPermissions;
  */
 class CommentsPresenter extends BasePresenter
 {
-
     /**
      * @var Comments
      * @inject

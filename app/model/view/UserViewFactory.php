@@ -96,7 +96,7 @@ class UserViewFactory
                 $privateData["ipLock"] = $user->isIpLocked() ? $user->getIpLockRaw() : null;
                 $privateData["ipLockExpiration"] = $user->isIpLocked()
                     ? $user->getIpLockExpiration()?->getTimestamp() : null;
-                $privateData["groupLock"] = $user->getGroupLock();
+                $privateData["groupLock"] = $user->getGroupLock()?->getId();
                 $privateData["groupLockExpiration"] = $user->isGroupLocked()
                     ? $user->getGroupLockExpiration()?->getTimestamp() : null;
             } else {
