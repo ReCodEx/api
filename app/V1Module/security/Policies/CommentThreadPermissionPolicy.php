@@ -11,10 +11,4 @@ class CommentThreadPermissionPolicy implements IPermissionPolicy
     {
         return CommentThread::class;
     }
-
-    public function userIsNotGroupLocked(Identity $identity, CommentThread $thread): bool
-    {
-        $user = $identity->getUserData();
-        return $user && !$user->isGroupLocked();
-    }
 }

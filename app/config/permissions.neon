@@ -669,7 +669,7 @@ permissions:
           - alter
           - delete
       conditions:
-          - comment.userIsNotGroupLocked
+          - userIsNotGroupLocked
           - or:
               - comment.isAuthor
               - comment.isSupervisorInGroupOfCommentedSolution
@@ -682,13 +682,15 @@ permissions:
           - viewThread
           - addComment
       conditions:  # TODO - make sure only apropriate group members/authors can do this
-          - thread.userIsNotGroupLocked
+          - userIsNotGroupLocked
 
     - allow: true
       role: student
       resource: comment
       actions:
           - createThread
+      conditions:
+          - userIsNotGroupLocked
 
     ########################
     # Exercise permissions #
