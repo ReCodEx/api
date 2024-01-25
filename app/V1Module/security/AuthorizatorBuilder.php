@@ -92,7 +92,14 @@ class AuthorizatorBuilder
         $type = "and";
 
         if (!is_array($conditions)) {
-            list($conditionTarget, $condition) = explode(".", $conditions, 2);
+            $tokens = explode(".", $conditions, 2);
+            if (count($tokens) === 1) {
+                // if '.' is missing ... let's use base policy class (identified by null target)
+                $conditionTarget = null;
+                $condition = $conditions;
+            } else {
+                list($conditionTarget, $condition) = $tokens;
+            }
 
             foreach ($actions as $action) {
                 $this->checkActionProvidesContext($interface, $action, $conditionTarget);
@@ -101,7 +108,7 @@ class AuthorizatorBuilder
             $checkVariable = "\$check_" . $this->checkCounter++;
             $checkValues[$checkVariable] = $this->dumper->format(
                 '$this->policy->check(?, ?, $this->queriedIdentity)',
-                new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)),
+                $conditionTarget ? new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)) : null,
                 $condition
             );
 
@@ -137,7 +144,7 @@ class AuthorizatorBuilder
         }
     }
 
-    private function checkActionProvidesContext(?ReflectionClass $interface, string $action, string $contextItem)
+    private function checkActionProvidesContext(?ReflectionClass $interface, string $action, ?string $contextItem)
     {
         if ($interface === null) {
             throw new LogicException(
@@ -155,6 +162,10 @@ class AuthorizatorBuilder
                     $interface->getName()
                 )
             );
+        }
+
+        if ($contextItem === null) {
+            return;
         }
 
         foreach ($method->getParameters() as $parameter) {

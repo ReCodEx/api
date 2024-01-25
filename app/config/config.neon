@@ -249,6 +249,7 @@ acl:
     asyncJob: App\Security\ACL\IAsyncJobPermissions
     plagiarism: App\Security\ACL\IPlagiarismPermissions
   policies:
+    _: App\Security\Policies\BasePermissionPolicy
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
     user: App\Security\Policies\UserPermissionPolicy
