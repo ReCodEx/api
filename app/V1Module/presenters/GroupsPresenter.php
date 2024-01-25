@@ -454,7 +454,7 @@ class GroupsPresenter extends BasePresenter
      * It can be also used to modify exam begin-end interval, but the beginning can be changed only
      * if the exam has not started yet and end can be changed only before the end of the exam.
      * @POST
-     * @Param(type="post", name="begin", validation="timestamp|null",
+     * @Param(type="post", name="begin", validation="timestamp|null", required=false,
      *        description="When the exam begins (unix ts in the future, optional if update is performed).")
      * @Param(type="post", name="end", validation="timestamp", required=true,
      *        description="When the exam ends (unix ts in the future, no more than a day after 'begin').")

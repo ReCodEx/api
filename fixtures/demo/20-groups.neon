@@ -143,6 +143,12 @@ App\Model\Entity\Login:
                 - @anotherSupervisor
                 - "anotherSupervisor@example.com"
                 - "password"
+    'demoGroupMemberLogin{1..10}':
+        __construct:
+            createLogin:
+                - "@demoGroupMember<current()>"
+                - 'demoGroupMember<current()>\@example.com'
+                - "password"
 
 App\Model\Entity\GroupInvitation:
     validInviation:
