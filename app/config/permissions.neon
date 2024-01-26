@@ -633,6 +633,7 @@ permissions:
           - deleteReview
       conditions:
           - assignmentSolution.isAdmin
+          - assignmentSolution.isInActiveGroup
 
     - allow: true
       resource: assignmentSolution
