@@ -65,6 +65,7 @@ class AssignmentViewFactory
             "canViewJudgeStdout" => $assignment->getCanViewJudgeStdout(),
             "canViewJudgeStderr" => $assignment->getCanViewJudgeStderr(),
             "mergeJudgeLogs" => $assignment->getMergeJudgeLogs(),
+            "isExam" => $assignment->isExam(),
             "isBonus" => $assignment->isBonus(),
             "pointsPercentualThreshold" => $assignment->getPointsPercentualThreshold() * 100,
             "exerciseSynchronizationInfo" => [

@@ -242,8 +242,9 @@ class GroupViewFactory
                 "detaining" => $group->isDetaining(),
                 "threshold" => $group->getThreshold(),
                 "bindings" => $this->bindings->getBindingsForGroup($group),
-                "examBegin" => $group->getExamBegin()?->getTimestamp(),
-                "examEnd" => $group->getExamEnd()?->getTimestamp(),
+                "examBegin" => $group->hasExamPeriodSet() ? $group->getExamBegin()?->getTimestamp() : null,
+                "examEnd" => $group->hasExamPeriodSet() ? $group->getExamEnd()?->getTimestamp() : null,
+                "exams" => $group->getExams()->getValues(),
             ];
         }
 

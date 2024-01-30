@@ -420,6 +420,8 @@ services:
   - App\Model\Repository\ExternalLogins
   - App\Model\Repository\Groups
   - App\Model\Repository\GroupInvitations
+  - App\Model\Repository\GroupExams
+  - App\Model\Repository\GroupExamLocks
   - App\Model\Repository\Instances
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins

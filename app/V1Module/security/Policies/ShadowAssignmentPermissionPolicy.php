@@ -69,7 +69,7 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
     {
         $group = $assignment->getGroup();
         $now = new DateTime();
-        return $group && (!$group->isExam() || $group->getExamEnd() < $now);
+        return $group && (!$group->hasExamPeriodSet() || $group->getExamEnd() < $now);
     }
 
     /**
@@ -80,7 +80,7 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
         $user = $identity->getUserData();
         $group = $assignment->getGroup();
         $now = new DateTime();
-        return $group && $group->isExam() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd()
+        return $group && $group->hasExamPeriodSet() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd()
             && $user->getGroupLock()->getId() === $group->getId();
     }
 }

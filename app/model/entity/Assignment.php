@@ -273,6 +273,13 @@ class Assignment extends AssignmentBase implements IExercise
     protected $mergeJudgeLogs;
 
     /**
+     * @ORM\Column(type="boolean")
+     * True if this is an assignment dedicated for an exam.
+     * Exam assignments are visualized differently and have auto-synced visibility and deadline with exam period.
+     */
+    protected $exam = false;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")
      */
     protected $exercise;
@@ -654,6 +661,16 @@ class Assignment extends AssignmentBase implements IExercise
     public function getMergeJudgeLogs(): bool
     {
         return $this->mergeJudgeLogs;
+    }
+
+    public function isExam(): bool
+    {
+        return $this->exam;
+    }
+
+    public function setExam(bool $value = true): void
+    {
+        $this->exam = $value;
     }
 
     public function getMaxPointsDeadlineInterpolation(): bool

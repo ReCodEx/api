@@ -540,7 +540,7 @@ class User
     public function setGroupLock(Group $group, DateTime $expiration = null): void
     {
         // basic asserts to be on the safe side
-        if (!$group->isExam()) {
+        if (!$group->hasExamPeriodSet()) {
             throw new InvalidArgumentException("Unable to lock user in a non-exam group.");
         }
         if ($group->isArchived()) {

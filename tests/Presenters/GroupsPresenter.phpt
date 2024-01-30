@@ -1331,7 +1331,7 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal($end, $payload['privateData']['examEnd']);
 
         $this->presenter->groups->refresh($group);
-        Assert::true($group->isExam());
+        Assert::true($group->hasExamPeriodSet());
         Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
         Assert::equal($end, $group->getExamEnd()?->getTimestamp());
     }
@@ -1364,7 +1364,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         $begin += 100;
@@ -1383,7 +1383,7 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal($end, $payload['privateData']['examEnd']);
 
         $this->presenter->groups->refresh($group);
-        Assert::true($group->isExam());
+        Assert::true($group->hasExamPeriodSet());
         Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
         Assert::equal($end, $group->getExamEnd()?->getTimestamp());
     }
@@ -1395,7 +1395,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
         $end = $now;  // truncate the rest of the exam
 
@@ -1412,7 +1412,7 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal($end, $payload['privateData']['examEnd']);
 
         $this->presenter->groups->refresh($group);
-        Assert::true($group->isExam());
+        Assert::true($group->hasExamPeriodSet());
         Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
         Assert::equal($end, $group->getExamEnd()?->getTimestamp());
     }
@@ -1424,7 +1424,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         $begin += 100;
@@ -1451,7 +1451,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 7200;
         $end = $now - 3600;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         $end = $now;
@@ -1477,7 +1477,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         $payload = PresenterTestHelper::performPresenterRequest(
@@ -1491,7 +1491,7 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::null($payload['privateData']['examBegin']);
         Assert::null($payload['privateData']['examEnd']);
         $this->presenter->groups->refresh($group);
-        Assert::false($group->isExam());
+        Assert::false($group->hasExamPeriodSet());
     }
 
     public function testRemovePendingExamFail()
@@ -1501,7 +1501,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         Assert::exception(
@@ -1524,7 +1524,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 7200;
         $end = $now - 3600;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         Assert::exception(
@@ -1549,7 +1549,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 7200;
         $end = $now - 3600;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         Assert::exception(
@@ -1636,7 +1636,7 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExam(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
         $this->presenter->groups->persist($group);
 
         Assert::exception(

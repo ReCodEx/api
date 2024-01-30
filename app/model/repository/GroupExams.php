@@ -4,17 +4,17 @@ namespace App\Model\Repository;
 
 use DateTime;
 use App\Model\Entity\Group;
-use App\Model\Entity\GroupInvitation;
+use App\Model\Entity\GroupExam;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @extends BaseRepository<GroupInvitation>
+ * @extends BaseRepository<GroupExam>
  */
-class GroupInvitations extends BaseRepository
+class GroupExams extends BaseRepository
 {
     public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($em, GroupInvitation::class);
+        parent::__construct($em, GroupExam::class);
     }
 }

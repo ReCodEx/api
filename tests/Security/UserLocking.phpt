@@ -121,7 +121,7 @@ class UserLocking extends Tester\TestCase
 
         if ($relBegin !== null && $relEnd !== null) {
             $now = (new DateTime())->getTimestamp();
-            $group->setExam(
+            $group->setExamPeriod(
                 DateTime::createFromFormat('U', $now + $relBegin),
                 DateTime::createFromFormat('U', $now + $relEnd)
             );
