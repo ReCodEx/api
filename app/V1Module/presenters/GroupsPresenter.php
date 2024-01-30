@@ -469,19 +469,19 @@ class GroupsPresenter extends BasePresenter
         $begin = (int)$req->getPost("begin");
         $end = (int)$req->getPost("end");
         $now = (new DateTime())->getTimestamp();
-        if ($group->isExam() && $group->getExamEnd()->getTimestamp() < $now) {
+        if ($group->hasExamPeriodSet() && $group->getExamEnd()->getTimestamp() < $now) {
             throw new BadRequestException("Cannot modify exam that already ended.");
         }
 
         $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
 
         // beginning must be in the future (or must not be modified)
-        if ((!$group->isExam() || $begin) && $begin < $now - 60) {
+        if ((!$group->hasExamPeriodSet() || $begin) && $begin < $now - 60) {
             throw new BadRequestException("The exam must be set in the future.");
         }
 
         // if begin was not sent, or the exam already started, use old begin value
-        $begin = ($group->isExam() && (!$begin || $group->getExamBegin()->getTimestamp() <= $now))
+        $begin = ($group->hasExamPeriodSet() && (!$begin || $group->getExamBegin()->getTimestamp() <= $now))
             ? $group->getExamBegin()->getTimestamp() : $begin;
 
         // an exam should not last more than a day (yes, we hardcode the day interval here for safety)
@@ -497,7 +497,7 @@ class GroupsPresenter extends BasePresenter
         $begin = DateTime::createFromFormat('U', $begin);
         $end = DateTime::createFromFormat('U', $end);
 
-        if ($group->isExam() && $group->getExamBegin()->getTimestamp() <= $now) {
+        if ($group->hasExamPeriodSet() && $group->getExamBegin()->getTimestamp() <= $now) {
             // the exam already begun, we need to fix any group-locked users
             foreach ($group->getStudents() as $student) {
                 if ($student->getGroupLock()?->getId() === $id) {
@@ -510,7 +510,7 @@ class GroupsPresenter extends BasePresenter
             }
         }
 
-        $group->setExam($begin, $end);
+        $group->setExamPeriod($begin, $end);
         $this->groups->persist($group);
 
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
@@ -519,7 +519,7 @@ class GroupsPresenter extends BasePresenter
     public function checkRemoveExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-        if (!$group->isExam()) {
+        if (!$group->hasExamPeriodSet()) {
             throw new BadRequestException("The group is not set up for an exam.");
         }
 
@@ -541,7 +541,7 @@ class GroupsPresenter extends BasePresenter
     public function actionRemoveExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-        $group->removeExam();
+        $group->removeExamPeriod();
         $this->groups->persist($group);
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }

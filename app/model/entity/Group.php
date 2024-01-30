@@ -47,6 +47,7 @@ class Group
         $this->invitations = new ArrayCollection();
         $this->exercises = new ArrayCollection();
         $this->localizedTexts = new ArrayCollection();
+        $this->exams = new ArrayCollection();
 
         if ($admin !== null) {
             $this->addPrimaryAdmin($admin);
@@ -199,50 +200,48 @@ class Group
      */
     protected $isOrganizational = false;
 
-    public function isOrganizational(): bool
-    {
-        return $this->isOrganizational;
-    }
-
-    public function setOrganizational($value = true)
-    {
-        $this->isOrganizational = $value;
-    }
-
     /**
      * @ORM\Column(type="boolean", options={"default":0})
      * Students cannot leave detaining groups on their own (supervisor can remove them).
      */
     protected $isDetaining = false;
 
-    public function isDetaining(): bool
-    {
-        return $this->isDetaining;
-    }
-
-    public function setDetaining($value = true)
-    {
-        $this->isDetaining = $value;
-    }
-
     /**
+     * @ORM\Column(type="boolean", options={"default":0})
+     * The group is dedicated to examination. This is used mainly for selective visualization
+     * and to make the "exam" flag of the assignments set as default.
+     * This flag is independent of the exam begin-end dates which are used for security purposes.
+     */
+    protected $isExam = false;
+
+     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * When an exam in this groups begins. If not null, the group is in special "exam" state.
+     * When an exam in this groups begins. In the exam period, a user must lock in a group to be allowed
+     * submitting solutions. This is completely independent of the isExam flag.
      */
     protected $examBegin = null;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * When an exam in this groups ends. If not null, the group is in special "exam" state.
+     * When an exam in this groups ends. In the exam period, a user must lock in a group to be allowed
+     * submitting solutions. This is completely independent of the isExam flag.
      */
     protected $examEnd = null;
+
+    /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="GroupExam", mappedBy="group",
+     *                cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OrderBy({"begin" = "DESC"})
+     */
+    protected $exams;
 
     /**
      * Switch the group into an exam group by setting the begin and end dates of the exam.
      * @param DateTime $begin when the exam starts
      * @param DateTime $end when the exam ends
      */
-    public function setExam(DateTime $begin, DateTime $end): void
+    public function setExamPeriod(DateTime $begin, DateTime $end): void
     {
         // asserts
         if ($begin >= $end) {
@@ -253,10 +252,6 @@ class Group
             throw new LogicException("Unable to set exam in an archived group.");
         }
 
-        if (!$this->getChildGroups()->isEmpty()) {
-            throw new LogicException("Exam group must have no sub-groups.");
-        }
-
         $this->examBegin = $begin;
         $this->examEnd = $end;
         $this->isOrganizational = false;
@@ -265,7 +260,7 @@ class Group
     /**
      * Clear the exam status (the begin and end date).
      */
-    public function removeExam(): void
+    public function removeExamPeriod(): void
     {
         $this->examBegin = null;
         $this->examEnd = null;
@@ -275,9 +270,9 @@ class Group
      * Whether this is an exam group.
      * @return bool true if an exam is set in this group
      */
-    public function isExam(): bool
+    public function hasExamPeriodSet(): bool
     {
-        return $this->examBegin !== null || $this->examEnd !== null;
+        return $this->examBegin !== null && $this->examEnd !== null && $this->examEnd > (new DateTime());
     }
 
     /**
@@ -959,6 +954,36 @@ class Group
         return $this->invitations;
     }
 
+    public function isOrganizational(): bool
+    {
+        return $this->isOrganizational;
+    }
+
+    public function setOrganizational($value = true)
+    {
+        $this->isOrganizational = $value;
+    }
+
+    public function isDetaining(): bool
+    {
+        return $this->isDetaining;
+    }
+
+    public function setDetaining($value = true)
+    {
+        $this->isDetaining = $value;
+    }
+
+    public function isExam(): bool
+    {
+        return $this->isExam;
+    }
+
+    public function setExam($value = true)
+    {
+        $this->isExam = $value;
+    }
+
     public function getExamBegin(): ?DateTime
     {
         return $this->examBegin;
@@ -967,5 +992,10 @@ class Group
     public function getExamEnd(): ?DateTime
     {
         return $this->examEnd;
+    }
+
+    public function getExams(): Collection
+    {
+        return $this->exams;
     }
 }
