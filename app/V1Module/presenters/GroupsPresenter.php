@@ -542,26 +542,39 @@ class GroupsPresenter extends BasePresenter
         $begin = DateTime::createFromFormat('U', $beginTs);
         $end = DateTime::createFromFormat('U', $endTs);
 
-        if ($group->hasExamPeriodSet() && $group->getExamBegin()->getTimestamp() <= $now) {
-            // the exam already begun, we need to fix any group-locked users
-            foreach ($group->getStudents() as $student) {
-                if ($student->getGroupLock()?->getId() === $id) {
-                    $student->setGroupLock($group, $end);
-                    if ($student->isIpLocked()) {
-                        $student->setIpLock($student->getIpLockRaw(), $end);
+        if ($group->hasExamPeriodSet()) {
+            if ($group->getExamBegin()->getTimestamp() <= $now) { // ... already begun
+                // the exam already begun, we need to fix any group-locked users
+                foreach ($group->getStudents() as $student) {
+                    if ($student->getGroupLock()?->getId() === $id) {
+                        $student->setGroupLock($group, $end);
+                        if ($student->isIpLocked()) {
+                            $student->setIpLock($student->getIpLockRaw(), $end);
+                        }
+                        $this->users->persist($student, false);
                     }
-                    $this->users->persist($student, false);
                 }
-            }
 
-            // we need to fix deadlines of all aligned exam assignments
-            foreach ($group->getAssignments() as $assignment) {
-                if (
-                    $assignment->isExam() &&
-                    $assignment->getFirstDeadline()->getTimestamp() === $group->getExamEnd()->getTimestamp()
-                ) {
-                    $assignment->setFirstDeadline($end);
-                    $this->assignments->persist($assignment, false);
+                // we need to fix deadlines of all aligned exam assignments
+                foreach ($group->getAssignments() as $assignment) {
+                    if (
+                        $assignment->isExam() &&
+                        $assignment->getFirstDeadline()->getTimestamp() === $group->getExamEnd()->getTimestamp()
+                    ) {
+                        $assignment->setFirstDeadline($end);
+                        $this->assignments->persist($assignment, false);
+                    }
+                }
+            } elseif ($group->getExamBegin() !== $begin) {
+                // we also need to fix times of appearance for scheduled assignments
+                foreach ($group->getAssignments() as $assignment) {
+                    if (
+                        $assignment->isExam() && $assignment->isPublic() &&
+                        $assignment->getVisibleFrom()?->getTimestamp() === $group->getExamBegin()->getTimestamp()
+                    ) {
+                        $assignment->setVisibleFrom($now < $beginTs ? $begin : null);
+                        $this->assignments->persist($assignment, false);
+                    }
                 }
             }
         }

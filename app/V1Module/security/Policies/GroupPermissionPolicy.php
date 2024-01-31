@@ -116,13 +116,13 @@ class GroupPermissionPolicy implements IPermissionPolicy
     public function isBeforeExamPeriod(Identity $identity, Group $group): bool
     {
         $now = new DateTime();
-        return $group->hasExamPeriodSet() && $now < $group->getExamBegin();
+        return $group->hasExamPeriodSet($now) && $now < $group->getExamBegin();
     }
 
     public function isExamInProgress(Identity $identity, Group $group): bool
     {
         $now = new DateTime();
-        return $group->hasExamPeriodSet() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd();
+        return $group->hasExamPeriodSet($now) && $group->getExamBegin() <= $now && $now <= $group->getExamEnd();
     }
 
     /**

@@ -232,7 +232,9 @@ class AssignmentsPresenter extends BasePresenter
      * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false,
      *        description="Identifiers of runtime environments that should not be used for student submissions")
      * @Param(type="post", name="sendNotification", required=false, validation="bool",
-     *        description="If email notification should be sent")
+     *        description="If email notification (when assignment becomes public) should be sent")
+     * @Param(type="post", name="isExam", required=false, validation="bool",
+     *        description="This assignemnt is dedicated for an exam (should be solved in exam mode).")
      * @param string $id Identifier of the updated assignment
      * @throws BadRequestException
      * @throws InvalidArgumentException
@@ -311,9 +313,11 @@ class AssignmentsPresenter extends BasePresenter
             FILTER_VALIDATE_BOOLEAN
         );
         $oldMaxPointsDeadlineInterpolation = $assignment->getMaxPointsDeadlineInterpolation();
+        $isExam = filter_var($req->getPost("isExam"), FILTER_VALIDATE_BOOLEAN);
 
         $sendNotification = $req->getPost("sendNotification");
         $sendNotification = $sendNotification !== null ? filter_var($sendNotification, FILTER_VALIDATE_BOOLEAN) : true;
+        $sendNotification = $sendNotification && !$isExam; // exam assignments don't send notifications
 
         // basic constrain checks and sanitizations
         if (!$allowSecondDeadline) {
@@ -349,6 +353,7 @@ class AssignmentsPresenter extends BasePresenter
         $assignment->setPointsPercentualThreshold($threshold);
         $assignment->setSolutionFilesLimit($req->getPost("solutionFilesLimit"));
         $assignment->setSolutionSizeLimit($req->getPost("solutionSizeLimit"));
+        $assignment->setExam($isExam);
 
         // if points, deadline or threshold were changed
         // go through all submissions and recalculate points

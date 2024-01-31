@@ -319,7 +319,7 @@ class UserLocking extends Tester\TestCase
         );
     }
 
-    public function testLockedUserCanSeeAssignments()
+    public function testLockedUserCanSeeExamAssignments()
     {
         $student = $this->presenter->users->getByEmail($this->studentLogin);
         $group = $this->prepExamGroup($student, -3600, 3600);
@@ -334,7 +334,50 @@ class UserLocking extends Tester\TestCase
             'GET',
             ['action' => 'assignments', 'id' => $group->getId()]
         );
+        Assert::count(2, $payload);
+    }
+
+    public function testNotLockedUserCannotSeeExamAssignments()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'assignments', 'id' => $group->getId()]
+        );
         Assert::count(1, $payload);
+        Assert::false($payload[0]["isExam"]);
+    }
+
+    public function testAllAssignmentsAreVisibleIfNoExam()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'assignments', 'id' => $group->getId()]
+        );
+        Assert::count(2, $payload);
+    }
+
+    public function testAllAssignmentsAreVisibleIfExamInFuture()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, 3600, 7200);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'assignments', 'id' => $group->getId()]
+        );
+        Assert::count(2, $payload);
     }
 
     public function testLockedUserCanSeeSolutions()
@@ -344,7 +387,9 @@ class UserLocking extends Tester\TestCase
 
         $student = $this->presenter->users->getByEmail($this->student2Login);
         $group = $this->prepExamGroup($student, -3600, 3600);
-        $assignments = $group->getAssignments();
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return count($a->getAssignmentSolutions()) > 0;
+        });
         Assert::count(1, $assignments);
         $assignment = $assignments->toArray()[0];
 
@@ -441,7 +486,9 @@ class UserLocking extends Tester\TestCase
         $group = $this->prepExamGroup($student, -3600, 3600);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
-        $assignments = $group->getAssignments();
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return count($a->getAssignmentSolutions()) > 0;
+        });
         Assert::count(1, $assignments);
         $assignment = $assignments->toArray()[0];
 
@@ -474,7 +521,9 @@ class UserLocking extends Tester\TestCase
         $group = $this->prepExamGroup($student, -3600, 3600);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
-        $assignments = $group->getAssignments();
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return count($a->getAssignmentSolutions()) > 0;
+        });
         Assert::count(1, $assignments);
         $assignment = $assignments->toArray()[0];
 
@@ -511,7 +560,7 @@ class UserLocking extends Tester\TestCase
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
         $assignments = $group->getAssignments();
-        Assert::count(1, $assignments);
+        Assert::count(2, $assignments);
         $assignment = $assignments->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
@@ -540,7 +589,7 @@ class UserLocking extends Tester\TestCase
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
         $assignments = $group->getAssignments();
-        Assert::count(1, $assignments);
+        Assert::count(2, $assignments);
         $assignment = $assignments->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
@@ -562,6 +611,157 @@ class UserLocking extends Tester\TestCase
             },
             App\Exceptions\ForbiddenRequestException::class
         );
+    }
+
+    public function testExamAssignmentSyncDeadline()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return $a->isExam();
+        });
+        Assert::count(1, $assignments);
+        $assignment = array_values(($assignments->toArray()))[0];
+
+        // sync deadline with exam end
+        $assignment->setFirstDeadline($group->getExamEnd());
+        $this->presenter->assignments->persist($assignment);
+
+        $now = (new DateTime())->getTimestamp();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['end' => $now]
+        );
+        Assert::null($payload['privateData']['examBegin']);
+        Assert::null($payload['privateData']['examEnd']);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::equal($now, $assignment->getFirstDeadline()->getTimestamp()); // deadline was synced
+    }
+
+    public function testExamAssignmentNotSyncDeadline()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return $a->isExam();
+        });
+        Assert::count(1, $assignments);
+        $assignment = array_values(($assignments->toArray()))[0];
+
+        $now = new DateTime();
+        $assignment->setFirstDeadline($now);
+        $this->presenter->assignments->persist($assignment);
+
+        $end = (new DateTime())->getTimestamp() + 1800;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['end' => $end]
+        );
+        Assert::equal($end, $payload['privateData']['examEnd']);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::equal($now->getTimestamp(), $assignment->getFirstDeadline()->getTimestamp()); // deadline was not synced
+    }
+
+    public function testExamAssignmentSyncVisibleFrom()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, 3600, 7200);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return $a->isExam();
+        });
+        Assert::count(1, $assignments);
+        $assignment = array_values(($assignments->toArray()))[0];
+
+        // sync visible from with exam begin
+        $assignment->setVisibleFrom($group->getExamBegin());
+        $this->presenter->assignments->persist($assignment);
+
+        $begin = (new DateTime())->getTimestamp() + 1000;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $group->getExamEnd()->getTimestamp()]
+        );
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::equal($begin, $assignment->getVisibleFrom()->getTimestamp()); // visible from was synced
+    }
+
+    public function testExamAssignmentSyncVisibleFromNow()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, 3600, 7200);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return $a->isExam();
+        });
+        Assert::count(1, $assignments);
+        $assignment = array_values(($assignments->toArray()))[0];
+
+        // sync visible from with exam begin
+        $assignment->setVisibleFrom($group->getExamBegin());
+        $this->presenter->assignments->persist($assignment);
+
+        $begin = (new DateTime())->getTimestamp();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $group->getExamEnd()->getTimestamp()]
+        );
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::null($assignment->getVisibleFrom()); // visible from was erased
+    }
+
+    public function testExamAssignmentNotSyncVisibleFrom()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, 3600, 7200);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $group->getAssignments()->filter(function ($a) {
+            return $a->isExam();
+        });
+        Assert::count(1, $assignments);
+        $assignment = array_values(($assignments->toArray()))[0];
+
+        // sync visible from with exam begin
+        $assignment->setVisibleFrom($group->getExamEnd());
+        $this->presenter->assignments->persist($assignment);
+
+        $begin = (new DateTime())->getTimestamp() + 1000;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $group->getExamEnd()->getTimestamp()]
+        );
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $assignment->getVisibleFrom()->getTimestamp());
     }
 }
 

@@ -45,8 +45,11 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
+        $now = new DateTime();
         $visibleFromOk = $assignment->getVisibleFrom() === null || $assignment->getVisibleFrom() <= $now;
-        return $assignment->isPublic() && $visibleFromOk;
+        // additional test for exam assignments: there is no pending exam or the student is already locked
+        return $assignment->isPublic() && $visibleFromOk && (!$assignment->isExam() || !$group->hasExamPeriodSet($now)
+            || $now < $group->getExamBegin() || $user->getGroupLock()?->getId() === $group->getId());
     }
 
     public function isInActiveGroup(Identity $identity, Assignment $assignment)
@@ -110,7 +113,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
     {
         $group = $assignment->getGroup();
         $now = new DateTime();
-        return $group && (!$group->hasExamPeriodSet() || $group->getExamEnd() < $now);
+        return $group && (!$group->hasExamPeriodSet($now) || $group->getExamEnd() < $now);
     }
 
     /**
@@ -121,7 +124,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
         $user = $identity->getUserData();
         $group = $assignment->getGroup();
         $now = new DateTime();
-        return $group && $group->hasExamPeriodSet() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd()
-            && $user->getGroupLock()->getId() === $group->getId();
+        return $group && $group->hasExamPeriodSet($now) && $group->getExamBegin() <= $now
+            && $now <= $group->getExamEnd() && $user->getGroupLock()?->getId() === $group->getId();
     }
 }
