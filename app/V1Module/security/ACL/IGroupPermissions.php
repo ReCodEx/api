@@ -42,9 +42,11 @@ interface IGroupPermissions
 
     public function canArchive(Group $group): bool;
 
-    public function canSetExam(Group $group): bool;
+    public function canSetExamFlag(Group $group): bool;
 
-    public function canRemoveExam(Group $group): bool;
+    public function canSetExamPeriod(Group $group): bool;
+
+    public function canRemoveExamPeriod(Group $group): bool;
 
     public function canRelocate(Group $group): bool;
 

@@ -41,14 +41,12 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
 
         $now = new DateTime();
         $group = $assignment->getGroup();
-        if (!$group || ($group->hasExamPeriodSet() && $now < $group->getExamBegin())) {
-            return false;  // exam groups hide all assignments before the exam starts
+        if (!$group) {
+            return false;
         }
 
         $visibleFromOk = $assignment->getVisibleFrom() === null || $assignment->getVisibleFrom() <= $now;
-        return $assignment->isPublic() && $visibleFromOk &&
-            // not an exam, or it over (so the assignments are visible to all), or the student is currently doing it
-            (!$group->hasExamPeriodSet() || $group->getExamEnd() < $now || $user->getGroupLock()?->getId() === $group->getId());
+        return $assignment->isPublic() && $visibleFromOk;
     }
 
     public function isInActiveGroup(Identity $identity, Assignment $assignment)
@@ -108,7 +106,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
     /**
      * The assignment is not in an exam group, or it is already after the exam.
      */
-    public function isNotForExam(Identity $identity, Assignment $assignment): bool
+    public function isExamNotInProgress(Identity $identity, Assignment $assignment): bool
     {
         $group = $assignment->getGroup();
         $now = new DateTime();

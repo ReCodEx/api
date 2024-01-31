@@ -105,10 +105,15 @@ class GroupPermissionPolicy implements IPermissionPolicy
 
     public function isNotExam(Identity $identity, Group $group): bool
     {
-        return !$group->hasExamPeriodSet();
+        return !$group->isExam();
     }
 
-    public function isBeforeExam(Identity $identity, Group $group): bool
+    public function hasNoExamPeriod(Identity $identity, Group $group): bool
+    {
+        return !$group->hasExamPeriodSet(); // the period is not set or is in the past
+    }
+
+    public function isBeforeExamPeriod(Identity $identity, Group $group): bool
     {
         $now = new DateTime();
         return $group->hasExamPeriodSet() && $now < $group->getExamBegin();
@@ -118,25 +123,6 @@ class GroupPermissionPolicy implements IPermissionPolicy
     {
         $now = new DateTime();
         return $group->hasExamPeriodSet() && $group->getExamBegin() <= $now && $now <= $group->getExamEnd();
-    }
-
-    public function isExamOver(Identity $identity, Group $group): bool
-    {
-        $now = new DateTime();
-        return $group->hasExamPeriodSet() && $group->getExamEnd() < $now;
-    }
-
-    /**
-     * Current user is locked to the selected group.
-     */
-    public function userIsLockedInThisGroup(Identity $identity, Group $group): bool
-    {
-        $user = $identity->getUserData();
-        if ($user === null) {
-            return false;
-        }
-
-        return $user->getGroupLock()?->getId() === $group->getId();
     }
 
     /**
