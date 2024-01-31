@@ -81,12 +81,6 @@ permissions:
       conditions:
           - group.isMember
           - group.userIsNotLockedElsewhere
-          - or:
-              - group.isNotExam
-              - group.isExamOver              
-              - group.userIsLockedInThisGroup
-              - group.isSupervisorOrAdmin
-              - group.isObserver
 
     - allow: true
       role: student
@@ -164,12 +158,6 @@ permissions:
           - group.isMember
           - student.isSameUser
           - group.userIsNotLockedElsewhere
-          - or:
-              - group.isNotExam
-              - group.isExamOver              
-              - group.userIsLockedInThisGroup
-              - group.isSupervisorOrAdmin
-              - group.isObserver
 
     - allow: true
       role: student
@@ -179,12 +167,6 @@ permissions:
       conditions:
           - group.areStatsPublic
           - group.userIsNotLockedElsewhere
-          - or:
-              - group.isNotExam
-              - group.isExamOver              
-              - group.userIsLockedInThisGroup
-              - group.isSupervisorOrAdmin
-              - group.isObserver
 
     - allow: true
       resource: group
@@ -259,6 +241,16 @@ permissions:
       role: supervisor-student
       actions:
           - setOrganizational
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isNotExam
+          - group.hasNoExamPeriod
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
           - addSubgroup  # note: exam groups must have no sub-groups
       conditions:
           - group.isAdmin
@@ -276,7 +268,8 @@ permissions:
       resource: group
       role: supervisor-student
       actions:
-          - setExam
+          - setExamFlag
+          - setExamPeriod
       conditions:
           - group.isAdmin
           - group.isNotArchived
@@ -286,11 +279,11 @@ permissions:
       resource: group
       role: supervisor-student
       actions:
-          - removeExam
+          - removeExamPeriod
       conditions:
           - group.isAdmin
           - group.isNotArchived
-          - group.isBeforeExam
+          - group.isBeforeExamPeriod
 
     - allow: true
       role: student
@@ -462,9 +455,6 @@ permissions:
           - assignment.isAssignee
           - assignment.isVisible
           - assignment.userIsNotLockedElsewhere
-          - or:
-              - assignment.isNotForExam  # it's not in an exam group (and before the exam)
-              - assignment.isExamInProgressAndStudentLocked  # it is during the exam, but the user is already locked
 
     - allow: true
       role: student
@@ -479,7 +469,7 @@ permissions:
           - assignment.userIsNotLockedElsewhere
           - student.isSameUser
           - or:
-              - assignment.isNotForExam  # it's not in an exam group (and before the exam)
+              - assignment.isExamNotInProgress
               - assignment.isExamInProgressAndStudentLocked  # it is during the exam, but the user is already locked
 
     - allow: true
@@ -525,9 +515,6 @@ permissions:
           - student.isSameUser
           - assignment.isVisible
           - assignment.userIsNotLockedElsewhere
-          - or:
-              - assignment.isNotForExam  # it's not in an exam group (and before the exam)
-              - assignment.isExamInProgressAndStudentLocked  # it is during the exam, but the user is already locked
 
     ###################################
     # Assignment Solution permissions #
@@ -1166,9 +1153,6 @@ permissions:
           - assignment.isAssignee
           - assignment.isPublic
           - assignment.userIsNotLockedElsewhere
-          - or:
-              - assignment.isNotForExam  # it's not in an exam group (and before the exam)
-              - assignment.isExamInProgressAndStudentLocked  # it is during the exam, but the user is already locked
 
     - allow: true
       resource: shadowAssignment

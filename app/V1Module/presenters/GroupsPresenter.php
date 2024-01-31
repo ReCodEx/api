@@ -481,7 +481,7 @@ class GroupsPresenter extends BasePresenter
             throw new BadRequestException("Exam group must have no sub-groups.");
         }
 
-        if (!$this->groupAcl->canSetExam($group)) {
+        if (!$this->groupAcl->canSetExamFlag($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -507,7 +507,7 @@ class GroupsPresenter extends BasePresenter
     public function checkSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-        if (!$this->groupAcl->canSetExam($group)) {
+        if (!$this->groupAcl->canSetExamPeriod($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -614,7 +614,7 @@ class GroupsPresenter extends BasePresenter
             throw new BadRequestException("The group is not set up for an exam.");
         }
 
-        if (!$this->groupAcl->canRemoveExam($group)) {
+        if (!$this->groupAcl->canRemoveExamPeriod($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -1144,10 +1144,6 @@ class GroupsPresenter extends BasePresenter
     {
         $group = $this->groups->findOrThrow($id);
         $user = $this->users->findOrThrow($userId);
-        if ($user->isGroupLocked()) {
-            throw new InvalidArgumentException("The user is already locked in a group.");
-        }
-
         if (!$this->groupAcl->canLockStudent($group, $user)) {
             throw new ForbiddenRequestException();
         }
@@ -1182,7 +1178,7 @@ class GroupsPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($id);
         $user = $this->users->findOrThrow($userId);
         if ($user->getGroupLock()?->getId() !== $group->getId()) {
-            throw new InvalidArgumentException("The user not locked in given group.");
+            throw new InvalidArgumentException("The user is not locked in given group.");
         }
 
         if (!$this->groupAcl->canUnlockStudent($group, $user)) {
