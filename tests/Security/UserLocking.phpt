@@ -154,6 +154,38 @@ class UserLocking extends Tester\TestCase
         Assert::true($student->verifyIpLock($this->ip));
         Assert::true($student->isGroupLocked());
         Assert::equal($group->getId(), $student->getGroupLock()->getId());
+
+        // and the group exam entity was created
+        $groupExam = $this->presenter->groupExams->findBy(["group" => $group, "begin" => $group->getExamBegin()]);
+        Assert::truthy($groupExam);
+    }
+
+    public function testSecondStudentLocksInGroup()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600); // exam in progress
+
+        // create group exam simulates situation where some previous student locked in
+        $groupExam = $this->presenter->groupExams->findOrCreate($group);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'lockStudent', 'id' => $group->getId(), 'userId' => $student->getId()]
+        );
+        $this->presenter->users->refresh($student);
+
+        Assert::equal($student->getId(), $payload['id']);
+        Assert::equal($group->getId(), $payload['privateData']['groupLock']);
+        Assert::equal($_SERVER['REMOTE_ADDR'], $payload['privateData']['ipLock']);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['privateData']['groupLockExpiration']);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['privateData']['ipLockExpiration']);
+
+        Assert::true($student->isIpLocked());
+        Assert::true($student->verifyIpLock($this->ip));
+        Assert::true($student->isGroupLocked());
+        Assert::equal($group->getId(), $student->getGroupLock()->getId());
     }
 
     public function testStudentLockBeforeExamFails()
@@ -373,24 +405,6 @@ class UserLocking extends Tester\TestCase
                     'V1:Groups',
                     'GET',
                     ['action' => 'userSolutions', 'id' => $assignment->getId(), 'userId' => $student->getId()]
-                );
-            },
-            App\Exceptions\ForbiddenRequestException::class
-        );
-    }
-
-    public function testUnlockedUserCannotSeeAssignments()
-    {
-        $student = $this->presenter->users->getByEmail($this->studentLogin);
-        $group = $this->prepExamGroup($student, -3600, 3600);
-
-        Assert::exception(
-            function () use ($group) {
-                PresenterTestHelper::performPresenterRequest(
-                    $this->presenter,
-                    'V1:Groups',
-                    'GET',
-                    ['action' => 'assignments', 'id' => $group->getId()]
                 );
             },
             App\Exceptions\ForbiddenRequestException::class

@@ -86,6 +86,8 @@ class UserViewFactory
                 "isExternal" => $user->hasExternalAccounts(),
                 "isAllowed" => $user->isAllowed(),
                 "externalIds" => $this->getExternalIds($user, $reallyShowEverything),
+                "ipLock" => $user->isIpLocked(),
+                "groupLock" => $user->getGroupLock()?->getId(),
             ];
 
             // really show everything should be used only for user, who is just logging/signing in
@@ -93,14 +95,12 @@ class UserViewFactory
                 $uiData = $user->getUiData();
                 $privateData["uiData"] = $uiData ? $uiData->getData() : null;
                 $privateData["settings"] = $user->getSettings();
+                // ipLock is replaced with actual IP address
                 $privateData["ipLock"] = $user->isIpLocked() ? $user->getIpLockRaw() : null;
                 $privateData["ipLockExpiration"] = $user->isIpLocked()
                     ? $user->getIpLockExpiration()?->getTimestamp() : null;
                 $privateData["groupLockExpiration"] = $user->isGroupLocked()
                     ? $user->getGroupLockExpiration()?->getTimestamp() : null;
-            } else {
-                $privateData["ipLock"] = $user->isIpLocked();
-                $privateData["groupLock"] = $user->getGroupLock()?->getId();
             }
         }
 
