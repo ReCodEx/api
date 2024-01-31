@@ -255,7 +255,8 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/organizational", "Groups:setOrganizational");
         $router[] = new PostRoute("$prefix/<id>/archived", "Groups:setArchived");
         $router[] = new PostRoute("$prefix/<id>/exam", "Groups:setExam");
-        $router[] = new DeleteRoute("$prefix/<id>/exam", "Groups:removeExam");
+        $router[] = new PostRoute("$prefix/<id>/examPeriod", "Groups:setExamPeriod");
+        $router[] = new DeleteRoute("$prefix/<id>/examPeriod", "Groups:removeExamPeriod");
         $router[] = new PostRoute("$prefix/<id>/relocate/<newParentId>", "Groups:relocate");
 
         $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");

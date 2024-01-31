@@ -9,6 +9,10 @@ use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Users;
+use App\Helpers\FileStorageManager;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\V1Module\Presenters\GroupsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
@@ -53,6 +57,16 @@ class TestGroupsPresenter extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()
