@@ -270,9 +270,10 @@ class Group
      * Whether this is an exam group.
      * @return bool true if an exam is set in this group
      */
-    public function hasExamPeriodSet(): bool
+    public function hasExamPeriodSet(DateTime $at = null): bool
     {
-        return $this->examBegin !== null && $this->examEnd !== null && $this->examEnd > (new DateTime());
+        $at = $at ?? new DateTime();
+        return $this->examBegin !== null && $this->examEnd !== null && $this->examEnd > $at;
     }
 
     /**
