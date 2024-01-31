@@ -17,7 +17,6 @@ use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\GroupMembership;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Repository\Assignments;
-use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\Groups;
 use App\Model\Repository\GroupExams;
 use App\Model\Repository\GroupExamLocks;
@@ -30,8 +29,6 @@ use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
-use App\Async\Dispatcher;
-use App\Async\Handler\AssignmentNotificationJobHandler;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
@@ -48,18 +45,6 @@ use Nette\Application\Request;
  */
 class GroupsPresenter extends BasePresenter
 {
-    /**
-     * @var AsyncJobs
-     * @inject
-     */
-    public $asyncJobs;
-
-    /**
-     * @var Dispatcher
-     * @inject
-     */
-    public $dispatcher;
-
     /**
      * @var Groups
      * @inject
@@ -569,7 +554,7 @@ class GroupsPresenter extends BasePresenter
                 }
             }
 
-            // we need to fix deadlines of all exam assignments
+            // we need to fix deadlines of all aligned exam assignments
             foreach ($group->getAssignments() as $assignment) {
                 if (
                     $assignment->isExam() &&
@@ -581,37 +566,17 @@ class GroupsPresenter extends BasePresenter
             }
         }
 
-        // make sure that exam assignments are visible or will be visible when exam begins
-        foreach ($group->getAssignments() as $assignment) {
-            if ($assignment->isExam() && !$assignment->isVisibleToStudents()) {
-                $asyncJobs = $this->asyncJobs->findPendingJobs(
-                    AssignmentNotificationJobHandler::ID,
-                    true,
-                    null,
-                    $assignment
-                );
-                foreach ($asyncJobs as $asyncJob) {
-                    // there shuold one at most, but just to be sure...
-                    $this->dispatcher->unschedule($asyncJob);
-                }
-
-                $assignment->setIsPublic();
-                $assignment->setVisibleFrom($beginTs > $now ? $begin : null);
-                $this->assignments->persist($assignment, false);
-            }
-        }
-
         $group->setExamPeriod($begin, $end);
         $this->groups->persist($group);
 
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
 
-    public function checkRemoveExam(string $id)
+    public function checkRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$group->hasExamPeriodSet()) {
-            throw new BadRequestException("The group is not set up for an exam.");
+            throw new BadRequestException("The group has no exam period set.");
         }
 
         if (!$this->groupAcl->canRemoveExamPeriod($group)) {
@@ -625,7 +590,7 @@ class GroupsPresenter extends BasePresenter
      * @param string $id An identifier of the updated group
      * @throws NotFoundException
      */
-    public function actionRemoveExam(string $id)
+    public function actionRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         $group->removeExamPeriod();

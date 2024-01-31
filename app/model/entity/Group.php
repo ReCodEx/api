@@ -959,7 +959,7 @@ class Group
         return $this->isOrganizational;
     }
 
-    public function setOrganizational($value = true)
+    public function setOrganizational(bool $value = true): void
     {
         $this->isOrganizational = $value;
     }
@@ -969,7 +969,7 @@ class Group
         return $this->isDetaining;
     }
 
-    public function setDetaining($value = true)
+    public function setDetaining(bool $value = true): void
     {
         $this->isDetaining = $value;
     }
@@ -979,7 +979,7 @@ class Group
         return $this->isExam;
     }
 
-    public function setExam($value = true)
+    public function setExam(bool $value = true): void
     {
         $this->isExam = $value;
     }
