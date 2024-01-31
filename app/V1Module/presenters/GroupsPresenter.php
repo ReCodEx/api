@@ -11,11 +11,16 @@ use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\GroupMembership;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Repository\Assignments;
+use App\Model\Repository\AsyncJobs;
 use App\Model\Repository\Groups;
+use App\Model\Repository\GroupExams;
+use App\Model\Repository\GroupExamLocks;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
@@ -25,6 +30,8 @@ use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
+use App\Async\Dispatcher;
+use App\Async\Handler\AssignmentNotificationJobHandler;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
@@ -42,10 +49,34 @@ use Nette\Application\Request;
 class GroupsPresenter extends BasePresenter
 {
     /**
+     * @var AsyncJobs
+     * @inject
+     */
+    public $asyncJobs;
+
+    /**
+     * @var Dispatcher
+     * @inject
+     */
+    public $dispatcher;
+
+    /**
      * @var Groups
      * @inject
      */
     public $groups;
+
+    /**
+     * @var GroupExams
+     * @inject
+     */
+    public $groupExams;
+
+    /**
+     * @var GroupExamLocks
+     * @inject
+     */
+    public $groupExamLocks;
 
     /**
      * @var Instances
@@ -64,6 +95,12 @@ class GroupsPresenter extends BasePresenter
      * @inject
      */
     public $groupMemberships;
+
+    /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
 
     /**
      * @var AssignmentSolutions
@@ -450,9 +487,36 @@ class GroupsPresenter extends BasePresenter
     }
 
     /**
-     * Change the group into an exam group and set the beginning and the end timestamp for the exam.
-     * It can be also used to modify exam begin-end interval, but the beginning can be changed only
-     * if the exam has not started yet and end can be changed only before the end of the exam.
+     * Change the group "exam" indicator. If denotes that the group should be listed in exam groups instead of
+     * regular groups and the assignments should have "isExam" flag set by default.
+     * @POST
+     * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
+     * @param string $id An identifier of the updated group
+     * @throws BadRequestException
+     * @throws NotFoundException
+     */
+    public function actionSetExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $isExam = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+        $group->setExam($isExam);
+        $this->groups->persist($group);
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+    public function checkSetExamPeriod(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        if (!$this->groupAcl->canSetExam($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Set an examination period (in the future) when the group will be secured for submitting.
+     * Only locked students may submit solutions in the group during this period.
+     * This endpoint is also used to update already planned exam period, but only dates in the future
+     * can be editted (e.g., once an exam begins, the beginning may no longer be updated).
      * @POST
      * @Param(type="post", name="begin", validation="timestamp|null", required=false,
      *        description="When the exam begins (unix ts in the future, optional if update is performed).")
@@ -461,41 +525,37 @@ class GroupsPresenter extends BasePresenter
      * @param string $id An identifier of the updated group
      * @throws NotFoundException
      */
-    public function actionSetExam(string $id)
+    public function actionSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
 
         $req = $this->getRequest();
-        $begin = (int)$req->getPost("begin");
-        $end = (int)$req->getPost("end");
+        $beginTs = (int)$req->getPost("begin");
+        $endTs = (int)$req->getPost("end");
         $now = (new DateTime())->getTimestamp();
-        if ($group->hasExamPeriodSet() && $group->getExamEnd()->getTimestamp() < $now) {
-            throw new BadRequestException("Cannot modify exam that already ended.");
-        }
-
         $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
 
         // beginning must be in the future (or must not be modified)
-        if ((!$group->hasExamPeriodSet() || $begin) && $begin < $now - 60) {
+        if ((!$group->hasExamPeriodSet() || $beginTs) && $beginTs < $now - 60) {
             throw new BadRequestException("The exam must be set in the future.");
         }
 
         // if begin was not sent, or the exam already started, use old begin value
-        $begin = ($group->hasExamPeriodSet() && (!$begin || $group->getExamBegin()->getTimestamp() <= $now))
-            ? $group->getExamBegin()->getTimestamp() : $begin;
+        $beginTs = ($group->hasExamPeriodSet() && (!$beginTs || $group->getExamBegin()->getTimestamp() <= $now))
+            ? $group->getExamBegin()->getTimestamp() : $beginTs;
 
         // an exam should not last more than a day (yes, we hardcode the day interval here for safety)
-        if ($begin >= $end || $end - $begin > 86400) {
+        if ($beginTs >= $endTs || $endTs - $beginTs > 86400) {
             throw new BadRequestException("The [begin,end] interval must be valid and less than a day wide.");
         }
 
         // the end should also be in the future (this is necessary only for updates)
-        if ($end < $now - 60) {
+        if ($endTs < $now - 60) {
             throw new BadRequestException("The exam end must be set in the future.");
         }
 
-        $begin = DateTime::createFromFormat('U', $begin);
-        $end = DateTime::createFromFormat('U', $end);
+        $begin = DateTime::createFromFormat('U', $beginTs);
+        $end = DateTime::createFromFormat('U', $endTs);
 
         if ($group->hasExamPeriodSet() && $group->getExamBegin()->getTimestamp() <= $now) {
             // the exam already begun, we need to fix any group-locked users
@@ -507,6 +567,37 @@ class GroupsPresenter extends BasePresenter
                     }
                     $this->users->persist($student, false);
                 }
+            }
+
+            // we need to fix deadlines of all exam assignments
+            foreach ($group->getAssignments() as $assignment) {
+                if (
+                    $assignment->isExam() &&
+                    $assignment->getFirstDeadline()->getTimestamp() === $group->getExamEnd()->getTimestamp()
+                ) {
+                    $assignment->setFirstDeadline($end);
+                    $this->assignments->persist($assignment, false);
+                }
+            }
+        }
+
+        // make sure that exam assignments are visible or will be visible when exam begins
+        foreach ($group->getAssignments() as $assignment) {
+            if ($assignment->isExam() && !$assignment->isVisibleToStudents()) {
+                $asyncJobs = $this->asyncJobs->findPendingJobs(
+                    AssignmentNotificationJobHandler::ID,
+                    true,
+                    null,
+                    $assignment
+                );
+                foreach ($asyncJobs as $asyncJob) {
+                    // there shuold one at most, but just to be sure...
+                    $this->dispatcher->unschedule($asyncJob);
+                }
+
+                $assignment->setIsPublic();
+                $assignment->setVisibleFrom($beginTs > $now ? $begin : null);
+                $this->assignments->persist($assignment, false);
             }
         }
 
@@ -521,10 +612,6 @@ class GroupsPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($id);
         if (!$group->hasExamPeriodSet()) {
             throw new BadRequestException("The group is not set up for an exam.");
-        }
-
-        if ($group->getExamBegin() <= (new DateTime())) {
-            throw new BadRequestException("The exam that already started cannot be removed.");
         }
 
         if (!$this->groupAcl->canRemoveExam($group)) {
@@ -1080,7 +1167,12 @@ class GroupsPresenter extends BasePresenter
         $expiration = $group->getExamEnd();
         $user->setIpLock($this->getHttpRequest()->getRemoteAddress(), $expiration);
         $user->setGroupLock($group, $expiration);
-        $this->users->persist($user);
+        $this->users->persist($user, false);
+
+        // make sure the locking is also logged
+        $exam = $this->groupExams->findOrCreate($group);
+        $examLock = new GroupExamLock($exam, $user, $user->getIpLockRaw());
+        $this->groupExamLocks->persist($examLock);
 
         $this->sendSuccessResponse($this->userViewFactory->getUser($user));
     }
