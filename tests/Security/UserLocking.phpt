@@ -107,7 +107,7 @@ class UserLocking extends Tester\TestCase
         return $res;
     }
 
-    private function prepExamGroup($student, $relBegin = null, $relEnd = null): Group
+    private function prepExamGroup($student, $relBegin = null, $relEnd = null, $strict = true): Group
     {
         $groups = $this->getAllGroupsInDepth(
             2,
@@ -123,7 +123,8 @@ class UserLocking extends Tester\TestCase
             $now = (new DateTime())->getTimestamp();
             $group->setExamPeriod(
                 DateTime::createFromFormat('U', $now + $relBegin),
-                DateTime::createFromFormat('U', $now + $relEnd)
+                DateTime::createFromFormat('U', $now + $relEnd),
+                $strict
             );
         }
 
@@ -246,7 +247,7 @@ class UserLocking extends Tester\TestCase
         $exp = new DateTime();
         $exp->modify("-1 hour"); // already expired
         $student->setIpLock($this->ip, $exp);
-        $student->setGroupLock($group, $exp);
+        $student->setGroupLock($group, $exp, $group->isExamLockStrict());
         Assert::false($student->isIpLocked());
         Assert::true($student->verifyIpLock('127.0.0.1'));
         Assert::false($student->isGroupLocked());
@@ -259,7 +260,7 @@ class UserLocking extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         $payload = PresenterTestHelper::performPresenterRequest(
@@ -303,7 +304,7 @@ class UserLocking extends Tester\TestCase
         $group = $this->prepExamGroup($student, -3600, 3600);
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         Assert::exception(
@@ -325,7 +326,7 @@ class UserLocking extends Tester\TestCase
         $group = $this->prepExamGroup($student, -3600, 3600);
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         $payload = PresenterTestHelper::performPresenterRequest(
@@ -394,7 +395,7 @@ class UserLocking extends Tester\TestCase
         $assignment = $assignments->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         $payload = PresenterTestHelper::performPresenterRequest(
@@ -412,7 +413,7 @@ class UserLocking extends Tester\TestCase
         $group = $this->prepExamGroup($student, -3600, 3600);
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         Assert::exception(
@@ -435,7 +436,7 @@ class UserLocking extends Tester\TestCase
         $group = $this->prepExamGroup($student, -3600, 3600);
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         $group = $group->getParentGroup();
@@ -463,7 +464,7 @@ class UserLocking extends Tester\TestCase
 
         // unexpected IP
         $student->setIpLock('192.168.42.54', $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         Assert::exception(
@@ -497,7 +498,7 @@ class UserLocking extends Tester\TestCase
         $solution = $solutions->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         Assert::exception(
@@ -532,7 +533,7 @@ class UserLocking extends Tester\TestCase
         $solution = $solutions->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         $thread = CommentThread::createThread($solution->getId());
@@ -564,7 +565,7 @@ class UserLocking extends Tester\TestCase
         $assignment = $assignments->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         Assert::exception(
@@ -593,7 +594,7 @@ class UserLocking extends Tester\TestCase
         $assignment = $assignments->toArray()[0];
 
         $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
         $this->presenter->users->persist($student);
 
         $thread = CommentThread::createThread($assignment->getId());
@@ -765,5 +766,13 @@ class UserLocking extends Tester\TestCase
     }
 }
 
+/*
+TODO:
+- update konce examu updatne expiration locknutych uzivatelu
+- update striktnosti examu nejde udelat po zacatku
+- checknout jestli spravne testujeme propisovani examu do historie (vcetne striktnosti locku)
+- checknout, ze se exam nezapise do historie, kdyz neni lock
+- otestovat zvlast strict/not strict locky
+*/
 $testCase = new UserLocking();
 $testCase->run();

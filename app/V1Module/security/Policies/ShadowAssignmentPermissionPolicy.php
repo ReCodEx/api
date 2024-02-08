@@ -51,7 +51,7 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
     /**
      * Current user is either not locked at all, or locked to this group (where the assignment is).
      */
-    public function userIsNotLockedElsewhere(Identity $identity, ShadowAssignment $assignment): bool
+    public function userIsNotLockedElsewhereStrictly(Identity $identity, ShadowAssignment $assignment): bool
     {
         $user = $identity->getUserData();
         $group = $assignment->getGroup();
@@ -59,28 +59,7 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId();
-    }
-
-    /**
-     * The assignment is not in an exam group, or it is already after the exam.
-     */
-    public function isNotForExam(Identity $identity, ShadowAssignment $assignment): bool
-    {
-        $group = $assignment->getGroup();
-        $now = new DateTime();
-        return $group && (!$group->hasExamPeriodSet($now) || $group->getExamEnd() < $now);
-    }
-
-    /**
-     * The assignment is for an exam in progress and the student is already locked in the group.
-     */
-    public function isExamInProgressAndStudentLocked(Identity $identity, ShadowAssignment $assignment): bool
-    {
-        $user = $identity->getUserData();
-        $group = $assignment->getGroup();
-        $now = new DateTime();
-        return $group && $group->hasExamPeriodSet($now) && $group->getExamBegin() <= $now
-            && $now <= $group->getExamEnd() && $user->getGroupLock()?->getId() === $group->getId();
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()
+            || !$user->isGroupLockStrict();
     }
 }

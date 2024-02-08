@@ -80,7 +80,7 @@ permissions:
       actions: viewAssignments
       conditions:
           - group.isMember
-          - group.userIsNotLockedElsewhere
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -90,7 +90,7 @@ permissions:
           - viewSubgroups  # used in deprecated endpoint
           - viewMembers    # used in deprecated endpoint
       conditions:
-          - group.userIsNotLockedElsewhere
+          - group.userIsNotLockedElsewhereStrictly
           - or:
               - group.isMember
               - group.isPublic
@@ -112,7 +112,7 @@ permissions:
           - viewInvitations
       conditions:
           - group.isInSameInstance
-          - group.userIsNotLockedElsewhere
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -157,7 +157,7 @@ permissions:
       conditions:
           - group.isMember
           - student.isSameUser
-          - group.userIsNotLockedElsewhere
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -166,7 +166,7 @@ permissions:
           - viewStats
       conditions:
           - group.areStatsPublic
-          - group.userIsNotLockedElsewhere
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       resource: group
@@ -454,7 +454,7 @@ permissions:
       conditions:
           - assignment.isAssignee
           - assignment.isVisible
-          - assignment.userIsNotLockedElsewhere
+          - assignment.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -514,7 +514,7 @@ permissions:
       conditions:
           - student.isSameUser
           - assignment.isVisible
-          - assignment.userIsNotLockedElsewhere
+          - assignment.userIsNotLockedElsewhereStrictly
 
     ###################################
     # Assignment Solution permissions #
@@ -549,7 +549,7 @@ permissions:
           - viewReview
       conditions:
           - assignmentSolution.isAuthor
-          - assignmentSolution.userIsNotLockedElsewhere
+          - assignmentSolution.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -569,7 +569,7 @@ permissions:
       conditions:
           - assignmentSolution.areEvaluationDetailsPublic
           - assignmentSolution.isAuthor
-          - assignmentSolution.userIsNotLockedElsewhere
+          - assignmentSolution.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: supervisor-student
@@ -1152,7 +1152,7 @@ permissions:
       conditions:
           - assignment.isAssignee
           - assignment.isPublic
-          - assignment.userIsNotLockedElsewhere
+          - assignment.userIsNotLockedElsewhereStrictly
 
     - allow: true
       resource: shadowAssignment
