@@ -137,4 +137,18 @@ class GroupPermissionPolicy implements IPermissionPolicy
 
         return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId();
     }
+
+    /**
+     * Current user is either not locked at all, or locked to this group, or the current lock is not strict.
+     */
+    public function userIsNotLockedElsewhereStrictly(Identity $identity, Group $group): bool
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
+
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()
+            || !$user->isGroupLockStrict();
+    }
 }

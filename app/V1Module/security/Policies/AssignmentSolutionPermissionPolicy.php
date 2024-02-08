@@ -109,4 +109,19 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
 
         return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId();
     }
+
+    /**
+     * Current user is either not locked at all, or locked to this group, or the current lock is not strict.
+     */
+    public function userIsNotLockedElsewhereStrictly(Identity $identity, AssignmentSolution $solution): bool
+    {
+        $user = $identity->getUserData();
+        $group = $solution->getAssignment()?->getGroup();
+        if ($user === null || $group === null || $group->isArchived()) {
+            return false;
+        }
+
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()
+            || !$user->isGroupLockStrict();
+    }
 }

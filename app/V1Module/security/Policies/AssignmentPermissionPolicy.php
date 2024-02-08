@@ -107,6 +107,22 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
     }
 
     /**
+     * Current user is either not locked at all, or locked to this group (where the assignment is),
+     * or the current lock is not strict.
+     */
+    public function userIsNotLockedElsewhereStrictly(Identity $identity, Assignment $assignment): bool
+    {
+        $user = $identity->getUserData();
+        $group = $assignment->getGroup();
+        if ($user === null || $group === null || $group->isArchived()) {
+            return false;
+        }
+
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()
+            || !$user->isGroupLockStrict();
+    }
+
+    /**
      * The assignment is not in an exam group, or it is already after the exam.
      */
     public function isExamNotInProgress(Identity $identity, Assignment $assignment): bool
