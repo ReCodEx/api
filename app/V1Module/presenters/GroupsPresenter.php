@@ -507,6 +507,8 @@ class GroupsPresenter extends BasePresenter
      *        description="When the exam begins (unix ts in the future, optional if update is performed).")
      * @Param(type="post", name="end", validation="timestamp", required=true,
      *        description="When the exam ends (unix ts in the future, no more than a day after 'begin').")
+     * @Param(type="post", name="strict", validation="bool", required=false,
+     *        description="Whether locked users are prevented from accessing other groups.")
      * @param string $id An identifier of the updated group
      * @throws NotFoundException
      */
@@ -517,11 +519,21 @@ class GroupsPresenter extends BasePresenter
         $req = $this->getRequest();
         $beginTs = (int)$req->getPost("begin");
         $endTs = (int)$req->getPost("end");
+        $strict = $req->getPost("strict") !== null
+            ? filter_var($req->getPost("strict"), FILTER_VALIDATE_BOOLEAN) : null;
         $now = (new DateTime())->getTimestamp();
         $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
 
+        if ($strict === null) {
+            if ($group->hasExamPeriodSet()) {
+                $strict = $group->isExamLockStrict(); // flag is not present -> is not changing
+            } else {
+                throw new BadRequestException("The strict flag must be present when new exam is being set.");
+            }
+        }
+
         // beginning must be in the future (or must not be modified)
-        if ((!$group->hasExamPeriodSet() || $beginTs) && $beginTs < $now - 60) {
+        if ((!$group->hasExamPeriodSet() || $beginTs) && $beginTs < $now - $nowTolerance) {
             throw new BadRequestException("The exam must be set in the future.");
         }
 
@@ -535,7 +547,7 @@ class GroupsPresenter extends BasePresenter
         }
 
         // the end should also be in the future (this is necessary only for updates)
-        if ($endTs < $now - 60) {
+        if ($endTs < $now - $nowTolerance) {
             throw new BadRequestException("The exam end must be set in the future.");
         }
 
@@ -544,10 +556,14 @@ class GroupsPresenter extends BasePresenter
 
         if ($group->hasExamPeriodSet()) {
             if ($group->getExamBegin()->getTimestamp() <= $now) { // ... already begun
+                if ($strict !== $group->isExamLockStrict()) {
+                    throw new BadRequestException("The strict flag cannot be changed once the exam begins.");
+                }
+
                 // the exam already begun, we need to fix any group-locked users
                 foreach ($group->getStudents() as $student) {
                     if ($student->getGroupLock()?->getId() === $id) {
-                        $student->setGroupLock($group, $end);
+                        $student->setGroupLock($group, $end, $strict);
                         if ($student->isIpLocked()) {
                             $student->setIpLock($student->getIpLockRaw(), $end);
                         }
@@ -579,7 +595,7 @@ class GroupsPresenter extends BasePresenter
             }
         }
 
-        $group->setExamPeriod($begin, $end);
+        $group->setExamPeriod($begin, $end, $strict);
         $this->groups->persist($group);
 
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
@@ -1140,7 +1156,7 @@ class GroupsPresenter extends BasePresenter
 
         $expiration = $group->getExamEnd();
         $user->setIpLock($this->getHttpRequest()->getRemoteAddress(), $expiration);
-        $user->setGroupLock($group, $expiration);
+        $user->setGroupLock($group, $expiration, $group->isExamLockStrict());
         $this->users->persist($user, false);
 
         // make sure the locking is also logged

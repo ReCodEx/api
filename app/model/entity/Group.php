@@ -229,6 +229,13 @@ class Group
     protected $examEnd = null;
 
     /**
+     * @ORM\Column(type="boolean")
+     * Whether the group-lock for the exam should be strict
+     * (under strict lock, the user cannot read data from other groups).
+     */
+    protected $examLockStrict = false;
+
+    /**
      * @var Collection
      * @ORM\OneToMany(targetEntity="GroupExam", mappedBy="group",
      *                cascade={"persist", "remove"}, orphanRemoval=true)
@@ -240,8 +247,9 @@ class Group
      * Switch the group into an exam group by setting the begin and end dates of the exam.
      * @param DateTime $begin when the exam starts
      * @param DateTime $end when the exam ends
+     * @param bool $strict if true, locked users cannot acceess other groups (for reading)
      */
-    public function setExamPeriod(DateTime $begin, DateTime $end): void
+    public function setExamPeriod(DateTime $begin, DateTime $end, bool $strict = false): void
     {
         // asserts
         if ($begin >= $end) {
@@ -254,6 +262,7 @@ class Group
 
         $this->examBegin = $begin;
         $this->examEnd = $end;
+        $this->examLockStrict = $strict;
         $this->isOrganizational = false;
     }
 
@@ -264,6 +273,7 @@ class Group
     {
         $this->examBegin = null;
         $this->examEnd = null;
+        $this->examLockStrict = false;
     }
 
     /**
@@ -274,6 +284,11 @@ class Group
     {
         $at = $at ?? new DateTime();
         return $this->examBegin !== null && $this->examEnd !== null && $this->examEnd > $at;
+    }
+
+    public function isExamLockStrict(): bool
+    {
+        return $this->examLockStrict;
     }
 
     /**

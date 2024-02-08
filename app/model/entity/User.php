@@ -504,6 +504,11 @@ class User
     protected $groupLock = null;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $groupLockStrict = false;
+
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      * When the current group lock expires (null = never, or lock is not set).
@@ -517,6 +522,14 @@ class User
     {
         return $this->groupLock !== null &&
             ($this->groupLockExpiration === null || $this->groupLockExpiration > (new DateTime()));
+    }
+
+    /**
+     * @return bool True if the lock is strict and the user should not access other groups at all.
+     */
+    public function isGroupLockStrict(): bool
+    {
+        return $this->groupLockStrict;
     }
 
     /**
@@ -536,8 +549,9 @@ class User
      * Lock the user within a group.
      * @param Group $group
      * @param DateTime|null $expiration of the lock, if null, the lock will never expire
+     * @param bool $strict if true, the user may not even accress other groups for reading
      */
-    public function setGroupLock(Group $group, DateTime $expiration = null): void
+    public function setGroupLock(Group $group, DateTime $expiration = null, bool $strict = false): void
     {
         // basic asserts to be on the safe side
         if (!$group->hasExamPeriodSet()) {
@@ -549,12 +563,14 @@ class User
 
         $this->groupLock = $group;
         $this->groupLockExpiration = $expiration;
+        $this->groupLockStrict = $strict;
     }
 
     public function removeGroupLock(): void
     {
         $this->groupLock = null;
         $this->groupLockExpiration = null;
+        $this->groupLockStrict = false;
     }
 
 
