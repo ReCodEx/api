@@ -24,18 +24,26 @@ class GroupExams extends BaseRepository
      * @param Group $group
      * @param DateTime|null $begin if null, exam begin from the group is taken
      * @param DateTime|null $end if null, exam end from the group is taken
+     * @param bool|null $strict if null, examLockStrict value is taken
      * @return GroupExam
      */
-    public function findOrCreate(Group $group, DateTime $begin = null, DateTime $end = null): GroupExam
-    {
+    public function findOrCreate(
+        Group $group,
+        DateTime $begin = null,
+        DateTime $end = null,
+        bool $strict = null
+    ): GroupExam {
         $begin = $begin ?? $group->getExamBegin();
+        $end = $end ?? $group->getExamEnd();
+        $strict = $strict === null ? $group->isExamLockStrict() : $strict;
+
         $exam = $this->findBy(["group" => $group, "begin" => $begin]);
         if (count($exam) > 1) {
             throw new Exception("Data corruption, there is more than one group exam starting at the same time.");
         }
 
         if (!$exam) {
-            $exam = new GroupExam($group, $begin, $end ?? $group->getExamEnd());
+            $exam = new GroupExam($group, $begin, $end, $strict);
             $this->persist($exam);
         } else {
             $exam = reset($exam);

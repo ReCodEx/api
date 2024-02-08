@@ -1337,7 +1337,7 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             ['action' => 'setExamPeriod', 'id' => $group->getId()],
-            ['begin' => $begin, 'end' => $end]
+            ['begin' => $begin, 'end' => $end, 'strict' => true]
         );
 
         Assert::equal($group->getId(), $payload['id']);
