@@ -244,6 +244,7 @@ class GroupViewFactory
                 "bindings" => $this->bindings->getBindingsForGroup($group),
                 "examBegin" => $group->hasExamPeriodSet() ? $group->getExamBegin()?->getTimestamp() : null,
                 "examEnd" => $group->hasExamPeriodSet() ? $group->getExamEnd()?->getTimestamp() : null,
+                "examLockStrict" => $group->hasExamPeriodSet() ? $group->isExamLockStrict() : null,
                 "exams" => $group->getExams()->getValues(),
             ];
         }

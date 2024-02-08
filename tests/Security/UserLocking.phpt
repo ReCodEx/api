@@ -158,7 +158,9 @@ class UserLocking extends Tester\TestCase
 
         // and the group exam entity was created
         $groupExam = $this->presenter->groupExams->findBy(["group" => $group, "begin" => $group->getExamBegin()]);
-        Assert::truthy($groupExam);
+        Assert::count(1, $groupExam);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $groupExam[0]->getEnd()->getTimestamp());
+        Assert::equal($group->isExamLockStrict(), $groupExam[0]->isLockStrict());
     }
 
     public function testSecondStudentLocksInGroup()
@@ -407,10 +409,10 @@ class UserLocking extends Tester\TestCase
         Assert::count(1, $payload);
     }
 
-    public function testLockedUserCannotSeeAssignmentsInOtherGroups()
+    public function testStrictLockedUserCannotSeeAssignmentsInOtherGroups()
     {
         $student = $this->presenter->users->getByEmail($this->studentLogin);
-        $group = $this->prepExamGroup($student, -3600, 3600);
+        $group = $this->prepExamGroup($student, -3600, 3600, true); // true = strict
 
         $student->setIpLock($this->ip, $group->getExamEnd());
         $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
@@ -429,11 +431,29 @@ class UserLocking extends Tester\TestCase
         );
     }
 
-    public function testLockedUserCannotSeeSolutionsInOtherGroups()
+    public function testLockedUserCanSeeAssignmentsInOtherGroups()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, false); // false = not strict
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
+        $this->presenter->users->persist($student);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'assignments', 'id' => $group->getParentGroup()->getId()]
+        );
+        Assert::count(1, $payload);
+    }
+
+    public function testStrictLockedUserCannotSeeSolutionsInOtherGroups()
     {
         $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
         $student = $this->presenter->users->getByEmail($this->studentLogin);
-        $group = $this->prepExamGroup($student, -3600, 3600);
+        $group = $this->prepExamGroup($student, -3600, 3600, true); // true = strict
 
         $student->setIpLock($this->ip, $group->getExamEnd());
         $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
@@ -455,6 +475,30 @@ class UserLocking extends Tester\TestCase
             },
             App\Exceptions\ForbiddenRequestException::class
         );
+    }
+
+    public function testLockedUserCanSeeSolutionsInOtherGroups()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, false); // false = not strict
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'userSolutions', 'id' => $assignment->getId(), 'userId' => $student->getId()]
+        );
+        Assert::count(4, $payload);
     }
 
     public function testIpLockPrevetsOtherIps()
@@ -484,7 +528,7 @@ class UserLocking extends Tester\TestCase
     {
         PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
         $student = $this->presenter->users->getByEmail($this->student2Login);
-        $group = $this->prepExamGroup($student, -3600, 3600);
+        $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
         $assignments = $group->getAssignments()->filter(function ($a) {
@@ -519,7 +563,7 @@ class UserLocking extends Tester\TestCase
     {
         PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
         $student = $this->presenter->users->getByEmail($this->student2Login);
-        $group = $this->prepExamGroup($student, -3600, 3600);
+        $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
         $assignments = $group->getAssignments()->filter(function ($a) {
@@ -557,7 +601,7 @@ class UserLocking extends Tester\TestCase
     {
         PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
         $student = $this->presenter->users->getByEmail($this->student2Login);
-        $group = $this->prepExamGroup($student, -3600, 3600);
+        $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
         $assignments = $group->getAssignments();
@@ -586,7 +630,7 @@ class UserLocking extends Tester\TestCase
     {
         PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
         $student = $this->presenter->users->getByEmail($this->student2Login);
-        $group = $this->prepExamGroup($student, -3600, 3600);
+        $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
 
         $assignments = $group->getAssignments();
@@ -612,6 +656,31 @@ class UserLocking extends Tester\TestCase
             },
             App\Exceptions\ForbiddenRequestException::class
         );
+    }
+
+    public function testExamUpdateSyncLockedStudentExpiration()
+    {
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
+        $this->presenter->users->persist($student);
+        Assert::same($group->getExamEnd()->getTimestamp(), $student->getGroupLockExpiration()?->getTimestamp());
+
+        $now = (new DateTime())->getTimestamp();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['end' => $now]
+        );
+
+        $this->presenter->users->refresh($student);
+        Assert::same($now, $student->getGroupLockExpiration()?->getTimestamp());
     }
 
     public function testExamAssignmentSyncDeadline()
@@ -766,13 +835,5 @@ class UserLocking extends Tester\TestCase
     }
 }
 
-/*
-TODO:
-- update konce examu updatne expiration locknutych uzivatelu
-- update striktnosti examu nejde udelat po zacatku
-- checknout jestli spravne testujeme propisovani examu do historie (vcetne striktnosti locku)
-- checknout, ze se exam nezapise do historie, kdyz neni lock
-- otestovat zvlast strict/not strict locky
-*/
 $testCase = new UserLocking();
 $testCase->run();
