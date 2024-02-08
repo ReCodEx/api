@@ -1348,6 +1348,8 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::true($group->hasExamPeriodSet());
         Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
         Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+
+        Assert::count(0, $group->getExams()); // no exam is recorded in history
     }
 
     public function testSetExamPeriodInPastFail()
@@ -1364,7 +1366,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     'V1:Groups',
                     'POST',
                     ['action' => 'setExamPeriod', 'id' => $group->getId()],
-                    ['begin' => $begin, 'end' => $end]
+                    ['begin' => $begin, 'end' => $end, 'strict' => true]
                 );
             },
             BadRequestException::class
@@ -1378,8 +1380,9 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
         $this->presenter->groups->persist($group);
+        Assert::true($group->isExamLockStrict());
 
         $begin += 100;
         $end += 100;
@@ -1389,17 +1392,19 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             ['action' => 'setExamPeriod', 'id' => $group->getId()],
-            ['begin' => $begin, 'end' => $end]
+            ['begin' => $begin, 'end' => $end, 'strict' => false]
         );
 
         Assert::equal($group->getId(), $payload['id']);
         Assert::equal($begin, $payload['privateData']['examBegin']);
         Assert::equal($end, $payload['privateData']['examEnd']);
+        Assert::false($payload['privateData']['examLockStrict']);
 
         $this->presenter->groups->refresh($group);
         Assert::true($group->hasExamPeriodSet());
         Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
         Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+        Assert::false($group->isExamLockStrict());
     }
 
     public function testUpdatePendingExamPeriod()
@@ -1456,6 +1461,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
         $this->presenter->groups->refresh($group);
         Assert::false($group->hasExamPeriodSet());
+        Assert::count(0, $group->getExams()); // no exam is recorded in history
     }
 
     public function testUpdatePendingExamPeriodBeginFail()
@@ -1479,6 +1485,32 @@ class TestGroupsPresenter extends Tester\TestCase
                     'POST',
                     ['action' => 'setExamPeriod', 'id' => $group->getId()],
                     ['begin' => $begin, 'end' => $end]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testUpdatePendingExamPeriodStrictFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
+        $this->presenter->groups->persist($group);
+
+        $end += 100;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExamPeriod', 'id' => $group->getId()],
+                    ['end' => $end, 'strict' => false]
                 );
             },
             BadRequestException::class
