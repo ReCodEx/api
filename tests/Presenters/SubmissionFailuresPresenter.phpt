@@ -7,7 +7,7 @@ use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
 
 $container = require_once "../bootstrap.php";
-
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

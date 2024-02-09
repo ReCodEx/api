@@ -9,6 +9,8 @@ use Tester\Assert;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Entity\RuntimeEnvironment;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @httpCode any
  * @testCase
@@ -74,7 +76,6 @@ class TestRuntimeEnvironmentsPresenter extends Tester\TestCase
             Assert::contains($environment, $this->runtimeEnvironments->findAll());
         }
     }
-
 }
 
 $testCase = new TestRuntimeEnvironmentsPresenter();

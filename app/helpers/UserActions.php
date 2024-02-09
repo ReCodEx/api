@@ -31,12 +31,13 @@ class UserActions
     /**
      * Log an action carried out right now by the currently logged user.
      * @param string $action Action name
+     * @param string|null $remoteAddr IP address from which the action was requested
      * @param array $params Parameters of the request
      * @param int $code HTTP response code
      * @param mixed $data Additional data
      * @return bool if writing to file was alright
      */
-    public function log(string $action, array $params, int $code, $data = null): bool
+    public function log(string $action, ?string $remoteAddr, array $params, int $code, $data = null): bool
     {
         if (!Debugger::isEnabled()) {
             // debugger is not enabled, this means log directory is not accessible
@@ -57,6 +58,7 @@ class UserActions
         $content = [
             $identity->getUserData() !== null ? $identity->getUserData()->getId() : "null",
             (new DateTime())->getTimestamp(),
+            $remoteAddr ?? '',
             $action,
             Json::encode($params),
             $code,

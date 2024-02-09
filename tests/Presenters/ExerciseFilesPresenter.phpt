@@ -16,6 +16,7 @@ use App\Model\Entity\SupplementaryExerciseFile;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

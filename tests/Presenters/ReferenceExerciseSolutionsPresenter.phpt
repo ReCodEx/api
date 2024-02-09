@@ -25,6 +25,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

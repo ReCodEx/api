@@ -13,9 +13,9 @@ use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\PipelinesPresenter;
 use Doctrine\ORM\EntityManagerInterface;
-//use Doctrine\ORM\Id\UuidGenerator;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase
