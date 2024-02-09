@@ -18,6 +18,8 @@ use App\V1Module\Presenters\UsersPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @httpCode any
  * @testCase

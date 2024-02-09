@@ -28,6 +28,7 @@ use App\Helpers\JobConfig;
 use App\Exceptions\NotFoundException;
 use Nette\Http;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

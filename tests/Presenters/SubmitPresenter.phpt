@@ -23,6 +23,7 @@ use App\Helpers\JobConfig;
 use App\Model\Entity\UploadedFile;
 use App\Async\Handler\ResubmitAllAsyncJobHandler;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

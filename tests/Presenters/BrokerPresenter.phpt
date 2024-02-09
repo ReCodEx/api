@@ -6,6 +6,7 @@ use App\Helpers\BrokerProxy;
 use App\V1Module\Presenters\BrokerPresenter;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

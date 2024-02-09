@@ -9,6 +9,8 @@ use Tester\Assert;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\HardwareGroup;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @httpCode any
  * @testCase
@@ -74,7 +76,6 @@ class TestHardwareGroupsPresenter extends Tester\TestCase
             Assert::contains($hwGroup, $this->hardwareGroups->findAll());
         }
     }
-
 }
 
 $testCase = new TestHardwareGroupsPresenter();

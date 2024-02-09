@@ -274,9 +274,10 @@ class BasePresenter extends \App\Presenters\BasePresenter
     protected function logUserAction($code = IResponse::S200_OK)
     {
         if ($this->getUser()->isLoggedIn()) {
+            $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
             $params = $this->getRequest()->getParameters();
             unset($params[self::ACTION_KEY]);
-            $this->userActions->log($this->getAction(true), $params, $code);
+            $this->userActions->log($this->getAction(true), $remoteAddr, $params, $code);
         }
     }
 
