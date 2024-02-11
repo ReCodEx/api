@@ -444,6 +444,7 @@ services:
   - App\Model\Repository\SupplementaryExerciseFiles
   - App\Model\Repository\AttachmentFiles
   - App\Model\Repository\Pipelines
+  - App\Model\Repository\SecurityEvents
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
   - App\Model\Repository\ShadowAssignments

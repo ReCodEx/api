@@ -6,7 +6,9 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ForgottenPasswordHelper;
 use App\Model\Repository\Logins;
+use App\Model\Repository\SecurityEvents;
 use App\Model\Entity\Login;
+use App\Model\Entity\SecurityEvent;
 use App\Security\AccessToken;
 use App\Security\TokenScope;
 use Nette\Security\Passwords;
@@ -18,12 +20,17 @@ use DateTime;
  */
 class ForgottenPasswordPresenter extends BasePresenter
 {
-
     /**
      * @var Logins
      * @inject
      */
     public $logins;
+
+    /**
+     * @var SecurityEvents
+     * @inject
+     */
+    public $securityEvents;
 
     /**
      * @var ForgottenPasswordHelper
@@ -75,9 +82,15 @@ class ForgottenPasswordPresenter extends BasePresenter
 
         // actually change the password
         $login->changePassword($password, $this->passwordsService);
-        $this->getCurrentUser()->setTokenValidityThreshold(new DateTime());
+        $login->getUser()->setTokenValidityThreshold(new DateTime());
         $this->logins->persist($login);
         $this->logins->flush();
+
+        $event = SecurityEvent::createChangePasswoedEvent(
+            $this->getHttpRequest()->getRemoteAddress(),
+            $login->getUser()
+        );
+        $this->securityEvents->persist($event);
 
         $this->sendSuccessResponse("OK");
     }
