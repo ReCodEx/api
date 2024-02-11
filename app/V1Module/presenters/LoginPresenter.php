@@ -9,8 +9,10 @@ use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
+use App\Model\Entity\SecurityEvent;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
+use App\Model\Repository\SecurityEvents;
 use App\Model\Repository\Users;
 use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
@@ -50,6 +52,12 @@ class LoginPresenter extends BasePresenter
      * @inject
      */
     public $logins;
+
+    /**
+     * @var SecurityEvents
+     * @inject
+     */
+    public $securityEvents;
 
     /**
      * @var Users
@@ -115,6 +123,10 @@ class LoginPresenter extends BasePresenter
         $user = $this->credentialsAuthenticator->authenticate($username, $password);
         $user->updateLastAuthenticationAt();
         $this->users->flush();
+
+        $event = SecurityEvent::createLoginEvent($this->getHttpRequest()->getRemoteAddress(), $user);
+        $this->securityEvents->persist($event);
+
         $this->sendAccessTokenResponse($user);
     }
 
@@ -135,6 +147,10 @@ class LoginPresenter extends BasePresenter
         $user = $this->externalServiceAuthenticator->authenticate($authenticatorName, $req->getPost("token"));
         $user->updateLastAuthenticationAt();
         $this->users->flush();
+
+        $event = SecurityEvent::createExternalLoginEvent($this->getHttpRequest()->getRemoteAddress(), $user);
+        $this->securityEvents->persist($event);
+
         $this->sendAccessTokenResponse($user);
     }
 
@@ -187,6 +203,9 @@ class LoginPresenter extends BasePresenter
         $user->updateLastAuthenticationAt();
         $this->users->flush();
 
+        $event = SecurityEvent::createRefreshTokenEvent($this->getHttpRequest()->getRemoteAddress(), $user);
+        $this->securityEvents->persist($event);
+
         $this->sendSuccessResponse(
             [
                 "accessToken" => $this->accessManager->issueRefreshedToken($token),
@@ -229,6 +248,9 @@ class LoginPresenter extends BasePresenter
         $user = $this->getCurrentUser();
         $user->updateLastAuthenticationAt();
         $this->users->flush();
+
+        $event = SecurityEvent::createIssueTokenEvent($this->getHttpRequest()->getRemoteAddress(), $user);
+        $this->securityEvents->persist($event);
 
         $this->sendSuccessResponse(
             [

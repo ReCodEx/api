@@ -16,6 +16,7 @@ use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\GroupMembership;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\SecurityEvent;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
 use App\Model\Repository\GroupExams;
@@ -24,6 +25,7 @@ use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\SecurityEvents;
 use App\Model\View\AssignmentViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
@@ -92,6 +94,12 @@ class GroupsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutions;
+
+    /**
+     * @var SecurityEvents
+     * @inject
+     */
+    public $securityEvents;
 
     /**
      * @var IGroupPermissions
