@@ -6,6 +6,7 @@ use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Security\AccessToken;
 use App\Security\Identity;
 use App\Security\TokenScope;
+use App\Model\Entity\SecurityEvent;
 use App\V1Module\Presenters\LoginPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Application\Request;
@@ -77,6 +78,9 @@ class TestLoginPresenter extends Tester\TestCase
 
     public function testLogin()
     {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
         $request = new Request(
             "V1:Login",
             "POST",
@@ -96,6 +100,11 @@ class TestLoginPresenter extends Tester\TestCase
         Assert::true(array_key_exists("accessToken", $result["payload"]));
         Assert::same($this->presenter->users->getByEmail($this->userLogin)->getId(), $result["payload"]["user"]["id"]);
         Assert::true($this->presenter->user->isLoggedIn());
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_LOGIN, $events[0]->getType());
+        Assert::equal($this->presenter->user->getId(), $events[0]->getUser()->getId());
     }
 
     public function testLoginIncorrect()
@@ -122,6 +131,9 @@ class TestLoginPresenter extends Tester\TestCase
 
     public function testLoginExternal()
     {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
         $authenticator = new ExternalServiceAuthenticator(
             [ [
                 'name' => 'test-cas',
@@ -157,6 +169,11 @@ class TestLoginPresenter extends Tester\TestCase
         Assert::true(array_key_exists("accessToken", $result["payload"]));
         Assert::equal($user->getId(), $result["payload"]["user"]["id"]);
         Assert::true($this->presenter->user->isLoggedIn());
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_LOGIN_EXTERNAL, $events[0]->getType());
+        Assert::equal($user->getId(), $events[0]->getUser()->getId());
     }
 
     public function testTakeover()
@@ -199,6 +216,9 @@ class TestLoginPresenter extends Tester\TestCase
 
     public function testRefresh()
     {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
         $user = $this->presenter->users->getByEmail($this->userLogin);
         $time = time();
         $token = new AccessToken(
@@ -229,6 +249,11 @@ class TestLoginPresenter extends Tester\TestCase
         Assert::true($newToken->isInScope(TokenScope::REFRESH));
         Assert::true($newToken->isInScope("hello"));
         Assert::true($newToken->isInScope("world"));
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_REFRESH, $events[0]->getType());
+        Assert::equal($user->getId(), $events[0]->getUser()->getId());
     }
 
     public function testRefreshWrongScope()
@@ -258,6 +283,9 @@ class TestLoginPresenter extends Tester\TestCase
 
     public function testIssueToken()
     {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $request = new Request(
             "V1:Login",
@@ -271,6 +299,11 @@ class TestLoginPresenter extends Tester\TestCase
         $token = $this->presenter->accessManager->decodeToken($payload["accessToken"]);
         Assert::true($token->isInScope(TokenScope::REFRESH));
         Assert::true($token->isInScope("read-all"));
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_ISSUE_TOKEN, $events[0]->getType());
+        Assert::equal($this->presenter->user->getId(), $events[0]->getUser()->getId());
     }
 }
 
