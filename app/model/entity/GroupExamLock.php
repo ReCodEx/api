@@ -8,6 +8,7 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(indexes={@ORM\Index(name="lock_created_at_idx", columns={"created_at"})})
  * Logs locking events for a particular exam. Every time student acquires group-lock, this entity is created.
  * If the user is explicitly unlocked, the time of that event is also recorded.
  */
@@ -36,7 +37,7 @@ class GroupExamLock implements JsonSerializable
      * @ORM\Column(type="string")
      * remote IP address from which the user requested locking
      */
-    protected $ip;
+    protected $remoteAddr;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -49,13 +50,13 @@ class GroupExamLock implements JsonSerializable
      * Constructor
      * @param GroupExam $groupExam
      * @param User $student
-     * @param string $ip
+     * @param string $remoteAddr
      */
-    public function __construct(GroupExam $groupExam, User $student, string $ip)
+    public function __construct(GroupExam $groupExam, User $student, string $remoteAddr)
     {
         $this->groupExam = $groupExam;
         $this->student = $student;
-        $this->ip = $ip;
+        $this->remoteAddr = $remoteAddr;
         $this->createdNow();
     }
 
@@ -65,7 +66,7 @@ class GroupExamLock implements JsonSerializable
             "id" => $this->getId(),
             "groupExamId" => $this->getGroupExam()->getId(),
             "studentId" => $this->getStudent()->getId(),
-            "ip" => $this->getIp(),
+            "remoteAddr" => $this->getRemoteAddr(),
             "createdAt" => $this->getCreatedAt()->getTimestamp(),
             "unlockedAt" => $this->getUnlockedAt()?->getTimestamp(),
         ];
@@ -91,9 +92,9 @@ class GroupExamLock implements JsonSerializable
         return $this->student;
     }
 
-    public function getIp(): string
+    public function getRemoteAddr(): string
     {
-        return $this->ip;
+        return $this->remoteAddr;
     }
 
     public function getUnlockedAt(): ?DateTime
