@@ -177,4 +177,9 @@ class SecurityEvent implements JsonSerializable
     {
         return $this->data ? json_decode($this->data) : null;
     }
+
+    public function getDataRaw(): string
+    {
+        return $this->data;
+    }
 }

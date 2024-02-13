@@ -323,6 +323,8 @@ services:
   - App\Console\FixExerciseConfigs
   - App\Console\FixConfigVariables
   - App\Console\PlagiarismDetectionAccessToken
+  - App\Console\ListExamEvents
+  - App\Console\ListSecurityEvents
 
   # security
   - App\Security\AccessManager(%accessManager%)
