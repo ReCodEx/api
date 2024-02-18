@@ -364,6 +364,10 @@ class GroupsPresenter extends BasePresenter
         if (!$this->groupAcl->canSetOrganizational($group)) {
             throw new ForbiddenRequestException();
         }
+
+        if ($group->isExam()) {
+            throw new BadRequestException("Organizational group must not be exam group.");
+        }
     }
 
     /**
@@ -472,6 +476,10 @@ class GroupsPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($id);
         if (!$group->getChildGroups()->isEmpty()) {
             throw new BadRequestException("Exam group must have no sub-groups.");
+        }
+
+        if ($group->isOrganizational()) {
+            throw new BadRequestException("Exam group must not be organizational.");
         }
 
         if (!$this->groupAcl->canSetExamFlag($group)) {
