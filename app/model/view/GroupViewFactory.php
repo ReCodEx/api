@@ -217,7 +217,7 @@ class GroupViewFactory
                 "admins" => $group->getAdminsIds(),
                 "supervisors" => $group->getSupervisorsIds(),
                 "observers" => $group->getObserversIds(),
-                "students" => $group->getStudentsIds(),
+                "students" => $this->groupAcl->canViewStudents($group) ? $group->getStudentsIds() : [],
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
                 "hasValidLicence" => $group->hasValidLicence(),
                 "assignments" => $group->getAssignments()->filter(
