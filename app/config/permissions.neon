@@ -58,8 +58,7 @@ permissions:
           - viewAssignments
           - viewPublicDetail
           - viewDetail
-          - viewSubgroups
-          - viewMembers
+          - viewStudents
           - viewStudentStats
           - viewStats
           - viewAll
@@ -70,6 +69,7 @@ permissions:
       resource: group
       actions:
           - viewAssignments
+          - viewStudents
           - viewAll
           - viewPublicDetail
           - viewDetail
@@ -87,8 +87,7 @@ permissions:
       resource: group
       actions:
           - viewDetail
-          - viewSubgroups  # used in deprecated endpoint
-          - viewMembers    # used in deprecated endpoint
+          - viewStudents
       conditions:
           - group.userIsNotLockedElsewhereStrictly
           - or:

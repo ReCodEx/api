@@ -762,7 +762,7 @@ class GroupsPresenter extends BasePresenter
         /** @var Group $group */
         $group = $this->groups->findOrThrow($id);
 
-        if (!$this->groupAcl->canViewSubgroups($group)) {
+        if (!$this->groupAcl->canViewDetail($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -793,7 +793,7 @@ class GroupsPresenter extends BasePresenter
     public function checkMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-        if (!$this->groupAcl->canViewMembers($group)) {
+        if (!$this->groupAcl->canViewDetail($group)) {
             throw new ForbiddenRequestException();
         }
     }
