@@ -14,11 +14,7 @@ interface IGroupPermissions
 
     public function canViewDetail(Group $group): bool;
 
-    public function canViewSubgroups(Group $group): bool;
-
     public function canViewStudents(Group $group): bool;
-
-    public function canViewMembers(Group $group): bool;
 
     public function canAddMember(Group $group, User $supervisor): bool;
 
@@ -40,7 +36,15 @@ interface IGroupPermissions
 
     public function canRemove(Group $group): bool;
 
+    public function canSetOrganizational(Group $group): bool;
+
     public function canArchive(Group $group): bool;
+
+    public function canSetExamFlag(Group $group): bool;
+
+    public function canSetExamPeriod(Group $group): bool;
+
+    public function canRemoveExamPeriod(Group $group): bool;
 
     public function canRelocate(Group $group): bool;
 
@@ -63,4 +67,8 @@ interface IGroupPermissions
     public function canAcceptInvitation(Group $group): bool;
 
     public function canEditInvitations(Group $group): bool;
+
+    public function canLockStudent(Group $group, User $student): bool;
+
+    public function canUnlockStudent(Group $group, User $student): bool;
 }

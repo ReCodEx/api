@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class GroupInvitations extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, GroupInvitation::class);

@@ -254,6 +254,9 @@ class RouterFactory
 
         $router[] = new PostRoute("$prefix/<id>/organizational", "Groups:setOrganizational");
         $router[] = new PostRoute("$prefix/<id>/archived", "Groups:setArchived");
+        $router[] = new PostRoute("$prefix/<id>/exam", "Groups:setExam");
+        $router[] = new PostRoute("$prefix/<id>/examPeriod", "Groups:setExamPeriod");
+        $router[] = new DeleteRoute("$prefix/<id>/examPeriod", "Groups:removeExamPeriod");
         $router[] = new PostRoute("$prefix/<id>/relocate/<newParentId>", "Groups:relocate");
 
         $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");
@@ -261,6 +264,8 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/students/<userId>/solutions", "Groups:studentsSolutions");
         $router[] = new PostRoute("$prefix/<id>/students/<userId>", "Groups:addStudent");
         $router[] = new DeleteRoute("$prefix/<id>/students/<userId>", "Groups:removeStudent");
+        $router[] = new PostRoute("$prefix/<id>/lock/<userId>", "Groups:lockStudent");
+        $router[] = new DeleteRoute("$prefix/<id>/lock/<userId>", "Groups:unlockStudent");
 
         // members = all other types of memberships except students
         $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");

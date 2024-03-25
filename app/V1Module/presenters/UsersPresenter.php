@@ -9,9 +9,11 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Login;
+use App\Model\Entity\SecurityEvent;
 use App\Model\Entity\User;
 use App\Model\Entity\UserUiData;
 use App\Model\Repository\Logins;
+use App\Model\Repository\SecurityEvents;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\AnonymizationHelper;
@@ -33,6 +35,12 @@ class UsersPresenter extends BasePresenter
      * @inject
      */
     public $logins;
+
+    /**
+     * @var SecurityEvents
+     * @inject
+     */
+    public $securityEvents;
 
     /**
      * @var EmailVerificationHelper
@@ -382,6 +390,12 @@ class UsersPresenter extends BasePresenter
 
             $login->changePassword($password, $this->passwordsService);
             $login->getUser()->setTokenValidityThreshold(new DateTime());
+
+            $event = SecurityEvent::createChangePasswoedEvent(
+                $this->getHttpRequest()->getRemoteAddress(),
+                $login->getUser()
+            );
+            $this->securityEvents->persist($event);
         } else {
             throw new WrongCredentialsException(
                 "Your current password does not match",
@@ -693,6 +707,10 @@ class UsersPresenter extends BasePresenter
         $user = $this->users->findOrThrow($id);
         $user->setTokenValidityThreshold(new DateTime());
         $this->users->flush();
+
+        $event = SecurityEvent::createInvalidateTokensEvent($this->getHttpRequest()->getRemoteAddress(), $user);
+        $this->securityEvents->persist($event);
+
         $token = $this->getAccessToken();
 
         $this->sendSuccessResponse(

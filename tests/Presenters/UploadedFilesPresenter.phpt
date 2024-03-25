@@ -20,6 +20,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Json;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @httpCode any
  * @testCase

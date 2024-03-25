@@ -28,6 +28,7 @@ use App\Helpers\JobConfig;
 use App\Exceptions\NotFoundException;
 use Nette\Http;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase
@@ -464,6 +465,94 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         Assert::same([$disabledEnv->getId()], $updatedAssignment["disabledRuntimeEnvironmentIds"]);
         Assert::true(in_array($disabledEnv->getId(), $updatedAssignment["runtimeEnvironmentIds"]));
+    }
+
+    public function testSetExamFlag()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $this->assignments->findAll();
+        /** @var Assignment $assignment */
+        $assignment = array_pop($assignments);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Assignments',
+            'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => true,
+                'version' => 1,
+                'localizedTexts' => [
+                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+                ],
+                'firstDeadline' => (new DateTime())->getTimestamp(),
+                'maxPointsBeforeFirstDeadline' => 123,
+                'submissionsCountLimit' => 32,
+                'allowSecondDeadline' => true,
+                'maxPointsDeadlineInterpolation' => false,
+                'canViewLimitRatios' => false,
+                'canViewJudgeStdout' => false,
+                'canViewJudgeStderr' => false,
+                'secondDeadline' => (new DateTime())->getTimestamp() + 10,
+                'maxPointsBeforeSecondDeadline' => 543,
+                'isBonus' => true,
+                'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => null,
+                'isExam' => true,
+            ]
+        );
+
+        Assert::true($payload["isExam"]);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::true($assignment->isExam());
+    }
+
+    public function testUnsetExamFlag()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $this->assignments->findAll();
+        /** @var Assignment $assignment */
+        $assignment = array_pop($assignments);
+        $assignment->setExam();
+        $this->presenter->assignments->persist($assignment);
+        Assert::true($assignment->isExam());
+
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Assignments',
+            'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => true,
+                'version' => 1,
+                'localizedTexts' => [
+                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+                ],
+                'firstDeadline' => (new DateTime())->getTimestamp(),
+                'maxPointsBeforeFirstDeadline' => 123,
+                'submissionsCountLimit' => 32,
+                'allowSecondDeadline' => true,
+                'maxPointsDeadlineInterpolation' => false,
+                'canViewLimitRatios' => false,
+                'canViewJudgeStdout' => false,
+                'canViewJudgeStderr' => false,
+                'secondDeadline' => (new DateTime())->getTimestamp() + 10,
+                'maxPointsBeforeSecondDeadline' => 543,
+                'isBonus' => true,
+                'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => null,
+                'isExam' => false,
+            ]
+        );
+
+        Assert::false($payload["isExam"]);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::false($assignment->isExam());
     }
 
     public function testCreateAssignment()

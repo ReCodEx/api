@@ -2,12 +2,14 @@
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Model\Entity\SecurityEvent;
 use App\Security\Identity;
 use App\Security\TokenScope;
 use App\V1Module\Presenters\ForgottenPasswordPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase
@@ -147,6 +149,9 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
         // login with obtained token
         $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
         $request = new Nette\Application\Request(
             'V1:ForgottenPassword',
             'POST',
@@ -159,6 +164,11 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         Assert::equal("OK", $result['payload']);
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_CHANGE_PASSWORD, $events[0]->getType());
+        Assert::equal($user->getId(), $events[0]->getUser()->getId());
     }
 
     public function testWrongPasswordReset()

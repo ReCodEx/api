@@ -13,6 +13,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\Yaml;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @testCase
  */

@@ -15,7 +15,6 @@ use App\Model\Entity\User;
  */
 class Comments extends BaseRepository
 {
-
     private $threads;
     private $comments;
 
@@ -88,8 +87,8 @@ class Comments extends BaseRepository
 
     /**
      * Get the number of visible comments for given user
-     * The method requires the user entity, since it does not use ACL mechanism and compares
-     * the authorship of comments directly as a performance optimization (we need only the last entity, not all entities).
+     * The method requires the user entity, since it does not use ACL mechanism and compares the authorship of
+     * comments directly as a performance optimization (we need only the last entity, not all entities).
      * @param CommentThread $thread
      * @param User $user
      * @return Comment|null

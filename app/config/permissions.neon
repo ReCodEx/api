@@ -58,8 +58,6 @@ permissions:
           - viewAssignments
           - viewPublicDetail
           - viewDetail
-          - viewSubgroups
-          - viewMembers
           - viewStudents
           - viewStudentStats
           - viewStats
@@ -80,19 +78,19 @@ permissions:
       role: student
       resource: group
       actions: viewAssignments
-      conditions: group.isMember
+      conditions:
+          - group.isMember
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
       resource: group
       actions:
-          - viewStudents
           - viewDetail
-          - viewSubgroups
-          - viewMembers
+          - viewStudents
       conditions:
+          - group.userIsNotLockedElsewhereStrictly
           - or:
-              - group.isAdmin
               - group.isMember
               - group.isPublic
               - group.isRootGroupOfInstance
@@ -102,55 +100,72 @@ permissions:
       role: student
       resource: group
       actions:
-        - viewPublicDetail
-        - viewInvitations
-      conditions: group.isInSameInstance
+          - viewPublicDetail
+      conditions:
+          - group.isInSameInstance
 
     - allow: true
       role: student
       resource: group
       actions:
-        - acceptInvitation
+          - viewInvitations
       conditions:
-        - group.isInSameInstance
-        - group.isNotArchived
-
-    - allow: true # A student can join public groups
-      role: student
-      resource: group
-      actions:
-        - addStudent
-      conditions:
-        - group.isPublic
-        - group.isInSameInstance
-        - student.isSameUser
-        - group.isNotArchived
+          - group.isInSameInstance
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
       resource: group
       actions:
-        - removeStudent # A student can leave any group...
+          - acceptInvitation
       conditions:
-        - group.isNotDetainingStudents # ... which does not detain students
-        - group.isMember
-        - student.isSameUser
-        - group.isNotArchived
+          - group.isInSameInstance
+          - group.isNotArchived
+          - group.userIsNotLockedElsewhere  # user should not be locked at all, but only members can lock themselves in a group, so this is ok
+
+    - allow: true  # A student can join public groups
+      role: student
+      resource: group
+      actions:
+          - addStudent
+      conditions:
+          - group.isPublic
+          - group.isInSameInstance
+          - group.isNotArchived
+          - student.isSameUser
+          - student.isNotGroupLocked
 
     - allow: true
       role: student
       resource: group
       actions:
-        - viewStudentStats
+          - removeStudent  # A student can leave any group...
       conditions:
-        - group.isMember
-        - student.isSameUser
+          - group.isNotDetainingStudents  # ... which does not detain students
+          - group.isNotExam  # exam groups automatically detain students
+          - group.isMember
+          - group.isNotArchived
+          - student.isSameUser
+          - student.isNotGroupLocked
 
     - allow: true
       role: student
       resource: group
-      actions: viewStats
-      conditions: group.areStatsPublic
+      actions:
+          - viewStudentStats
+      conditions:
+          - group.isMember
+          - student.isSameUser
+          - group.userIsNotLockedElsewhereStrictly
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - viewStats
+      conditions:
+          - group.areStatsPublic
+          - group.userIsNotLockedElsewhereStrictly
 
     - allow: true
       resource: group
@@ -161,7 +176,7 @@ permissions:
           - viewPublicDetail
       conditions:
           or:
-              - group.isSupervisor
+              - group.isSupervisorOrAdmin
               - group.isObserver
 
     - allow: true
@@ -172,7 +187,7 @@ permissions:
           - editInvitations  # add, update, and remove invitation links (for already registered users) 
           - removeStudent
       conditions:
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - group.isNotArchived
 
     - allow: true
@@ -181,7 +196,7 @@ permissions:
       actions:
           - addStudent  # requires permissions to read all users' private data
       conditions:
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - group.isNotArchived
 
     - allow: true
@@ -190,7 +205,7 @@ permissions:
       actions:
           - sendEmail
       conditions:
-          - group.isAdmin
+          - group.isSupervisorOrAdmin
 
     - allow: true
       resource: group
@@ -198,7 +213,6 @@ permissions:
       actions:
           - update
           - remove
-          - addSubgroup
           - removeMember
       conditions:
           - group.isAdmin
@@ -223,10 +237,73 @@ permissions:
 
     - allow: true
       resource: group
+      role: supervisor-student
+      actions:
+          - setOrganizational
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isNotExam
+          - group.hasNoExamPeriod
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - addSubgroup  # note: exam groups must have no sub-groups
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isNotExam
+
+    - allow: true
+      resource: group
       role: empowered-supervisor
       actions:
           - archive
       conditions: group.isAdmin
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - setExamFlag
+          - setExamPeriod
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isNotOrganizational
+
+    - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - removeExamPeriod
+      conditions:
+          - group.isAdmin
+          - group.isNotArchived
+          - group.isBeforeExamPeriod
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - lockStudent  # students lock themselves
+      conditions:
+          - group.isNotArchived
+          - group.isExamInProgress
+          - group.isMember
+          - student.isSameUser
+          - student.isNotGroupLocked
+
+    - allow: true
+      role: supervisor-student
+      resource: group
+      actions:
+          - unlockStudent  # only a supervisor of the same group can unlock the student
+      conditions:
+          - group.isExamInProgress
+          - group.isSupervisorOrAdmin
 
     ########################
     # Instance permissions #
@@ -376,6 +453,7 @@ permissions:
       conditions:
           - assignment.isAssignee
           - assignment.isVisible
+          - assignment.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -387,9 +465,14 @@ permissions:
           - assignment.isInActiveGroup
           - assignment.isAssignee
           - assignment.isVisible
+          - assignment.userIsNotLockedElsewhere
           - student.isSameUser
+          - or:
+              - assignment.isExamNotInProgress
+              - assignment.isExamInProgressAndStudentLocked  # it is during the exam, but the user is already locked
 
     - allow: true
+      role: supervisor-student
       resource: assignment
       actions:
           - viewDetail
@@ -400,6 +483,7 @@ permissions:
           - assignment.isObserverOrBetter
 
     - allow: true
+      role: supervisor-student
       resource: assignment
       actions:
           - update
@@ -413,11 +497,12 @@ permissions:
           - assignment.isSupervisorOrAdmin
 
     - allow: true
+      role: supervisor-student
       resource: group
       actions:
           - assignExercise
       conditions:
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - group.isNotArchived
 
     - allow: true
@@ -427,6 +512,8 @@ permissions:
           - viewSubmissions
       conditions:
           - student.isSameUser
+          - assignment.isVisible
+          - assignment.userIsNotLockedElsewhereStrictly
 
     ###################################
     # Assignment Solution permissions #
@@ -461,6 +548,7 @@ permissions:
           - viewReview
       conditions:
           - assignmentSolution.isAuthor
+          - assignmentSolution.userIsNotLockedElsewhereStrictly
 
     - allow: true
       role: student
@@ -470,6 +558,7 @@ permissions:
       conditions:
           - assignmentSolution.isAuthor
           - assignmentSolution.isInActiveGroup
+          - assignmentSolution.userIsNotLockedElsewhere
 
     - allow: true
       role: student
@@ -479,8 +568,10 @@ permissions:
       conditions:
           - assignmentSolution.areEvaluationDetailsPublic
           - assignmentSolution.isAuthor
+          - assignmentSolution.userIsNotLockedElsewhereStrictly
 
     - allow: true
+      role: supervisor-student
       resource: assignmentSolution
       actions:
           - viewDetail
@@ -495,6 +586,7 @@ permissions:
           - assignmentSolution.isObserverOrBetter
 
     - allow: true
+      role: supervisor-student
       resource: assignmentSolution
       actions:
           - deleteEvaluation
@@ -510,6 +602,7 @@ permissions:
           - assignmentSolution.isInActiveGroup
 
     - allow: true
+      role: supervisor-student
       resource: assignmentSolution
       actions:
           - editReviewComment
@@ -520,11 +613,13 @@ permissions:
               - assignmentSolution.isAdmin
 
     - allow: true
+      role: supervisor-student
       resource: assignmentSolution
       actions:
           - deleteReview
       conditions:
           - assignmentSolution.isAdmin
+          - assignmentSolution.isInActiveGroup
 
     - allow: true
       resource: assignmentSolution
@@ -561,18 +656,28 @@ permissions:
           - alter
           - delete
       conditions:
-          or:
+          - userIsNotGroupLocked
+          - or:
               - comment.isAuthor
               - comment.isSupervisorInGroupOfCommentedSolution
               - comment.isSupervisorInGroupOfCommentedAssignment
 
-    - allow: true # TODO
+    - allow: true
+      role: student
+      resource: comment
+      actions:
+          - viewThread
+          - addComment
+      conditions:  # TODO - make sure only apropriate group members/authors can do this
+          - userIsNotGroupLocked
+
+    - allow: true
       role: student
       resource: comment
       actions:
           - createThread
-          - viewThread
-          - addComment
+      conditions:
+          - userIsNotGroupLocked
 
     ########################
     # Exercise permissions #
@@ -693,7 +798,7 @@ permissions:
           - attachGroup
       conditions:
           - exercise.notArchived
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - or:
             - exercise.isSuperGroupAdmin
             - exercise.isAuthorOrAdmin
@@ -705,7 +810,7 @@ permissions:
           - detachGroup
       conditions:
           - exercise.notArchived
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - or:
             - exercise.isSuperGroupAdmin
             - exercise.isAuthorOrAdmin
@@ -743,7 +848,7 @@ permissions:
       actions:
           - createExercise  # this is an explicit rule tested in creation endpoint (exercise is always created in a group)
       conditions:
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - group.isNotArchived
 
     #######################
@@ -1046,6 +1151,7 @@ permissions:
       conditions:
           - assignment.isAssignee
           - assignment.isPublic
+          - assignment.userIsNotLockedElsewhereStrictly
 
     - allow: true
       resource: shadowAssignment
@@ -1072,7 +1178,7 @@ permissions:
       actions:
           - createShadowAssignment
       conditions:
-          - group.isSupervisor
+          - group.isSupervisorOrAdmin
           - group.isNotArchived
 
     ############################

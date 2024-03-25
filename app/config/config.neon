@@ -249,11 +249,13 @@ acl:
     asyncJob: App\Security\ACL\IAsyncJobPermissions
     plagiarism: App\Security\ACL\IPlagiarismPermissions
   policies:
+    _: App\Security\Policies\BasePermissionPolicy
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
     user: App\Security\Policies\UserPermissionPolicy
     assignment: App\Security\Policies\AssignmentPermissionPolicy
     comment: App\Security\Policies\CommentPermissionPolicy
+    thread: App\Security\Policies\CommentThreadPermissionPolicy
     exercise: App\Security\Policies\ExercisePermissionPolicy
     referenceExerciseSolution: App\Security\Policies\ReferenceExerciseSolutionPermissionPolicy
     assignmentSolution: App\Security\Policies\AssignmentSolutionPermissionPolicy
@@ -321,6 +323,8 @@ services:
   - App\Console\FixExerciseConfigs
   - App\Console\FixConfigVariables
   - App\Console\PlagiarismDetectionAccessToken
+  - App\Console\ListExamEvents
+  - App\Console\ListSecurityEvents
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -418,6 +422,8 @@ services:
   - App\Model\Repository\ExternalLogins
   - App\Model\Repository\Groups
   - App\Model\Repository\GroupInvitations
+  - App\Model\Repository\GroupExams
+  - App\Model\Repository\GroupExamLocks
   - App\Model\Repository\Instances
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins
@@ -440,6 +446,7 @@ services:
   - App\Model\Repository\SupplementaryExerciseFiles
   - App\Model\Repository\AttachmentFiles
   - App\Model\Repository\Pipelines
+  - App\Model\Repository\SecurityEvents
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
   - App\Model\Repository\ShadowAssignments

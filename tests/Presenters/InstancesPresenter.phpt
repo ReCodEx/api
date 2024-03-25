@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Model\Entity\Licence;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @httpCode any
  * @testCase
@@ -171,7 +173,9 @@ class TestInstancesPresenter extends Tester\TestCase
         $instance = array_pop($allInstances);
 
         $request = new Nette\Application\Request(
-            'V1:Instances', 'GET', ['action' => 'licences', 'id' => $instance->getId()]
+            'V1:Instances',
+            'GET',
+            ['action' => 'licences', 'id' => $instance->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -264,7 +268,6 @@ class TestInstancesPresenter extends Tester\TestCase
         Assert::equal("OK", $result['payload']);
         Assert::equal(1, $instance->getLicences()->count());
     }
-
 }
 
 $testCase = new TestInstancesPresenter();

@@ -40,6 +40,23 @@ class BaseCommand extends Command
     protected $nonInteractive = false;
 
     /**
+     * Wrapper that fetches an option value and converts it into DateTime.
+     * If the option has invalid value, error is printed out and the exception is re-thrown.
+     * @param string $name of the option
+     * @return DateTime|null null if the option is missing
+     */
+    protected function getDateTimeOption(string $name): ?DateTime
+    {
+        $value = $this->input->getOption($name);
+        try {
+            return $value !== null ? new DateTime($value) : null;
+        } catch (Exception $e) {
+            $this->output->writeln("Value '$value' for option '$name' cannot be parsed as date/time.");
+            throw $e;
+        }
+    }
+
+    /**
      * Wrapper for confirmation question.
      * @param string $text message of the question
      * @param bool $default value when the query is confirmed hastily

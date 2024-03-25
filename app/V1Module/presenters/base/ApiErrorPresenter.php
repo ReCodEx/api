@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ApiException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\UserActions;
+use App\Presenters\BasePresenter;
 use Exception;
 use Nette\Http\IResponse;
 use Nette\Application\BadRequestException;
@@ -14,9 +15,8 @@ use Tracy\ILogger;
 /**
  * The error presenter for the API module - all responses are served as JSONs with a fixed format.
  */
-class ApiErrorPresenter extends \App\Presenters\BasePresenter
+class ApiErrorPresenter extends BasePresenter
 {
-
     /**
      * @var ILogger
      * @inject
@@ -118,13 +118,14 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter
             // log the action done by the current user
             // determine the action name from the application request
             $req = $this->getRequest();
+            $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
             $params = $req->getParameters();
             $action = isset($params[self::ACTION_KEY]) ? $params[self::ACTION_KEY] : self::DEFAULT_ACTION;
             unset($params[self::ACTION_KEY]);
             $fullyQualified = ':' . $req->getPresenterName() . ':' . $action;
 
             try {
-                $this->userActions->log($fullyQualified, $params, $code, $msg);
+                $this->userActions->log($fullyQualified, $remoteAddr, $params, $code, $msg);
             } catch (Exception $e) {
                 // Let's not lose our sleep over that...
             }

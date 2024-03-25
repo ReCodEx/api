@@ -11,6 +11,7 @@ use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Exceptions\NotFoundException;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase

@@ -15,8 +15,9 @@ use App\Exceptions\NotFoundException;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Responses\StorageFileResponse;
-
 use Tester\Assert;
+
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @httpCode any

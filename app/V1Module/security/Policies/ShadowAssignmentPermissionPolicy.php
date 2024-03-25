@@ -4,6 +4,7 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\ShadowAssignment;
 use App\Security\Identity;
+use DateTime;
 
 class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
 {
@@ -45,5 +46,20 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
         }
 
         return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+    }
+
+    /**
+     * Current user is either not locked at all, or locked to this group (where the assignment is).
+     */
+    public function userIsNotLockedElsewhereStrictly(Identity $identity, ShadowAssignment $assignment): bool
+    {
+        $user = $identity->getUserData();
+        $group = $assignment->getGroup();
+        if ($user === null || $group === null || $group->isArchived()) {
+            return false;
+        }
+
+        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()
+            || !$user->isGroupLockStrict();
     }
 }

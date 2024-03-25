@@ -28,7 +28,6 @@ use Nette\Utils\Arrays;
  */
 class GroupViewFactory
 {
-
     /** @var AssignmentSolutions */
     private $assignmentSolutions;
 
@@ -218,7 +217,7 @@ class GroupViewFactory
                 "admins" => $group->getAdminsIds(),
                 "supervisors" => $group->getSupervisorsIds(),
                 "observers" => $group->getObserversIds(),
-                "students" => $group->getStudentsIds(),
+                "students" => $this->groupAcl->canViewStudents($group) ? $group->getStudentsIds() : [],
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
                 "hasValidLicence" => $group->hasValidLicence(),
                 "assignments" => $group->getAssignments()->filter(
@@ -242,7 +241,11 @@ class GroupViewFactory
                 "publicStats" => $group->getPublicStats(),
                 "detaining" => $group->isDetaining(),
                 "threshold" => $group->getThreshold(),
-                "bindings" => $this->bindings->getBindingsForGroup($group)
+                "bindings" => $this->bindings->getBindingsForGroup($group),
+                "examBegin" => $group->hasExamPeriodSet() ? $group->getExamBegin()?->getTimestamp() : null,
+                "examEnd" => $group->hasExamPeriodSet() ? $group->getExamEnd()?->getTimestamp() : null,
+                "examLockStrict" => $group->hasExamPeriodSet() ? $group->isExamLockStrict() : null,
+                "exams" => $group->getExams()->getValues(),
             ];
         }
 
@@ -256,6 +259,7 @@ class GroupViewFactory
             "id" => $group->getId(),
             "externalId" => $group->getExternalId(),
             "organizational" => $group->isOrganizational(),
+            "exam" => $group->isExam(),
             "archived" => $group->isArchived(),
             "public" => $group->isPublic(),
             "directlyArchived" => $group->isDirectlyArchived(),

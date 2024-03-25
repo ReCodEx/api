@@ -15,7 +15,7 @@ use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
-
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase
@@ -100,10 +100,13 @@ class TestBrokerReportsPresenter extends Tester\TestCase
     {
         $submission = current($this->presenter->submissions->findAll());
         $request = new Request(
-            "V1:BrokerReports", "POST", [
+            "V1:BrokerReports",
+            "POST",
+            [
             "action" => "jobStatus",
             "jobId" => AssignmentSolution::JOB_TYPE . '_' . $submission->getId()
-        ], [
+            ],
+            [
                 "status" => "FAILED",
                 "message" => "whatever"
             ]
@@ -124,10 +127,13 @@ class TestBrokerReportsPresenter extends Tester\TestCase
     {
         $submission = current($this->presenter->referenceSolutionSubmissions->findAll());
         $request = new Request(
-            "V1:BrokerReports", "POST", [
+            "V1:BrokerReports",
+            "POST",
+            [
             "action" => "jobStatus",
             "jobId" => ReferenceSolutionSubmission::JOB_TYPE . '_' . $submission->getId()
-        ], [
+            ],
+            [
                 "status" => "FAILED",
                 "message" => "whatever"
             ]

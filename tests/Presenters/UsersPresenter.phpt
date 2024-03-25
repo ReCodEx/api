@@ -9,6 +9,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\Login;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
+use App\Model\Entity\SecurityEvent;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Users;
@@ -17,6 +18,8 @@ use App\Security\Roles;
 use App\V1Module\Presenters\UsersPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
+
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @httpCode any
@@ -303,6 +306,9 @@ class TestUsersPresenter extends Tester\TestCase
 
     public function testUpdateProfileWithoutEmailAndWithPassword()
     {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $login = $this->presenter->logins->findByUsernameOrThrow($user->getEmail());
@@ -343,6 +349,11 @@ class TestUsersPresenter extends Tester\TestCase
 
         $storedUpdatedUser = $this->users->get($user->getId());
         Assert::equal($updatedUser["id"], $storedUpdatedUser->getId());
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_CHANGE_PASSWORD, $events[0]->getType());
+        Assert::equal($updatedUser["id"], $events[0]->getUser()->getId());
     }
 
     public function testUpdateProfileWithoutNewPassword()

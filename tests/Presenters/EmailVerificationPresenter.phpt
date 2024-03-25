@@ -11,6 +11,7 @@ use App\V1Module\Presenters\GroupsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase
@@ -107,7 +108,6 @@ class TestEmailVerificationPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
         Assert::equal("OK", $result['payload']);
     }
-
 }
 
 $testCase = new TestEmailVerificationPresenter();

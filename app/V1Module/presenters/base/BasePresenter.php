@@ -13,6 +13,7 @@ use App\Exceptions\WrongHttpMethodException;
 use App\Exceptions\NotImplementedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InternalServerException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
@@ -91,6 +92,29 @@ class BasePresenter extends \App\Presenters\BasePresenter
             throw new NotImplementedException();
         }
 
+        // client IP address checking
+
+        /** @var ?Identity $identity */
+        $identity = $this->getUser()->getIdentity();
+        $user = $identity?->getUserData();
+        if ($user && $user->isIpLocked()) {
+            // the user is bound to access ReCodEx from one IP only, at the moment
+            $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
+            if (!$remoteAddr || !$user->verifyIpLock($remoteAddr)) {
+                throw new ForbiddenRequestException(
+                    "Forbidden Request - User is not allowed access from IP '$remoteAddr'.",
+                    IResponse::S403_FORBIDDEN,
+                    FrontendErrorMappings::E403_003__USER_IP_LOCKED,
+                    [
+                        'remoteAddress' => $remoteAddr,
+                        'lockedAddress' => $user->getIpLockRaw(),
+                        'expires' => $user->getIpLockExpiration(),
+                    ]
+                );
+            }
+        }
+
+        // ACL-checking method
         $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
 
         Validators::init();
@@ -250,9 +274,10 @@ class BasePresenter extends \App\Presenters\BasePresenter
     protected function logUserAction($code = IResponse::S200_OK)
     {
         if ($this->getUser()->isLoggedIn()) {
+            $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
             $params = $this->getRequest()->getParameters();
             unset($params[self::ACTION_KEY]);
-            $this->userActions->log($this->getAction(true), $params, $code);
+            $this->userActions->log($this->getAction(true), $remoteAddr, $params, $code);
         }
     }
 

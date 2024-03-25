@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 class FrontendErrorMappings
 {
-
     /** General accepted */
     public const E202_000__ACCEPTED = "202-000";
 
@@ -80,7 +79,9 @@ class FrontendErrorMappings
     /** Forbidden since the user account does not exist */
     public const E403_001__USER_NOT_EXIST = "403-001";
     /** Forbidden since the user account is disabled */
-    public const E403_001__USER_NOT_ALLOWED = "403-002";
+    public const E403_002__USER_NOT_ALLOWED = "403-002";
+    /** Forbidden since the user has IP lock and trying to access from a different IP */
+    public const E403_003__USER_IP_LOCKED = "403-003";
 
     /** General not found */
     public const E404_000__NOT_FOUND = "404-000";

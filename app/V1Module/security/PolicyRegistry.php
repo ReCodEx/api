@@ -9,10 +9,16 @@ class PolicyRegistry
 {
     /** @var IPermissionPolicy[] */
     private $policies = [];
+    private $basePolicy = null;
 
     public function addPolicy($policy)
     {
-        $this->policies[] = $policy;
+        $class = $policy->getAssociatedClass();
+        if ($class) {
+            $this->policies[] = $policy;
+        } else {
+            $this->basePolicy = $policy;
+        }
     }
 
     public function get($resource, $policyName)
@@ -32,11 +38,17 @@ class PolicyRegistry
 
     private function findPolicyOrThrow($subject, $policyName): IPermissionPolicy
     {
-        foreach ($this->policies as $policy) {
-            $associatedClass = $policy->getAssociatedClass();
-            if ($subject instanceof $associatedClass && method_exists($policy, $policyName)) {
-                return $policy;
+        if ($subject !== null) {
+            foreach ($this->policies as $policy) {
+                // se need this search due to entity inheritance (TODO: find a better way in the future)
+                $associatedClass = $policy->getAssociatedClass();
+                if ($subject instanceof $associatedClass && method_exists($policy, $policyName)) {
+                    return $policy;
+                }
             }
+        } elseif ($this->basePolicy !== null && method_exists($this->basePolicy, $policyName)) {
+            // if no subject is given, lets try base policy...
+            return $this->basePolicy;
         }
 
         throw new InvalidArgumentException(

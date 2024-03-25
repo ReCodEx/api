@@ -75,4 +75,9 @@ class UserPermissionPolicy implements IPermissionPolicy
         }
         return false;
     }
+
+    public function isNotGroupLocked(Identity $identity, User $user): bool
+    {
+        return !$user->isGroupLocked();
+    }
 }

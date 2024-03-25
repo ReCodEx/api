@@ -14,6 +14,8 @@ use App\Responses\CalendarResponse;
 use Tester\Assert;
 use Nette\Application\Request;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @httpCode any
  * @testCase

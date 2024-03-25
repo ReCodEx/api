@@ -3,15 +3,21 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Users;
+use App\Helpers\FileStorageManager;
+use App\Helpers\TmpFilesHelper;
+use App\Helpers\FileStorage\LocalFileStorage;
+use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\V1Module\Presenters\GroupsPresenter;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 /**
  * @testCase
@@ -26,6 +32,9 @@ class TestGroupsPresenter extends Tester\TestCase
 
     private $groupSupervisorLogin = "demoGroupSupervisor@example.com";
     private $groupSupervisorPassword = "password";
+
+    private $groupSupervisor2Login = "demoGroupSupervisor2@example.com";
+    private $groupSupervisor2Password = "password";
 
     /** @var GroupsPresenter */
     protected $presenter;
@@ -49,6 +58,16 @@ class TestGroupsPresenter extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
+
+        // patch container, since we cannot create actual file storage manarer
+        $fsName = current($this->container->findByType(FileStorageManager::class));
+        $this->container->removeService($fsName);
+        $this->container->addService($fsName, new FileStorageManager(
+            Mockery::mock(LocalFileStorage::class),
+            Mockery::mock(LocalHashFileStorage::class),
+            Mockery::mock(TmpFilesHelper::class),
+            ""
+        ));
     }
 
     protected function setUp()
@@ -1200,7 +1219,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     ['action' => 'relocate', 'id' => $parent->getId(), 'newParentId' => $group->getId()]
                 );
             },
-            App\Exceptions\BadRequestException::class
+            BadRequestException::class
         );
     }
 
@@ -1227,7 +1246,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     ['action' => 'relocate', 'id' => $group->getId(), 'newParentId' => $group->getId()]
                 );
             },
-            App\Exceptions\BadRequestException::class
+            BadRequestException::class
         );
     }
 
@@ -1263,7 +1282,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     ['action' => 'relocate', 'id' => $group->getId(), 'newParentId' => $archived->getId()]
                 );
             },
-            App\Exceptions\BadRequestException::class
+            BadRequestException::class
         );
     }
 
@@ -1289,6 +1308,452 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(200, $result["code"]);
 
         Assert::equal(false, $group->isAdminOf($user));
+    }
+
+    private function prepExamGroup(): Group
+    {
+        PresenterTestHelper::login($this->container, $this->groupSupervisor2Login, $this->groupSupervisor2Password);
+        $admin = $this->presenter->users->getByEmail($this->groupSupervisor2Login);
+        $groups = $this->getAllGroupsInDepth(
+            2,
+            function (Group $g) {
+                return !$g->isArchived();
+            }
+        );
+        Assert::count(1, $groups);
+        $group = $groups[0];
+        $group->addPrimaryAdmin($admin);
+        return $group;
+    }
+
+    public function testSetExamPeriod()
+    {
+        $group = $this->prepExamGroup();
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $end, 'strict' => true]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        Assert::equal($end, $payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->hasExamPeriodSet());
+        Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
+        Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+
+        Assert::count(0, $group->getExams()); // no exam is recorded in history
+    }
+
+    public function testSetExamPeriodInPastFail()
+    {
+        $group = $this->prepExamGroup();
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExamPeriod', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end, 'strict' => true]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testUpdateExamPeriod()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
+        $this->presenter->groups->persist($group);
+        Assert::true($group->isExamLockStrict());
+
+        $begin += 100;
+        $end += 100;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['begin' => $begin, 'end' => $end, 'strict' => false]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        Assert::equal($end, $payload['privateData']['examEnd']);
+        Assert::false($payload['privateData']['examLockStrict']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->hasExamPeriodSet());
+        Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
+        Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+        Assert::false($group->isExamLockStrict());
+    }
+
+    public function testUpdatePendingExamPeriod()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+        $end += 3600;  // let's give it another hour
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['end' => $end]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::equal($begin, $payload['privateData']['examBegin']);
+        Assert::equal($end, $payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->hasExamPeriodSet());
+        Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
+        Assert::equal($end, $group->getExamEnd()?->getTimestamp());
+    }
+
+    public function testTruncatePendingExamPeriod()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+        $end = $now;  // truncate the rest of the exam
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['end' => $end]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::null($payload['privateData']['examBegin']);
+        Assert::null($payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::false($group->hasExamPeriodSet());
+        Assert::count(0, $group->getExams()); // no exam is recorded in history
+    }
+
+    public function testUpdatePendingExamPeriodBeginFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $begin += 100;
+        $end += 100;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExamPeriod', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testUpdatePendingExamPeriodStrictFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
+        $this->presenter->groups->persist($group);
+
+        $end += 100;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExamPeriod', 'id' => $group->getId()],
+                    ['end' => $end, 'strict' => false]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testUpdateFinishedExamPeriodEndFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $end = $now;
+
+        Assert::exception(
+            function () use ($group, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExamPeriod', 'id' => $group->getId()],
+                    ['end' => $end]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testRemoveExamPeriod()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'DELETE',
+            ['action' => 'removeExamPeriod', 'id' => $group->getId()],
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::null($payload['privateData']['examBegin']);
+        Assert::null($payload['privateData']['examEnd']);
+        $this->presenter->groups->refresh($group);
+        Assert::false($group->hasExamPeriodSet());
+    }
+
+    public function testRemovePendingExamPeriodFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'DELETE',
+                    ['action' => 'removeExamPeriod', 'id' => $group->getId()],
+                );
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testRemoveFinishedExamPeriodFail()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'DELETE',
+                    ['action' => 'removeExamPeriod', 'id' => $group->getId()],
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testSetExamFlag()
+    {
+        $group = $this->prepExamGroup();
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExam', 'id' => $group->getId()],
+            ['value' => true],
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::true($payload['exam']);
+        $this->presenter->groups->refresh($group);
+        Assert::true($group->isExam());
+    }
+
+    public function testRemoveExamFlag()
+    {
+        $group = $this->prepExamGroup();
+        $group->setExam();
+        $this->presenter->groups->persist($group);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExam', 'id' => $group->getId()],
+            ['value' => false],
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::false($payload['exam']);
+        $this->presenter->groups->refresh($group);
+        Assert::false($group->isExam());
+    }
+
+    public function testExamGroupCannotCreateSubgroups()
+    {
+        /** @var Instance $instance */
+        $instance = $this->presenter->instances->findAll()[0];
+        $group = $this->prepExamGroup();
+        $group->setExam();
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($instance, $group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'addGroup'],
+                    [
+                        'localizedTexts' => [
+                            [
+                                'locale' => 'en',
+                                'name' => 'new name',
+                                'description' => 'some neaty description'
+                            ]
+                        ],
+                        'instanceId' => $instance->getId(),
+                        'externalId' => 'external identification of exercise',
+                        'parentGroupId' => $group->getId(),
+                        'publicStats' => true,
+                        'isPublic' => true,
+                        'hasThreshold' => false,
+                        'isOrganizational' => false,
+                        'detaining' => true,
+                    ]
+                );
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testExamFlagSetFailIfSubgroups()
+    {
+        $group = $this->prepExamGroup();
+        $group = $group->getParentGroup();
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExam', 'id' => $group->getId()],
+                    ['value' => true]
+                );
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testExamFlagSetFailIfOrganizational()
+    {
+        $group = $this->prepExamGroup();
+        $group->setOrganizational();
+        $this->presenter->groups->persist($group);
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+
+        Assert::exception(
+            function () use ($group, $begin, $end) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setExamPeriod', 'id' => $group->getId()],
+                    ['begin' => $begin, 'end' => $end]
+                );
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testExamGroupCannotSwitchToOrganizational()
+    {
+        $group = $this->prepExamGroup();
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now + 3600;
+        $end = $now + 7200;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'setOrganizational', 'id' => $group->getId()],
+                    ['value' => true]
+                );
+            },
+            ForbiddenRequestException::class
+        );
     }
 }
 

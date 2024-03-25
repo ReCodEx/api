@@ -11,15 +11,21 @@ use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\GroupMembership;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\SecurityEvent;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
+use App\Model\Repository\GroupExams;
+use App\Model\Repository\GroupExamLocks;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\SecurityEvents;
 use App\Model\View\AssignmentViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
@@ -48,6 +54,18 @@ class GroupsPresenter extends BasePresenter
     public $groups;
 
     /**
+     * @var GroupExams
+     * @inject
+     */
+    public $groupExams;
+
+    /**
+     * @var GroupExamLocks
+     * @inject
+     */
+    public $groupExamLocks;
+
+    /**
      * @var Instances
      * @inject
      */
@@ -66,10 +84,22 @@ class GroupsPresenter extends BasePresenter
     public $groupMemberships;
 
     /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
+
+    /**
      * @var AssignmentSolutions
      * @inject
      */
     public $assignmentSolutions;
+
+    /**
+     * @var SecurityEvents
+     * @inject
+     */
+    public $securityEvents;
 
     /**
      * @var IGroupPermissions
@@ -331,8 +361,12 @@ class GroupsPresenter extends BasePresenter
     {
         $group = $this->groups->findOrThrow($id);
 
-        if (!$this->groupAcl->canUpdate($group)) {
+        if (!$this->groupAcl->canSetOrganizational($group)) {
             throw new ForbiddenRequestException();
+        }
+
+        if ($group->isExam()) {
+            throw new BadRequestException("Organizational group must not be exam group.");
         }
     }
 
@@ -433,6 +467,178 @@ class GroupsPresenter extends BasePresenter
             }
         }
 
+        $this->groups->persist($group);
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+    public function checkSetExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        if (!$group->getChildGroups()->isEmpty()) {
+            throw new BadRequestException("Exam group must have no sub-groups.");
+        }
+
+        if ($group->isOrganizational()) {
+            throw new BadRequestException("Exam group must not be organizational.");
+        }
+
+        if (!$this->groupAcl->canSetExamFlag($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Change the group "exam" indicator. If denotes that the group should be listed in exam groups instead of
+     * regular groups and the assignments should have "isExam" flag set by default.
+     * @POST
+     * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
+     * @param string $id An identifier of the updated group
+     * @throws BadRequestException
+     * @throws NotFoundException
+     */
+    public function actionSetExam(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $isExam = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+        $group->setExam($isExam);
+        $this->groups->persist($group);
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+    public function checkSetExamPeriod(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        if (!$this->groupAcl->canSetExamPeriod($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Set an examination period (in the future) when the group will be secured for submitting.
+     * Only locked students may submit solutions in the group during this period.
+     * This endpoint is also used to update already planned exam period, but only dates in the future
+     * can be editted (e.g., once an exam begins, the beginning may no longer be updated).
+     * @POST
+     * @Param(type="post", name="begin", validation="timestamp|null", required=false,
+     *        description="When the exam begins (unix ts in the future, optional if update is performed).")
+     * @Param(type="post", name="end", validation="timestamp", required=true,
+     *        description="When the exam ends (unix ts in the future, no more than a day after 'begin').")
+     * @Param(type="post", name="strict", validation="bool", required=false,
+     *        description="Whether locked users are prevented from accessing other groups.")
+     * @param string $id An identifier of the updated group
+     * @throws NotFoundException
+     */
+    public function actionSetExamPeriod(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+
+        $req = $this->getRequest();
+        $beginTs = (int)$req->getPost("begin");
+        $endTs = (int)$req->getPost("end");
+        $strict = $req->getPost("strict") !== null
+            ? filter_var($req->getPost("strict"), FILTER_VALIDATE_BOOLEAN) : null;
+        $now = (new DateTime())->getTimestamp();
+        $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
+
+        if ($strict === null) {
+            if ($group->hasExamPeriodSet()) {
+                $strict = $group->isExamLockStrict(); // flag is not present -> is not changing
+            } else {
+                throw new BadRequestException("The strict flag must be present when new exam is being set.");
+            }
+        }
+
+        // beginning must be in the future (or must not be modified)
+        if ((!$group->hasExamPeriodSet() || $beginTs) && $beginTs < $now - $nowTolerance) {
+            throw new BadRequestException("The exam must be set in the future.");
+        }
+
+        // if begin was not sent, or the exam already started, use old begin value
+        $beginTs = ($group->hasExamPeriodSet() && (!$beginTs || $group->getExamBegin()->getTimestamp() <= $now))
+            ? $group->getExamBegin()->getTimestamp() : $beginTs;
+
+        // an exam should not last more than a day (yes, we hardcode the day interval here for safety)
+        if ($beginTs >= $endTs || $endTs - $beginTs > 86400) {
+            throw new BadRequestException("The [begin,end] interval must be valid and less than a day wide.");
+        }
+
+        // the end should also be in the future (this is necessary only for updates)
+        if ($endTs < $now - $nowTolerance) {
+            throw new BadRequestException("The exam end must be set in the future.");
+        }
+
+        $begin = DateTime::createFromFormat('U', $beginTs);
+        $end = DateTime::createFromFormat('U', $endTs);
+
+        if ($group->hasExamPeriodSet()) {
+            if ($group->getExamBegin()->getTimestamp() <= $now) { // ... already begun
+                if ($strict !== $group->isExamLockStrict()) {
+                    throw new BadRequestException("The strict flag cannot be changed once the exam begins.");
+                }
+
+                // the exam already begun, we need to fix any group-locked users
+                foreach ($group->getStudents() as $student) {
+                    if ($student->getGroupLock()?->getId() === $id) {
+                        $student->setGroupLock($group, $end, $strict);
+                        if ($student->isIpLocked()) {
+                            $student->setIpLock($student->getIpLockRaw(), $end);
+                        }
+                        $this->users->persist($student, false);
+                    }
+                }
+
+                // we need to fix deadlines of all aligned exam assignments
+                foreach ($group->getAssignments() as $assignment) {
+                    if (
+                        $assignment->isExam() &&
+                        $assignment->getFirstDeadline()->getTimestamp() === $group->getExamEnd()->getTimestamp()
+                    ) {
+                        $assignment->setFirstDeadline($end);
+                        $this->assignments->persist($assignment, false);
+                    }
+                }
+            } elseif ($group->getExamBegin() !== $begin) {
+                // we also need to fix times of appearance for scheduled assignments
+                foreach ($group->getAssignments() as $assignment) {
+                    if (
+                        $assignment->isExam() && $assignment->isPublic() &&
+                        $assignment->getVisibleFrom()?->getTimestamp() === $group->getExamBegin()->getTimestamp()
+                    ) {
+                        $assignment->setVisibleFrom($now < $beginTs ? $begin : null);
+                        $this->assignments->persist($assignment, false);
+                    }
+                }
+            }
+        }
+
+        $group->setExamPeriod($begin, $end, $strict);
+        $this->groups->persist($group);
+
+        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+    }
+
+    public function checkRemoveExamPeriod(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        if (!$group->hasExamPeriodSet()) {
+            throw new BadRequestException("The group has no exam period set.");
+        }
+
+        if (!$this->groupAcl->canRemoveExamPeriod($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Change the group back to regular group (remove information about an exam).
+     * @DELETE
+     * @param string $id An identifier of the updated group
+     * @throws NotFoundException
+     */
+    public function actionRemoveExamPeriod(string $id)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $group->removeExamPeriod();
         $this->groups->persist($group);
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
@@ -556,7 +762,7 @@ class GroupsPresenter extends BasePresenter
         /** @var Group $group */
         $group = $this->groups->findOrThrow($id);
 
-        if (!$this->groupAcl->canViewSubgroups($group)) {
+        if (!$this->groupAcl->canViewDetail($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -565,6 +771,7 @@ class GroupsPresenter extends BasePresenter
      * Get a list of subgroups of a group
      * @GET
      * @param string $id Identifier of the group
+     * @DEPRECTATED Subgroup list is part of group view.
      */
     public function actionSubgroups(string $id)
     {
@@ -586,7 +793,7 @@ class GroupsPresenter extends BasePresenter
     public function checkMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
-        if (!$this->groupAcl->canViewMembers($group)) {
+        if (!$this->groupAcl->canViewDetail($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -595,6 +802,7 @@ class GroupsPresenter extends BasePresenter
      * Get a list of members of a group
      * @GET
      * @param string $id Identifier of the group
+     * @DEPRECATED Members are listed in group view.
      */
     public function actionMembers(string $id)
     {
@@ -941,6 +1149,70 @@ class GroupsPresenter extends BasePresenter
 
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
     }
+
+    public function checkLockStudent(string $id, string $userId)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $user = $this->users->findOrThrow($userId);
+        if (!$this->groupAcl->canLockStudent($group, $user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Lock student in a group and with an IP from which the request was made.
+     * @POST
+     * @param string $id Identifier of the group
+     * @param string $userId Identifier of the student
+     */
+    public function actionLockStudent(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+        $group = $this->groups->findOrThrow($id);
+
+        $expiration = $group->getExamEnd();
+        $user->setIpLock($this->getHttpRequest()->getRemoteAddress(), $expiration);
+        $user->setGroupLock($group, $expiration, $group->isExamLockStrict());
+        $this->users->persist($user, false);
+
+        // make sure the locking is also logged
+        $exam = $this->groupExams->findOrCreate($group);
+        $examLock = new GroupExamLock($exam, $user, $user->getIpLockRaw());
+        $this->groupExamLocks->persist($examLock);
+
+        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    }
+
+    public function checkUnlockStudent(string $id, string $userId)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $user = $this->users->findOrThrow($userId);
+        if ($user->getGroupLock()?->getId() !== $group->getId()) {
+            throw new InvalidArgumentException("The user is not locked in given group.");
+        }
+
+        if (!$this->groupAcl->canUnlockStudent($group, $user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Unlock a student currently locked in a group.
+     * @DELETE
+     * @param string $id Identifier of the group
+     * @param string $userId Identifier of the student
+     */
+    public function actionUnlockStudent(string $id, string $userId)
+    {
+        $user = $this->users->findOrThrow($userId);
+
+        $user->removeIpLock();
+        $user->removeGroupLock();
+        $this->users->persist($user);
+
+        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    }
+
 
     /**
      * @param Request $req

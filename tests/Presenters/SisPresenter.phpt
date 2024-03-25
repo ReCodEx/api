@@ -20,6 +20,8 @@ use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
 use Tester\TestCase;
 
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 /**
  * @testCase
  */
