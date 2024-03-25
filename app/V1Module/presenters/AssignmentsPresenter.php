@@ -541,8 +541,13 @@ class AssignmentsPresenter extends BasePresenter
 
         // create an assignment for the group based on the given exercise but without any params
         // and make sure the assignment is not public yet - the supervisor must edit it first
-        $deadline = new DateTime();
-        $deadline->modify("+2 weeks")->modify('tomorrow')->modify("-1 minute");
+        if ($group->hasExamPeriodSet()) {
+            $deadline = $group->getExamEnd(); // when exam is set, sync the deadlines
+        } else {
+            $deadline = new DateTime();
+            $deadline->modify("+2 weeks")->modify('tomorrow')->modify("-1 minute");
+        }
+
         $assignment = Assignment::assignToGroup($exercise, $group, false, $deadline);
         if ($group->isExam() || ($group->hasExamPeriodSet() && $group->getExamBegin() <= (new DateTime()))) {
             // assigned to exam group, or group with pending exam term
