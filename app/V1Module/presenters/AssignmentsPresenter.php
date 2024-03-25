@@ -544,6 +544,11 @@ class AssignmentsPresenter extends BasePresenter
         $deadline = new DateTime();
         $deadline->modify("+2 weeks")->modify('tomorrow')->modify("-1 minute");
         $assignment = Assignment::assignToGroup($exercise, $group, false, $deadline);
+        if ($group->isExam() || ($group->hasExamPeriodSet() && $group->getExamBegin() <= (new DateTime()))) {
+            // assigned to exam group, or group with pending exam term
+            $assignment->setExam();
+        }
+
         $this->assignments->persist($assignment);
         $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
     }
