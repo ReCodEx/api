@@ -1180,7 +1180,10 @@ class GroupsPresenter extends BasePresenter
         $examLock = new GroupExamLock($exam, $user, $user->getIpLockRaw());
         $this->groupExamLocks->persist($examLock);
 
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse([
+            'user' => $this->userViewFactory->getUser($user),
+            'group' => $this->groupViewFactory->getGroup($group),
+        ]);
     }
 
     public function checkUnlockStudent(string $id, string $userId)
