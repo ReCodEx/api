@@ -145,11 +145,16 @@ class UserLocking extends Tester\TestCase
         );
         $this->presenter->users->refresh($student);
 
-        Assert::equal($student->getId(), $payload['id']);
-        Assert::equal($group->getId(), $payload['privateData']['groupLock']);
-        Assert::equal($_SERVER['REMOTE_ADDR'], $payload['privateData']['ipLock']);
-        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['privateData']['groupLockExpiration']);
-        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['privateData']['ipLockExpiration']);
+        Assert::count(2, $payload);
+        Assert::true(array_key_exists("user", $payload));
+        Assert::true(array_key_exists("group", $payload));
+
+        Assert::equal($student->getId(), $payload['user']['id']);
+        Assert::equal($group->getId(), $payload['user']['privateData']['groupLock']);
+        Assert::equal($_SERVER['REMOTE_ADDR'], $payload['user']['privateData']['ipLock']);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['groupLockExpiration']);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['ipLockExpiration']);
+        Assert::equal($group->getId(), $payload['group']['id']);
 
         Assert::true($student->isIpLocked());
         Assert::true($student->verifyIpLock($this->ip));
@@ -179,11 +184,16 @@ class UserLocking extends Tester\TestCase
         );
         $this->presenter->users->refresh($student);
 
-        Assert::equal($student->getId(), $payload['id']);
-        Assert::equal($group->getId(), $payload['privateData']['groupLock']);
-        Assert::equal($_SERVER['REMOTE_ADDR'], $payload['privateData']['ipLock']);
-        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['privateData']['groupLockExpiration']);
-        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['privateData']['ipLockExpiration']);
+        Assert::count(2, $payload);
+        Assert::true(array_key_exists("user", $payload));
+        Assert::true(array_key_exists("group", $payload));
+
+        Assert::equal($student->getId(), $payload['user']['id']);
+        Assert::equal($group->getId(), $payload['user']['privateData']['groupLock']);
+        Assert::equal($_SERVER['REMOTE_ADDR'], $payload['user']['privateData']['ipLock']);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['groupLockExpiration']);
+        Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['ipLockExpiration']);
+        Assert::equal($group->getId(), $payload['group']['id']);
 
         Assert::true($student->isIpLocked());
         Assert::true($student->verifyIpLock($this->ip));
