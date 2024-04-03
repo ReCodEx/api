@@ -88,6 +88,7 @@ class UserViewFactory
                 "externalIds" => $this->getExternalIds($user, $reallyShowEverything),
                 "ipLock" => $user->isIpLocked(),
                 "groupLock" => $user->getGroupLock()?->getId(),
+                "isGroupLockStrict" => $user->isGroupLockStrict(),
             ];
 
             // really show everything should be used only for user, who is just logging/signing in
