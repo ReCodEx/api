@@ -1465,6 +1465,42 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::count(0, $group->getExams()); // no exam is recorded in history
     }
 
+    public function testTruncatePendingExamPeriodWithExamRecord()
+    {
+        $group = $this->prepExamGroup();
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 3600;
+        $end = $now + 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $exam = $this->presenter->groupExams->findOrCreate($group);
+        $this->presenter->groupExams->persist($exam);
+        Assert::equal($end, $exam->getEnd()->getTimestamp());
+
+        $end = $now;  // truncate the rest of the exam
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'setExamPeriod', 'id' => $group->getId()],
+            ['end' => $end]
+        );
+
+        Assert::equal($group->getId(), $payload['id']);
+        Assert::null($payload['privateData']['examBegin']);
+        Assert::null($payload['privateData']['examEnd']);
+
+        $this->presenter->groups->refresh($group);
+        Assert::false($group->hasExamPeriodSet());
+        Assert::count(1, $group->getExams()); // still exactly one exam exists
+
+        $this->presenter->groupExams->refresh($exam);
+        Assert::equal($end, $exam->getEnd()->getTimestamp()); // exam object was truncated as well
+    }
+
     public function testUpdatePendingExamPeriodBeginFail()
     {
         $group = $this->prepExamGroup();

@@ -20,6 +20,22 @@ class GroupExams extends BaseRepository
     }
 
     /**
+     * Fetch group exam entity by group-begin index. If not present, null is returned.
+     * @param Group $group
+     * @return GroupExam|null
+     */
+    public function findPendingForGroup(Group $group): ?GroupExam
+    {
+        $begin = $group->getExamBegin();
+        $exam = $this->findBy(["group" => $group, "begin" => $begin]);
+        if (count($exam) > 1) {
+            throw new Exception("Data corruption, there is more than one group exam starting at the same time.");
+        }
+
+        return $exam ? reset($exam) : null;
+    }
+
+    /**
      * Fetch group exam entity by group-begin index. If not present, new entity is created.
      * @param Group $group
      * @param DateTime|null $begin if null, exam begin from the group is taken
