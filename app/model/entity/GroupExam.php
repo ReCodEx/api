@@ -51,10 +51,24 @@ class GroupExam implements JsonSerializable
      * @param Group $group
      * @param DateTime $begin
      * @param DateTime $end
+     * @param bool $strict
      */
     public function __construct(Group $group, DateTime $begin, DateTime $end, bool $strict)
     {
         $this->group = $group;
+        $this->begin = $begin;
+        $this->end = $end;
+        $this->lockStrict = $strict;
+    }
+
+    /**
+     * Update the parameters (happens if pending exam is cut short, for instance).
+     * @param DateTime $begin
+     * @param DateTime $end
+     * @param bool $strict
+     */
+    public function update(DateTime $begin, DateTime $end, bool $strict): void
+    {
         $this->begin = $begin;
         $this->end = $end;
         $this->lockStrict = $strict;

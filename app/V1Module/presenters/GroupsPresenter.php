@@ -611,6 +611,12 @@ class GroupsPresenter extends BasePresenter
             }
         }
 
+        $exam = $this->groupExams->findPendingForGroup($group);
+        if ($exam) {
+            $exam->update($begin, $end, $strict);
+            $this->groupExams->persist($exam, false);
+        }
+
         $group->setExamPeriod($begin, $end, $strict);
         $this->groups->persist($group);
 
