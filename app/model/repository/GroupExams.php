@@ -27,6 +27,10 @@ class GroupExams extends BaseRepository
     public function findPendingForGroup(Group $group): ?GroupExam
     {
         $begin = $group->getExamBegin();
+        if (!$begin || !$group->hasExamPeriodSet()) {
+            return null;
+        }
+
         $exam = $this->findBy(["group" => $group, "begin" => $begin]);
         if (count($exam) > 1) {
             throw new Exception("Data corruption, there is more than one group exam starting at the same time.");
