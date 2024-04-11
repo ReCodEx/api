@@ -416,6 +416,7 @@ class TestGroupsPresenter extends Tester\TestCase
                 'isPublic' => true,
                 'hasThreshold' => false,
                 'isOrganizational' => false,
+                'isExam' => false,
                 'detaining' => true,
             ]
         );
@@ -439,7 +440,124 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
         Assert::equal(true, $payload["privateData"]["publicStats"]);
         Assert::equal(true, $payload["privateData"]["detaining"]);
+        Assert::equal(false, $payload["organizational"]);
+        Assert::equal(false, $payload["exam"]);
         Assert::equal(true, $payload["public"]);
+        Assert::count(1, $payload['primaryAdminsIds']);
+        Assert::equal($admin->getId(), $payload["primaryAdminsIds"][0]);
+    }
+
+    public function testAddOrganizationalGroup()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
+
+        /** @var Instance $instance */
+        $instance = $this->presenter->instances->findAll()[0];
+        $allGroupsCount = count($this->presenter->groups->findAll());
+
+        $request = new Nette\Application\Request(
+            'V1:Groups',
+            'POST',
+            ['action' => 'addGroup'],
+            [
+                'localizedTexts' => [
+                    [
+                        'locale' => 'en',
+                        'name' => 'new name',
+                        'description' => 'some neaty description'
+                    ]
+                ],
+                'instanceId' => $instance->getId(),
+                'externalId' => 'external identification of exercise',
+                'parentGroupId' => null,
+                'publicStats' => true,
+                'isPublic' => false,
+                'hasThreshold' => false,
+                'isOrganizational' => true,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        /** @var Group $payload */
+        $payload = $result['payload'];
+
+        Assert::count(1, $payload["localizedTexts"]);
+        $localizedGroup = current($payload["localizedTexts"]);
+        Assert::notSame(null, $localizedGroup);
+
+        Assert::equal(200, $result['code']);
+        Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
+        Assert::equal('new name', $localizedGroup->getName());
+        Assert::equal('some neaty description', $localizedGroup->getDescription());
+        Assert::equal($instance->getId(), $payload["privateData"]["instanceId"]);
+        Assert::equal('external identification of exercise', $payload["externalId"]);
+        Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
+        Assert::equal(true, $payload["privateData"]["publicStats"]);
+        Assert::equal(true, $payload["organizational"]);
+        Assert::equal(false, $payload["exam"]);
+        Assert::equal(false, $payload["privateData"]["detaining"]);
+        Assert::equal(false, $payload["public"]);
+        Assert::count(1, $payload['primaryAdminsIds']);
+        Assert::equal($admin->getId(), $payload["primaryAdminsIds"][0]);
+    }
+
+    public function testAddExamGroup()
+    {
+        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
+
+        /** @var Instance $instance */
+        $instance = $this->presenter->instances->findAll()[0];
+        $allGroupsCount = count($this->presenter->groups->findAll());
+
+        $request = new Nette\Application\Request(
+            'V1:Groups',
+            'POST',
+            ['action' => 'addGroup'],
+            [
+                'localizedTexts' => [
+                    [
+                        'locale' => 'en',
+                        'name' => 'new name',
+                        'description' => 'some neaty description'
+                    ]
+                ],
+                'instanceId' => $instance->getId(),
+                'externalId' => 'external identification of exercise',
+                'parentGroupId' => null,
+                'publicStats' => true,
+                'isPublic' => false,
+                'hasThreshold' => false,
+                'isExam' => true,
+                'detaining' => true,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        /** @var Group $payload */
+        $payload = $result['payload'];
+
+        Assert::count(1, $payload["localizedTexts"]);
+        $localizedGroup = current($payload["localizedTexts"]);
+        Assert::notSame(null, $localizedGroup);
+
+        Assert::equal(200, $result['code']);
+        Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
+        Assert::equal('new name', $localizedGroup->getName());
+        Assert::equal('some neaty description', $localizedGroup->getDescription());
+        Assert::equal($instance->getId(), $payload["privateData"]["instanceId"]);
+        Assert::equal('external identification of exercise', $payload["externalId"]);
+        Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
+        Assert::equal(true, $payload["privateData"]["publicStats"]);
+        Assert::equal(false, $payload["organizational"]);
+        Assert::equal(true, $payload["exam"]);
+        Assert::equal(true, $payload["privateData"]["detaining"]);
+        Assert::equal(false, $payload["public"]);
         Assert::count(1, $payload['primaryAdminsIds']);
         Assert::equal($admin->getId(), $payload["primaryAdminsIds"][0]);
     }

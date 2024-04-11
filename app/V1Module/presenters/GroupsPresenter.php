@@ -211,6 +211,8 @@ class GroupsPresenter extends BasePresenter
      *        description="Should the group be visible to all student?")
      * @Param(type="post", name="isOrganizational", validation="bool", required=false,
      *        description="Whether the group is organizational (no assignments nor students).")
+     * @Param(type="post", name="isExam", validation="bool", required=false,
+     *        description="Whether the group is an exam group.")
      * @Param(type="post", name="localizedTexts", validation="array", required=false,
      *        description="Localized names and descriptions")
      * @Param(type="post", name="hasThreshold", validation="bool",
@@ -246,8 +248,13 @@ class GroupsPresenter extends BasePresenter
         $detaining = filter_var($req->getPost("detaining"), FILTER_VALIDATE_BOOLEAN);
         $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
         $isOrganizational = filter_var($req->getPost("isOrganizational"), FILTER_VALIDATE_BOOLEAN);
+        $isExam = filter_var($req->getPost("isExam"), FILTER_VALIDATE_BOOLEAN);
         $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
         $noAdmin = filter_var($req->getPost("noAdmin"), FILTER_VALIDATE_BOOLEAN);
+
+        if ($isOrganizational && $isExam) {
+            throw new InvalidArgumentException("A group cannot be both organizational and exam.");
+        }
 
         $group = new Group(
             $externalId,
@@ -257,7 +264,8 @@ class GroupsPresenter extends BasePresenter
             $publicStats,
             $isPublic,
             $isOrganizational,
-            $detaining
+            $detaining,
+            $isExam,
         );
         if ($hasThreshold) {
             $threshold = $req->getPost("threshold") !== null

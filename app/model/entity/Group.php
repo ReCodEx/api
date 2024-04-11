@@ -34,7 +34,8 @@ class Group
         bool $publicStats = false,
         bool $isPublic = false,
         bool $isOrganizational = false,
-        bool $isDetaining = false
+        bool $isDetaining = false,
+        bool $isExam = false,
     ) {
         $this->externalId = $externalId;
         $this->memberships = new ArrayCollection();
@@ -63,7 +64,12 @@ class Group
             $parentGroup->addChildGroup($this);
         }
 
+        if ($isOrganizational && $isExam) {
+            throw new LogicException("A group cannot be both organizational and exam group.");
+        }
+
         $this->isOrganizational = $isOrganizational;
+        $this->isExam = $isExam;
         $this->isDetaining = $isDetaining;
 
         $instance->addGroup($this);
