@@ -10,6 +10,7 @@ use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentPoints;
@@ -291,5 +292,23 @@ class GroupViewFactory
             },
             $groups
         );
+    }
+
+    /**
+     * Preprocess an array of exam locks based on group ACLs.
+     * @param Group $group
+     * @param GroupExamLock[] $locks
+     * @return array
+     */
+    public function getGroupExamLocks(Group $group, array $locks): array
+    {
+        $ips = $this->groupAcl->canViewExamLocksIPs($group);
+        return array_map(function ($lock) use ($ips) {
+            $res = $lock->jsonSerialize();
+            if (!$ips) {
+                unset($res['remoteAddr']);
+            }
+            return $res;
+        }, $locks);
     }
 }

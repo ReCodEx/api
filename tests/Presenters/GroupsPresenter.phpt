@@ -5,6 +5,8 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupExam;
+use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Entity\GroupMembership;
@@ -1766,6 +1768,67 @@ class TestGroupsPresenter extends Tester\TestCase
             },
             BadRequestException::class
         );
+    }
+
+    public function testGetExamLocks()
+    {
+        $group = $this->prepExamGroup(); // logged in as supervisor
+        $student = $this->presenter->users->getByEmail("demoGroupMember1@example.com");
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $exam = new GroupExam($group, DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), false);
+        $this->presenter->groupExams->persist($exam);
+
+        $lock = new GroupExamLock($exam, $student, '1.2.3.4');
+        $this->presenter->groupExamLocks->persist($lock);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'getExamLocks', 'id' => $group->getId(), 'examId' => $exam->getId()],
+        );
+
+        Assert::count(1, $payload);
+        Assert::equal($exam->getId(), $payload[0]['groupExamId']);
+        Assert::equal($student->getId(), $payload[0]['studentId']);
+        Assert::false(array_key_exists('remoteAddr', $payload[0])); // supervisor cannot se IPs
+    }
+
+    public function testGetExamLocksWithIPs()
+    {
+        $group = $this->prepExamGroup();
+        PresenterTestHelper::loginDefaultAdmin($this->container); // admin can see IPs
+        $student = $this->presenter->users->getByEmail("demoGroupMember1@example.com");
+
+        $now = (new DateTime())->getTimestamp();
+        $begin = $now - 7200;
+        $end = $now - 3600;
+        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $this->presenter->groups->persist($group);
+
+        $exam = new GroupExam($group, DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), false);
+        $this->presenter->groupExams->persist($exam);
+
+        $lock = new GroupExamLock($exam, $student, '1.2.3.4');
+        $this->presenter->groupExamLocks->persist($lock);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'GET',
+            ['action' => 'getExamLocks', 'id' => $group->getId(), 'examId' => $exam->getId()],
+        );
+
+        Assert::count(1, $payload);
+        Assert::equal($exam->getId(), $payload[0]['groupExamId']);
+        Assert::equal($student->getId(), $payload[0]['studentId']);
+        Assert::equal('1.2.3.4', $payload[0]['remoteAddr']);
     }
 
     public function testSetExamFlag()

@@ -46,6 +46,10 @@ interface IGroupPermissions
 
     public function canRemoveExamPeriod(Group $group): bool;
 
+    public function canViewExamLocks(Group $group): bool;
+
+    public function canViewExamLocksIPs(Group $group): bool;
+
     public function canRelocate(Group $group): bool;
 
     public function canAssignExercise(Group $group): bool;
