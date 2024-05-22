@@ -30,7 +30,6 @@ use Nette\Utils\Arrays;
  */
 class ShadowAssignmentsPresenter extends BasePresenter
 {
-
     /**
      * @var ShadowAssignments
      * @inject

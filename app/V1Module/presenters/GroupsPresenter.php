@@ -677,6 +677,36 @@ class GroupsPresenter extends BasePresenter
         }
     }
 
+    public function checkGetExamLocks(string $id, string $examId)
+    {
+        $groupExam = $this->groupExams->findOrThrow($examId);
+        if ($groupExam->getGroup()?->getId() !== $id) {
+            throw new BadRequestException(
+                "Exam $examId is not in group $id.",
+                FrontendErrorMappings::E400_500__GROUP_ERROR
+            );
+        }
+
+        $group = $this->groups->findOrThrow($id);
+        if (!$this->groupAcl->canViewExamLocks($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Retrieve a list of locks for given exam
+     * @GET
+     * @param string $id An identifier of the related group
+     * @param string $examId An identifier of the exam
+     */
+    public function actionGetExamLocks(string $id, string $examId)
+    {
+        $group = $this->groups->findOrThrow($id);
+        $exam = $this->groupExams->findOrThrow($examId);
+        $locks = $this->groupExamLocks->findBy(["groupExam" => $exam]);
+        $this->sendSuccessResponse($this->groupViewFactory->getGroupExamLocks($group, $locks));
+    }
+
     /**
      * Relocate the group under a different parent.
      * @POST

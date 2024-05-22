@@ -285,6 +285,22 @@ permissions:
           - group.isBeforeExamPeriod
 
     - allow: true
+      resource: group
+      role: supervisor-student
+      actions:
+          - viewExamLocks
+      conditions:
+          - group.isAdmin
+
+    - allow: true
+      resource: group
+      role: empowered-supervisor
+      actions:
+          - viewExamLocksIPs
+      conditions:
+          - group.isAdmin
+
+    - allow: true
       role: student
       resource: group
       actions:
