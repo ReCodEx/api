@@ -101,4 +101,9 @@ class GroupExamLock implements JsonSerializable
     {
         return $this->unlockedAt;
     }
+
+    public function setUnlockedAt(?DateTime $at = new DateTime()): void
+    {
+        $this->unlockedAt = $at;
+    }
 }

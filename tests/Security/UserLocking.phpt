@@ -269,11 +269,19 @@ class UserLocking extends Tester\TestCase
     {
         $student = $this->presenter->users->getByEmail($this->studentLogin);
         $group = $this->prepExamGroup($student, -3600, 3600);
-        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-        $student->setIpLock($this->ip, $group->getExamEnd());
-        $student->setGroupLock($group, $group->getExamEnd(), $group->isExamLockStrict());
-        $this->presenter->users->persist($student);
+        PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Groups',
+            'POST',
+            ['action' => 'lockStudent', 'id' => $group->getId(), 'userId' => $student->getId()]
+        );
+
+        $lock = $this->presenter->groupExamLocks->getCurrentLock($student);
+        Assert::truthy($lock);
+        Assert::null($lock->getUnlockedAt());
+
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -282,6 +290,7 @@ class UserLocking extends Tester\TestCase
             ['action' => 'unlockStudent', 'id' => $group->getId(), 'userId' => $student->getId()]
         );
         $this->presenter->users->refresh($student);
+        $this->presenter->groupExamLocks->refresh($lock);
 
         Assert::equal($student->getId(), $payload['id']);
         Assert::null($payload['privateData']['groupLock']);
@@ -289,6 +298,7 @@ class UserLocking extends Tester\TestCase
         Assert::false($student->isIpLocked());
         Assert::true($student->verifyIpLock('127.0.0.1'));
         Assert::false($student->isGroupLocked());
+        Assert::truthy($lock->getUnlockedAt());
     }
 
     public function testRemoveLockByTeacherNoLockFail()
