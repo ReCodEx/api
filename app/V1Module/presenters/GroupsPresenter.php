@@ -1253,6 +1253,12 @@ class GroupsPresenter extends BasePresenter
     {
         $user = $this->users->findOrThrow($userId);
 
+        $lock = $this->groupExamLocks->getCurrentLock($user);
+        if ($lock) {
+            $lock->setUnlockedAt();
+            $this->groupExamLocks->persist($lock, false);
+        }
+
         $user->removeIpLock();
         $user->removeGroupLock();
         $this->users->persist($user);
