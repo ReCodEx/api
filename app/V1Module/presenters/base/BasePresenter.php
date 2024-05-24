@@ -78,6 +78,30 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return "check" . $action;
     }
 
+    /**
+     * Verify IP lock of given user.
+     * @param User $user to be tested
+     */
+    protected function verifyUserIpLock(User $user)
+    {
+        if ($user->isIpLocked()) {
+            // the user is bound to access ReCodEx from one IP only, at the moment
+            $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
+            if (!$remoteAddr || !$user->verifyIpLock($remoteAddr)) {
+                throw new ForbiddenRequestException(
+                    "Forbidden Request - User is not allowed access from IP '$remoteAddr'.",
+                    IResponse::S403_FORBIDDEN,
+                    FrontendErrorMappings::E403_003__USER_IP_LOCKED,
+                    [
+                        'remoteAddress' => $remoteAddr,
+                        'lockedAddress' => $user->getIpLockRaw(),
+                        'expires' => $user->getIpLockExpiration(),
+                    ]
+                );
+            }
+        }
+    }
+
     public function startup()
     {
         parent::startup();
@@ -97,21 +121,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
         /** @var ?Identity $identity */
         $identity = $this->getUser()->getIdentity();
         $user = $identity?->getUserData();
-        if ($user && $user->isIpLocked()) {
-            // the user is bound to access ReCodEx from one IP only, at the moment
-            $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
-            if (!$remoteAddr || !$user->verifyIpLock($remoteAddr)) {
-                throw new ForbiddenRequestException(
-                    "Forbidden Request - User is not allowed access from IP '$remoteAddr'.",
-                    IResponse::S403_FORBIDDEN,
-                    FrontendErrorMappings::E403_003__USER_IP_LOCKED,
-                    [
-                        'remoteAddress' => $remoteAddr,
-                        'lockedAddress' => $user->getIpLockRaw(),
-                        'expires' => $user->getIpLockExpiration(),
-                    ]
-                );
-            }
+        if ($user) {
+            $this->verifyUserIpLock($user);
         }
 
         // ACL-checking method

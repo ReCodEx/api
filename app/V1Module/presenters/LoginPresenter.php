@@ -121,6 +121,7 @@ class LoginPresenter extends BasePresenter
         $password = $req->getPost("password");
 
         $user = $this->credentialsAuthenticator->authenticate($username, $password);
+        $this->verifyUserIpLock($user);
         $user->updateLastAuthenticationAt();
         $this->users->flush();
 
@@ -145,6 +146,7 @@ class LoginPresenter extends BasePresenter
     {
         $req = $this->getRequest();
         $user = $this->externalServiceAuthenticator->authenticate($authenticatorName, $req->getPost("token"));
+        $this->verifyUserIpLock($user);
         $user->updateLastAuthenticationAt();
         $this->users->flush();
 
