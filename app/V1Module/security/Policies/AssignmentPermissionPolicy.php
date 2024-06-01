@@ -99,7 +99,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
     {
         $user = $identity->getUserData();
         $group = $assignment->getGroup();
-        if ($user === null || $group === null || $group->isArchived()) {
+        if ($user === null || $group === null) {
             return false;
         }
 
@@ -114,7 +114,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
     {
         $user = $identity->getUserData();
         $group = $assignment->getGroup();
-        if ($user === null || $group === null || $group->isArchived()) {
+        if ($user === null || $group === null) {
             return false;
         }
 
