@@ -243,7 +243,7 @@ class TestAccessManager extends Tester\TestCase
     {
         $token = "abcdefg";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-        $request = new Request($url, null, null, null, ["Authorization" => "Bearer $token"]);
+        $request = new Request($url, [], [], [], ["Authorization" => "Bearer $token"]);
         Assert::equal($token, AccessManager::getGivenAccessToken($request));
     }
 
@@ -251,7 +251,7 @@ class TestAccessManager extends Tester\TestCase
     {
         $token = "abcdefg";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-        $request = new Request($url, null, null, null, ["Authorization" => "Basic $token"]);
+        $request = new Request($url, [], [], [], ["Authorization" => "Basic $token"]);
         Assert::null(AccessManager::getGivenAccessToken($request));
     }
 
@@ -259,7 +259,7 @@ class TestAccessManager extends Tester\TestCase
     {
         $token = "";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-        $request = new Request($url, null, null, null, ["Authorization" => "Basic $token"]);
+        $request = new Request($url, [], [], [], ["Authorization" => "Basic $token"]);
         Assert::null(AccessManager::getGivenAccessToken($request));
     }
 
@@ -267,7 +267,7 @@ class TestAccessManager extends Tester\TestCase
     {
         $token = "";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-        $request = new Request($url, null, null, null, ["Authorization" => "Bearer $token and more!"]);
+        $request = new Request($url, [], [], [], ["Authorization" => "Bearer $token and more!"]);
         Assert::null(AccessManager::getGivenAccessToken($request));
     }
 }

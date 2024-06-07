@@ -33,11 +33,10 @@ class SecurityPresenter extends BasePresenter
         $requestParams = $this->router->match(
             new Http\Request(
                 new Http\UrlScript("https://foo.tld/" . ltrim($this->getRequest()->getPost("url"), "/"), "/"),
-                null,
-                null,
-                null,
-                null,
-                null,
+                [],
+                [],
+                [],
+                [],
                 $this->getRequest()->getPost("method")
             )
         );

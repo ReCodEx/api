@@ -105,7 +105,8 @@ class LocalHashFileStorage implements IHashFileStorage
                 }
             }
         }
-        
+
+        // @phpstan-ignore booleanAnd.rightAlwaysTrue
         if ($move && file_exists($path)) {
             @unlink($path); // the file was copied or already exists, lets simulate move
         }
@@ -123,7 +124,7 @@ class LocalHashFileStorage implements IHashFileStorage
         if (file_put_contents($newPath, $contents) === false) {
             throw new FileStorageException("Saving contents into hash store failed.", $newPath);
         }
-        
+
         return $hash;
     }
 

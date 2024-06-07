@@ -6,11 +6,14 @@ use App\Exceptions\ApiException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\UserActions;
 use App\Presenters\BasePresenter;
-use Exception;
+use App\Security\UserStorage;
 use Nette\Http\IResponse;
 use Nette\Application\BadRequestException;
+use Nette\Application\AbortException;
 use Doctrine\DBAL\Exception\ConnectionException;
 use Tracy\ILogger;
+use Exception;
+use Throwable;
 
 /**
  * The error presenter for the API module - all responses are served as JSONs with a fixed format.
@@ -32,7 +35,7 @@ class ApiErrorPresenter extends BasePresenter
     /**
      * @param Exception $exception
      * @return void
-     * @throws \Nette\Application\AbortException
+     * @throws AbortException
      */
     public function renderDefault($exception)
     {
@@ -58,9 +61,9 @@ class ApiErrorPresenter extends BasePresenter
     /**
      * Send an error response based on a known type of exceptions - derived from ApiException
      * @param ApiException $exception The exception which caused the error
-     * @throws \Nette\Application\AbortException
+     * @throws AbortException
      */
-    protected function handleAPIException(ApiException $exception)
+    public function handleAPIException(ApiException $exception)
     {
         $res = $this->getHttpResponse();
         $additionalHeaders = $exception->getAdditionalHttpHeaders();
@@ -78,20 +81,20 @@ class ApiErrorPresenter extends BasePresenter
     /**
      * Simply logs given exception into standard logger. Some filtering or
      * further modifications can be engaged.
-     * @param \Throwable $exception Exception which should be logged
+     * @param Throwable $ex Exception which should be logged
      */
-    protected function handleLogging(\Throwable $exception)
+    public function handleLogging(Throwable $ex)
     {
-        if ($exception instanceof BadRequestException) {
+        if ($ex instanceof BadRequestException) {
             // nothing to log here
         } else {
-            if ($exception instanceof ApiException && $exception->getCode() < 500) {
+            if ($ex instanceof ApiException && $ex->getCode() < 500) {
                 $this->logger->log(
-                    "HTTP code {$exception->getCode()}: {$exception->getMessage()} in {$exception->getFile()}:{$exception->getLine()}",
+                    "HTTP code {$ex->getCode()}: {$ex->getMessage()} in {$ex->getFile()}:{$ex->getLine()}",
                     'access'
                 );
             } else {
-                $this->logger->log($exception, ILogger::EXCEPTION);
+                $this->logger->log($ex, ILogger::EXCEPTION);
             }
         }
     }
@@ -103,7 +106,7 @@ class ApiErrorPresenter extends BasePresenter
      * @param string $frontendErrorCode custom defined, far more fine-grained exception code
      * @param mixed $frontendErrorParams parameters belonging to error
      * @return void
-     * @throws \Nette\Application\AbortException
+     * @throws AbortException
      */
     protected function sendErrorResponse(
         int $code,
@@ -114,7 +117,9 @@ class ApiErrorPresenter extends BasePresenter
         // calling user->isLoggedIn results in throwing exception in case of
         // invalid token (after update to nette/security:v3.1), therefore we
         // need to call our UserStorage directly
-        if ($this->getUser()->getStorage()->isAuthenticated()) {
+        /** @var UserStorage */
+        $storage = $this->getUser()->getStorage();
+        if ($storage->isAuthenticated()) {
             // log the action done by the current user
             // determine the action name from the application request
             $req = $this->getRequest();
