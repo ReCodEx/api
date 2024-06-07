@@ -14,7 +14,6 @@ use Nette\Routing\Router;
  */
 class MethodRoute implements Router
 {
-
     /** @var string */
     private $method;
 
@@ -25,12 +24,11 @@ class MethodRoute implements Router
      * @param string $method The HTTP method which is accepted by this route
      * @param string $mask Mask for the Nette\Application\Routers\Route
      * @param string|array $metadata Metadata for the Nette\Application\Routers\Route
-     * @param int $flags Flags for the Nette\Application\Routers\Route
      */
-    public function __construct(string $method, string $mask, $metadata = [], int $flags = 0)
+    public function __construct(string $method, string $mask, $metadata = [])
     {
         $this->method = $method;
-        $this->route = new Route($mask, $metadata, $flags);
+        $this->route = new Route($mask, $metadata);
     }
 
     /**
