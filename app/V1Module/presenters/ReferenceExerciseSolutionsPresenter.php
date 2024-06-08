@@ -209,6 +209,33 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
     }
 
+    public function checkUpdate(string $solutionId)
+    {
+        $solution = $this->referenceSolutions->findOrThrow($solutionId);
+        if (!$this->referenceSolutionAcl->canUpdate($solution)) {
+            throw new ForbiddenRequestException("You cannot update the ref. solution");
+        }
+    }
+
+    /**
+     * Update details about the ref. solution (note, etc...)
+     * @POST
+     * @Param(type="post", name="note", validation="string:0..65535",
+     *        description="A description by the author of the solution")
+     * @param string $solutionId Identifier of the solution
+     * @throws NotFoundException
+     * @throws InternalServerException
+     */
+    public function actionUpdate(string $solutionId)
+    {
+        $req = $this->getRequest();
+        $solution = $this->referenceSolutions->findOrThrow($solutionId);
+        $solution->setDescription($req->getPost("note"));
+
+        $this->referenceSolutions->flush();
+        $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
+    }
+
     public function checkDeleteReferenceSolution(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);

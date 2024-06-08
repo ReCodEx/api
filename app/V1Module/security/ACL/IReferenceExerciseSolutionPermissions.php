@@ -8,6 +8,8 @@ interface IReferenceExerciseSolutionPermissions
 {
     public function canViewDetail(ReferenceExerciseSolution $referenceExerciseSolution): bool;
 
+    public function canUpdate(ReferenceExerciseSolution $referenceExerciseSolution): bool;
+
     public function canDelete(ReferenceExerciseSolution $referenceExerciseSolution): bool;
 
     public function canEvaluate(ReferenceExerciseSolution $referenceExerciseSolution): bool;

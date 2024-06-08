@@ -101,6 +101,11 @@ class ReferenceExerciseSolution
         return $this->description;
     }
 
+    public function setDescription(string $desccription): void
+    {
+        $this->description = $desccription;
+    }
+
     public function getSolution(): Solution
     {
         return $this->solution;
