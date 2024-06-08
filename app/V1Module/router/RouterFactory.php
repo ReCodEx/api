@@ -336,6 +336,7 @@ class RouterFactory
         );
 
         $router[] = new GetRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:detail");
+        $router[] = new PostRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:update");
         $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
         $router[] = new PostRoute("$prefix/<id>/resubmit", "ReferenceExerciseSolutions:resubmit");
         $router[] = new GetRoute("$prefix/<solutionId>/submissions", "ReferenceExerciseSolutions:submissions");

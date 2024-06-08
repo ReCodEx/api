@@ -882,6 +882,7 @@ permissions:
       resource: referenceExerciseSolution
       actions:
           - viewDetail
+          - update
           - promote
 
     - allow: true
@@ -917,6 +918,20 @@ permissions:
                       - referenceExerciseSolution.isExerciseAuthorOrAdmin
                       - referenceExerciseSolution.isExerciseSuperGroupAdmin
                       - referenceExerciseSolution.isExerciseSubGroupNonStudentMember
+
+    - allow: true
+      role: supervisor-student
+      resource: referenceExerciseSolution
+      actions:
+          - update
+      conditions:
+          - or:
+              - referenceExerciseSolution.isAuthor
+              - and:
+                  - referenceExerciseSolution.isPublic
+                  - or:
+                      - referenceExerciseSolution.isExerciseAuthorOrAdmin
+                      - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       role: supervisor-student

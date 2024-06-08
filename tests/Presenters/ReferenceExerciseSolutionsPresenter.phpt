@@ -714,6 +714,54 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         Assert::equal(ReferenceExerciseSolution::VISIBILITY_PROMOTED, $payload['visibility']);
         Assert::equal(ReferenceExerciseSolution::VISIBILITY_PROMOTED, $solution->getVisibility());
     }
+
+    public function testUpdateDesription()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+        $solution = current(array_filter($this->referenceSolutions->findAll(), function ($rs) {
+            // get solutions of logged-in user
+            return $rs->getSolution()->getAuthor()->getEmail() === PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN;
+        }));
+        Assert::truthy($solution);
+
+        $newNote = 'new-description';
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:ReferenceExerciseSolutions',
+            'POST',
+            [ 'action' => 'update', 'solutionId' => $solution->getId() ],
+            [ 'note' => $newNote ]
+        );
+
+        Assert::equal($newNote, $payload['description']);
+        $this->referenceSolutions->refresh($solution);
+        Assert::equal($newNote, $solution->getDescription());
+    }
+
+    public function testUpdateDesriptionUnauthorized()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+        $solution = current(array_filter($this->referenceSolutions->findAll(), function ($rs) {
+            // get solutions the do not belong to the logged-in user
+            return $rs->getSolution()->getAuthor()->getEmail() !== PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN;
+        }));
+        Assert::truthy($solution);
+
+        // another supervisor is not the author, nor admin of the exercise/group...
+        Assert::exception(
+            function () use ($solution) {
+                $payload = PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:ReferenceExerciseSolutions',
+                    'POST',
+                    [ 'action' => 'update', 'solutionId' => $solution->getId() ],
+                    [ 'note' => 'new-description' ]
+                );
+            },
+            ForbiddenRequestException::class
+        );
+    }
 }
 
 $testCase = new TestReferenceExerciseSolutionsPresenter();
