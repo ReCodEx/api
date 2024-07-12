@@ -34,6 +34,7 @@ class Assignment extends AssignmentBase implements IExercise
         DateTime $secondDeadline = null,
         int $maxPointsBeforeSecondDeadline = 0,
         bool $canViewLimitRatios = false,
+        bool $canViewMeasuredValues = false,
         bool $isBonus = false,
         $pointsPercentualThreshold = 0,
         ?DateTime $visibleFrom = null,
@@ -62,6 +63,7 @@ class Assignment extends AssignmentBase implements IExercise
         $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
         $this->localizedAssignments = new ArrayCollection();
         $this->canViewLimitRatios = $canViewLimitRatios;
+        $this->canViewMeasuredValues = $canViewMeasuredValues;
         $this->canViewJudgeStdout = $canViewJudgeStdout;
         $this->canViewJudgeStderr = $canViewJudgeStderr;
         $this->mergeJudgeLogs = $exercise->getMergeJudgeLogs();
@@ -254,23 +256,31 @@ class Assignment extends AssignmentBase implements IExercise
 
     /**
      * @ORM\Column(type="boolean")
+     * Whether a student can see the relative consumed time and memory (for each test).
      */
-    protected $canViewLimitRatios;
+    protected $canViewLimitRatios = false;
+
+    /**
+     * @ORM\Column(type="boolean")
+     * Whether a student can see the absolute values of consumed time and memory (for each test).
+     * This only applies if $canViewLimitRatios is true.
+     */
+    protected $canViewMeasuredValues = false;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $canViewJudgeStdout;
+    protected $canViewJudgeStdout = false;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $canViewJudgeStderr;
+    protected $canViewJudgeStderr = false;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $mergeJudgeLogs;
+    protected $mergeJudgeLogs = false;
 
     /**
      * @ORM\Column(type="boolean")
@@ -576,6 +586,16 @@ class Assignment extends AssignmentBase implements IExercise
     public function setCanViewLimitRatios(bool $canViewLimitRatios): void
     {
         $this->canViewLimitRatios = $canViewLimitRatios;
+    }
+
+    public function getCanViewMeasuredValues(): bool
+    {
+        return $this->canViewMeasuredValues;
+    }
+
+    public function setCanViewMeasuredValues(bool $canViewMeasuredValues): void
+    {
+        $this->canViewMeasuredValues = $canViewMeasuredValues;
     }
 
     public function getFirstDeadline(): DateTime

@@ -215,6 +215,8 @@ class AssignmentsPresenter extends BasePresenter
      *        description="Date from which this assignment will be visible to students")
      * @Param(type="post", name="canViewLimitRatios", validation="bool",
      *        description="Can all users view ratio of theirs solution memory and time usages and assignment limits?")
+     * @Param(type="post", name="canViewMeasuredValues", validation="bool",
+     *        description="Can all users view absolute memory and time values?")
      * @Param(type="post", name="canViewJudgeStdout", validation="bool",
      *        description="Can all users view judge primary log (stdout) of theirs solution?")
      * @Param(type="post", name="canViewJudgeStderr", validation="bool",
@@ -234,7 +236,7 @@ class AssignmentsPresenter extends BasePresenter
      * @Param(type="post", name="sendNotification", required=false, validation="bool",
      *        description="If email notification (when assignment becomes public) should be sent")
      * @Param(type="post", name="isExam", required=false, validation="bool",
-     *        description="This assignemnt is dedicated for an exam (should be solved in exam mode).")
+     *        description="This assignemnt is dedicated for an exam (should be solved in exam mode)")
      * @param string $id Identifier of the updated assignment
      * @throws BadRequestException
      * @throws InvalidArgumentException
@@ -347,6 +349,10 @@ class AssignmentsPresenter extends BasePresenter
         $assignment->setAllowSecondDeadline($allowSecondDeadline);
         $assignment->setMaxPointsDeadlineInterpolation($maxPointsDeadlineInterpolation);
         $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
+        $assignment->setCanViewMeasuredValues(filter_var(
+            $req->getPost("canViewMeasuredValues"),
+            FILTER_VALIDATE_BOOLEAN
+        ));
         $assignment->setCanViewJudgeStdout(filter_var($req->getPost("canViewJudgeStdout"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setCanViewJudgeStderr(filter_var($req->getPost("canViewJudgeStderr"), FILTER_VALIDATE_BOOLEAN));
         $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
