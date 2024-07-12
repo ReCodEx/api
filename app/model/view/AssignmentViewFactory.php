@@ -62,6 +62,7 @@ class AssignmentViewFactory
             "runtimeEnvironmentIds" => $assignment->getAllRuntimeEnvironmentsIds(),
             "disabledRuntimeEnvironmentIds" => $assignment->getDisabledRuntimeEnvironmentsIds(),
             "canViewLimitRatios" => $assignment->getCanViewLimitRatios(),
+            "canViewMeasuredValues" => $assignment->getCanViewMeasuredValues(),
             "canViewJudgeStdout" => $assignment->getCanViewJudgeStdout(),
             "canViewJudgeStderr" => $assignment->getCanViewJudgeStderr(),
             "mergeJudgeLogs" => $assignment->getMergeJudgeLogs(),

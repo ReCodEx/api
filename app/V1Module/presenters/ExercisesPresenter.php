@@ -323,7 +323,7 @@ class ExercisesPresenter extends BasePresenter
      * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
      *   description="Maximal size (bytes) of all files in a solution being submitted (default for assignments)")
      * @Param(type="post", name="mergeJudgeLogs", validation="bool",
-     *   description="Initial value for assignments. If true, judge stderr will be merged into stdout.")
+     *   description="If true, judge stderr will be merged into stdout (default for assignments)")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */

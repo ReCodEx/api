@@ -153,6 +153,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $submissionsCountLimit = 32;
         $allowSecondDeadline = true;
         $canViewLimitRatios = false;
+        $canViewMeasuredValues = false;
         $canViewJudgeStdout = true;
         $canViewJudgeStderr = false;
         $secondDeadline = (new DateTime())->getTimestamp() + 10;
@@ -177,6 +178,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => $allowSecondDeadline,
                 'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => $canViewLimitRatios,
+                'canViewMeasuredValues' => $canViewMeasuredValues,
                 'canViewJudgeStdout' => $canViewJudgeStdout,
                 'canViewJudgeStderr' => $canViewJudgeStderr,
                 'secondDeadline' => $secondDeadline,
@@ -203,6 +205,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
         Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
         Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
+        Assert::equal($canViewMeasuredValues, $updatedAssignment["canViewMeasuredValues"]);
         Assert::equal($canViewJudgeStdout, $updatedAssignment["canViewJudgeStdout"]);
         Assert::equal($canViewJudgeStderr, $updatedAssignment["canViewJudgeStderr"]);
         Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
@@ -256,6 +259,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => false,
                 'maxPointsDeadlineInterpolation' => true,
                 'canViewLimitRatios' => false,
+                'canViewMeasuredValues' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
                 'isBonus' => false,
@@ -308,6 +312,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $submissionsCountLimit = 32;
         $allowSecondDeadline = true;
         $canViewLimitRatios = false;
+        $canViewMeasuredValues = false;
         $canViewJudgeStdout = true;
         $canViewJudgeStderr = false;
         $secondDeadline = (new DateTime())->getTimestamp() + 1000;
@@ -333,6 +338,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => $allowSecondDeadline,
                 'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => $canViewLimitRatios,
+                'canViewMeasuredValues' => $canViewMeasuredValues,
                 'canViewJudgeStdout' => $canViewJudgeStdout,
                 'canViewJudgeStderr' => $canViewJudgeStderr,
                 'secondDeadline' => $secondDeadline,
@@ -359,6 +365,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
         Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
         Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
+        Assert::equal($canViewMeasuredValues, $updatedAssignment["canViewMeasuredValues"]);
         Assert::equal($canViewJudgeStdout, $updatedAssignment["canViewJudgeStdout"]);
         Assert::equal($canViewJudgeStderr, $updatedAssignment["canViewJudgeStderr"]);
         Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
@@ -402,6 +409,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => true,
                 'maxPointsDeadlineInterpolation' => true,
                 'canViewLimitRatios' => false,
+                'canViewMeasuredValues' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
                 'secondDeadline' => (new DateTime())->getTimestamp() + 10,
@@ -448,6 +456,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => true,
                 'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => false,
+                'canViewMeasuredValues' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
                 'secondDeadline' => (new DateTime())->getTimestamp() + 10,
@@ -465,6 +474,55 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         Assert::same([$disabledEnv->getId()], $updatedAssignment["disabledRuntimeEnvironmentIds"]);
         Assert::true(in_array($disabledEnv->getId(), $updatedAssignment["runtimeEnvironmentIds"]));
+    }
+
+    public function testSetVisibilityFlags()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $this->assignments->findAll();
+        /** @var Assignment $assignment */
+        $assignment = array_pop($assignments);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Assignments',
+            'POST',
+            ['action' => 'updateDetail', 'id' => $assignment->getId()],
+            [
+                'isPublic' => true,
+                'version' => 1,
+                'localizedTexts' => [
+                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+                ],
+                'firstDeadline' => (new DateTime())->getTimestamp(),
+                'maxPointsBeforeFirstDeadline' => 123,
+                'submissionsCountLimit' => 32,
+                'allowSecondDeadline' => true,
+                'maxPointsDeadlineInterpolation' => false,
+                'canViewLimitRatios' => true,
+                'canViewMeasuredValues' => true,
+                'canViewJudgeStdout' => true,
+                'canViewJudgeStderr' => true,
+                'secondDeadline' => (new DateTime())->getTimestamp() + 10,
+                'maxPointsBeforeSecondDeadline' => 543,
+                'isBonus' => true,
+                'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => null,
+                'isExam' => false,
+            ]
+        );
+
+        Assert::true($payload["canViewLimitRatios"]);
+        Assert::true($payload["canViewMeasuredValues"]);
+        Assert::true($payload["canViewJudgeStdout"]);
+        Assert::true($payload["canViewJudgeStderr"]);
+        $this->presenter->assignments->refresh($assignment);
+        Assert::true($assignment->getCanViewLimitRatios());
+        Assert::true($assignment->getCanViewMeasuredValues());
+        Assert::true($assignment->getCanViewJudgeStdout());
+        Assert::true($assignment->getCanViewJudgeStderr());
     }
 
     public function testSetExamFlag()
@@ -492,6 +550,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => true,
                 'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => false,
+                'canViewMeasuredValues' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
                 'secondDeadline' => (new DateTime())->getTimestamp() + 10,
@@ -538,6 +597,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'allowSecondDeadline' => true,
                 'maxPointsDeadlineInterpolation' => false,
                 'canViewLimitRatios' => false,
+                'canViewMeasuredValues' => false,
                 'canViewJudgeStdout' => false,
                 'canViewJudgeStderr' => false,
                 'secondDeadline' => (new DateTime())->getTimestamp() + 10,

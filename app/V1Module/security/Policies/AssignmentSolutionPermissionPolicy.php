@@ -75,6 +75,11 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
         return $solution->getAssignment() && $solution->getAssignment()->getCanViewLimitRatios();
     }
 
+    public function areMeasuredValuesPublic(Identity $identity, AssignmentSolution $solution)
+    {
+        return $solution->getAssignment() && $solution->getAssignment()->getCanViewMeasuredValues();
+    }
+
     public function areJudgeStdoutsPublic(Identity $identity, AssignmentSolution $solution)
     {
         return $solution->getAssignment() && $solution->getAssignment()->getCanViewJudgeStdout();

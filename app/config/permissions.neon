@@ -587,6 +587,17 @@ permissions:
           - assignmentSolution.userIsNotLockedElsewhereStrictly
 
     - allow: true
+      role: student
+      resource: assignmentSolution
+      actions:
+          - viewEvaluationValues
+      conditions:
+          - assignmentSolution.areEvaluationDetailsPublic
+          - assignmentSolution.areMeasuredValuesPublic
+          - assignmentSolution.isAuthor
+          - assignmentSolution.userIsNotLockedElsewhereStrictly
+
+    - allow: true
       role: supervisor-student
       resource: assignmentSolution
       actions:
