@@ -13,7 +13,6 @@ use App\Exceptions\ExerciseConfigException;
  */
 class BoxService
 {
-
     /**
      * Associative array indexed by type identifier and containing
      * identifications of box classes.
@@ -38,8 +37,6 @@ class BoxService
             ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
             WrappedExecutionBox::$BOX_TYPE => WrappedExecutionBox::class,
             FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
-            MonoCompilationBox::$MCS_TYPE => MonoCompilationBox::class,
-            MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
             FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,
             FetchFileBox::$FETCH_TYPE => FetchFileBox::class,
             Python3RunBox::$BOX_TYPE => Python3RunBox::class,
