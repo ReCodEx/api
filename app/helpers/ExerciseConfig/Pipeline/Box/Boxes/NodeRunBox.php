@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 /**
  * Box which represents execution of given javascript.
+ * @DEPRECATED - use ScriptExecutionBox instead
  */
 class NodeRunBox extends ExecutionBox
 {
