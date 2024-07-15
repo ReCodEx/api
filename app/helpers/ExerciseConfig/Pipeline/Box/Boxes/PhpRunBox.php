@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 /**
  * Box which represents execution of given php script.
+ * @DEPRECATED - use ScriptExecutionBox instead
  */
 class PhpRunBox extends ExecutionBox
 {

@@ -12,6 +12,7 @@ use Nette\Utils\Strings;
 
 /**
  * Box which represents execution python script.
+ * @DEPRECATED - use ScriptExecutionBox instead
  */
 class Python3RunBox extends ExecutionBox
 {
@@ -20,8 +21,6 @@ class Python3RunBox extends ExecutionBox
     public static $PYTHON3_BINARY = "/usr/bin/env";
     public static $PYTHON3_VERSION = "python3";
     public static $DEFAULT_NAME = "Python3 Execution";
-
-    public static $PY_EXTENSION = ".py";
 
     private static $initialized = false;
     private static $defaultInputPorts;
