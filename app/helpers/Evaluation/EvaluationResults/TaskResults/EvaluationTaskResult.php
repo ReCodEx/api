@@ -10,7 +10,6 @@ use Nette\Utils\Validators;
  */
 class EvaluationTaskResult extends TaskResult
 {
-
     /** @var float|null Explicit score from the results */
     private $score = null;
 
