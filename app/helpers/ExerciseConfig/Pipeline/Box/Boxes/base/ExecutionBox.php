@@ -30,6 +30,7 @@ abstract class ExecutionBox extends Box
     public static $ENTRY_POINT_KEY = "entry-point";
     public static $EXTRA_FILES_PORT_KEY = "extra-files";
     public static $BINARY_FILE_PORT_KEY = "binary-file";
+    public static $SUCCESS_EXIT_CODES_PORT_KEY = "success-exit-codes";
 
 
     /**
@@ -85,6 +86,18 @@ abstract class ExecutionBox extends Box
         }
 
         $task->setSandboxConfig($sandbox);
+
+        if ($this->hasInputPortValue(self::$SUCCESS_EXIT_CODES_PORT_KEY)) {
+            $codes = $this->getInputPortValue(self::$SUCCESS_EXIT_CODES_PORT_KEY)->getValue();
+            foreach ($codes as &$code) {
+                $code = trim($code);
+                if (preg_match('/^(?<from>[0-9]+)\s*-+\s*(?<to>[0-9]+)$/', $code, $matches)) {
+                    // convert string range representation ('from-to') into tuple of ints [from, to]
+                    $code = [ (int)$matches['from'], (int)$matches['to'] ];
+                }
+            }
+            $task->setSuccessExitCodes($codes);
+        }
 
         return $task;
     }

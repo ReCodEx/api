@@ -151,7 +151,8 @@ abstract class Box implements JsonSerializable
                 // same, but if types are not the same and default port is undefined
                 // there can be any type in the output port
                 throw new ExerciseConfigException(
-                    "Default output port '{$defaultOutPort->getName()}' missing or malformed in box '{$this->getName()}'"
+                    "Default output port '{$defaultOutPort->getName()}' missing or malformed in box '"
+                    . $this->getName() . "'"
                 );
             }
         }

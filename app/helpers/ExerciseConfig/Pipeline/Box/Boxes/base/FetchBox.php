@@ -19,7 +19,6 @@ use App\Helpers\JobConfig\Tasks\Task;
  */
 abstract class FetchBox extends Box
 {
-
     /**
      * DataInBox constructor.
      * @param BoxMeta $meta

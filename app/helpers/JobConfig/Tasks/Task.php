@@ -4,13 +4,13 @@ namespace App\Helpers\JobConfig\Tasks;
 
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\Yaml;
+use InvalidArgumentException;
 
 /**
  * Abstract base class for internal and external tasks which stores all shared info.
  */
 class Task
 {
-
     /** Config key which represents task identification */
     public const TASK_ID_KEY = "task-id";
     /** Key representing priority of task */
@@ -25,6 +25,8 @@ class Task
     public const CMD_BIN_KEY = "bin";
     /** Command arguments key */
     public const CMD_ARGS_KEY = "args";
+    /** Command success exit codes */
+    public const CMD_SUCCESS_EXIT_CODES_KEY = "success-exit-codes";
     /** Test identification key */
     public const TEST_ID_KEY = "test-id";
     /** Task type key */
@@ -44,6 +46,8 @@ class Task
     private $commandBinary = "";
     /** @var array Arguments for execution command */
     private $commandArguments = [];
+    /** @var array List of success exit codes */
+    private $successExitCodes = [];
     /** @var string|null Type of the task */
     private $type = null;
     /** @var string|null ID of the test to which this task corresponds */
@@ -170,6 +174,64 @@ class Task
     public function setCommandArguments(array $args)
     {
         $this->commandArguments = $args;
+        return $this;
+    }
+
+    public function getSuccessExitCodes(): array
+    {
+        return $this->successExitCodes;
+    }
+
+    /**
+     * Helper that sanitizes and verifies single exit code value.
+     * @param mixed $code to be verified and coerced into int.
+     * @param string $identification used to identify the value if exception is thrown.
+     * @throws InvalidArgumentException
+     */
+    private static function checkExitCodeValue(&$code, string $identification)
+    {
+        if (!is_numeric($code)) {
+            throw new InvalidArgumentException("Success exit code $identification is not a valid number.");
+        }
+        $code = (int)$code;
+        if ($code < 0 || $code > 255) {
+            throw new InvalidArgumentException("Success exit code $identification is out of valid range (0-255).");
+        }
+    }
+
+    /**
+     * Sets the success exit codes. The codes are sanitized first.
+     * @param array $codes each item must be either a numeric value (0-255) or a tupple (array with 2 items) of codes;
+     *                     a tupple represents range of codes (from-to, inclusive)
+     * @throws InvalidArgumentException
+     */
+    public function setSuccessExitCodes(array $codes)
+    {
+        // perform verification and sanitization
+        foreach ($codes as $i => &$code) {
+            if (is_array($code)) {
+                if (count($code) !== 2) {
+                    throw new InvalidArgumentException(
+                        "Exit code value must be a number or a tupple of two numbers, but array of "
+                        . count($code) . " items found."
+                    );
+                }
+                $code = array_values($code);
+                self::checkExitCodeValue($code[0], "[$i][0]");
+                self::checkExitCodeValue($code[1], "[$i][1]");
+                if ($code[0] === $code[1]) {
+                    $code = $code[0];
+                } elseif ($code[0] > $code[1]) {
+                    $tmp = $code[0];
+                    $code[0] = $code[1];
+                    $code[1] = $tmp;
+                }
+            } else {
+                self::checkExitCodeValue($code, "[$i]");
+            }
+        }
+
+        $this->successExitCodes = $codes;
         return $this;
     }
 
@@ -312,6 +374,9 @@ class Task
         }
         if (!empty($this->commandArguments)) {
             $data[self::CMD_KEY][self::CMD_ARGS_KEY] = $this->commandArguments;
+        }
+        if (!empty($this->successExitCodes)) {
+            $data[self::CMD_KEY][self::CMD_SUCCESS_EXIT_CODES_KEY] = $this->successExitCodes;
         }
         if ($this->testId) {
             $data[self::TEST_ID_KEY] = $this->testId;

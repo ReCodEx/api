@@ -29,18 +29,17 @@ class ElfExecutionBox extends ExecutionBox
     {
         if (!self::$initialized) {
             self::$initialized = true;
-            self::$defaultInputPorts = array(
-                new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-                new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-                new Port(
-                    (new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
-                ),
-                new Port((new PortMeta())->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
-            );
-            self::$defaultOutputPorts = array(
-                new Port((new PortMeta())->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-                new Port((new PortMeta())->setName(self::$OUTPUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
-            );
+            self::$defaultInputPorts = Box::constructPorts([
+                self::$BINARY_FILE_PORT_KEY => VariableTypes::$FILE_TYPE,
+                self::$ARGS_PORT_KEY => VariableTypes::$STRING_ARRAY_TYPE,
+                self::$STDIN_FILE_PORT_KEY => VariableTypes::$FILE_TYPE,
+                self::$INPUT_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
+                self::$SUCCESS_EXIT_CODES_PORT_KEY => VariableTypes::$STRING_ARRAY_TYPE,
+            ]);
+            self::$defaultOutputPorts = Box::constructPorts([
+                self::$STDOUT_FILE_PORT_KEY => VariableTypes::$FILE_TYPE,
+                self::$OUTPUT_FILE_PORT_KEY => VariableTypes::$FILE_TYPE,
+            ]);
         }
     }
 

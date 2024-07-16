@@ -71,7 +71,8 @@ class Loader
 
         if (!isset($data[BoundDirectoryConfig::SRC_KEY])) {
             throw new JobConfigLoadingException(
-                "Task '" . $taskId . "': bound directory does not contain required field '" . BoundDirectoryConfig::SRC_KEY . "'"
+                "Task '" . $taskId . "': bound directory does not contain required field '"
+                . BoundDirectoryConfig::SRC_KEY . "'"
             );
         }
         $boundDir->setSource($data[BoundDirectoryConfig::SRC_KEY]);
@@ -79,7 +80,8 @@ class Loader
 
         if (!isset($data[BoundDirectoryConfig::DST_KEY])) {
             throw new JobConfigLoadingException(
-                "Task '" . $taskId . "': bound directory does not contain required field '" . BoundDirectoryConfig::DST_KEY . "'"
+                "Task '" . $taskId . "': bound directory does not contain required field '"
+                . BoundDirectoryConfig::DST_KEY . "'"
             );
         }
         $boundDir->setDestination($data[BoundDirectoryConfig::DST_KEY]);
@@ -87,7 +89,8 @@ class Loader
 
         if (!isset($data[BoundDirectoryConfig::MODE_KEY])) {
             throw new JobConfigLoadingException(
-                "Task '" . $taskId . "': bound directory does not contain required field '" . BoundDirectoryConfig::MODE_KEY . "'"
+                "Task '" . $taskId . "': bound directory does not contain required field '"
+                . BoundDirectoryConfig::MODE_KEY . "'"
             );
         }
         $boundDir->setMode($data[BoundDirectoryConfig::MODE_KEY]);
@@ -115,7 +118,8 @@ class Loader
 
         if (!isset($data[Limits::HW_GROUP_ID_KEY])) {
             throw new JobConfigLoadingException(
-                "Task '" . $taskId . "': sandbox limits section does not contain required field '" . Limits::HW_GROUP_ID_KEY . "'"
+                "Task '" . $taskId . "': sandbox limits section does not contain required field '"
+                . Limits::HW_GROUP_ID_KEY . "'"
             );
         }
         $limits->setId($data[Limits::HW_GROUP_ID_KEY]);
@@ -194,7 +198,8 @@ class Loader
 
         if (!isset($data[SandboxConfig::NAME_KEY])) {
             throw new JobConfigLoadingException(
-                "Task '" . $taskId . "': sandbox section does not contain required field '" . SandboxConfig::NAME_KEY . "'"
+                "Task '" . $taskId . "': sandbox section does not contain required field '"
+                . SandboxConfig::NAME_KEY . "'"
             );
         }
         $sandboxConfig->setName($data[SandboxConfig::NAME_KEY]);
@@ -292,7 +297,8 @@ class Loader
 
         if (!isset($data[Task::CMD_KEY][Task::CMD_BIN_KEY])) {
             throw new JobConfigLoadingException(
-                "Task '" . $taskId . "' does not contain required field '" . Task::CMD_KEY . "." . Task::CMD_BIN_KEY . "'"
+                "Task '" . $taskId . "' does not contain required field '"
+                . Task::CMD_KEY . "." . Task::CMD_BIN_KEY . "'"
             );
         }
         $task->setCommandBinary($data[Task::CMD_KEY][Task::CMD_BIN_KEY]);
@@ -322,6 +328,14 @@ class Loader
         if (isset($data[Task::CMD_KEY][Task::CMD_ARGS_KEY]) && is_array($data[Task::CMD_KEY][Task::CMD_ARGS_KEY])) {
             $task->setCommandArguments($data[Task::CMD_KEY][Task::CMD_ARGS_KEY]);
             unset($data[Task::CMD_KEY][Task::CMD_ARGS_KEY]);
+        }
+
+        if (
+            isset($data[Task::CMD_KEY][Task::CMD_SUCCESS_EXIT_CODES_KEY])
+            && is_array($data[Task::CMD_KEY][Task::CMD_SUCCESS_EXIT_CODES_KEY])
+        ) {
+            $task->setSuccessExitCodes($data[Task::CMD_KEY][Task::CMD_SUCCESS_EXIT_CODES_KEY]);
+            unset($data[Task::CMD_KEY][Task::CMD_SUCCESS_EXIT_CODES_KEY]);
         }
 
         if (isset($data[Task::TYPE_KEY])) {
