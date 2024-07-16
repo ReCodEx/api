@@ -26,7 +26,8 @@ abstract class CompilationBox extends Box
     public static $EXTRA_FILES_PORT_KEY = "extra-files";
     public static $RUNNER_FILE_PORT_KEY = "runner";
     public static $COMPILER_EXEC_PATH_PORT_KEY = "compiler-exec-path";
-    public static $EXISTS_FAILED_MSG = "Compilation process was completed correctly but no executable file was yielded. Unable to proceed with testing.";
+    public static $EXISTS_FAILED_MSG =
+        "Compilation process completed correctly but no executable file was yielded. Unable to proceed with testing.";
 
 
     /**

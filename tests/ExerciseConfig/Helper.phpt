@@ -214,7 +214,8 @@ class TestExerciseConfigHelper extends Tester\TestCase
                     "args" => ["type" => "string[]", "value" => ""],
                     "stdin" => ["type" => "file", "value" => "input-file"],
                     "binary-file" => ["type" => "file", "value" => "binary_file"],
-                    "input-files" => ["type" => "file[]", "value" => ""]
+                    "input-files" => ["type" => "file[]", "value" => ""],
+                    "success-exit-codes" => ["type" => "string[]", "value" => ""],
                 ],
                 "portsOut" => [
                     "stdout" => ["type" => "file", "value" => ""],

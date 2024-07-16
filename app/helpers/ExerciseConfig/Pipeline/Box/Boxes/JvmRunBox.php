@@ -43,6 +43,7 @@ class JvmRunBox extends ExecutionBox
                 self::$JAR_FILES_PORT_KEY => VariableTypes::$FILE_ARRAY_TYPE,
                 self::$RUNNER_EXEC_PORT_KEY => VariableTypes::$STRING_TYPE,
                 self::$CLASSPATH_PORT_KEY => VariableTypes::$STRING_ARRAY_TYPE,
+                self::$SUCCESS_EXIT_CODES_PORT_KEY => VariableTypes::$STRING_ARRAY_TYPE,
             ]);
             self::$defaultOutputPorts = Box::constructPorts([
                 self::$STDOUT_FILE_PORT_KEY => VariableTypes::$FILE_TYPE,
