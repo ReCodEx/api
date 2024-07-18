@@ -34,7 +34,7 @@ class BoxService
             GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
             GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
             BisonCompilationBox::$BOX_TYPE => BisonCompilationBox::class,
-            ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
+            ElfExecutionBox::$BOX_TYPE => ElfExecutionBox::class,
             WrappedExecutionBox::$BOX_TYPE => WrappedExecutionBox::class,
             FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
             FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,

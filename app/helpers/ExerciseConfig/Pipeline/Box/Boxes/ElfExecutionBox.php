@@ -15,7 +15,7 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 class ElfExecutionBox extends ExecutionBox
 {
     /** Type key */
-    public static $ELF_EXEC_TYPE = "elf-exec";
+    public static $BOX_TYPE = "elf-exec";
     public static $DEFAULT_NAME = "ELF Execution";
 
     private static $initialized = false;
@@ -59,7 +59,7 @@ class ElfExecutionBox extends ExecutionBox
      */
     public function getType(): string
     {
-        return self::$ELF_EXEC_TYPE;
+        return self::$BOX_TYPE;
     }
 
     /**
