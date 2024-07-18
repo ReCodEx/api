@@ -131,6 +131,7 @@ class RuntimeImport extends BaseCommand
             'producesFiles' => 'boolean',
             'hasEntryPoint' => 'boolean',
             'hasExtraFiles' => 'boolean',
+            'hasSuccessExitCodes' => 'boolean',
         ],
     ];
 

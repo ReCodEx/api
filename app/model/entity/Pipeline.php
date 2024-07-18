@@ -112,6 +112,7 @@ class Pipeline
         "producesFiles" => false,
         "hasEntryPoint" => false,
         "hasExtraFiles" => false,
+        "hasSuccessExitCodes" => false,
     ];
 
     /**
