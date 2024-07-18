@@ -112,6 +112,13 @@ final class Version20240716161149 extends AbstractMigration
                     "UPDATE pipeline_config SET pipeline_config = :config WHERE id = :id",
                     ['id' => $pipeline['cid'], 'config' => Yaml::dump($config)]
                 );
+
+                // also add hasSuccessExitCodes pipeline parameter
+                $this->connection->executeQuery(
+                    "INSERT INTO pipeline_parameter (id, pipeline_id, `name`, discriminator, boolean_value)
+                        VALUES (UUID(), :id, 'hasSuccessExitCodes', 'booleanpipelineparameter', 1)",
+                    ['id' => $id]
+                );
             }
         }
 
@@ -222,6 +229,13 @@ final class Version20240716161149 extends AbstractMigration
                 $this->connection->executeQuery(
                     "UPDATE pipeline_config SET pipeline_config = :config WHERE id = :id",
                     ['id' => $pipeline['cid'], 'config' => Yaml::dump($config)]
+                );
+
+                // also add hasSuccessExitCodes pipeline parameter
+                $this->connection->executeQuery(
+                    "DELETE FROM pipeline_parameter WHERE pipeline_id = :id AND `name` = 'hasSuccessExitCodes'
+                        AND discriminator = 'booleanpipelineparameter'",
+                    ['id' => $id]
                 );
             }
         }
