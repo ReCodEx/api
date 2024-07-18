@@ -241,7 +241,7 @@ abstract class Box implements JsonSerializable
      */
     protected function hasInputPortValue(string $port): bool
     {
-        return $this->getInputPort($port)->getVariableValue() !== null &&
+        return $this->getInputPort($port)?->getVariableValue() !== null &&
             !$this->getInputPort($port)->getVariableValue()->isEmpty();
     }
 
@@ -252,7 +252,7 @@ abstract class Box implements JsonSerializable
      */
     protected function hasOutputPortValue(string $port): bool
     {
-        return $this->getOutputPort($port)->getVariableValue() !== null &&
+        return $this->getOutputPort($port)?->getVariableValue() !== null &&
             !$this->getOutputPort($port)->getVariableValue()->isEmpty();
     }
 
