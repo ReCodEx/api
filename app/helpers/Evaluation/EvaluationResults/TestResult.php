@@ -253,17 +253,51 @@ class TestResult
     }
 
     /**
-     * Get the return code
-     * @return int If all tasks are successful, return 0. If not, return first nonzero code returned.
+     * Get the exit code. If multiple processes are executed, the exit code is determined by priorities:
+     * - regular non-success exit codes
+     * - irregular (timeout, signal) non-success exit codes
+     * - success exit codes
+     * EXIT_CODE_UNKNOWN is returned if no process was executed
+     * @return int exit code
      */
     public function getExitCode(): int
     {
+        // first, try to find regular but non-success exit code
         foreach ($this->sandboxResultsList as $results) {
-            if ($results->getExitCode() !== 0) {
+            if ($results->getStatus() === ISandboxResults::STATUS_RE) {
                 return $results->getExitCode();
             }
         }
-        return 0;
+
+        // then, try to find any non-success code
+        foreach ($this->sandboxResultsList as $results) {
+            if ($results->getStatus() !== ISandboxResults::STATUS_OK) {
+                return $results->getExitCode();
+            }
+        }
+
+        // finally, try to find the first successful exit code
+        foreach ($this->sandboxResultsList as $results) {
+            if ($results->getStatus() === ISandboxResults::STATUS_OK) {
+                return $results->getExitCode();
+            }
+        }
+
+        return ISandboxResults::EXIT_CODE_UNKNOWN; // default fallback
+    }
+
+    /**
+     * Check if the exit code indicates successful termination of the process.
+     * @return bool True if all tasks ended in OK state.
+     */
+    public function isExitCodeOk(): bool
+    {
+        foreach ($this->sandboxResultsList as $results) {
+            if ($results->getStatus() !== ISandboxResults::STATUS_OK) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
