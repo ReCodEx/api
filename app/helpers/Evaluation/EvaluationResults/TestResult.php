@@ -267,6 +267,24 @@ class TestResult
     }
 
     /**
+     * Check if the exit code is the native result of the executable
+     * (not interrupted by signal, timeout, or sandbox error).
+     * @return bool True if all tasks ended in OK or RE states.
+     */
+    public function isExitCodeNative(): bool
+    {
+        foreach ($this->sandboxResultsList as $results) {
+            if (
+                $results->getStatus() !== ISandboxResults::STATUS_OK
+                && $results->getStatus() !== ISandboxResults::STATUS_RE
+            ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Get the termination signal number or null, if no executed task was terminated.
      * @return int|null
      */

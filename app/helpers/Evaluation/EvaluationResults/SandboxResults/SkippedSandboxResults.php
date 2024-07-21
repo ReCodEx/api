@@ -7,7 +7,6 @@ namespace App\Helpers\EvaluationResults;
  */
 class SkippedSandboxResults implements ISandboxResults
 {
-
     /**
      * Get total amount of consumed time
      * @return float The time for which the process ran in seconds

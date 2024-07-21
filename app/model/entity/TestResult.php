@@ -20,6 +20,7 @@ class TestResult
         $this->status = $result->getStatus();
         $this->score = $result->getScore();
         $this->exitCode = $result->getExitCode();
+        $this->exitCodeNative = $result->isExitCodeNative();
         $this->exitSignal = $result->getExitSignal();
         $this->usedMemory = $result->getUsedMemory();
         $this->usedMemoryLimit = $result->getUsedMemoryLimit();
@@ -115,6 +116,12 @@ class TestResult
     protected $exitCode;
 
     /**
+     * @ORM\Column(type="boolean")
+     * Whether the exit code was produced by regular termination (not by signal, timeout, or sandbox error).
+     */
+    protected $exitCodeNative;
+
+    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     protected $exitSignal;
@@ -186,6 +193,7 @@ class TestResult
             "wallTimeExceeded" => $this->wallTimeExceeded,
             "cpuTimeExceeded" => $this->cpuTimeExceeded,
             "exitCode" => $this->exitCode,
+            "exitCodeNative" => $this->exitCodeNative,
             "exitSignal" => $this->exitSignal,
             "message" => $this->message,
             "wallTimeRatio" => $wallTimeRatio,
@@ -264,6 +272,11 @@ class TestResult
     public function getExitCode(): int
     {
         return $this->exitCode;
+    }
+
+    public function isExitCodeNative(): bool
+    {
+        return $this->exitCodeNative;
     }
 
     public function getExitSignal(): ?int

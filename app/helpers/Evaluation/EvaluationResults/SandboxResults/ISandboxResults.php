@@ -7,12 +7,14 @@ namespace App\Helpers\EvaluationResults;
  */
 interface ISandboxResults
 {
+    public const EXIT_CODE_OK = 0;
+    public const EXIT_CODE_UNKNOWN = -1;
 
-    const EXIT_CODE_OK = 0;
-    const EXIT_CODE_UNKNOWN = -1;
-
-    const STATUS_OK = "OK";
-    const STATUS_TO = "TO";
+    public const STATUS_OK = "OK";
+    public const STATUS_RE = "RE"; // run-time error, i.e., exited with a non-zero exit code
+    public const STATUS_SG = "SG"; // program died on a signal
+    public const STATUS_TO = "TO"; // timed out
+    public const STATUS_XX = "XX"; // internal error of the sandbox
 
     /**
      * Get total amount of consumed wall time
