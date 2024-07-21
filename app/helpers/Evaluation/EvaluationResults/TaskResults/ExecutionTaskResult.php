@@ -9,7 +9,7 @@ use App\Exceptions\ResultsLoadingException;
  */
 class ExecutionTaskResult extends TaskResult
 {
-    const SANDBOX_RESULTS_KEY = "sandbox_results";
+    private const SANDBOX_RESULTS_KEY = "sandbox_results";
 
     /** @var ISandboxResults Statistics of the execution */
     private $stats;

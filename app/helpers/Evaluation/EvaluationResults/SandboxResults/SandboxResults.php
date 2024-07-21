@@ -129,7 +129,10 @@ class SandboxResults implements ISandboxResults
      */
     public function getExitCode(): int
     {
-        if ($this->status !== self::STATUS_OK && $this->exitcode === self::EXIT_CODE_OK) {
+        if (
+            $this->status !== self::STATUS_OK && $this->status !== self::STATUS_RE
+            && $this->exitcode === self::EXIT_CODE_OK
+        ) {
             return self::EXIT_CODE_UNKNOWN;
         }
 

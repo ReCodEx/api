@@ -41,6 +41,7 @@ final class Version20240716161149 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE assignment ADD can_view_measured_values TINYINT(1) NOT NULL');
+        $this->addSql('ALTER TABLE test_result ADD exit_code_native TINYINT(1) NOT NULL');
 
         $this->addSql('ALTER TABLE assignment_localized_exercise DROP FOREIGN KEY FK_9C8F78CD19302F8');
         $this->addSql('ALTER TABLE assignment_localized_exercise ADD CONSTRAINT FK_9DF069D6D19302F8 FOREIGN KEY (assignment_id) REFERENCES assignment (id) ON DELETE CASCADE');
@@ -68,6 +69,15 @@ final class Version20240716161149 extends AbstractMigration
 
     public function postUp(Schema $schema): void
     {
+        /*
+         * fill newly created exit_code_native column
+         */
+        $this->connection->executeQuery(
+            "UPDATE test_result SET exit_code_native = 1 WHERE `status` = 'OK' OR
+            (`status` = 'FAILED' AND memory_exceeded = 0 AND wall_time_exceeded = 0 AND
+            exit_signal IS NULL AND exit_code >= 0 AND message NOT LIKE '%Caught%')"
+        );
+
         /*
          * scan all pipelines
          */
@@ -173,6 +183,8 @@ final class Version20240716161149 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE assignment DROP can_view_measured_values');
+        $this->addSql('ALTER TABLE test_result DROP exit_code_native');
+
         $this->addSql('ALTER TABLE assignment_localized_exercise DROP FOREIGN KEY FK_9DF069D6D19302F8');
         $this->addSql('ALTER TABLE assignment_localized_exercise ADD CONSTRAINT FK_9C8F78CD19302F8 FOREIGN KEY (assignment_id) REFERENCES assignment (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE assignment_solution DROP FOREIGN KEY FK_5B315D2ED19302F8');
