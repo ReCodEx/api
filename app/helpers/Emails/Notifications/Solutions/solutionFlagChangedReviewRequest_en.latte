@@ -1,0 +1,13 @@
+{emailSubject}{if $requested}Review requested{else}Review request was canceled{/if}{/emailSubject}
+<h3>{if $requested}Review requested{else}Review request canceled{/if} for solution #{$attempt} of '{$assignment}' assignment</h3>
+<p>
+    {if $requested}A code review was requested{else}A review request{/if} for solution <strong>#{$attempt}</strong> (of {$attempts}) submitted at {$submittedAt|localizedDate:'en'} by {$author} of '{$assignment}' assignment in the group '{$group}'{if !$requested} was canceled{/if}.
+</p>
+
+<p n:if="$prevAttempt">
+    The new request replaced previous review request of solution #{$prevAttempt} (submitted at {$prevSubmittedAt|localizedDate:'en'}).
+</p>
+
+<p>
+    The solution detail can be found at: <a href="{$link}">{$link}</a>.
+</p>

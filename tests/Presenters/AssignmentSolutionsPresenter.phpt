@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
+use App\Helpers\Notifications\SolutionFlagChangedEmailSender;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -301,6 +302,12 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
         PresenterTestHelper::login($this->container, $user->getEmail());
 
+        /** @var Mockery\Mock | SolutionFlagChangedEmailSender $mockEmailsSender */
+        $mockEmailsSender = Mockery::mock(SolutionFlagChangedEmailSender::class);
+        $mockEmailsSender->shouldReceive("acceptedFlagChanged")->with($user, $solution, true, null)
+            ->andReturn(true)->once();
+        $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
+
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'POST',
@@ -331,6 +338,12 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::notSame(null, $user);
 
         PresenterTestHelper::login($this->container, $user->getEmail());
+
+        /** @var Mockery\Mock | SolutionFlagChangedEmailSender $mockEmailsSender */
+        $mockEmailsSender = Mockery::mock(SolutionFlagChangedEmailSender::class);
+        $mockEmailsSender->shouldReceive("acceptedFlagChanged")->with($user, $solution, false, null)
+            ->andReturn(true)->once();
+        $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
 
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
@@ -368,6 +381,12 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::false($solution->isReviewRequested());
         Assert::true($anotherSolution->isReviewRequested());
 
+        /** @var Mockery\Mock | SolutionFlagChangedEmailSender $mockEmailsSender */
+        $mockEmailsSender = Mockery::mock(SolutionFlagChangedEmailSender::class);
+        $mockEmailsSender->shouldReceive("reviewRequestFlagChanged")->with($user, $solution, true, $anotherSolution)
+            ->andReturn(true)->once();
+        $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
+
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'POST',
@@ -399,6 +418,12 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $solution->setReviewRequest();
         $this->presenter->assignmentSolutions->persist($solution);
         Assert::true($solution->isReviewRequested());
+
+        /** @var Mockery\Mock | SolutionFlagChangedEmailSender $mockEmailsSender */
+        $mockEmailsSender = Mockery::mock(SolutionFlagChangedEmailSender::class);
+        $mockEmailsSender->shouldReceive("reviewRequestFlagChanged")->with($user, $solution, false, null)
+            ->andReturn(true)->once();
+        $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
 
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',

@@ -1,0 +1,18 @@
+{emailSubject}{if $accepted}Řešení bylo akceptováno{else}Akceptace řešení byla zrušena{/if}{/emailSubject}
+<h3>Řešení #{$attempt} úlohy '{$assignment}' {if $accepted}bylo označeno jako akceptované{else}již není nadále označeno jako akceptované{/if}</h3>
+<p>
+    U vašeho řešení <strong>#{$attempt}</strong> (z {$attempts}) odevzdaného {$submittedAt|localizedDate:'cs'} k úloze '{$assignment}' ve skupině '{$group}' {if $accepted}byl nastaven příznak <strong>akceptováno</strong>{else}byl zrušen příznak akceptace, takže žádné řešení dané úlohy nění v tuto chvíli označeno jako akceptované{/if}.
+</p>
+
+<p n:if="$prevAttempt">
+    Nově akceptované řešení nahrazuje řešení #{$prevAttempt} (odevzdané {$prevSubmittedAt|localizedDate:'cs'}), které bylo předtím označeno jako akceptované.
+</p>
+
+<p n:if="$accepted">
+    Akceptované řešení má přednost před výsledky ostatních řešení, takže udělené body za danou úlohu zůstaou nezměněny, i když odevzdáte další řešení.
+</p>
+
+<p>
+    Nyní máte za zmíněnou úlohu přiděleno {$points} bodů{if $maxPoints} z {$maxPoints}{/if}.
+    Detail řešení je možné najít na adrese: <a href="{$link}">{$link}</a>.
+</p>

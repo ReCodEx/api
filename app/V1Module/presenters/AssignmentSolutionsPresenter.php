@@ -11,6 +11,7 @@ use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileStorageManager;
 use App\Helpers\Notifications\PointsChangedEmailsSender;
+use App\Helpers\Notifications\SolutionFlagChangedEmailSender;
 use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\AssignmentSolutions;
@@ -95,6 +96,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $pointsChangedEmailsSender;
+
+    /**
+     * @var SolutionFlagChangedEmailSender
+     * @inject
+     */
+    public $solutionFlagChangedEmailSender;
 
     /**
      * @var ReviewComments
@@ -428,23 +435,41 @@ class AssignmentSolutionsPresenter extends BasePresenter
         // handle given flag
         $unique = $knownBoolFlags[$flag];
         $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
-        // handle unique flags
-        /* @phpstan-ignore-next-line */
-        if ($unique && $value) {
-            // flag has to be set to false for all other solutions of a user
-            $assignmentSolutions = $this->assignmentSolutions->findSolutions(
-                $solution->getAssignment(),
-                $solution->getSolution()->getAuthor()
-            );
-            foreach ($assignmentSolutions as $assignmentSolution) {
-                $assignmentSolution->setFlag($flag, false);
+        $oldValue = $solution->getFlag($flag);
+        if ($value !== $oldValue) {
+            // handle unique flags
+            $resetedSolution = null; // remeber original holder of a unique flag (for an email notification)
+            /* @phpstan-ignore-next-line */
+            if ($unique && $value) {
+                // flag has to be set to false for all other solutions of a user
+                $assignmentSolutions = $this->assignmentSolutions->findSolutions(
+                    $solution->getAssignment(),
+                    $solution->getSolution()->getAuthor()
+                );
+                foreach ($assignmentSolutions as $assignmentSolution) {
+                    if ($assignmentSolution->getFlag($flag)) {
+                        $resetedSolution = $assignmentSolution;
+                    }
+                    $assignmentSolution->setFlag($flag, false);
+                }
+            }
+            // handle given flag
+            $solution->setFlag($flag, $value);
+
+            // finally flush all changed to the database
+            $this->assignmentSolutions->flush();
+
+            // send notification email
+            $notificationMethod = $flag . 'FlagChanged';
+            if (method_exists($this->solutionFlagChangedEmailSender, $notificationMethod)) {
+                $this->solutionFlagChangedEmailSender->$notificationMethod(
+                    $this->getCurrentUser(),
+                    $solution,
+                    $value,
+                    $resetedSolution
+                );
             }
         }
-        // handle given flag
-        $solution->setFlag($flag, $value);
-
-        // finally flush all changed to the database
-        $this->assignmentSolutions->flush();
 
         // forward to student statistics of group
         $groupOfSolution = $solution->getAssignment()->getGroup();

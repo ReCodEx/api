@@ -1,0 +1,19 @@
+{emailSubject}{if $accepted}Solution accepted{else}Solution acceptance removed{/if}{/emailSubject}
+<h3>Solution #{$attempt} of '{$assignment}' assignment {if $accepted}was marked as accepted{else}had its accepted flag removed{/if}</h3>
+<p>
+    Your solution <strong>#{$attempt}</strong> (of {$attempts}) submitted at {$submittedAt|localizedDate:'en'} of '{$assignment}' assignment
+    in the group '{$group}' has its accepted flag {if $accepted}<strong>set</strong>{else}reset, none of your solutions is now marked as accepted{/if}.
+</p>
+
+<p n:if="$prevAttempt">
+    The newly accepted solution replaced previously accepted solution #{$prevAttempt} (submitted at {$prevSubmittedAt|localizedDate:'en'}).
+</p>
+
+<p n:if="$accepted">
+    Accepted solutions suppresses the results of other solutions, so the scored points for the assignment will not change even if you submit another solution.
+</p>
+
+<p>
+    At present, you have {$points} points{if $maxPoints} out of {$maxPoints}{/if} awarded for the assignment.
+    The solution detail can be found at: <a href="{$link}">{$link}</a>.
+</p>
