@@ -156,6 +156,10 @@ parameters:
     emails:
       from: %emails.from%
 
+  solutionFlagChangedNotifications:
+    emails:
+      from: %emails.from%
+
   generalStatsNotifications:
     period: "1 week"
     emails:
@@ -410,6 +414,7 @@ services:
   - App\Helpers\Notifications\GeneralStatsEmailsSender(%generalStatsNotifications%)
   - App\Helpers\Notifications\AsyncJobsStuckEmailsSender(%async.upkeep.emails%)
   - App\Helpers\Notifications\PointsChangedEmailsSender(%pointsChangedNotifications%)
+  - App\Helpers\Notifications\SolutionFlagChangedEmailSender(%solutionFlagChangedNotifications%)
 
   # models - repositories
   - App\Model\Repository\AsyncJobs

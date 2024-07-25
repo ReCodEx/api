@@ -26,6 +26,8 @@ class UserSettings implements JsonSerializable
         $this->assignmentSubmitAfterAcceptedEmails = false;
         $this->assignmentSubmitAfterReviewedEmails = false;
         $this->exerciseNotificationEmails = true;
+        $this->solutionAcceptedEmails = false;
+        $this->solutionReviewRequestedEmails = true;
     }
 
     /**
@@ -97,6 +99,17 @@ class UserSettings implements JsonSerializable
      */
     protected $exerciseNotificationEmails;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $solutionAcceptedEmails = false;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $solutionReviewRequestedEmails = true;
+
+
     public function jsonSerialize(): mixed
     {
         return [
@@ -111,6 +124,9 @@ class UserSettings implements JsonSerializable
             "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
             "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
             "exerciseNotificationEmails" => $this->exerciseNotificationEmails,
+            "solutionAcceptedEmails" => $this->solutionAcceptedEmails,
+            "solutionReviewRequestedEmails" => $this->solutionReviewRequestedEmails,
+
         ];
     }
 
@@ -226,5 +242,25 @@ class UserSettings implements JsonSerializable
     public function setExerciseNotificationEmails(bool $exerciseNotificationEmails): void
     {
         $this->exerciseNotificationEmails = $exerciseNotificationEmails;
+    }
+
+    public function getSolutionAcceptedEmails(): bool
+    {
+        return $this->solutionAcceptedEmails;
+    }
+
+    public function setSolutionAcceptedEmails(bool $solutionAcceptedEmails): void
+    {
+        $this->solutionAcceptedEmails = $solutionAcceptedEmails;
+    }
+
+    public function getSolutionReviewRequestedEmails(): bool
+    {
+        return $this->solutionReviewRequestedEmails;
+    }
+
+    public function setSolutionReviewRequestedEmails(bool $solutionReviewRequestedEmails): void
+    {
+        $this->solutionReviewRequestedEmails = $solutionReviewRequestedEmails;
     }
 }

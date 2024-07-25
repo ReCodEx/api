@@ -1,0 +1,14 @@
+{emailSubject}{if $requested}Požadavek na revizi řešení{else}Požadavek na revizi řešení byl zrušen{/if}{/emailSubject}
+<h3>{if $requested}Nová žádost o revizi{else}Žádost o revizi{/if} řešení #{$attempt} úlohy '{$assignment}'{if !$requested} byla zrušena{/if}</h3>
+<p>
+    {if $requested}Byla vytvořena žádost o revizi zdrojových kódů {else}Žádost o revizi{/if} řešení <strong>#{$attempt}</strong> (z {$attempts}) odevzdaného {$submittedAt|localizedDate:'en'} uživatelem {$author} k úloze '{$assignment}' ve skupině '{$group}'{if !$requested} byla zrušena{/if}.
+</p>
+
+<p n:if="$prevAttempt">
+    Nová žádost nahrazuje předchozí žádost o revizi řešení #{$prevAttempt} (odevzdané {$prevSubmittedAt|localizedDate:'cs'}).
+</p>
+
+<p>
+    Detail řešení je možné najít na adrese: <a href="{$link}">{$link}</a>.
+</p>
+
