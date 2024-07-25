@@ -132,6 +132,7 @@ class GroupViewFactory
                 ],
                 "bestSolutionId" => $best ? $best->getId() : null,
                 "accepted" => $best ? $best->isAccepted() : null,
+                "reviewRequest" => $best ? $best->isReviewRequested() : null,
             ];
         }
 

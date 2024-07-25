@@ -172,7 +172,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
             foreach ($solution->getReviewComments() as $comment) {
                 if (!$this->assignmentSolutionAcl->canDeleteReviewComment($solution, $comment)) {
                     throw new ForbiddenRequestException(
-                        "You cannot erase the review for this solution since you are not allowed to delete some of the comments"
+                        "You cannot erase the review since you are not allowed to delete some of the comments"
                     );
                 }
             }

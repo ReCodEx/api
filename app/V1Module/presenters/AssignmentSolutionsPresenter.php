@@ -365,11 +365,30 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $this->sendSuccessResponse($changedSolutions);
     }
 
-    public function checkSetFlag(string $id)
+    public function checkSetFlag(string $id, string $flag)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
-        if (!$this->assignmentSolutionAcl->canSetFlag($solution)) {
-            throw new ForbiddenRequestException("You cannot change flags for this solution");
+
+        $knownBoolFlags = [
+            "accepted" => false, // false = flag being set by a teacher
+            "reviewRequest" => true, // the author (student) can also set this flag
+        ];
+        if (!array_key_exists($flag, $knownBoolFlags)) {
+            throw new BadRequestException("Trying to set unknown boolean flag '$flag' to the solution");
+        }
+
+        if ($knownBoolFlags[$flag]) {
+            // weaker test for flags that may be changed by students (owners)
+            if (
+                !$this->assignmentSolutionAcl->canSetFlagAsStudent($solution)
+                && !$this->assignmentSolutionAcl->canSetFlag($solution)
+            ) {
+                throw new ForbiddenRequestException("You cannot change '$flag' flag for this solution");
+            }
+        } else {
+            if (!$this->assignmentSolutionAcl->canSetFlag($solution)) {
+                throw new ForbiddenRequestException("You cannot change '$flag' flag for this solution");
+            }
         }
     }
 
@@ -399,6 +418,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
         // map of boolean flag names with the information about uniqueness
         $knownBoolFlags = [
             "accepted" => true,
+            "reviewRequest" => true,
         ];
 
         if (!array_key_exists($flag, $knownBoolFlags)) {
@@ -432,99 +452,6 @@ class AssignmentSolutionsPresenter extends BasePresenter
             throw new NotFoundException("Group for assignment '$id' was not found");
         }
 
-        $this->forward(
-            'Groups:studentsStats',
-            $groupOfSolution->getId(),
-            $solution->getSolution()->getAuthor()->getId()
-        );
-    }
-
-    public function checkSetAccepted(string $id)
-    {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
-            throw new ForbiddenRequestException("You cannot change accepted flag for this solution");
-        }
-    }
-
-    /**
-     * Set solution of student as accepted, this solution will be then presented as the best one.
-     * @DEPRECATED
-     * @POST
-     * @param string $id identifier of the solution
-     * @throws \Nette\Application\AbortException
-     * @throws NotFoundException
-     */
-    public function actionSetAccepted(string $id)
-    {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if ($solution->getAssignment() === null) {
-            throw new NotFoundException("Assignment for solution '$id' was deleted");
-        }
-
-        if ($solution->getSolution()->getAuthor() === null) {
-            throw new NotFoundException("Author of solution '$id' was deleted");
-        }
-
-        // accepted flag has to be set to false for all other solutions
-        $assignmentSolutions = $this->assignmentSolutions->findSolutions(
-            $solution->getAssignment(),
-            $solution->getSolution()->getAuthor()
-        );
-        foreach ($assignmentSolutions as $assignmentSolution) {
-            $assignmentSolution->setAccepted(false);
-        }
-
-        // finally set the right solution as accepted
-        $solution->setAccepted(true);
-        $this->assignmentSolutions->flush();
-
-        // forward to student statistics of group
-        $groupOfSolution = $solution->getAssignment()->getGroup();
-        if ($groupOfSolution === null) {
-            throw new NotFoundException("Group for assignment '$id' was not found");
-        }
-
-        $this->forward(
-            'Groups:studentsStats',
-            $groupOfSolution->getId(),
-            $solution->getSolution()->getAuthor()->getId()
-        );
-    }
-
-    public function checkUnsetAccepted(string $id)
-    {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
-            throw new ForbiddenRequestException("You cannot change accepted flag for this solution");
-        }
-    }
-
-    /**
-     * Set solution of student as unaccepted if it was.
-     * @DEPRECATED
-     * @DELETE
-     * @param string $id identifier of the solution
-     * @throws \Nette\Application\AbortException
-     * @throws NotFoundException
-     */
-    public function actionUnsetAccepted(string $id)
-    {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if ($solution->getAssignment() === null) {
-            throw new NotFoundException("Assignment for solution '$id' was not found");
-        }
-
-        if ($solution->getAssignment()->getGroup() === null) {
-            throw new NotFoundException("Group for solution '$id' was not found");
-        }
-
-        // set accepted flag as false even if it was false
-        $solution->setAccepted(false);
-        $this->assignmentSolutions->flush();
-
-        // forward to student statistics of group
-        $groupOfSolution = $solution->getAssignment()->getGroup();
         $this->forward(
             'Groups:studentsStats',
             $groupOfSolution->getId(),

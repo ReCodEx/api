@@ -130,6 +130,7 @@ class AssignmentSolutionViewFactory
             "maxPointsEver" => $solution->getAssignment()?->getMaxPointsBeforeFirstDeadline(),
             "pastDeadline" => $solution->isAfterDeadline() ? 2 : ($solution->isAfterFirstDeadline() ? 1 : 0),
             "accepted" => $solution->isAccepted(),
+            "reviewRequest" => $solution->isReviewRequested(),
             "review" => $review,
             "isBestSolution" => $isBestSolution,
             "actualPoints" => $solution->getPoints(),
