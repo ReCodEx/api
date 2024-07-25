@@ -346,59 +346,72 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::false($solution->isAccepted());
     }
 
-    public function testSetAccepted()
+    public function testSetFlagReviewRequestTrue()
     {
-        $allSolutions = $this->presenter->assignmentSolutions->findAll();
-        /** @var AssignmentSolution $solution */
-        $solution = array_pop($allSolutions);
-        $assignment = $solution->getAssignment();
-
-        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
+        $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         Assert::notSame(null, $user);
 
-        PresenterTestHelper::login($this->container, $user->getEmail());
+        $solutions = array_filter($this->presenter->assignmentSolutions->findAll(), function ($s) use ($user) {
+            return $s->getSolution()?->getAuthor()?->getId() === $user->getId();
+        });
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($solutions);
+        $assignment = $solution->getAssignment();
+
+        /** @var AssignmentSolution $anotherSolution */
+        $anotherSolution = array_pop($solutions);
+        Assert::same($assignment->getId(), $anotherSolution->getAssignment()->getId());
+        $anotherSolution->setReviewRequest();
+        $this->presenter->assignmentSolutions->persist($anotherSolution);
+
+        Assert::false($solution->isReviewRequested());
+        Assert::true($anotherSolution->isReviewRequested());
 
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'POST',
-            ['action' => 'setAccepted', 'id' => $solution->getId()]
+            ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'reviewRequest'],
+            ['value' => true]
         );
         $response = $this->presenter->run($request);
         Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
         // Check invariants
-        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
-        Assert::true($solution->isAccepted());
+        $this->presenter->assignmentSolutions->refresh($solution);
+        $this->presenter->assignmentSolutions->refresh($anotherSolution);
+        Assert::true($solution->isReviewRequested());
+        Assert::false($anotherSolution->isReviewRequested());
     }
 
-    public function testUnsetAccepted()
+    public function testSetFlagReviewRequestFalse()
     {
-        $allSolutions = $this->presenter->assignmentSolutions->findAll();
-        /** @var AssignmentSolution $solution */
-        $solution = array_pop($allSolutions);
-        $assignment = $solution->getAssignment();
-
-        // set accepted flag
-        $solution->setAccepted(true);
-        $this->presenter->assignmentSolutions->flush();
-        Assert::true($solution->isAccepted());
-
-        $user = $this->getSupervisorWhoIsNotAuthorOrSuperadmin($assignment, $solution);
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
+        $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         Assert::notSame(null, $user);
 
-        PresenterTestHelper::login($this->container, $user->getEmail());
+        $solutions = array_filter($this->presenter->assignmentSolutions->findAll(), function ($s) use ($user) {
+            return $s->getSolution()?->getAuthor()?->getId() === $user->getId();
+        });
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($solutions);
+        $assignment = $solution->getAssignment();
+        $solution->setReviewRequest();
+        $this->presenter->assignmentSolutions->persist($solution);
+        Assert::true($solution->isReviewRequested());
 
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
-            'DELETE',
-            ['action' => 'unsetAccepted', 'id' => $solution->getId()]
+            'POST',
+            ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'reviewRequest'],
+            ['value' => false]
         );
         $response = $this->presenter->run($request);
         Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
         // Check invariants
-        $solution = $this->presenter->assignmentSolutions->get($solution->getId());
-        Assert::false($solution->isAccepted());
+        $this->presenter->assignmentSolutions->refresh($solution);
+        Assert::false($solution->isReviewRequested());
     }
 
     public function testDownloadSolutionArchive()

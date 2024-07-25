@@ -17,9 +17,9 @@ interface IAssignmentSolutionPermissions
 
     public function canSetBonusPoints(AssignmentSolution $assignmentSolution): bool;
 
-    public function canSetAccepted(AssignmentSolution $assignmentSolution): bool;
-
     public function canSetFlag(AssignmentSolution $assignmentSolution): bool;
+
+    public function canSetFlagAsStudent(AssignmentSolution $assignmentSolution): bool;
 
     public function canViewResubmissions(AssignmentSolution $assignmentSolution): bool;
 

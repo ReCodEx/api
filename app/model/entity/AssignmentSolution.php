@@ -75,6 +75,14 @@ class AssignmentSolution
     protected $accepted;
 
     /**
+     * @ORM\Column(type="boolean")
+     * If true, the student is requesting a code review for this solution.
+     * One solution of one solver at most may have this flag set (similarly to accepted flag).
+     * The flag is automatically reset when review is saved.
+     */
+    protected $reviewRequest = false;
+
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      * Time when a review was started.
      */
@@ -195,6 +203,7 @@ class AssignmentSolution
     private function __construct()
     {
         $this->accepted = false;
+        $this->reviewRequest = false;
         $this->bonusPoints = 0;
         $this->submissions = new ArrayCollection();
         $this->overriddenPoints = null;
@@ -241,6 +250,21 @@ class AssignmentSolution
         $this->accepted = $accepted;
     }
 
+    public function isReviewRequested(): bool
+    {
+        return $this->reviewRequest;
+    }
+
+    public function setReviewRequest(bool $request = true): void
+    {
+        $this->reviewRequest = $request;
+    }
+
+    public function canSetReviewRequest(bool $request): bool
+    {
+        return !$request || !$this->isReviewed();
+    }
+
     public function isReviewed(): bool
     {
         return $this->reviewedAt !== null;
@@ -254,6 +278,9 @@ class AssignmentSolution
     public function setReviewedAt(?DateTime $reviewedAt): void
     {
         $this->reviewedAt = $reviewedAt;
+        if ($reviewedAt) {
+            $this->reviewRequest = false;
+        }
     }
 
     public function getReviewStartedAt(): ?DateTime

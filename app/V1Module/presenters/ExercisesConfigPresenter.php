@@ -40,7 +40,6 @@ use Nette\Utils\Arrays;
  */
 class ExercisesConfigPresenter extends BasePresenter
 {
-
     /**
      * @var Exercises
      * @inject
