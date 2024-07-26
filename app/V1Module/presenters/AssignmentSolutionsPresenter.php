@@ -21,6 +21,7 @@ use App\Model\Repository\Users;
 use App\Model\Repository\ReviewComments;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\GroupViewFactory;
 use App\Model\View\SolutionFilesViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -90,6 +91,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutionSubmissionViewFactory;
+
+    /**
+     * @var GroupViewFactory
+     * @inject
+     */
+    public $groupViewFactory;
 
     /**
      * @var PointsChangedEmailsSender
@@ -436,52 +443,79 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $unique = $knownBoolFlags[$flag];
         $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
         $oldValue = $solution->getFlag($flag);
-        if ($value !== $oldValue) {
-            // handle unique flags
-            $resetedSolution = null; // remeber original holder of a unique flag (for an email notification)
-            /* @phpstan-ignore-next-line */
-            if ($unique && $value) {
-                // flag has to be set to false for all other solutions of a user
-                $assignmentSolutions = $this->assignmentSolutions->findSolutions(
-                    $solution->getAssignment(),
-                    $solution->getSolution()->getAuthor()
-                );
-                foreach ($assignmentSolutions as $assignmentSolution) {
-                    if ($assignmentSolution->getFlag($flag)) {
-                        $resetedSolution = $assignmentSolution;
-                    }
-                    $assignmentSolution->setFlag($flag, false);
-                }
-            }
-            // handle given flag
-            $solution->setFlag($flag, $value);
-
-            // finally flush all changed to the database
-            $this->assignmentSolutions->flush();
-
-            // send notification email
-            $notificationMethod = $flag . 'FlagChanged';
-            if (method_exists($this->solutionFlagChangedEmailSender, $notificationMethod)) {
-                $this->solutionFlagChangedEmailSender->$notificationMethod(
-                    $this->getCurrentUser(),
-                    $solution,
-                    $value,
-                    $resetedSolution
-                );
-            }
+        if ($value === $oldValue) {
+            $this->sendSuccessResponse(["solutions" => []]);
+            return; // nothing changed
         }
 
-        // forward to student statistics of group
+        $oldBestSolution = $this->assignmentSolutions->findBestSolution(
+            $solution->getAssignment(),
+            $solution->getSolution()->getAuthor()
+        );
+
+        // handle unique flags
+        $resetedSolution = null; // remeber original holder of a unique flag (for an email notification)
+        /* @phpstan-ignore-next-line */
+        if ($unique && $value) {
+            // flag has to be set to false for all other solutions of a user
+            $assignmentSolutions = $this->assignmentSolutions->findSolutions(
+                $solution->getAssignment(),
+                $solution->getSolution()->getAuthor()
+            );
+            foreach ($assignmentSolutions as $assignmentSolution) {
+                if ($assignmentSolution->getFlag($flag)) {
+                    $resetedSolution = $assignmentSolution;
+                }
+                $assignmentSolution->setFlag($flag, false);
+            }
+        }
+        // handle given flag
+        $solution->setFlag($flag, $value);
+
+        // finally flush all changed to the database
+        $this->assignmentSolutions->flush();
+        $this->assignmentSolutions->refresh($oldBestSolution);
+
+        // send notification email
+        $notificationMethod = $flag . 'FlagChanged';
+        if (method_exists($this->solutionFlagChangedEmailSender, $notificationMethod)) {
+            $this->solutionFlagChangedEmailSender->$notificationMethod(
+                $this->getCurrentUser(),
+                $solution,
+                $value,
+                $resetedSolution
+            );
+        }
+
+        // assemble response (all entites and stats that may have changed)
+        $assignmentId = $solution->getAssignment()->getId();
         $groupOfSolution = $solution->getAssignment()->getGroup();
         if ($groupOfSolution === null) {
             throw new NotFoundException("Group for assignment '$id' was not found");
         }
 
-        $this->forward(
-            'Groups:studentsStats',
-            $groupOfSolution->getId(),
-            $solution->getSolution()->getAuthor()->getId()
+        $resSolutions = [ $id => $this->assignmentSolutionViewFactory->getSolutionData($solution) ];
+        if ($resetedSolution) {
+            $resSolutions[$resetedSolution->getId()] =
+                $this->assignmentSolutionViewFactory->getSolutionData($resetedSolution);
+        }
+
+        $bestSolution = $this->assignmentSolutions->findBestSolution(
+            $solution->getAssignment(),
+            $solution->getSolution()->getAuthor()
         );
+        if ($oldBestSolution->getId() !== $bestSolution->getId()) {
+            // add old and current best solutions as well (since they have changed)
+            $resSolutions[$oldBestSolution->getId()] =
+                $this->assignmentSolutionViewFactory->getSolutionData($oldBestSolution);
+            $resSolutions[$bestSolution->getId()] =
+                $this->assignmentSolutionViewFactory->getSolutionData($bestSolution);
+        }
+
+        $this->sendSuccessResponse([
+            "solutions" => array_values($resSolutions),
+            "stats" => $this->groupViewFactory->getStudentsStats($groupOfSolution, $solution->getSolution()->getAuthor()),
+        ]);
     }
 
     public function checkDownloadSolutionArchive(string $id)
