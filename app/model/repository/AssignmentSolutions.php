@@ -323,4 +323,47 @@ class AssignmentSolutions extends BaseRepository
             'authorId' => $user->getId(),
         ])->fetchAssociative();
     }
+
+    /**
+     * Get all solutions with review request flag set from one group (optionally filtered for one student).
+     * @param Group $group from which the solutions are loaded
+     * @param User|null $user if not null, only soliutions of this user will be returned
+     * @return AssignmentSolution[]
+     */
+    public function getReviewRequestSolutions(Group $group, ?User $user = null): array
+    {
+        $qb = $this->createQueryBuilder('s')->innerJoin("s.assignment", "a");
+        $qb->where($qb->expr()->eq("a.group", ":group"))
+            ->andWhere($qb->expr()->eq("s.reviewRequest", 1))
+            ->andWhere($qb->expr()->isNull("s.reviewStartedAt"))
+            ->setParameter('group', $group->getId());
+
+        if ($user) {
+            $qb->innerJoin("s.solution", "sol")
+                ->andWhere($qb->expr()->eq("sol.author", ":user"))
+                ->setParameter('user', $user->getId());
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * As getReviewRequestSolutions(), but returns the result in associative array structure.
+     * @param Group $group from which the solutions are loaded
+     * @param User|null $user if not null, only soliutions of this user will be returned
+     * @return array[] solutions in array hierarchy [userId][assignmentId] -> Solution
+     */
+    public function getReviewRequestSolutionsIndexed(Group $group, ?User $user = null): array
+    {
+        $res = [];
+        foreach ($this->getReviewRequestSolutions($group, $user) as $solution) {
+            $uid = $solution->getSolution()->getAuthor()?->getId();
+            $aid = $solution->getAssignment()?->getId();
+            if ($uid && $aid) {
+                $res[$uid] = $res[$uid] ?? [];
+                $res[$uid][$aid] = $solution;
+            }
+        }
+        return $res;
+    }
 }

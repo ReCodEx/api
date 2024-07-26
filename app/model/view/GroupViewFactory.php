@@ -104,8 +104,12 @@ class GroupViewFactory
      *                                   This varialble allows us bulk-load optimizations for the solutions.
      * @return array Students statistics
      */
-    private function getStudentStatsInternal(Group $group, User $student, array $assignmentSolutions)
-    {
+    private function getStudentStatsInternal(
+        Group $group,
+        User $student,
+        array $assignmentSolutions,
+        array $reviewRequests
+    ) {
         $maxPoints = $group->getMaxPoints();
         $shadowPointsMap = $this->shadowAssignmentPointsRepository->findPointsForAssignments(
             $group->getShadowAssignments()->getValues(),
@@ -113,6 +117,8 @@ class GroupViewFactory
         );
         $gainedPoints = $this->getPointsGainedByStudentForSolutions($assignmentSolutions);
         $gainedPoints += $this->getPointsForShadowAssignments($shadowPointsMap);
+
+        $studentReviewRequests = $reviewRequests[$student->getId()] ?? [];
 
         $assignments = [];
         foreach ($group->getAssignments()->getValues() as $assignment) {
@@ -132,7 +138,7 @@ class GroupViewFactory
                 ],
                 "bestSolutionId" => $best ? $best->getId() : null,
                 "accepted" => $best ? $best->isAccepted() : null,
-                "reviewRequest" => $best ? $best->isReviewRequested() : null,
+                "reviewRequest" => !empty($studentReviewRequests[$assignment->getId()])
             ];
         }
 
@@ -179,7 +185,8 @@ class GroupViewFactory
             $group->getAssignments()->getValues(),
             $student
         );
-        return $this->getStudentStatsInternal($group, $student, $assignmentSolutions);
+        $reviewRequestSolutions = $this->assignmentSolutions->getReviewRequestSolutionsIndexed($group, $student);
+        return $this->getStudentStatsInternal($group, $student, $assignmentSolutions, $reviewRequestSolutions);
     }
 
     /**
@@ -192,13 +199,14 @@ class GroupViewFactory
         $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments(
             $group->getAssignments()->getValues()
         );
+        $reviewRequestSolutions = $this->assignmentSolutions->getReviewRequestSolutionsIndexed($group);
         return array_map(
-            function ($student) use ($group, $assignmentSolutions) {
+            function ($student) use ($group, $assignmentSolutions, $reviewRequestSolutions) {
                 $solutions = array_key_exists(
                     $student->getId(),
                     $assignmentSolutions
                 ) ? $assignmentSolutions[$student->getId()] : [];
-                return $this->getStudentStatsInternal($group, $student, $solutions);
+                return $this->getStudentStatsInternal($group, $student, $solutions, $reviewRequestSolutions);
             },
             $group->getStudents()->getValues()
         );
