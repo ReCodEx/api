@@ -308,14 +308,17 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             ->andReturn(true)->once();
         $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:AssignmentSolutions',
             'POST',
             ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'accepted'],
             ['value' => true]
         );
-        $response = $this->presenter->run($request);
-        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+        Assert::count(2, $payload);
+        Assert::true(count($payload['solutions']) >= 1); // depends on what was the best solution
+        Assert::same($solution->getId(), $payload['solutions'][0]['id']);
 
         // Check invariants
         $solution = $this->presenter->assignmentSolutions->get($solution->getId());
@@ -345,14 +348,17 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             ->andReturn(true)->once();
         $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:AssignmentSolutions',
             'POST',
             ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'accepted'],
             ['value' => false]
         );
-        $response = $this->presenter->run($request);
-        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+        Assert::count(2, $payload);
+        Assert::true(count($payload['solutions']) >= 1); // depends on what was the best solution
+        Assert::same($solution->getId(), $payload['solutions'][0]['id']);
 
         // Check invariants
         $solution = $this->presenter->assignmentSolutions->get($solution->getId());
@@ -387,14 +393,20 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             ->andReturn(true)->once();
         $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:AssignmentSolutions',
             'POST',
             ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'reviewRequest'],
             ['value' => true]
         );
-        $response = $this->presenter->run($request);
-        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+        Assert::count(2, $payload);
+        Assert::count(2, $payload['solutions']);
+        $ids = [$solution->getId(), $anotherSolution->getId()];
+        foreach ($payload['solutions'] as $s) {
+            Assert::true(in_array($s['id'], $ids));
+        }
 
         // Check invariants
         $this->presenter->assignmentSolutions->refresh($solution);
@@ -425,14 +437,17 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             ->andReturn(true)->once();
         $this->presenter->solutionFlagChangedEmailSender = $mockEmailsSender;
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:AssignmentSolutions',
             'POST',
             ['action' => 'setFlag', 'id' => $solution->getId(), 'flag' => 'reviewRequest'],
             ['value' => false]
         );
-        $response = $this->presenter->run($request);
-        Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+        Assert::count(2, $payload);
+        Assert::count(1, $payload['solutions']);
+        Assert::same($solution->getId(), $payload['solutions'][0]['id']);
 
         // Check invariants
         $this->presenter->assignmentSolutions->refresh($solution);
