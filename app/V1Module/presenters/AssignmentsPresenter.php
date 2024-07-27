@@ -648,7 +648,7 @@ class AssignmentsPresenter extends BasePresenter
         );
 
         $this->sendSuccessResponse(
-            $this->assignmentSolutionViewFactory->getUserSolutionsData($solutions, $bestSolutions)
+            $this->assignmentSolutionViewFactory->getSolutionsData($solutions, $bestSolutions)
         );
     }
 
@@ -683,7 +683,7 @@ class AssignmentsPresenter extends BasePresenter
         );
 
         $this->sendSuccessResponse(
-            $this->assignmentSolutionViewFactory->getUserSolutionsData($solutions, $bestSolutions)
+            $this->assignmentSolutionViewFactory->getSolutionsData($solutions, $bestSolutions)
         );
     }
 

@@ -546,6 +546,30 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             }
         )->first();
     }
+
+    public function testListReviewRequests()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = PresenterTestHelper::getUser($this->container, PresenterTestHelper::ADMIN_LOGIN);
+
+        $allSolutions = $this->presenter->assignmentSolutions->findBy([ 'reviewStartedAt' => null ]);
+        /** @var AssignmentSolution $solution */
+        $solution = array_pop($allSolutions);
+        $solution->setReviewRequest();
+        $this->presenter->assignmentSolutions->persist($solution);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:AssignmentSolution',
+            'GET',
+            ['action' => 'reviewRequests', 'id' => $user->getId() ],
+        );
+
+        Assert::count(1, $payload['solutions']);
+        Assert::count(1, $payload['assignments']);
+        Assert::same($solution->getId(), $payload['solutions'][0]['id']);
+        Assert::same($solution->getAssignment()->getId(), $payload['assignments'][0]['id']);
+    }
 }
 
 (new TestAssignmentSolutionsPresenter())->run();

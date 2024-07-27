@@ -45,4 +45,6 @@ interface IUserPermissions
     public function canEditCalendars(User $user): bool;
 
     public function canListPendingReviews(User $user): bool;
+
+    public function canListReviewRequests(User $user): bool;
 }

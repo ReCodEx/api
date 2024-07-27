@@ -479,6 +479,7 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/<id>/calendar-tokens", "UserCalendars:userCalendars");
         $router[] = new PostRoute("$prefix/<id>/calendar-tokens", "UserCalendars:createCalendar");
         $router[] = new GetRoute("$prefix/<id>/pending-reviews", "AssignmentSolutionReviews:pending");
+        $router[] = new GetRoute("$prefix/<id>/review-requests", "AssignmentSolutions:reviewRequests");
         return $router;
     }
 

@@ -1118,7 +1118,7 @@ class GroupsPresenter extends BasePresenter
         );
 
         $this->sendSuccessResponse(
-            $this->solutionsViewFactory->getUserSolutionsData($solutions, $bestSolutions)
+            $this->solutionsViewFactory->getSolutionsData($solutions, $bestSolutions)
         );
     }
 
