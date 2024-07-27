@@ -330,7 +330,7 @@ class AssignmentSolutions extends BaseRepository
      * @param User|null $user if not null, only soliutions of this user will be returned
      * @return AssignmentSolution[]
      */
-    public function getReviewRequestSolutions(Group $group, ?User $user = null): array
+    public function findReviewRequestSolutions(Group $group, ?User $user = null): array
     {
         $qb = $this->createQueryBuilder('s')->innerJoin("s.assignment", "a");
         $qb->where($qb->expr()->eq("a.group", ":group"))
@@ -348,15 +348,15 @@ class AssignmentSolutions extends BaseRepository
     }
 
     /**
-     * As getReviewRequestSolutions(), but returns the result in associative array structure.
+     * As findReviewRequestSolutions(), but returns the result in associative array structure.
      * @param Group $group from which the solutions are loaded
      * @param User|null $user if not null, only soliutions of this user will be returned
      * @return array[] solutions in array hierarchy [userId][assignmentId] -> Solution
      */
-    public function getReviewRequestSolutionsIndexed(Group $group, ?User $user = null): array
+    public function findReviewRequestSolutionsIndexed(Group $group, ?User $user = null): array
     {
         $res = [];
-        foreach ($this->getReviewRequestSolutions($group, $user) as $solution) {
+        foreach ($this->findReviewRequestSolutions($group, $user) as $solution) {
             $uid = $solution->getSolution()->getAuthor()?->getId();
             $aid = $solution->getAssignment()?->getId();
             if ($uid && $aid) {
@@ -365,5 +365,22 @@ class AssignmentSolutions extends BaseRepository
             }
         }
         return $res;
+    }
+
+    /**
+     * Return a list of solutions with review request flag set for given teacher.
+     * @param User $user who is responsible for the pending reviews (admin/supervisor)
+     * @return AssignmentSolution[]
+     */
+    public function findReviewRequestSolutionsOfTeacher(User $user): array
+    {
+        $qb = $this->createQueryBuilder('s');
+        $qb->innerJoin("s.assignment", "a")->innerJoin("a.group", "g")->innerJoin("g.memberships", "gm");
+        $qb->where($qb->expr()->eq("gm.user", ":user"))
+            ->andWhere($qb->expr()->in("gm.type", [ GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR ]))
+            ->andWhere($qb->expr()->isNull("s.reviewStartedAt"))
+            ->andWhere($qb->expr()->eq("s.reviewRequest", 1))
+            ->setParameter('user', $user->getId());
+        return $qb->getQuery()->getResult();
     }
 }

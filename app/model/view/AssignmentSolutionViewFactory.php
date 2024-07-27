@@ -162,7 +162,7 @@ class AssignmentSolutionViewFactory
      *   Otherwise the view factory determines the `isBestSolution` value on its own.
      * @return array
      */
-    public function getUserSolutionsData(array $solutions, $bestSolutionsHints = null)
+    public function getSolutionsData(array $solutions, $bestSolutionsHints = null)
     {
         $hint = null;
         if ($bestSolutionsHints !== null) {

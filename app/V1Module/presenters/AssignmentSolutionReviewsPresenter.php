@@ -438,7 +438,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         }
 
         $this->sendSuccessResponse([
-            'solutions' => $this->assignmentSolutionViewFactory->getUserSolutionsData($solutions),
+            'solutions' => $this->assignmentSolutionViewFactory->getSolutionsData($solutions),
             'assignments' => $this->assignmentsViewFactory->getAssignments(array_values($assignments)),
         ]);
     }

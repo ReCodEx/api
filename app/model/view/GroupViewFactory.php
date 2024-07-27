@@ -185,7 +185,7 @@ class GroupViewFactory
             $group->getAssignments()->getValues(),
             $student
         );
-        $reviewRequestSolutions = $this->assignmentSolutions->getReviewRequestSolutionsIndexed($group, $student);
+        $reviewRequestSolutions = $this->assignmentSolutions->findReviewRequestSolutionsIndexed($group, $student);
         return $this->getStudentStatsInternal($group, $student, $assignmentSolutions, $reviewRequestSolutions);
     }
 
@@ -199,7 +199,7 @@ class GroupViewFactory
         $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments(
             $group->getAssignments()->getValues()
         );
-        $reviewRequestSolutions = $this->assignmentSolutions->getReviewRequestSolutionsIndexed($group);
+        $reviewRequestSolutions = $this->assignmentSolutions->findReviewRequestSolutionsIndexed($group);
         return array_map(
             function ($student) use ($group, $assignmentSolutions, $reviewRequestSolutions) {
                 $solutions = array_key_exists(

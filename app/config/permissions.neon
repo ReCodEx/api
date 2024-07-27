@@ -363,6 +363,7 @@ permissions:
         - viewList
         - viewAll
         - listPendingReviews
+        - listReviewRequests
 
     - allow: true
       role: scope-plagiarism
@@ -426,6 +427,7 @@ permissions:
       resource: user
       actions:
           - listPendingReviews
+          - listReviewRequests
       conditions: user.isSameUser
 
     - allow: true

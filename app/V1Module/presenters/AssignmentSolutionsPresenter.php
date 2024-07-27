@@ -21,10 +21,12 @@ use App\Model\Repository\Users;
 use App\Model\Repository\ReviewComments;
 use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\AssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\SolutionFilesViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Security\ACL\IUserPermissions;
 
 /**
  * Endpoints for manipulation of assignment solutions
@@ -63,6 +65,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public $assignmentSolutionAcl;
 
     /**
+     * @var IUserPermissions
+     * @inject
+     */
+    public $userAcl;
+
+    /**
      * @var SubmissionFailures
      * @inject
      */
@@ -73,6 +81,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @inject
      */
     public $evaluationLoadingHelper;
+
+    /**
+     * @var AssignmentViewFactory
+     * @inject
+     */
+    public $assignmentsViewFactory;
 
     /**
      * @var AssignmentSolutionViewFactory
@@ -514,7 +528,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
 
         $this->sendSuccessResponse([
             "solutions" => array_values($resSolutions),
-            "stats" => $this->groupViewFactory->getStudentsStats($groupOfSolution, $solution->getSolution()->getAuthor()),
+            "stats" => $this->groupViewFactory->getStudentsStats(
+                $groupOfSolution,
+                $solution->getSolution()->getAuthor()
+            ),
         ]);
     }
 
@@ -623,5 +640,39 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $evaluation = $submission->getEvaluation();
         $scoreConfig = $evaluation !== null ? $evaluation->getScoreConfig() : null;
         $this->sendSuccessResponse($scoreConfig);
+    }
+
+    public function checkReviewRequests(string $id)
+    {
+        $user = $this->users->findOrThrow($id);
+        if (!$this->userAcl->canListReviewRequests($user)) {
+            throw new ForbiddenRequestException("You are not allowed to list all review request of your groups");
+        }
+    }
+
+    /**
+     * Return all solutions with reviewRequest flag that given user might need to review
+     * (is admin/supervisor in corresponding groups).
+     * Along with that it returns all assignment entities of the corresponding solutions.
+     * @GET
+     * @param string $id of the user whose solutions with requested reviews are listed
+     */
+    public function actionReviewRequests(string $id)
+    {
+        $user = $this->users->findOrThrow($id);
+        $solutions = $this->assignmentSolutions->findReviewRequestSolutionsOfTeacher($user);
+
+        $assignments = [];
+        foreach ($solutions as $solution) {
+            $assignment = $solution->getAssignment();
+            if ($assignment) {
+                $assignments[$assignment->getId()] = $assignment;
+            }
+        }
+
+        $this->sendSuccessResponse([
+            'solutions' => $this->assignmentSolutionViewFactory->getSolutionsData($solutions),
+            'assignments' => $this->assignmentsViewFactory->getAssignments(array_values($assignments)),
+        ]);
     }
 }
