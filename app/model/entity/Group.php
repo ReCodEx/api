@@ -49,6 +49,7 @@ class Group
         $this->exercises = new ArrayCollection();
         $this->localizedTexts = new ArrayCollection();
         $this->exams = new ArrayCollection();
+        $this->externalAttributes = new ArrayCollection();
 
         if ($admin !== null) {
             $this->addPrimaryAdmin($admin);
@@ -86,6 +87,7 @@ class Group
 
     /**
      * @ORM\Column(type="string", nullable=true)
+     * DEPRECATED in favor of external attributes
      */
     protected $externalId;
 
@@ -296,6 +298,12 @@ class Group
     {
         return $this->examLockStrict;
     }
+
+    /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="GroupExternalAttribute", mappedBy="group", cascade={"all"}, orphanRemoval=true)
+     */
+    protected $externalAttributes;
 
     /**
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")
@@ -1019,5 +1027,10 @@ class Group
     public function getExams(): Collection
     {
         return $this->exams;
+    }
+
+    public function getExternalAttributes(): Collection
+    {
+        return $this->externalAttributes;
     }
 }

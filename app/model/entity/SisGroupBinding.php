@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
+ * DEPRECATED will be replaced by group external attributes
  */
 class SisGroupBinding
 {
