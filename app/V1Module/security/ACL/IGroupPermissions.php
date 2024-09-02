@@ -75,4 +75,8 @@ interface IGroupPermissions
     public function canLockStudent(Group $group, User $student): bool;
 
     public function canUnlockStudent(Group $group, User $student): bool;
+
+    public function canViewExternalAttributes(): bool;
+
+    public function canSetExternalAttributes(): bool;
 }

@@ -11,7 +11,7 @@ use App\Security\ACL\IGroupPermissions;
 use DateTime;
 
 /**
- * Hardware groups endpoints
+ * Group invitations - links that allow users to join a group.
  */
 class GroupInvitationsPresenter extends BasePresenter
 {

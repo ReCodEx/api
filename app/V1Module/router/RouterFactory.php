@@ -38,6 +38,7 @@ class RouterFactory
         $router[] = self::createAssignmentsRoutes("$prefix/exercise-assignments");
         $router[] = self::createGroupsRoutes("$prefix/groups");
         $router[] = self::createGroupInvitationsRoutes("$prefix/group-invitations");
+        $router[] = self::createGroupAtrributesRoutes("$prefix/group-attributes");
         $router[] = self::createInstancesRoutes("$prefix/instances");
         $router[] = self::createReferenceSolutionsRoutes("$prefix/reference-solutions");
         $router[] = self::createAssignmentSolutionsRoutes("$prefix/assignment-solutions");
@@ -296,6 +297,21 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>", "GroupInvitations:update");
         $router[] = new DeleteRoute("$prefix/<id>", "GroupInvitations:remove");
         $router[] = new PostRoute("$prefix/<id>/accept", "GroupInvitations:accept");
+        return $router;
+    }
+
+    /**
+     * Adds all group external attributes endpoints to given router.
+     * @param string $prefix Route prefix
+     * @return RouteList All endpoint routes
+     */
+    private static function createGroupAtrributesRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+
+        $router[] = new GetRoute($prefix, "GroupExternalAttributes:");
+        $router[] = new PostRoute("$prefix/<groupId>", "GroupExternalAttributes:add");
+        $router[] = new DeleteRoute("$prefix/<id>", "GroupExternalAttributes:remove");
         return $router;
     }
 

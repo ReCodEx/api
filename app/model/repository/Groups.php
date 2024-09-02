@@ -17,7 +17,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class Groups extends BaseSoftDeleteRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Group::class);
@@ -287,18 +286,29 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * Gets an initial set of groups and produces a set of groups which have the
      * original set as a subset and every group has its parent in the set as well.
-     * @param iterable $groups Initial set of groups
+     * @param iterable $groups Initial set of groups or group IDs
      * @return Group[]
      */
     public function groupsAncestralClosure(iterable $groups): array
     {
         $res = [];
         foreach ($groups as $group) {
-            $groupId = $group->getId();
+            // handle both IDs and group entities as input
+            if (is_string($group)) { // load group if only ID is given
+                $groupId = $group;
+                $group = null;
+            } else {
+                $groupId = $group->getId();
+            }
+
             if (array_key_exists($groupId, $res)) { // @neloop made me do that
                 continue;
             }
-            $res[$groupId] = $group;
+
+            // add the group in the result
+            $res[$groupId] = $group ?? $this->findOrThrow($groupId);
+
+            // ... along with the parents
             foreach ($group->getParentGroupsIds() as $id) {
                 if (!array_key_exists($id, $res)) {
                     $res[$id] = $this->findOrThrow($id);
