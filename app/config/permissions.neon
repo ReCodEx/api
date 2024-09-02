@@ -75,6 +75,21 @@ permissions:
           - viewDetail
 
     - allow: true
+      role: scope-group-external-attributes
+      resource: group
+      actions:
+          - viewExternalAttributes
+          - setExternalAttributes
+          - viewStudents
+          - viewAll
+          - viewPublicDetail
+          - viewDetail
+          - addStudent
+          - removeStudent
+          - addMember
+          - removeMember
+
+    - allow: true
       role: student
       resource: group
       actions: viewAssignments
@@ -371,6 +386,23 @@ permissions:
       actions:
         - viewPublicData
         - viewList
+
+    - allow: true
+      role: scope-users
+      resource: user
+      actions:
+        - viewPublicData
+        - viewGroups
+        - viewDetail
+        - viewList
+        - viewAll
+        - create
+        - updateProfile
+        - updatePersonalData
+        - setIsAllowed
+        - createLocalAccount
+        - invalidateTokens
+        - delete
 
     - allow: true
       role: student

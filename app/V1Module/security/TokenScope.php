@@ -43,6 +43,16 @@ class TokenScope
     public const EMAIL_VERIFICATION = "email-verification";
 
     /**
+     * Scope used for 3rd party tools designed to externally manage groups and student memeberships.
+     */
+    public const GROUP_EXTERNAL_ATTRIBUTES = "group-external-attributes";
+
+    /**
+     * Scope for managing the users. Used in case the user data needs to be updated from an external database.
+     */
+    public const USERS = "users";
+
+    /**
      * Usually used in combination with other scopes. Allows refreshing the token.
      */
     public const REFRESH = "refresh";
