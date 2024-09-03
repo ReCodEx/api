@@ -132,7 +132,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
     public function testCanSubmitUser()
     {
-        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
 
         $assignment = current($this->assignments->findAll());
 
@@ -159,7 +159,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
     public function testCanSubmitLockedUser()
     {
-        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
 
         $assignment = current($this->assignments->findAll());
 

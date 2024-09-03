@@ -146,24 +146,29 @@ class PresenterTestHelper
         return $presenter;
     }
 
-    public static function login(Container $container, string $login): string
-    {
+    public static function login(
+        Container $container,
+        string $login,
+        array $scopes = [TokenScope::MASTER, TokenScope::REFRESH]
+    ): string {
         /** @var \Nette\Security\User $userSession */
         $userSession = $container->getByType(\Nette\Security\User::class);
         $user = $container->getByType(Users::class)->getByEmail($login);
 
         /** @var AccessManager $accessManager */
         $accessManager = $container->getByType(AccessManager::class);
-        $tokenText = $accessManager->issueToken($user, null, [TokenScope::MASTER, TokenScope::REFRESH]);
+        $tokenText = $accessManager->issueToken($user, null, $scopes);
         $token = $accessManager->decodeToken($tokenText);
 
         $userSession->login(new \App\Security\Identity($user, $token));
         return $tokenText;
     }
 
-    public static function loginDefaultAdmin(Container $container): string
-    {
-        return self::login($container, self::ADMIN_LOGIN);
+    public static function loginDefaultAdmin(
+        Container $container,
+        array $scopes = [TokenScope::MASTER, TokenScope::REFRESH]
+    ): string {
+        return self::login($container, self::ADMIN_LOGIN, $scopes);
     }
 
     public static function getUser(Container $container, $login = null): User

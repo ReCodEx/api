@@ -68,7 +68,7 @@ class UserLocking extends Tester\TestCase
     protected function setUp()
     {
         PresenterTestHelper::fillDatabase($this->container);
-        PresenterTestHelper::login($this->container, $this->studentLogin, $this->studentPassword);
+        PresenterTestHelper::login($this->container, $this->studentLogin);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, GroupsPresenter::class);
     }
 
@@ -405,7 +405,7 @@ class UserLocking extends Tester\TestCase
 
     public function testLockedUserCanSeeSolutions()
     {
-        PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
+        PresenterTestHelper::login($this->container, $this->student2Login);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
 
         $student = $this->presenter->users->getByEmail($this->student2Login);
@@ -546,7 +546,7 @@ class UserLocking extends Tester\TestCase
 
     public function testLockedUserCannotComment()
     {
-        PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
+        PresenterTestHelper::login($this->container, $this->student2Login);
         $student = $this->presenter->users->getByEmail($this->student2Login);
         $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
@@ -581,7 +581,7 @@ class UserLocking extends Tester\TestCase
 
     public function testLockedUserCannotCommentInExistingThread()
     {
-        PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
+        PresenterTestHelper::login($this->container, $this->student2Login);
         $student = $this->presenter->users->getByEmail($this->student2Login);
         $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
@@ -619,7 +619,7 @@ class UserLocking extends Tester\TestCase
 
     public function testLockedUserCannotCommentAssignment()
     {
-        PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
+        PresenterTestHelper::login($this->container, $this->student2Login);
         $student = $this->presenter->users->getByEmail($this->student2Login);
         $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
@@ -648,7 +648,7 @@ class UserLocking extends Tester\TestCase
 
     public function testLockedUserCannotCommentAssignmentInExistingThread()
     {
-        PresenterTestHelper::login($this->container, $this->student2Login, $this->studentPassword);
+        PresenterTestHelper::login($this->container, $this->student2Login);
         $student = $this->presenter->users->getByEmail($this->student2Login);
         $group = $this->prepExamGroup($student, -3600, 3600, false);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);

@@ -163,3 +163,29 @@ App\Model\Entity\GroupInvitation:
             - @demoAdmin
             - "<dateTimeBetween('-2 months', '-1 months')>"
             - "f3"
+
+App\Model\Entity\GroupExternalAttribute:
+    lecture:
+        __construct:
+            - @demoGroup
+            - 'test'
+            - 'lecture'
+            - 'demo'
+    semester1:
+        __construct:
+            - @demoChildGroup
+            - 'test'
+            - 'semester'
+            - 'summer'
+    semester2:
+        __construct:
+            - @demoPrivateGroup
+            - 'test'
+            - 'semester'
+            - 'winter'
+    'students{1..2}':
+        __construct:
+            - @demoChildGroup
+            - 'test'
+            - 'students'
+            - 'studgrp<current()>'
