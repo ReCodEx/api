@@ -10,6 +10,7 @@ use App\Model\Entity\GroupExternalAttribute;
 use App\Model\View\GroupViewFactory;
 use App\Security\ACL\IGroupPermissions;
 use DateTime;
+use InvalidArgumentException;
 
 /**
  * Additional attributes used by 3rd parties to keep relations between groups and entites in external systems.
@@ -65,12 +66,16 @@ class GroupExternalAttributesPresenter extends BasePresenter
      */
     public function actionDefault(?string $filter)
     {
-        $filterStruct = json_decode($filter ?? '');
+        $filterStruct = json_decode($filter ?? '', true);
         if (!$filterStruct || !is_array($filterStruct)) {
             throw new BadRequestException("Invalid filter format.");
         }
 
-        $attributes = $this->groupExternalAttributes->findByFilter($filterStruct);
+        try {
+            $attributes = $this->groupExternalAttributes->findByFilter($filterStruct);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestException($e->getMessage(), '', null, $e);
+        }
 
         $groupIds = [];
         foreach ($attributes as $attribute) {
@@ -85,7 +90,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
     }
 
 
-    public function checkAdd(string $groupId)
+    public function checkAdd()
     {
         if (!$this->groupAcl->canSetExternalAttributes()) {
             throw new ForbiddenRequestException();
@@ -116,7 +121,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove(string $groupId)
+    public function checkRemove()
     {
         if (!$this->groupAcl->canSetExternalAttributes()) {
             throw new ForbiddenRequestException();

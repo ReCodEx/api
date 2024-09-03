@@ -306,7 +306,8 @@ class Groups extends BaseSoftDeleteRepository
             }
 
             // add the group in the result
-            $res[$groupId] = $group ?? $this->findOrThrow($groupId);
+            $group = $group ?? $this->findOrThrow($groupId);
+            $res[$groupId] = $group;
 
             // ... along with the parents
             foreach ($group->getParentGroupsIds() as $id) {

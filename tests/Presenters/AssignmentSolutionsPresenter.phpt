@@ -153,7 +153,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     public function testGetSubmission()
     {
-        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
         $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $submissionsWithEval = array_filter(
             $this->presenter->assignmentSolutionSubmissions->findAll(),
@@ -177,7 +177,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     public function testGetEvaluationScoreConfig()
     {
-        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
         $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $submissionsWithEval = array_filter(
             $this->presenter->assignmentSolutionSubmissions->findAll(),
@@ -245,7 +245,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     public function testSetBonusPoints()
     {
-        $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+        $token = PresenterTestHelper::login($this->container, "admin@admin.com");
         $user = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $solutions = array_filter($this->presenter->assignmentSolutions->findAll(), function ($s) use ($user) {
             return $s->getSolution()->getAuthor()->getId() === $user->getId();

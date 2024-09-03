@@ -92,7 +92,7 @@ class TestAssignmentSolutionReviewsPresenter extends Tester\TestCase
 
     public function testGetSolutionReview()
     {
-        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        PresenterTestHelper::login($this->container, "submitUser1@example.com");
         $solution = $this->getReviewedSolution();
 
         $payload = PresenterTestHelper::performPresenterRequest(
