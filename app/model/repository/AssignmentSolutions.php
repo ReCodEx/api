@@ -273,9 +273,11 @@ class AssignmentSolutions extends BaseRepository
     public function findLingeringReviews(DateTime $threshold): array
     {
         $qb = $this->createQueryBuilder('s');
+        $qb->innerJoin("s.assignment", "a")->innerJoin("a.group", "g");
         $qb->where($qb->expr()->isNull("s.reviewedAt"))
             ->andWhere($qb->expr()->isNotNull("s.reviewStartedAt"))
             ->andWhere($qb->expr()->lt("s.reviewStartedAt", ":threshold"))
+            ->andWhere($qb->expr()->isNull("g.archivedAt"))
             ->setParameter('threshold', $threshold);
         return $qb->getQuery()->getResult();
     }
@@ -293,6 +295,7 @@ class AssignmentSolutions extends BaseRepository
             ->andWhere($qb->expr()->in("gm.type", [ GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR ]))
             ->andWhere($qb->expr()->isNotNull("s.reviewStartedAt"))
             ->andWhere($qb->expr()->isNull("s.reviewedAt"))
+            ->andWhere($qb->expr()->isNull("g.archivedAt"))
             ->setParameter('user', $user->getId());
         return $qb->getQuery()->getResult();
     }
@@ -380,6 +383,7 @@ class AssignmentSolutions extends BaseRepository
             ->andWhere($qb->expr()->in("gm.type", [ GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR ]))
             ->andWhere($qb->expr()->isNull("s.reviewStartedAt"))
             ->andWhere($qb->expr()->eq("s.reviewRequest", 1))
+            ->andWhere($qb->expr()->isNull("g.archivedAt"))
             ->setParameter('user', $user->getId());
         return $qb->getQuery()->getResult();
     }
