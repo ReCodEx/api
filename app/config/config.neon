@@ -319,6 +319,7 @@ services:
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
   - App\Console\GenerateSwagger
+  - App\Console\SwaggerAnnotator
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
   - App\Console\CleanupPipelineConfigs
