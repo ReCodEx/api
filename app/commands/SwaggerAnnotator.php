@@ -6,6 +6,8 @@ use App\Helpers\Notifications\ReviewsEmailsSender;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Entity\Group;
 use App\Model\Entity\User;
+use App\V1Module\Router\MethodRoute;
+use Nette\Routing\RouteList;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,11 +28,84 @@ class SwaggerAnnotator extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $r = new AnnotationHelper('App\V1Module\Presenters\UsersPresenter');
-        $data = $r->extractMethodData('actionUpdateUiData');
-        var_dump($data);
+        $namespacePrefix = 'App\V1Module\Presenters\\';
+
+        $routes = $this->getRoutes();
+        foreach ($routes as $route) {
+            $metadata = $this->extractMetadata($route);
+            $route = $this->extractRoute($route);
+
+            $className = $namespacePrefix . $metadata['class'];
+            $annotationData = AnnotationHelper::extractAnnotationData($className, $metadata['method']);
+        }
 
         return Command::SUCCESS;
+    }
+
+    function getRoutes(): array {
+        $router = \App\V1Module\RouterFactory::createRouter();
+        
+        # find all route object using a queue
+        $queue = [$router];
+        $routes = [];
+        while (count($queue) != 0) {
+            $cursor = array_shift($queue);
+
+            if ($cursor instanceof RouteList) {
+                foreach ($cursor->getRouters() as $item) {
+                    # lists contain routes or nested lists
+                    if ($item instanceof RouteList) {
+                        array_push($queue, $item);
+                    }
+                    else {
+                        # the first route is special and holds no useful information for annotation
+                        if (get_parent_class($item) !== MethodRoute::class)
+                            continue;
+
+                        $routes[] = $this->getPropertyValue($item, "route");
+                    }
+                }
+            }
+        }
+
+        return $routes;
+    }
+
+    private function extractRoute($routeObj) {
+        $mask = self::getPropertyValue($routeObj, "mask");
+        return $mask;
+    }
+
+    private function extractMetadata($routeObj) {
+        $metadata = self::getPropertyValue($routeObj, "metadata");
+        $presenter = $metadata["presenter"]["value"];
+        $action = $metadata["action"]["value"];
+
+        # if the name is empty, the method will be called 'actionDefault'
+        if ($action === null)
+            $action = "default";
+
+        return [
+            "class" => $presenter . "Presenter",
+            "method" => "action" . ucfirst($action),
+        ];
+    }
+
+    private static function getPropertyValue($object, string $propertyName): mixed
+    {
+        $class = new \ReflectionClass($object);
+
+        do {
+            try {
+                $property = $class->getProperty($propertyName);
+            } catch (\ReflectionException $exception) {
+                $class = $class->getParentClass();
+                $property = null;
+            }
+        } while ($property === null && $class !== null);
+
+        $property->setAccessible(true);
+        return $property->getValue($object);
     }
 }
 
@@ -58,14 +133,14 @@ class AnnotationData {
 }
 
 class AnnotationParameterData {
-    public string $dataType;
+    public string|null $dataType;
     public string $name;
-    public string $description;
+    public string|null $description;
 
     public function __construct(
-        string $dataType,
+        string|null $dataType,
         string $name,
-        string $description
+        string|null $description
     ) {
         $this->dataType = $dataType;
         $this->name = $name;
@@ -74,25 +149,12 @@ class AnnotationParameterData {
 }
 
 class AnnotationHelper {
-    private string $className;
-    private \ReflectionClass $class;
-
-    /**
-     * Constructor
-     * @param string $className Name of the class.
-     */
-    public function __construct(
-        string $className
-    ) {
-        $this->className = $className;
-        $this->class = new \ReflectionClass($this->className);
+    private static function getMethod(string $className, string $methodName): \ReflectionMethod {
+        $class = new \ReflectionClass($className);
+        return $class->getMethod($methodName);
     }
 
-    public function getMethod(string $methodName): \ReflectionMethod {
-        return $this->class->getMethod($methodName);
-    }
-
-    function extractAnnotationHttpMethod(array $annotations): HttpMethods|null {
+    private static function extractAnnotationHttpMethod(array $annotations): HttpMethods|null {
         # get string values of backed enumeration
         $cases = HttpMethods::cases();
         $methods = [];
@@ -110,7 +172,7 @@ class AnnotationHelper {
         return null;
     }
 
-    function extractAnnotationQueryParams(array $annotations): array {
+    private static function extractAnnotationQueryParams(array $annotations): array {
         $queryParams = [];
         foreach ($annotations as $annotation) {
             # assumed that all query parameters have a @param annotation
@@ -128,7 +190,7 @@ class AnnotationHelper {
         return $queryParams;
     }
 
-    function extractBodyParams(array $expressions): array {
+    private static function extractBodyParams(array $expressions): array {
         $dict = [];
         #sample: [ name="uiData", validation="array|null" ]
         foreach ($expressions as $expression) {
@@ -141,7 +203,7 @@ class AnnotationHelper {
         return $dict;
     }
 
-    function extractAnnotationBodyParams(array $annotations): array {
+    private static function extractAnnotationBodyParams(array $annotations): array {
         $bodyParams = [];
         $prefix = "@Param";
         foreach ($annotations as $annotation) {
@@ -151,7 +213,7 @@ class AnnotationHelper {
                 # remove '@Param(' from the start and ')' from the end
                 $body = substr($annotation, strlen($prefix) + 1, -1);
                 $tokens = explode(", ", $body);
-                $values = $this->extractBodyParams($tokens);
+                $values = self::extractBodyParams($tokens);
                 $descriptor = new AnnotationParameterData($values["validation"],
                     $values["name"], $values["description"]);
                 $bodyParams[] = $descriptor;
@@ -160,8 +222,8 @@ class AnnotationHelper {
         return $bodyParams;
     }
 
-    function getMethodAnnotations(string $methodName): array {
-        $annotations = $this->getMethod($methodName)->getDocComment();
+    private static function getMethodAnnotations(string $className, string $methodName): array {
+        $annotations = self::getMethod($className, $methodName)->getDocComment();
         $lines = preg_split("/\r\n|\n|\r/", $annotations);
 
         # trims whitespace and asterisks
@@ -196,11 +258,12 @@ class AnnotationHelper {
         return $merged;
     }
 
-    public function extractMethodData($methodName): AnnotationData {
-        $methodAnnotations = $this->getMethodAnnotations($methodName);
-        $httpMethod = $this->extractAnnotationHttpMethod($methodAnnotations);
-        $queryParams = $this->extractAnnotationQueryParams($methodAnnotations);
-        $bodyParams = $this->extractAnnotationBodyParams($methodAnnotations);
+    public static function extractAnnotationData(string $className, string $methodName): AnnotationData {
+        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+
+        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
+        $queryParams = self::extractAnnotationQueryParams($methodAnnotations);
+        $bodyParams = self::extractAnnotationBodyParams($methodAnnotations);
         $data = new AnnotationData($httpMethod, $queryParams, $bodyParams);
         return $data;
     }
