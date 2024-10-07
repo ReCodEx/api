@@ -30,6 +30,8 @@ class SwaggerAnnotator extends Command
     {
         $namespacePrefix = 'App\V1Module\Presenters\\';
 
+        $fileBuilder = new FileBuilder("app/V1Module/presenters/annotations.php");
+        $fileBuilder->startClass("AnnotationController");
         $routes = $this->getRoutes();
         foreach ($routes as $route) {
             $metadata = $this->extractMetadata($route);
@@ -37,7 +39,11 @@ class SwaggerAnnotator extends Command
 
             $className = $namespacePrefix . $metadata['class'];
             $annotationData = AnnotationHelper::extractAnnotationData($className, $metadata['method']);
+
+            $fileBuilder->addAnnotatedMethod($metadata['method'], $annotationData->toSwaggerAnnotations($route));
         }
+        $fileBuilder->endClass();
+
 
         return Command::SUCCESS;
     }
@@ -73,7 +79,10 @@ class SwaggerAnnotator extends Command
 
     private function extractRoute($routeObj) {
         $mask = self::getPropertyValue($routeObj, "mask");
-        return $mask;
+
+        # sample: replaces '/users/<id>' with '/users/{id}'
+        $mask = str_replace(["<", ">"], ["{", "}"], $mask);
+        return "/" . $mask;
     }
 
     private function extractMetadata($routeObj) {
@@ -109,6 +118,57 @@ class SwaggerAnnotator extends Command
     }
 }
 
+class FileBuilder {
+    private $file;
+    private $methodEntries;
+
+    public function __construct(
+        string $filename
+    ) {
+        $this->initFile($filename);
+        $this->methodEntries = 0;
+    }
+
+    private function initFile(string $filename) {
+        $this->file = fopen($filename, "w");
+        fwrite($this->file, "<?php\n");
+        fwrite($this->file, "namespace App\V1Module\Presenters;\n");
+        fwrite($this->file, "use OpenApi\Annotations as OA;\n");
+    }
+
+    ///TODO: hardcoded info
+    private function createInfoAnnotation() {
+        $head = "@OA\\Info";
+        $body = new ParenthesesBuilder();
+        $body->addKeyValue("version", "1.0");
+        $body->addKeyValue("title", "ReCodEx API");
+        return $head . $body->toString();
+    }
+
+    private function writeAnnotationLineWithComments(string $annotationLine) {
+        fwrite($this->file, "/**\n");
+        fwrite($this->file, "* {$annotationLine}\n");
+        fwrite($this->file, "*/\n");
+    }
+
+    public function startClass(string $className) {
+        ///TODO: hardcoded
+        $this->writeAnnotationLineWithComments($this->createInfoAnnotation());
+        fwrite($this->file, "class {$className} {\n");
+    }
+
+    public function endClass(){
+        fwrite($this->file, "}\n");
+    }
+
+    public function addAnnotatedMethod(string $methodName, string $annotationLine) {
+        $this->writeAnnotationLineWithComments($annotationLine);
+        fwrite($this->file, "public function {$methodName}{$this->methodEntries}() {}\n");
+        $this->methodEntries++;
+    }
+
+}
+
 enum HttpMethods: string {
     case GET = "@GET";
     case POST = "@POST";
@@ -117,18 +177,83 @@ enum HttpMethods: string {
 }
 
 class AnnotationData {
-    public HttpMethods $method;
+    public HttpMethods $httpMethod;
+    
+    # $queryParams contain path and query params. This is because they are extracted from
+    # annotations directly, and the annotations do not contain this information.
     public array $queryParams;
     public array $bodyParams;
 
     public function __construct(
-        HttpMethods $method,
+        HttpMethods $httpMethod,
         array $queryParams,
         array $bodyParams
     ) {
-        $this->method = $method;
+        $this->httpMethod = $httpMethod;
         $this->queryParams = $queryParams;
         $this->bodyParams = $bodyParams;
+    }
+
+    private function getHttpMethodAnnotation(): string {
+        # sample: converts '@PUT' to 'Put'
+        $httpMethodString = ucfirst(strtolower(substr($this->httpMethod->value, 1)));
+        return "@OA\\" . $httpMethodString;
+    }
+
+    private function getRoutePathParamNames(string $route): array {
+        # sample: from '/users/{id}/{name}' generates ['id', 'name']
+        preg_match_all('/\{([A-Za-z0-9 ]+?)\}/', $route, $out);
+        return $out[1];
+    }
+
+    public function toSwaggerAnnotations(string $route) {
+        $httpMethodAnnotation = $this->getHttpMethodAnnotation();
+        $body = new ParenthesesBuilder();
+        $body->addKeyValue("path", $route);
+
+        $pathParamNames = $this->getRoutePathParamNames($route);
+        foreach ($this->queryParams as $queryParam) {
+            # find out where the parameter is located
+            $location = 'query';
+            if (in_array($queryParam->name, $pathParamNames))
+                $location = 'path';
+
+            $body->addValue($queryParam->toParameterAnnotation($location));
+        }
+
+        ///TODO: placeholder
+        $body->addValue('@OA\Response(response="200",description="The data")');
+        return $httpMethodAnnotation . $body->toString();
+    }
+}
+
+class ParenthesesBuilder {
+    private array $tokens;
+
+    public function __construct() {
+        $this->tokens = [];
+    }
+
+    public function addKeyValue(string $key, mixed $value): ParenthesesBuilder {
+        $valueString = strval($value);
+        # strings need to be wrapped in quotes
+        if (is_string($value))
+            $valueString = "\"{$value}\"";
+        # convert bools to strings
+        else if (is_bool($value))
+            $valueString = ($value ? "true" : "false");
+
+        $assignment = "{$key}={$valueString}";
+        return $this->addValue($assignment);
+    }
+
+    public function addValue(string $value): ParenthesesBuilder {
+        $this->tokens[] = $value;
+        return $this;
+    }
+
+    public function toString(): string {
+        return '(' . implode(',', $this->tokens) . ')';
     }
 }
 
@@ -136,6 +261,31 @@ class AnnotationParameterData {
     public string|null $dataType;
     public string $name;
     public string|null $description;
+
+    private static $nullableSuffix = '|null';
+    private static $typeMap = [
+        'bool' => 'boolean',
+        'boolean' => 'boolean',
+        'array' => 'array',
+        'int' => 'integer',
+        'integer' => 'integer',
+        'float' => 'number',
+        'number' => 'number',
+        'numeric' => 'number',
+        'numericint' => 'integer',
+        'timestamp' => 'integer',
+        'string' => 'string',
+        'unicode' => ['string', 'unicode'],
+        'email' => ['string', 'email'],
+        'url' => ['string', 'url'],
+        'uri' => ['string', 'uri'],
+        'pattern' => null,
+        'alnum' => ['string', 'alphanumeric'],
+        'alpha' => ['string', 'alphabetic'],
+        'digit' => ['string', 'numeric'],
+        'lower' => ['string', 'lowercase'],
+        'upper' => ['string', 'uppercase']
+    ];
 
     public function __construct(
         string|null $dataType,
@@ -145,6 +295,59 @@ class AnnotationParameterData {
         $this->dataType = $dataType;
         $this->name = $name;
         $this->description = $description;
+    }
+
+    private function isDatatypeNullable(): bool {
+        # if the dataType is not specified (it is null), it means that the annotation is not
+        # complete and defaults to a non nullable string
+        if ($this->dataType === null)
+            return false;
+
+        # assumes that the typename ends with '|null'
+        if (str_ends_with($this->dataType, self::$nullableSuffix))
+            return true;
+
+        return false;
+    }
+
+    private function generateSchemaAnnotation(): string {
+        # if the type is not specified, default to a string
+        $type = 'string';
+        $typename = $this->dataType;
+        if ($typename !== null) {
+            if ($this->isDatatypeNullable())
+                $typename = substr($typename,0,-strlen(self::$nullableSuffix));
+    
+            if (self::$typeMap[$typename] === null) 
+                throw new \InvalidArgumentException("Error in SwaggerTypeConverter: Unknown typename: {$typename}");
+            
+            $type = self::$typeMap[$typename];
+        }
+
+        $head = "@OA\\Schema";
+        $body = new ParenthesesBuilder();
+        $body->addKeyValue("type", $type);
+
+        return $head . $body->toString();
+    }
+
+    /**
+     * Converts the object to a @OA\Parameter(...) annotation string
+     * @param string $parameterLocation Where the parameter resides. Can be 'path', 'query', 'header' or 'cookie'.
+     */
+    public function toParameterAnnotation(string $parameterLocation): string {
+        $head = "@OA\\Parameter";
+        $body = new ParenthesesBuilder();
+        
+        $body->addKeyValue("name", $this->name);
+        $body->addKeyValue("in", $parameterLocation);
+        $body->addKeyValue("required", !$this->isDatatypeNullable());
+        if ($this->description !== null)
+            $body->addKeyValue("description", $this->description);
+
+        $body->addValue($this->generateSchemaAnnotation());
+
+        return $head . $body->toString();
     }
 }
 

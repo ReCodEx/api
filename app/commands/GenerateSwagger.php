@@ -25,8 +25,8 @@ class GenerateSwagger extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-      // $openapi = \OpenApi\Generator::scan([__DIR__ . '/../V1Module/presenters/OpenApiSpec.php']);
-      $openapi = \OpenApi\Generator::scan([__DIR__ . '/../']);
+      $openapi = \OpenApi\Generator::scan([__DIR__ . '/../V1Module/presenters/annotations.php']);
+      // $openapi = \OpenApi\Generator::scan([__DIR__ . '/../']);
 
       header('Content-Type: application/x-yaml');
       echo $openapi->toYaml();
