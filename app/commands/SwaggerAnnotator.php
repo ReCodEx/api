@@ -38,7 +38,7 @@ class SwaggerAnnotator extends Command
             $route = $this->extractRoute($route);
 
             $className = $namespacePrefix . $metadata['class'];
-            $annotationData = AnnotationHelper::extractAnnotationData($className, $metadata['method']);
+            $annotationData = AnnotationHelper::extractAnnotationData($className, $metadata['method'], $route);
 
             $fileBuilder->addAnnotatedMethod($metadata['method'], $annotationData->toSwaggerAnnotations($route));
         }
@@ -179,17 +179,18 @@ enum HttpMethods: string {
 class AnnotationData {
     public HttpMethods $httpMethod;
     
-    # $queryParams contain path and query params. This is because they are extracted from
-    # annotations directly, and the annotations do not contain this information.
+    public array $pathParams;
     public array $queryParams;
     public array $bodyParams;
 
     public function __construct(
         HttpMethods $httpMethod,
+        array $pathParams,
         array $queryParams,
         array $bodyParams
     ) {
         $this->httpMethod = $httpMethod;
+        $this->pathParams = $pathParams;
         $this->queryParams = $queryParams;
         $this->bodyParams = $bodyParams;
     }
@@ -198,12 +199,6 @@ class AnnotationData {
         # sample: converts '@PUT' to 'Put'
         $httpMethodString = ucfirst(strtolower(substr($this->httpMethod->value, 1)));
         return "@OA\\" . $httpMethodString;
-    }
-
-    private function getRoutePathParamNames(string $route): array {
-        # sample: from '/users/{id}/{name}' generates ['id', 'name']
-        preg_match_all('/\{([A-Za-z0-9 ]+?)\}/', $route, $out);
-        return $out[1];
     }
 
     private function getBodyAnnotation(): string|null {
@@ -227,14 +222,11 @@ class AnnotationData {
         $body = new ParenthesesBuilder();
         $body->addKeyValue("path", $route);
 
-        $pathParamNames = $this->getRoutePathParamNames($route);
+        foreach ($this->pathParams as $pathParam) {
+            $body->addValue($pathParam->toParameterAnnotation());
+        }
         foreach ($this->queryParams as $queryParam) {
-            # find out where the parameter is located
-            $location = 'query';
-            if (in_array($queryParam->name, $pathParamNames))
-                $location = 'path';
-
-            $body->addValue($queryParam->toParameterAnnotation($location));
+            $body->addValue($queryParam->toParameterAnnotation());
         }
 
         $jsonProperties = $this->getBodyAnnotation();
@@ -281,6 +273,7 @@ class AnnotationParameterData {
     public string|null $dataType;
     public string $name;
     public string|null $description;
+    public string $location;
 
     private static $nullableSuffix = '|null';
     private static $typeMap = [
@@ -310,11 +303,13 @@ class AnnotationParameterData {
     public function __construct(
         string|null $dataType,
         string $name,
-        string|null $description
+        string|null $description,
+        string $location
     ) {
         $this->dataType = $dataType;
         $this->name = $name;
         $this->description = $description;
+        $this->location = $location;
     }
 
     private function isDatatypeNullable(): bool {
@@ -360,12 +355,12 @@ class AnnotationParameterData {
      * Converts the object to a @OA\Parameter(...) annotation string
      * @param string $parameterLocation Where the parameter resides. Can be 'path', 'query', 'header' or 'cookie'.
      */
-    public function toParameterAnnotation(string $parameterLocation): string {
+    public function toParameterAnnotation(): string {
         $head = "@OA\\Parameter";
         $body = new ParenthesesBuilder();
         
         $body->addKeyValue("name", $this->name);
-        $body->addKeyValue("in", $parameterLocation);
+        $body->addKeyValue("in", $this->location);
         $body->addKeyValue("required", !$this->isDatatypeNullable());
         if ($this->description !== null)
             $body->addKeyValue("description", $this->description);
@@ -410,8 +405,10 @@ class AnnotationHelper {
         return null;
     }
 
-    private static function extractAnnotationQueryParams(array $annotations): array {
-        $queryParams = [];
+    private static function extractStandardAnnotationParams(array $annotations, string $route): array {
+        $routeParams = self::getRoutePathParamNames($route);
+
+        $params = [];
         foreach ($annotations as $annotation) {
             # assumed that all query parameters have a @param annotation
             if (str_starts_with($annotation, "@param")) {
@@ -421,16 +418,22 @@ class AnnotationHelper {
                 # assumed that all names start with $
                 $name = substr($tokens[2], 1);
                 $description = implode(" ", array_slice($tokens,3));
-                $descriptor = new AnnotationParameterData($type, $name, $description);
-                $queryParams[] = $descriptor;
+
+                # figure out where the parameter is located
+                $location = 'query';
+                if (in_array($name, $routeParams))
+                    $location = 'path';
+
+                $descriptor = new AnnotationParameterData($type, $name, $description, $location);
+                $params[] = $descriptor;
             }
         }
-        return $queryParams;
+        return $params;
     }
 
     private static function extractBodyParams(array $expressions): array {
         $dict = [];
-        #sample: [ name="uiData", validation="array|null" ]
+        #sample: [ 'name="uiData"', 'validation="array|null"' ]
         foreach ($expressions as $expression) {
             $tokens = explode('="', $expression);
             $name = $tokens[0];
@@ -441,7 +444,7 @@ class AnnotationHelper {
         return $dict;
     }
 
-    private static function extractAnnotationBodyParams(array $annotations): array {
+    private static function extractNetteAnnotationParams(array $annotations): array {
         $bodyParams = [];
         $prefix = "@Param";
         foreach ($annotations as $annotation) {
@@ -453,7 +456,7 @@ class AnnotationHelper {
                 $tokens = explode(", ", $body);
                 $values = self::extractBodyParams($tokens);
                 $descriptor = new AnnotationParameterData($values["validation"],
-                    $values["name"], $values["description"]);
+                    $values["name"], $values["description"],  $values["type"]);
                 $bodyParams[] = $descriptor;
             }
         }
@@ -496,13 +499,37 @@ class AnnotationHelper {
         return $merged;
     }
 
-    public static function extractAnnotationData(string $className, string $methodName): AnnotationData {
+    private static function getRoutePathParamNames(string $route): array {
+        # sample: from '/users/{id}/{name}' generates ['id', 'name']
+        preg_match_all('/\{([A-Za-z0-9 ]+?)\}/', $route, $out);
+        return $out[1];
+    }
+
+    public static function extractAnnotationData(string $className, string $methodName, string $route): AnnotationData {
         $methodAnnotations = self::getMethodAnnotations($className, $methodName);
 
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
-        $queryParams = self::extractAnnotationQueryParams($methodAnnotations);
-        $bodyParams = self::extractAnnotationBodyParams($methodAnnotations);
-        $data = new AnnotationData($httpMethod, $queryParams, $bodyParams);
+        $standardAnnotationParams = self::extractStandardAnnotationParams($methodAnnotations, $route);
+        $netteAnnotationParams = self::extractNetteAnnotationParams($methodAnnotations);
+        $params = array_merge($standardAnnotationParams, $netteAnnotationParams);
+
+        $pathParams = [];
+        $queryParams = [];
+        $bodyParams = [];
+
+        foreach ($params as $param) {
+            if ($param->location === 'path')
+                $pathParams[] = $param;
+            else if ($param->location === 'query')
+                $queryParams[] = $param;
+            else if ($param->location === 'post')
+                $bodyParams[] = $param;
+            else
+                throw new \Exception("Error in extractAnnotationData: Unknown param location: {$param->location}");
+        }
+
+
+        $data = new AnnotationData($httpMethod, $pathParams, $queryParams, $bodyParams);
         return $data;
     }
 }
