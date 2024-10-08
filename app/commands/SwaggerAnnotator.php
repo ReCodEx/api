@@ -206,6 +206,22 @@ class AnnotationData {
         return $out[1];
     }
 
+    private function getBodyAnnotation(): string|null {
+        if (count($this->bodyParams) === 0) {
+            return null;
+        }
+
+        ///TODO: only supports JSON
+        $head = '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema';
+        $body = new ParenthesesBuilder();
+
+        foreach ($this->bodyParams as $bodyParam) {
+            $body->addValue($bodyParam->toPropertyAnnotation());
+        }
+
+        return $head . $body->toString() . "))";
+    }
+
     public function toSwaggerAnnotations(string $route) {
         $httpMethodAnnotation = $this->getHttpMethodAnnotation();
         $body = new ParenthesesBuilder();
@@ -220,6 +236,10 @@ class AnnotationData {
 
             $body->addValue($queryParam->toParameterAnnotation($location));
         }
+
+        $jsonProperties = $this->getBodyAnnotation();
+        if ($jsonProperties !== null)
+            $body->addValue($jsonProperties);
 
         ///TODO: placeholder
         $body->addValue('@OA\Response(response="200",description="The data")');
@@ -275,16 +295,16 @@ class AnnotationParameterData {
         'numericint' => 'integer',
         'timestamp' => 'integer',
         'string' => 'string',
-        'unicode' => ['string', 'unicode'],
-        'email' => ['string', 'email'],
-        'url' => ['string', 'url'],
-        'uri' => ['string', 'uri'],
+        'unicode' => 'string',
+        'email' => 'string',
+        'url' => 'string',
+        'uri' => 'string',
         'pattern' => null,
-        'alnum' => ['string', 'alphanumeric'],
-        'alpha' => ['string', 'alphabetic'],
-        'digit' => ['string', 'numeric'],
-        'lower' => ['string', 'lowercase'],
-        'upper' => ['string', 'uppercase']
+        'alnum' => 'string',
+        'alpha' => 'string',
+        'digit' => 'string',
+        'lower' => 'string',
+        'upper' => 'string',
     ];
 
     public function __construct(
@@ -310,7 +330,7 @@ class AnnotationParameterData {
         return false;
     }
 
-    private function generateSchemaAnnotation(): string {
+    private function getSwaggerType(): string {
         # if the type is not specified, default to a string
         $type = 'string';
         $typename = $this->dataType;
@@ -319,15 +339,20 @@ class AnnotationParameterData {
                 $typename = substr($typename,0,-strlen(self::$nullableSuffix));
     
             if (self::$typeMap[$typename] === null) 
-                throw new \InvalidArgumentException("Error in SwaggerTypeConverter: Unknown typename: {$typename}");
+                ///TODO: return the commented exception
+                return 'string';
+                //throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
             
             $type = self::$typeMap[$typename];
         }
+        return $type;
+    }
 
+    private function generateSchemaAnnotation(): string {
         $head = "@OA\\Schema";
         $body = new ParenthesesBuilder();
-        $body->addKeyValue("type", $type);
 
+        $body->addKeyValue("type", $this->getSwaggerType());
         return $head . $body->toString();
     }
 
@@ -347,6 +372,16 @@ class AnnotationParameterData {
 
         $body->addValue($this->generateSchemaAnnotation());
 
+        return $head . $body->toString();
+    }
+
+    public function toPropertyAnnotation(): string {
+        $head = "@OA\\Property";
+        $body = new ParenthesesBuilder();
+
+        ///TODO: handle nullability
+        $body->addKeyValue("property", $this->name);
+        $body->addKeyValue("type", $this->getSwaggerType());
         return $head . $body->toString();
     }
 }
