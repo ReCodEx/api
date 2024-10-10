@@ -158,6 +158,12 @@ class GroupViewFactory
             ];
         }
 
+        $passesLimit = null;  // null = no limit
+        if ($group->getPointsLimit() !== null && $group->getPointsLimit() > 0) {
+            $passesLimit = $gainedPoints >= $group->getPointsLimit();
+        } elseif ($group->getThreshold() !== null && $group->getThreshold() > 0) {
+            $passesLimit = $gainedPoints >= $maxPoints * $group->getThreshold();
+        }
         return [
             "userId" => $student->getId(),
             "groupId" => $group->getId(),
@@ -165,9 +171,8 @@ class GroupViewFactory
                 "total" => $maxPoints,
                 "gained" => $gainedPoints
             ],
-            "hasLimit" => $group->getThreshold() !== null && $group->getThreshold() > 0,
-            "passesLimit" => $group->getThreshold(
-            ) === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold(),
+            "hasLimit" => $passesLimit !== null,
+            "passesLimit" => $passesLimit ?? true,
             "assignments" => $assignments,
             "shadowAssignments" => $shadowAssignments
         ];
@@ -251,6 +256,7 @@ class GroupViewFactory
                 "publicStats" => $group->getPublicStats(),
                 "detaining" => $group->isDetaining(),
                 "threshold" => $group->getThreshold(),
+                "pointsLimit" => $group->getPointsLimit(),
                 "bindings" => $this->bindings->getBindingsForGroup($group),
                 "examBegin" => $group->hasExamPeriodSet() ? $group->getExamBegin()?->getTimestamp() : null,
                 "examEnd" => $group->hasExamPeriodSet() ? $group->getExamEnd()?->getTimestamp() : null,
