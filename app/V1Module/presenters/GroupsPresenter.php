@@ -16,7 +16,6 @@ use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\GroupMembership;
 use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\SecurityEvent;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
 use App\Model\Repository\GroupExams;
@@ -195,6 +194,36 @@ class GroupsPresenter extends BasePresenter
     }
 
     /**
+     * Helper method that handles updating points limit and threshold to a group entity (from a request).
+     * @param Request $req request data
+     * @param Group $group to be updated
+     */
+    private function setGroupPoints(Request $req, Group $group): void
+    {
+        $threshold = $req->getPost("threshold");
+        $pointsLimit = $req->getPost("pointsLimit");
+        if ($threshold !== null && $pointsLimit !== null) {
+            throw new InvalidArgumentException("A group may have either a threshold or points limit, not both.");
+        }
+        if ($threshold !== null) {
+            if ($threshold <= 0 || $threshold > 100) {
+                throw new InvalidArgumentException("A threshold must be in the (0, 100] (%) range.");
+            }
+            $group->setThreshold($threshold / 100);
+        } else {
+            $group->setThreshold(null);
+        }
+        if ($pointsLimit !== null) {
+            if ($pointsLimit <= 0) {
+                throw new InvalidArgumentException("A points limit must be a positive number.");
+            }
+            $group->setPointsLimit($pointsLimit);
+        } else {
+            $group->setPointsLimit(null);
+        }
+    }
+
+    /**
      * Create a new group
      * @POST
      * @Param(type="post", name="instanceId", validation="string:36",
@@ -215,10 +244,10 @@ class GroupsPresenter extends BasePresenter
      *        description="Whether the group is an exam group.")
      * @Param(type="post", name="localizedTexts", validation="array", required=false,
      *        description="Localized names and descriptions")
-     * @Param(type="post", name="hasThreshold", validation="bool",
-     *        description="True if threshold was given, false if it should be unset")
      * @Param(type="post", name="threshold", validation="numericint", required=false,
      *        description="A minimum percentage of points needed to pass the course")
+     * @Param(type="post", name="pointsLimit", validation="numericint", required=false,
+     *        description="A minimum of (absolute) points needed to pass the course")
      * @Param(type="post", name="noAdmin", validation="bool", required=false,
      *        description="If true, no admin is assigned to group (current user is assigned as admin by default.")
      * @throws ForbiddenRequestException
@@ -249,7 +278,6 @@ class GroupsPresenter extends BasePresenter
         $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
         $isOrganizational = filter_var($req->getPost("isOrganizational"), FILTER_VALIDATE_BOOLEAN);
         $isExam = filter_var($req->getPost("isExam"), FILTER_VALIDATE_BOOLEAN);
-        $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
         $noAdmin = filter_var($req->getPost("noAdmin"), FILTER_VALIDATE_BOOLEAN);
 
         if ($isOrganizational && $isExam) {
@@ -267,12 +295,8 @@ class GroupsPresenter extends BasePresenter
             $detaining,
             $isExam,
         );
-        if ($hasThreshold) {
-            $threshold = $req->getPost("threshold") !== null
-                ? $req->getPost("threshold") / 100
-                : $group->getThreshold();
-            $group->setThreshold($threshold);
-        }
+
+        $this->setGroupPoints($req, $group);
         $this->updateLocalizations($req, $group);
 
         $this->groups->persist($group, false);
@@ -329,10 +353,10 @@ class GroupsPresenter extends BasePresenter
      *        required=false, description="Are students prevented from leaving the group on their own?")
      * @Param(type="post", name="isPublic", validation="bool",
      *        description="Should the group be visible to all student?")
-     * @Param(type="post", name="hasThreshold", validation="bool",
-     *        description="True if threshold was given, false if it should be unset")
      * @Param(type="post", name="threshold", validation="numericint", required=false,
      *        description="A minimum percentage of points needed to pass the course")
+     * @Param(type="post", name="pointsLimit", validation="numericint", required=false,
+     *        description="A minimum of (absolute) points needed to pass the course")
      * @Param(type="post", name="localizedTexts", validation="array", description="Localized names and descriptions")
      * @param string $id An identifier of the updated group
      * @throws InvalidArgumentException
@@ -343,7 +367,6 @@ class GroupsPresenter extends BasePresenter
         $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
         $detaining = filter_var($req->getPost("detaining"), FILTER_VALIDATE_BOOLEAN);
         $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-        $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
 
         $group = $this->groups->findOrThrow($id);
         $group->setExternalId($req->getPost("externalId"));
@@ -351,14 +374,7 @@ class GroupsPresenter extends BasePresenter
         $group->setDetaining($detaining);
         $group->setIsPublic($isPublic);
 
-        if ($hasThreshold) {
-            $threshold = $req->getPost("threshold") !== null ? $req->getPost("threshold") / 100 : $group->getThreshold(
-            );
-            $group->setThreshold($threshold);
-        } else {
-            $group->setThreshold(null);
-        }
-
+        $this->setGroupPoints($req, $group);
         $this->updateLocalizations($req, $group);
 
         $this->groups->persist($group);

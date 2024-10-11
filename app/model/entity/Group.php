@@ -103,6 +103,11 @@ class Group
     protected $threshold;
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    protected $pointsLimit;
+
+    /**
      * @ORM\Column(type="boolean")
      */
     protected $publicStats;
@@ -942,6 +947,16 @@ class Group
     public function setThreshold(?float $threshold): void
     {
         $this->threshold = $threshold;
+    }
+
+    public function getPointsLimit(): ?int
+    {
+        return $this->pointsLimit;
+    }
+
+    public function setPointsLimit(?int $pointsLimit): void
+    {
+        $this->pointsLimit = $pointsLimit;
     }
 
     public function getPublicStats(): bool
