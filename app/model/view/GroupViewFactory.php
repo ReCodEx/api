@@ -159,17 +159,21 @@ class GroupViewFactory
         }
 
         $passesLimit = null;  // null = no limit
+        $limit = null;
         if ($group->getPointsLimit() !== null && $group->getPointsLimit() > 0) {
-            $passesLimit = $gainedPoints >= $group->getPointsLimit();
+            $limit = $group->getPointsLimit();
+            $passesLimit = $gainedPoints >= $limit;
         } elseif ($group->getThreshold() !== null && $group->getThreshold() > 0) {
-            $passesLimit = $gainedPoints >= $maxPoints * $group->getThreshold();
+            $limit = $maxPoints * $group->getThreshold();
+            $passesLimit = $gainedPoints >= $limit;
         }
         return [
             "userId" => $student->getId(),
             "groupId" => $group->getId(),
             "points" => [
                 "total" => $maxPoints,
-                "gained" => $gainedPoints
+                "limit" => $limit,
+                "gained" => $gainedPoints,
             ],
             "hasLimit" => $passesLimit !== null,
             "passesLimit" => $passesLimit ?? true,
