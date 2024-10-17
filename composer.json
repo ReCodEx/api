@@ -62,7 +62,8 @@
         "nelmio/alice": "^3.8",
         "ramsey/uuid-doctrine": "^2.0",
         "eluceo/ical": "^2.7",
-        "league/commonmark": "^2.3"
+        "league/commonmark": "^2.3",
+        "zircote/swagger-php": "^4.10"
     },
     "require-dev": {
         "mockery/mockery": "@stable",
