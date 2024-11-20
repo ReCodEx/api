@@ -1,64 +1,62 @@
 <?php
 
 namespace App\Model\View;
-use \App\Console\AnnotationHelper;
+use \App\Helpers\Swagger\AnnotationHelper;
 
 
 // parent class of all meta classes
 
 class MetaView {
-    function generator($data, string $output_format) {
-        $backtrace = debug_backtrace()[1];
-        $class = $backtrace['class'];
-        $method = $backtrace['function'];
-        $args = $backtrace['args'];
-
-        $formats = AnnotationHelper::extractClassFormats($class);
-        var_dump($formats);
-    }
-
-    function conforms_to_format($format, $value) {
-        ///TODO
-        return false;
-    }
-
-    function validate_args_old() {
+    /**
+     * Extracts the parameters and annotations of the calling function and converts the parameters to their target type.
+     * @return object[] Returns a map paramName=>targetTypeInstance, where the instances are filled with the data from the parameters.
+     */
+    function getTypedParams() {
+        // extract function params of the caller
         $backtrace = debug_backtrace()[1];
         $className = $backtrace['class'];
         $methodName = $backtrace['function'];
-        $params_to_values = $this->get_param_names_to_values_map($backtrace);
-        $params_to_format = AnnotationHelper::extractMethodCheckedParams($className, $methodName);
+        // get param values
+        $paramsToValues = $this->getParamNamesToValuesMap($backtrace);
+        // get param format
+        $paramsToFormat = AnnotationHelper::extractMethodCheckedParams($className, $methodName);
 
-        foreach ($params_to_values as $param=>$value) {
-            $format = $params_to_format[$param];
-            if (!$this->conforms_to_format($format, $value)) {
-                ///TODO: debug only
-                echo "Invalid param <$className:$methodName:$param> value <$value>, given format <$format> \n";
+        // get all format definitions
+        $formats = AnnotationHelper::getFormatDefinitions();
+
+        $paramToTypedMap = [];
+        foreach ($paramsToValues as $paramName=>$paramValue) {
+            $format = $paramsToFormat[$paramName];
+
+            if (!array_key_exists($paramName, $paramsToFormat)) {
+                ///TODO: return 500
+                echo "Error: unknown param format: $paramName\n";
+                return [];
             }
+
+            $targetClassName = $formats[$format];
+            $classFormat = AnnotationHelper::getClassFormats($targetClassName);
+            $obj = new $targetClassName();
+
+            // fill the new object with the param values
+            ///TODO: handle nested formated objects
+            foreach ($paramValue as $key=>$value) {
+                ///TODO: return 404
+                if (!array_key_exists($key, $classFormat)) {
+                    echo "Error: unknown param: $paramName\n";
+                    return [];
+                }
+
+                $obj->$key = $value;
+            }
+
+            $paramToTypedMap[$paramName] = $obj;
         }
+
+        return $paramToTypedMap;
     }
 
-    /// extracts function params and returns object representations of the formats
-    function validate_args() {
-        $backtrace = debug_backtrace()[1];
-        $className = $backtrace['class'];
-        $methodName = $backtrace['function'];
-        $params_to_values = $this->get_param_names_to_values_map($backtrace);
-        $params_to_format = AnnotationHelper::extractMethodCheckedParams($className, $methodName);
-
-        $a = new GroupFormat();
-        AnnotationHelper::extractClassFormat(get_class($a));
-
-        foreach ($params_to_values as $param=>$value) {
-            $format = $params_to_format[$param];
-            if (!$this->conforms_to_format($format, $value)) {
-                ///TODO: debug only
-                echo "Invalid param <$className:$methodName:$param> value <$value>, given format <$format> \n";
-            }
-        }
-    }
-
-    function get_param_names_to_values_map($backtrace) {
+    function getParamNamesToValuesMap($backtrace): array {
         $className = $backtrace['class'];
         $args = $backtrace['args'];
         $methodName = $backtrace['function'];
@@ -75,7 +73,31 @@ class MetaView {
     }
 }
 
-class GroupFormat {
+
+class MetaFormat {
+    /**
+     * Validates the given format.
+     * @return bool Returns whether the format and all nested formats are valid.
+     */
+    public function validate() {
+        return true;
+    }
+
+    /**
+     * Validates this format. Automatically called by the validate method on all fields.
+     * Primitive formats should always override this, composite formats might want to override
+     * this in case more complex contracts need to be enforced.
+     * @return bool Returns whether the format is valid.
+     */
+    protected function validate_this() {
+        
+    }
+}
+
+/**
+ * @format_def group
+ */
+class GroupFormat extends MetaFormat {
     /**
      * @format uuid
      */
@@ -84,26 +106,10 @@ class GroupFormat {
      * @format uuid
      */
     public string $externalId;
-    /**
-     * @format bool
-     * ///REDUNDANT
-     */
     public bool $organizational;
-    /**
-     * @format bool
-     */
     public bool $exam;
-    /**
-     * @format bool
-     */
     public bool $archived;
-    /**
-     * @format bool
-     */
     public bool $public;
-    /**
-     * @format bool
-     */
     public bool $directlyArchived;
     /**
      * @format localizedText[]
@@ -136,62 +142,14 @@ class GroupFormat {
 }
 
 class TestView extends MetaView {
-    //function endpoint() { generator(["user_info" /* this would generate the whole user_info object */, "messages":{"name", "message"} /* cherry picking */]) }
-
-
-    /// should formats be defined in comments, or in classes?
-    /// classes: enables autocomplete, enforces structure, creates a ton of data classes, classes are needed for all nested objects
-    /// comments: no class cluttering, less verbose, no autocomplete, does not enforce structure -> views are created as dictionaries
-    /**
-     * @format_def group {
-     *  "id":"format:uuid",
-     *  "externalId":"format:uuid",
-     *  "organizational":"format:bool",
-     *  "exam":"format:bool",
-     *  "archived":"format:bool",
-     *  "public":"format:bool",
-     *  "directlyArchived":"format:bool",
-     *  "localizedTexts":"format:localizedText[]",
-     *  "primaryAdminsIds":"format:uuid[]",
-     *  "parentGroupId":"format:uuid?",
-     *  "parentGroupsIds":"format:uuid[]",
-     *  "childGroups":"format:uuid[]",
-     *  "privateData":"format:groupPrivateData",
-     *  "permissionHints":"format:acl[]"
-     * }
-     */
-    private $placeholder;
-
-    // here the generator takes an input argument that conforms to format:user_info, therefore the generator can extract named parameters out 
-    // of it and pass them to the database methods
-    ///TODO: check whether the parameters can support the below annotations with the current framework
-    /**
-     * Summary of endpoint
-     * @format_def user_info { "name":"format:name", "points":"format:int", "comments":"format:string[]" }
-     * @checked_param format:user_info user_info
-     * @checked_param format:uuid user_id
-     * @checked_param format:bool verbose
-     */
-    private $old;
-
-
-
     /**
      * @checked_param format:group group
      * @checked_param format:uuid user_id
-     * @checked_param format:bool verbose
      */
-    function endpoint($group, $user_id, $verbose) {
-        $this->validate_args();
-
-        /*$data = [
-            "id" => $user_id,
-        ];
-        $this->generator($data, output_format: "format:group");*/
-
-
-        //$message = $this->get_last_message($user_id);
-        //$this->generator(output_format: "format:messages[]:text");
+    function endpoint($group) {
+        $params = $this->getTypedParams();
+        $formattedGroup = $params["group"];
+        var_dump($formattedGroup);
     }
 
     // the names of the format and the output do not have to be identical, the strings in the desired data format refer the output names

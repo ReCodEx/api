@@ -379,8 +379,7 @@ class AnnotationHelper {
         return $bodyParams;
     }
 
-    private static function getMethodAnnotations(string $className, string $methodName): array {
-        $annotations = self::getMethod($className, $methodName)->getDocComment();
+    private static function getAnnotationLines(string $annotations) {
         $lines = preg_split("/\r\n|\n|\r/", $annotations);
 
         # trims whitespace and asterisks
@@ -413,6 +412,11 @@ class AnnotationHelper {
         }
 
         return $merged;
+    }
+
+    private static function getMethodAnnotations(string $className, string $methodName): array {
+        $annotations = self::getMethod($className, $methodName)->getDocComment();
+        return self::getAnnotationLines($annotations);
     }
 
     private static function getRoutePathParamNames(string $route): array {
@@ -459,47 +463,38 @@ class AnnotationHelper {
         return $rows;
     } 
 
-    private static function extractFormatData(array $annotations): array {
+    private static function extractFormatData(array $annotations) {
         $formats = [];
-        $filtered = self::filterAnnotations($annotations, "@format_def");
-        foreach ($filtered as $annotation) {
-            # sample: @format user_info { "name":"format:name", "points":"format:int", "comments":"format:string[]" }
-            $tokens = explode(" ", $annotation);
-            $name = $tokens[1];
-            
-            $jsonStart = strpos($annotation, "{");
-            $json = substr($annotation, $jsonStart);
-            $format = json_decode($json);
-
-            $formats[$name] = $format;
+        $filtered = self::filterAnnotations($annotations, "@format");
+        // there should either be one or none format declaration
+        if (count($filtered) == 0) {
+            return null;
         }
-        return $formats;
-    }
-
-    private static function extractMethodFormats(string $className, string $methodName): array {
-        $annotations = self::getMethodAnnotations($className, $methodName);
-        return self::extractFormatData($annotations);
-    }
-
-    public static function extractClassFormats(string $className): array {
-        $methods = get_class_methods($className);
-        $formatDicts = [];
-        foreach ($methods as $method) {
-            $formatDicts[] = self::extractMethodFormats($className, $method);
+        if (count($filtered) > 1) {
+            ///TODO: throw exception
+            echo "Error in extractFormatData: Multiple format definitions.\n";
+            return null;
         }
 
-        return array_merge(...$formatDicts);
+        # sample: @format uuid
+        $annotation = $filtered[0];
+        $tokens = explode(" ", $annotation);
+        $format = $tokens[1];
+        
+        return $format;
     }
 
     public static function extractMethodCheckedParams(string $className, string $methodName): array {
         $annotations = self::getMethodAnnotations($className, $methodName);
         $filtered = self::filterAnnotations($annotations, "@checked_param");
         
+        $formatPrefix = "format:";
+
         $paramMap = [];
         foreach ($filtered as $annotation) {
             // sample: @checked_param format:group group
             $tokens = explode(" ", $annotation);
-            $format = $tokens[1];
+            $format = substr($tokens[1], strlen($formatPrefix));
             $name = $tokens[2];
             $paramMap[$name] = $format;
         }
@@ -507,13 +502,50 @@ class AnnotationHelper {
         return $paramMap;
     }
 
-    public static function extractClassFormat(string $className) {
+    /**
+     * Parses the field annotations of a class and returns their metadata.
+     * @param string $className The name of the class.
+     * @return array{format: string|null, type: string|null} with the field name as the key.
+     */
+    public static function getClassFormats(string $className) {
         $class = new \ReflectionClass($className);
         $fields = get_class_vars($className);
+        $formats = [];
         foreach ($fields as $fieldName=>$value) {
             $field = $class->getProperty($fieldName);
-            $fieldType = $field->getType()->getName();
-            var_dump($fieldType);
+            $format = self::extractFormatData(self::getAnnotationLines($field->getDocComment()));
+            # get null if there is no type
+            $fieldType = $field->getType()?->getName();
+
+            $formats[$fieldName] = [
+                "type" => $fieldType,
+                "format" => $format,
+            ];
         }
+
+        return $formats;
+    }
+
+    public static function getFormatDefinitions() {
+        ///TODO: this should be more sophisticated
+        $classes = get_declared_classes();
+
+        // maps format names to class names
+        $formatClassMap = [];
+
+        foreach ($classes as $className) {
+            $class = new \ReflectionClass($className);
+            $annotations = self::getAnnotationLines($class->getDocComment());
+            $type_defs = self::filterAnnotations($annotations, "@format_def");
+            if (count($type_defs) !== 1)
+                continue;
+
+            $tokens = explode(" ", $type_defs[0]);
+
+            // the second token is the group name, the first one is the tag
+            $formatClassMap[$tokens[1]] = $className;
+        }
+
+        return $formatClassMap;
     }
 }
