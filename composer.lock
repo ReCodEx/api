@@ -7049,18 +7049,6 @@
         },
         {
             "name": "symfony/process",
-<<<<<<< HEAD
-            "version": "v7.1.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/process.git",
-                "reference": "5c03ee6369281177f07f7c68252a280beccba847"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/5c03ee6369281177f07f7c68252a280beccba847",
-                "reference": "5c03ee6369281177f07f7c68252a280beccba847",
-=======
             "version": "v7.1.7",
             "source": {
                 "type": "git",
@@ -7071,7 +7059,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/process/zipball/9b8a40b7289767aa7117e957573c2a535efe6585",
                 "reference": "9b8a40b7289767aa7117e957573c2a535efe6585",
->>>>>>> master
                 "shasum": ""
             },
             "require": {
