@@ -28,6 +28,7 @@ class MetaView {
         foreach ($paramsToValues as $paramName=>$paramValue) {
             $format = $paramsToFormat[$paramName];
 
+            // the parameter name was not present in the annotations
             if (!array_key_exists($paramName, $paramsToFormat)) {
                 ///TODO: return 500
                 echo "Error: unknown param format: $paramName\n";
@@ -40,14 +41,15 @@ class MetaView {
 
             // fill the new object with the param values
             ///TODO: handle nested formated objects
-            foreach ($paramValue as $key=>$value) {
+            foreach ($paramValue as $propertyName=>$propertyValue) {
                 ///TODO: return 404
-                if (!array_key_exists($key, $classFormat)) {
+                // the property was not present in the class definition
+                if (!array_key_exists($propertyName, $classFormat)) {
                     echo "Error: unknown param: $paramName\n";
                     return [];
                 }
 
-                $obj->$key = $value;
+                $obj->$propertyName = $propertyValue;
             }
 
             $paramToTypedMap[$paramName] = $obj;
@@ -73,24 +75,117 @@ class MetaView {
     }
 }
 
+/**
+ * Parses format string enriched by nullability and array modifiers.
+ * In case the format contains array, this data class can be recursive.
+ * Example: string?[]? can either be null or of string?[] type, an array of nullable strings
+ * Example2: string[]?[] is an array of null or string arrays
+ */
+class FormatParser {
+    public bool $nullable = false;
+    public bool $isArray = false;
+    // contains the format stripped of the nullability ?, null if it is an array
+    public ?string $format = null;
+    // contains the format definition of nested elements, null if it is not an array
+    public ?FormatParser $nested = null; 
+
+    public function __construct(string $format) {
+        // check nullability
+        if (str_ends_with($format, "?")) {
+            $this->nullable = true;
+            $format = substr($format, 0, -1);
+        }
+
+        // check array
+        if (str_ends_with($format, "[]")) {
+            $this->isArray = true;
+            $format = substr($format, 0, -2);
+            $this->nested = new FormatParser($format);
+        }
+        else {
+            $this->format = $format;
+        }
+    }
+}
+
 
 class MetaFormat {
+    // validates primitive formats of intrinsic PHP types
+    ///TODO: make this static somehow (or cached)
+    private $validators;
+
+    public function __construct() {
+        $this->validators = AnnotationHelper::getValidators();
+    }
+
+
     /**
      * Validates the given format.
      * @return bool Returns whether the format and all nested formats are valid.
      */
     public function validate() {
-        return true;
+        // check whether all higher level contracts hold
+        if (!$this->validateSelf())
+            return false;
+
+        // check properties
+        $selfFormat = AnnotationHelper::getClassFormats(get_class($this));
+        foreach ($selfFormat as $propertyName=>$propertyFormat) {
+            ///TODO: check if this is true
+            /// if the property is checked by type only, there is no need to check it as an invalid assignment would rise an error
+            $value = $this->$propertyName;
+            $format = $propertyFormat["format"];
+            if ($format === null)
+                continue;
+
+            // enables parsing more complicated formats (string[]?, string?[], string?[][]?, ...)
+            $parsedFormat = new FormatParser($format);
+            if (!$this->recursiveFormatChecker($value, $parsedFormat))
+            return false;
+        }
+
+    }
+
+    private function recursiveFormatChecker($value, FormatParser $parsedFormat) {
+        // enables parsing more complicated formats (string[]?, string?[], string?[][]?, ...)
+        
+        // check nullability
+        if ($value === null)
+            return $parsedFormat->nullable;
+
+        // handle arrays
+        if ($parsedFormat->isArray) {
+            if (!is_array($value))
+                return false;
+
+            // if any element fails, the whole format fails
+            foreach ($value as $element) {
+                if (!$this->recursiveFormatChecker($element, $parsedFormat->nested))
+                    return false;
+            }
+            return true;
+        }
+
+        ///TODO: raise an error
+        // check whether the validator exists
+        if (!array_key_exists($parsedFormat->format, $this->validators)) {
+            echo "Error: missing validator for format: " . $parsedFormat->format . "\n";
+            return false;
+        }
+
+        return $this->validators[$parsedFormat->format]($value);
     }
 
     /**
      * Validates this format. Automatically called by the validate method on all fields.
      * Primitive formats should always override this, composite formats might want to override
      * this in case more complex contracts need to be enforced.
+     * This method should not check the format of nested types.
      * @return bool Returns whether the format is valid.
      */
-    protected function validate_this() {
-        
+    protected function validateSelf() {
+        // there are no constraints by default
+        return true;
     }
 }
 
@@ -146,10 +241,13 @@ class TestView extends MetaView {
      * @checked_param format:group group
      * @checked_param format:uuid user_id
      */
-    function endpoint($group) {
+    function endpoint($group, $user_id) {
         $params = $this->getTypedParams();
         $formattedGroup = $params["group"];
         var_dump($formattedGroup);
+
+        // $a = new GroupFormat();
+        // $a->validate();
     }
 
     // the names of the format and the output do not have to be identical, the strings in the desired data format refer the output names

@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\Common\Annotations\AnnotationReader;
+use \PrimitiveFormatValidators;
 use DateTime;
 
 
@@ -484,6 +485,12 @@ class AnnotationHelper {
         return $format;
     }
 
+    /**
+     * Checks all @checked_param annotations of a method and returns a map from parameter names to their formats.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the method.
+     * @return array
+     */
     public static function extractMethodCheckedParams(string $className, string $methodName): array {
         $annotations = self::getMethodAnnotations($className, $methodName);
         $filtered = self::filterAnnotations($annotations, "@checked_param");
@@ -526,6 +533,9 @@ class AnnotationHelper {
         return $formats;
     }
 
+    /**
+     * Creates a mapping from formats to class names, where the class defines the format.
+     */
     public static function getFormatDefinitions() {
         ///TODO: this should be more sophisticated
         $classes = get_declared_classes();
@@ -547,5 +557,37 @@ class AnnotationHelper {
         }
 
         return $formatClassMap;
+    }
+
+    /**
+     * Extracts all primitive validator methods (starting with "validate") and returns a map from format to a callback.
+     * The callbacks have one parameter that is passed to the validator.
+     */
+    private static function getPrimitiveValidators(): array {
+        $instance = new PrimitiveFormatValidators();
+        $className = get_class($instance);
+        $methodNames = get_class_methods($className);
+
+        $validators = [];
+        foreach ($methodNames as $methodName) {
+            // all validation methods start with validate
+            if (!str_starts_with($methodName, "validate"))
+                continue;
+
+            $annotations = self::getMethodAnnotations($className, $methodName);
+            $format = self::extractFormatData($annotations);
+            $callback = function($param) use ($instance, $methodName) { return $instance->$methodName($param); };
+            $validators[$format] = $callback;
+        }
+
+        return $validators;
+    }
+
+    private static function getMetaValidators(): array {
+        return [];
+    }
+
+    private static function getValidators(): array {
+        return array_merge(self::getPrimitiveValidators(), self::getMetaValidators());
     }
 }
