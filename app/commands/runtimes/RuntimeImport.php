@@ -153,7 +153,7 @@ class RuntimeImport extends BaseCommand
     {
         foreach ($schema as $key => $desc) {
             // check existence
-            $path = $prefix ? ("'" . join($prefix, "' / '") . "'") : '<root>';
+            $path = $prefix ? ("'" . join("' / '", $prefix) . "'") : '<root>';
             if (!array_key_exists($key, $obj)) {
                 throw new RuntimeException("Property '$key' is missing in $path structure.");
             }
