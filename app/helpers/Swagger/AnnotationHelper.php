@@ -239,15 +239,4 @@ class AnnotationHelper
 
         return $paramMap;
     }
-
-    public static function extractClassFormat(string $className)
-    {
-        $class = new ReflectionClass($className);
-        $fields = get_class_vars($className);
-        foreach ($fields as $fieldName => $value) {
-            $field = $class->getProperty($fieldName);
-            $fieldType = $field->getType()->getName();
-            var_dump($fieldType);
-        }
-    }
 }
