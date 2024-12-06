@@ -1,9 +1,9 @@
 <?php
-// phpcs:ignoreFile
-// PSR12 does not handle enums well
 
 namespace App\Helpers\Swagger;
 
+// PSR12 does not handle enums well
+// @codingStandardsIgnoreStart
 enum HttpMethods
 {
     case GET;
@@ -11,3 +11,4 @@ enum HttpMethods
     case PUT;
     case DELETE;
 }
+// @codingStandardsIgnoreEnd
