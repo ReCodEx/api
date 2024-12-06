@@ -14,7 +14,8 @@ class GenerateSwagger extends Command
     protected function configure()
     {
         $this->setName(self::$defaultName)->setDescription(
-            'Generate a swagger specification file from existing code.'
+            'Generate an OpenAPI documentation from the temporary file created by the swagger:annotate command.'
+            . ' The temporary file is deleted afterwards.'
         );
     }
 
