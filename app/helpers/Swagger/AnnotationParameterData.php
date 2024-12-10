@@ -76,10 +76,11 @@ class AnnotationParameterData
             }
   
             if (self::$typeMap[$typename] === null) {
-              ///TODO: return the commented exception
+                ///TODO: Return the commented exception below once the meta-view formats are implemented.
+                /// This detaults to strings because custom types like 'email' are not supported yet.
                 return 'string';
             }
-              //throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
+            //throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
           
             $type = self::$typeMap[$typename];
         }
@@ -120,7 +121,7 @@ class AnnotationParameterData
         $head = "@OA\\Property";
         $body = new ParenthesesBuilder();
 
-        ///TODO: handle nullability
+        ///TODO: Once the meta-view formats are implemented, add support for property nullability here.
         $body->addKeyValue("property", $this->name);
         $body->addKeyValue("type", $this->getSwaggerType());
         return $head . $body->toString();
