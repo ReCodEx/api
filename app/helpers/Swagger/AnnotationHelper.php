@@ -3,23 +3,34 @@
 namespace App\Helpers\Swagger;
 
 use ReflectionClass;
+use ReflectionMethod;
 use Exception;
-use App\Helpers\Swagger\PrimitiveFormatValidators;
 
 /**
  * Parser that can parse the annotations of existing recodex endpoints.
  */
 class AnnotationHelper
 {
-    private static function getMethod(string $className, string $methodName): \ReflectionMethod
+    /**
+     * Returns a ReflectionMethod object matching the name of the method and containing class.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the method.
+     * @return \ReflectionMethod Returns the ReflectionMethod object.
+     */
+    private static function getMethod(string $className, string $methodName): ReflectionMethod
     {
         $class = new ReflectionClass($className);
         return $class->getMethod($methodName);
     }
 
+    /**
+     * Searches an array of annotations for any line starting with a valid HTTP method.
+     * @param array $annotations An array of annotations.
+     * @return \App\Helpers\Swagger\HttpMethods|null Returns the HTTP method or null if none present.
+     */
     private static function extractAnnotationHttpMethod(array $annotations): HttpMethods | null
     {
-        // get string values of backed enumeration
+        // get string names of the enumeration
         $cases = HttpMethods::cases();
         $methods = [];
         foreach ($cases as $case) {
@@ -36,6 +47,14 @@ class AnnotationHelper
         return null;
     }
 
+    /**
+     * Extracts standart doc comments from endpoints, such as '@param string $id An identifier'.
+     * Based on the HTTP route of the endpoint, the extracted param can be identified as either a path or
+     * query parameter.
+     * @param array $annotations An array of annotations.
+     * @param string $route The HTTP route of the endpoint.
+     * @return array Returns an array of AnnotationParameterData objects describing the parameters.
+     */
     private static function extractStandardAnnotationParams(array $annotations, string $route): array
     {
         $routeParams = self::getRoutePathParamNames($route);
@@ -64,7 +83,12 @@ class AnnotationHelper
         return $params;
     }
 
-    private static function extractBodyParams(array $expressions): array
+    /**
+     * Converts an array of assignment string to an associative array.
+     * @param array $expressions An array containing values in the following format: 'key="value"'.
+     * @return array Returns an associative array made from the string array.
+     */
+    private static function stringArrayToAssociativeArray(array $expressions): array
     {
         $dict = [];
         //sample: [ 'name="uiData"', 'validation="array|null"' ]
@@ -78,6 +102,11 @@ class AnnotationHelper
         return $dict;
     }
 
+    /**
+     * Extracts annotation parameter data from Nette annotations starting with the '@Param' prefix.
+     * @param array $annotations An array of annotations.
+     * @return array Returns an array of AnnotationParameterData objects describing the parameters.
+     */
     private static function extractNetteAnnotationParams(array $annotations): array
     {
         $bodyParams = [];
@@ -90,7 +119,7 @@ class AnnotationHelper
                 // remove '@Param(' from the start and ')' from the end
                 $body = substr($annotation, strlen($prefix) + 1, -1);
                 $tokens = explode(", ", $body);
-                $values = self::extractBodyParams($tokens);
+                $values = self::stringArrayToAssociativeArray($tokens);
                 $descriptor = new AnnotationParameterData(
                     $values["validation"],
                     $values["name"],
@@ -103,33 +132,39 @@ class AnnotationHelper
         return $bodyParams;
     }
 
-
-    private static function getAnnotationLines(string $annotations)
+    /**
+     * Parses an annotation string and returns the lines as an array.
+     * Lines not starting with '@' are assumed to be continuations of a parent line starting with @ (or the initial
+     * line not starting with '@') and are merged into a single line.
+     * @param string $annotations The annotation string.
+     * @return array Returns an array of the annotation lines.
+     */
+    public static function getAnnotationLines(string $annotations): array
     {
         $lines = preg_split("/\r\n|\n|\r/", $annotations);
 
-        # trims whitespace and asterisks
-        # assumes that asterisks are not used in some meaningful way at the beginning and end of a line
+        // trims whitespace and asterisks
+        // assumes that asterisks are not used in some meaningful way at the beginning and end of a line
         foreach ($lines as &$line) {
             $line = trim($line);
             $line = trim($line, "*");
             $line = trim($line);
         }
 
-        # removes the first and last line
-        # assumes that the first line is '/**' and the last line '*/' (or '/' after trimming)
+        // removes the first and last line
+        // assumes that the first line is '/**' and the last line '*/' (or '/' after trimming)
         $lines = array_slice($lines, 1, -1);
 
         $merged = [];
         for ($i = 0; $i < count($lines); $i++) {
             $line = $lines[$i];
 
-            # skip lines not starting with '@'
+            // skip lines not starting with '@'
             if ($line[0] !== "@") {
                 continue;
             }
 
-            # merge lines not starting with '@' with their parent lines starting with '@'
+            // merge lines not starting with '@' with their parent lines starting with '@'
             while ($i + 1 < count($lines) && $lines[$i + 1][0] !== "@") {
                 $line .= " " . $lines[$i + 1];
                 $i++;
@@ -141,13 +176,25 @@ class AnnotationHelper
         return $merged;
     }
 
-    private static function getMethodAnnotations(string $className, string $methodName): array
+    /**
+     * Returns all method annotation lines as an array.
+     * Lines not starting with '@' are assumed to be continuations of a parent line starting with @ (or the initial
+     * line not starting with '@') and are merged into a single line.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the method.
+     * @return array Returns an array of the annotation lines.
+     */
+    public static function getMethodAnnotations(string $className, string $methodName): array
     {
         $annotations = self::getMethod($className, $methodName)->getDocComment();
         return self::getAnnotationLines($annotations);
     }
 
-
+    /**
+     * Extracts strings enclosed by curly brackets.
+     * @param string $route The source string.
+     * @return array Returns the tokens extracted from the brackets.
+     */
     private static function getRoutePathParamNames(string $route): array
     {
         // sample: from '/users/{id}/{name}' generates ['id', 'name']
@@ -155,6 +202,16 @@ class AnnotationHelper
         return $out[1];
     }
 
+    /**
+     * Extracts the annotation data of an endpoint. The data contains request parameters based on their type
+     * and the HTTP method.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the endpoint method.
+     * @param string $route The route to the method.
+     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
+     * path, query and post)
+     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     */
     public static function extractAnnotationData(string $className, string $methodName, string $route): AnnotationData
     {
         $methodAnnotations = self::getMethodAnnotations($className, $methodName);
@@ -185,7 +242,13 @@ class AnnotationHelper
         return $data;
     }
 
-    private static function filterAnnotations(array $annotations, string $type)
+    /**
+     * Filters annotation lines starting with a prefix.
+     * @param array $annotations An array of annotations.
+     * @param string $type The prefix with which the lines should start, such as '@param'.
+     * @return array Returns an array of filtered annotations.
+     */
+    public static function filterAnnotations(array $annotations, string $type)
     {
         $rows = [];
         foreach ($annotations as $annotation) {
@@ -194,144 +257,5 @@ class AnnotationHelper
             }
         }
         return $rows;
-    }
-
-
-    private static function extractFormatData(array $annotations)
-    {
-        $filtered = self::filterAnnotations($annotations, "@format");
-        // there should either be one or none format declaration
-        if (count($filtered) == 0) {
-            return null;
-        }
-        if (count($filtered) > 1) {
-            ///TODO: throw exception
-            echo "Error in extractFormatData: Multiple format definitions.\n";
-            return null;
-        }
-
-        # sample: @format uuid
-        $annotation = $filtered[0];
-        $tokens = explode(" ", $annotation);
-        $format = $tokens[1];
-        
-        return $format;
-    }
-
-    /**
-     * Checks all @checked_param annotations of a method and returns a map from parameter names to their formats.
-     * @param string $className The name of the containing class.
-     * @param string $methodName The name of the method.
-     * @return array
-     */
-    public static function extractMethodCheckedParams(string $className, string $methodName): array
-    {
-        $annotations = self::getMethodAnnotations($className, $methodName);
-        $filtered = self::filterAnnotations($annotations, "@checked_param");
-        
-        $formatPrefix = "format:";
-
-        $paramMap = [];
-        foreach ($filtered as $annotation) {
-            // sample: @checked_param format:group group
-            $tokens = explode(" ", $annotation);
-            $format = substr($tokens[1], strlen($formatPrefix));
-            $name = $tokens[2];
-            $paramMap[$name] = $format;
-        }
-
-        return $paramMap;
-    }
-
-    /**
-     * Parses the field annotations of a class and returns their metadata.
-     * @param string $className The name of the class.
-     * @return array{format: string|null, type: string|null} with the field name as the key.
-     */
-
-    public static function getClassFormats(string $className)
-    {
-        $class = new ReflectionClass($className);
-        $fields = get_class_vars($className);
-        $formats = [];
-        foreach ($fields as $fieldName => $value) {
-            $field = $class->getProperty($fieldName);
-            $format = self::extractFormatData(self::getAnnotationLines($field->getDocComment()));
-            # get null if there is no type
-            $fieldType = $field->getType()?->getName();
-
-            $formats[$fieldName] = [
-                "type" => $fieldType,
-                "format" => $format,
-            ];
-        }
-
-        return $formats;
-    }
-
-    /**
-     * Creates a mapping from formats to class names, where the class defines the format.
-     */
-    public static function getFormatDefinitions()
-    {
-        ///TODO: this should be more sophisticated
-        $classes = get_declared_classes();
-
-        // maps format names to class names
-        $formatClassMap = [];
-
-        foreach ($classes as $className) {
-            $class = new ReflectionClass($className);
-            $annotations = self::getAnnotationLines($class->getDocComment());
-            $type_defs = self::filterAnnotations($annotations, "@format_def");
-            if (count($type_defs) !== 1) {
-                continue;
-            }
-
-            $tokens = explode(" ", $type_defs[0]);
-
-            // the second token is the group name, the first one is the tag
-            $formatClassMap[$tokens[1]] = $className;
-        }
-
-        return $formatClassMap;
-    }
-
-    /**
-     * Extracts all primitive validator methods (starting with "validate") and returns a map from format to a callback.
-     * The callbacks have one parameter that is passed to the validator.
-     */
-    private static function getPrimitiveValidators(): array
-    {
-            $instance = new PrimitiveFormatValidators();
-            $className = get_class($instance);
-            $methodNames = get_class_methods($className);
-
-            $validators = [];
-        foreach ($methodNames as $methodName) {
-            // all validation methods start with validate
-            if (!str_starts_with($methodName, "validate")) {
-                continue;
-            }
-
-            $annotations = self::getMethodAnnotations($className, $methodName);
-            $format = self::extractFormatData($annotations);
-            $callback = function ($param) use ($instance, $methodName) {
-                return $instance->$methodName($param);
-            };
-            $validators[$format] = $callback;
-        }
-
-            return $validators;
-    }
-
-    private static function getMetaValidators(): array
-    {
-        return [];
-    }
-
-    private static function getValidators(): array
-    {
-        return array_merge(self::getPrimitiveValidators(), self::getMetaValidators());
     }
 }

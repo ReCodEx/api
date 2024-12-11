@@ -5,8 +5,11 @@ namespace App\Console;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use \OpenApi\Generator;
+use OpenApi\Generator;
 
+/**
+ * Command that consumes a temporary file containing endpoint annotations and generates a swagger documentation.
+ */
 class GenerateSwagger extends Command
 {
     protected static $defaultName = 'swagger:generate';

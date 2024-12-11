@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\Swagger;
+namespace App\Helpers\MetaFormats;
 
 class PrimitiveFormatValidators
 {

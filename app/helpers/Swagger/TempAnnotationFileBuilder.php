@@ -20,6 +20,9 @@ class TempAnnotationFileBuilder
         $this->initFile();
     }
 
+    /**
+     * Initializes the file, adding the namespace and import statements.
+     */
     private function initFile()
     {
         $this->content .= "<?php\n";
@@ -28,6 +31,12 @@ class TempAnnotationFileBuilder
         $this->content .= "use OpenApi\Annotations as OA;\n";
     }
 
+    /**
+     * Creates an annotation describing the swagger version and title used.
+     * @param string $version The version of swagger.
+     * @param string $title The title of the document.
+     * @return string Returns the annotation.
+     */
     private function createInfoAnnotation(string $version, string $title)
     {
         $head = "@OA\\Info";
@@ -44,6 +53,13 @@ class TempAnnotationFileBuilder
         $this->content .= "*/\n";
     }
 
+    /**
+     * Creates a class that contains all the endpoint annotation methods.
+     * Should only be called once as the first method.
+     * @param string $className The name of the class.
+     * @param string $version The version of swagger.
+     * @param string $title The name of the swagger document.
+     */
     public function startClass(string $className, string $version, string $title)
     {
         $this->writeAnnotationLineWithComments($this->createInfoAnnotation($version, $title));
@@ -59,6 +75,11 @@ class TempAnnotationFileBuilder
         $this->close();
     }
 
+    /**
+     * Adds an annotated method to the class.
+     * @param string $methodName The name of the method. This does not have to be unique.
+     * @param string $annotationLine The annotation line of the method.
+     */
     public function addAnnotatedMethod(string $methodName, string $annotationLine)
     {
         $this->writeAnnotationLineWithComments($annotationLine);
@@ -66,7 +87,10 @@ class TempAnnotationFileBuilder
         $this->methodEntries++;
     }
 
-    public function close()
+    /**
+     * Creates a file and adds the swagger content.
+     */
+    private function close()
     {
         $file = fopen($this->filename, "w");
         fwrite($file, $this->content);

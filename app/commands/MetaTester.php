@@ -26,13 +26,13 @@ class MetaTester extends Command
         return Command::SUCCESS;
     }
 
-    function test(string $arg)
+    public function test(string $arg)
     {
         $view = new TestView();
         $view->endpoint([
             "id" => "0",
             "organizational" => false,
-        ], "0001", true);
-        #$view->get_user_info(0);
+        ], "0001");
+        // $view->get_user_info(0);
     }
 }

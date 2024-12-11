@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\Swagger;
+namespace App\Helpers\MetaFormats;
 
 // the string values have to match the return string of gettype()
 // @codingStandardsIgnoreStart
