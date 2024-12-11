@@ -65,6 +65,10 @@ class AnnotationParameterData
         return false;
     }
 
+    /**
+     * Returns the swagger type associated with the annotation data type.
+     * @return string Returns the name of the swagger type.
+     */
     private function getSwaggerType(): string
     {
         // if the type is not specified, default to a string
@@ -87,6 +91,10 @@ class AnnotationParameterData
         return $type;
     }
 
+    /**
+     * Generates swagger schema annotations based on the data type.
+     * @return string Returns the annotation.
+     */
     private function generateSchemaAnnotation(): string
     {
         $head = "@OA\\Schema";
@@ -116,6 +124,10 @@ class AnnotationParameterData
         return $head . $body->toString();
     }
 
+    /**
+     * Generates swagger property annotations based on the data type.
+     * @return string Returns the annotation.
+     */
     public function toPropertyAnnotation(): string
     {
         $head = "@OA\\Property";

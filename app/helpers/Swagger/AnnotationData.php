@@ -8,7 +8,7 @@ namespace App\Helpers\Swagger;
 class AnnotationData
 {
     public HttpMethods $httpMethod;
-  
+
     public array $pathParams;
     public array $queryParams;
     public array $bodyParams;
@@ -25,6 +25,11 @@ class AnnotationData
         $this->bodyParams = $bodyParams;
     }
 
+    /**
+     * Creates a method annotation string parsable by the swagger generator.
+     * Example: if the method name is 'Put', the method will return '@OA\\PUT'.
+     * @return string Returns the method annotation.
+     */
     private function getHttpMethodAnnotation(): string
     {
         // sample: converts 'PUT' to 'Put'
@@ -32,6 +37,12 @@ class AnnotationData
         return "@OA\\" . $httpMethodString;
     }
 
+    /**
+     * Creates a JSON request body annotation string parsable by the swagger generator.
+     * Example: if the request body contains only the 'url' property, this method will produce:
+     * '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema(@OA\Property(property="url",type="string"))))'
+     * @return string|null Returns the annotation string or null, if there are no body parameters.
+     */
     private function getBodyAnnotation(): string | null
     {
         if (count($this->bodyParams) === 0) {

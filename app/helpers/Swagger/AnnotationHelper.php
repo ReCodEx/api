@@ -3,6 +3,7 @@
 namespace App\Helpers\Swagger;
 
 use ReflectionClass;
+use ReflectionMethod;
 use Exception;
 
 /**
@@ -10,15 +11,26 @@ use Exception;
  */
 class AnnotationHelper
 {
-    private static function getMethod(string $className, string $methodName): \ReflectionMethod
+    /**
+     * Returns a ReflectionMethod object matching the name of the method and containing class.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the method.
+     * @return \ReflectionMethod Returns the ReflectionMethod object.
+     */
+    private static function getMethod(string $className, string $methodName): ReflectionMethod
     {
         $class = new ReflectionClass($className);
         return $class->getMethod($methodName);
     }
 
+    /**
+     * Searches an array of annotations for any line starting with a valid HTTP method.
+     * @param array $annotations An array of annotations.
+     * @return \App\Helpers\Swagger\HttpMethods|null Returns the HTTP method or null if none present.
+     */
     private static function extractAnnotationHttpMethod(array $annotations): HttpMethods | null
     {
-        // get string values of backed enumeration
+        // get string names of the enumeration
         $cases = HttpMethods::cases();
         $methods = [];
         foreach ($cases as $case) {
@@ -35,6 +47,14 @@ class AnnotationHelper
         return null;
     }
 
+    /**
+     * Extracts standart doc comments from endpoints, such as '@param string $id An identifier'.
+     * Based on the HTTP route of the endpoint, the extracted param can be identified as either a path or
+     * query parameter.
+     * @param array $annotations An array of annotations.
+     * @param string $route The HTTP route of the endpoint.
+     * @return array Returns an array of AnnotationParameterData objects describing the parameters.
+     */
     private static function extractStandardAnnotationParams(array $annotations, string $route): array
     {
         $routeParams = self::getRoutePathParamNames($route);
@@ -63,7 +83,12 @@ class AnnotationHelper
         return $params;
     }
 
-    private static function extractBodyParams(array $expressions): array
+    /**
+     * Converts an array of assignment string to an associative array.
+     * @param array $expressions An array containing values in the following format: 'key="value"'.
+     * @return array Returns an associative array made from the string array.
+     */
+    private static function stringArrayToAssociativeArray(array $expressions): array
     {
         $dict = [];
         //sample: [ 'name="uiData"', 'validation="array|null"' ]
@@ -77,6 +102,11 @@ class AnnotationHelper
         return $dict;
     }
 
+    /**
+     * Extracts annotation parameter data from Nette annotations starting with the '@Param' prefix.
+     * @param array $annotations An array of annotations.
+     * @return array Returns an array of AnnotationParameterData objects describing the parameters.
+     */
     private static function extractNetteAnnotationParams(array $annotations): array
     {
         $bodyParams = [];
@@ -89,7 +119,7 @@ class AnnotationHelper
                 // remove '@Param(' from the start and ')' from the end
                 $body = substr($annotation, strlen($prefix) + 1, -1);
                 $tokens = explode(", ", $body);
-                $values = self::extractBodyParams($tokens);
+                $values = self::stringArrayToAssociativeArray($tokens);
                 $descriptor = new AnnotationParameterData(
                     $values["validation"],
                     $values["name"],
@@ -102,6 +132,14 @@ class AnnotationHelper
         return $bodyParams;
     }
 
+    /**
+     * Returns all method annotation lines as an array.
+     * Lines not starting with '@' are assumed to be continuations of a parent line starting with @ (or the initial
+     * line not starting with '@') and are merged into a single line.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the method.
+     * @return array Returns an array of the annotation lines.
+     */
     private static function getMethodAnnotations(string $className, string $methodName): array
     {
         $annotations = self::getMethod($className, $methodName)->getDocComment();
@@ -140,6 +178,11 @@ class AnnotationHelper
         return $merged;
     }
 
+    /**
+     * Extracts strings enclosed by curly brackets.
+     * @param string $route The source string.
+     * @return array Returns the tokens extracted from the brackets.
+     */
     private static function getRoutePathParamNames(string $route): array
     {
         // sample: from '/users/{id}/{name}' generates ['id', 'name']
@@ -147,6 +190,16 @@ class AnnotationHelper
         return $out[1];
     }
 
+    /**
+     * Extracts the annotation data of an endpoint. The data contains request parameters based on their type
+     * and the HTTP method.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the endpoint method.
+     * @param string $route The route to the method.
+     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
+     * path, query and post)
+     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     */
     public static function extractAnnotationData(string $className, string $methodName, string $route): AnnotationData
     {
         $methodAnnotations = self::getMethodAnnotations($className, $methodName);
@@ -177,6 +230,12 @@ class AnnotationHelper
         return $data;
     }
 
+    /**
+     * Filters annotation lines starting with a prefix.
+     * @param array $annotations An array of annotations.
+     * @param string $type The prefix with which the lines should start, such as '@param'.
+     * @return array Returns an array of filtered annotations.
+     */
     private static function filterAnnotations(array $annotations, string $type)
     {
         $rows = [];

@@ -13,6 +13,11 @@ use Exception;
 use ReflectionException;
 use ReflectionClass;
 
+/**
+ * Command that creates a temporary file for swagger documentation generation.
+ * The command uses the RouterFactory to find all endpoints.
+ * The temporary file is consumed by the swagger:generate command.
+ */
 class SwaggerAnnotator extends Command
 {
     protected static $defaultName = 'swagger:annotate';
@@ -66,7 +71,7 @@ class SwaggerAnnotator extends Command
     private function getRoutes(): array
     {
         $router = \App\V1Module\RouterFactory::createRouter();
-        
+
         // find all route object using a queue
         $queue = [$router];
         $routes = [];
