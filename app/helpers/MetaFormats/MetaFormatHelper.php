@@ -7,6 +7,9 @@ use App\Helpers\Swagger\AnnotationHelper;
 
 class MetaFormatHelper
 {
+    private static string $formatDefinitionFolder = __DIR__ . '/FormatDefinitions';
+    private static string $formatDefinitionsNamespace = "App\\Helpers\\MetaFormats\\FormatDefinitions";
+
     private static function extractFormatData(array $annotations)
     {
         $filtered = AnnotationHelper::filterAnnotations($annotations, "@format");
@@ -83,8 +86,16 @@ class MetaFormatHelper
    */
     public static function getFormatDefinitions()
     {
-        ///TODO: this should be more sophisticated
-        $classes = get_declared_classes();
+        // scan directory of format definitions
+        $formatFiles = scandir(self::$formatDefinitionFolder);
+        // filter out only format files ending with 'Format.php'
+        $formatFiles = array_filter($formatFiles, function ($file) {
+            return str_ends_with($file, "Format.php");
+        });
+        $classes = array_map(function (string $file) {
+            $fileWithoutExtension = substr($file, 0, -4);
+            return self::$formatDefinitionsNamespace . "\\$fileWithoutExtension";
+        }, $formatFiles);
 
         // maps format names to class names
         $formatClassMap = [];

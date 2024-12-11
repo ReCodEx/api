@@ -4,6 +4,7 @@ namespace App\Model\View;
 
 use App\Helpers\Swagger\AnnotationHelper;
 use App\Helpers\MetaFormats\MetaFormatHelper;
+use App\Exceptions\InternalServerException;
 
 // parent class of all meta classes
 
@@ -31,13 +32,17 @@ class MetaView
 
         $paramToTypedMap = [];
         foreach ($paramsToValues as $paramName => $paramValue) {
-            $format = $paramsToFormat[$paramName];
 
             // the parameter name was not present in the annotations
             if (!array_key_exists($paramName, $paramsToFormat)) {
-                ///TODO: return 500
-                echo "Error: unknown param format: $paramName\n";
-                return [];
+                throw new InternalServerException("Unknown method parameter format: $paramName\n");
+            }
+
+            $format = $paramsToFormat[$paramName];
+
+            // the format is not defined
+            if (!array_key_exists($format, $formats)) {
+                throw new InternalServerException("The format does not have a definition class: $format\n");
             }
 
             $targetClassName = $formats[$format];
