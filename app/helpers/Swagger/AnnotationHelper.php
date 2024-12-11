@@ -236,7 +236,7 @@ class AnnotationHelper
      * @param string $type The prefix with which the lines should start, such as '@param'.
      * @return array Returns an array of filtered annotations.
      */
-    private static function filterAnnotations(array $annotations, string $type)
+    public static function filterAnnotations(array $annotations, string $type)
     {
         $rows = [];
         foreach ($annotations as $annotation) {
@@ -245,57 +245,5 @@ class AnnotationHelper
             }
         }
         return $rows;
-    }
-
-    private static function extractFormatData(array $annotations): array
-    {
-        $formats = [];
-        $filtered = self::filterAnnotations($annotations, "@format_def");
-        foreach ($filtered as $annotation) {
-            // sample: @format user_info { "name":"format:name", "points":"format:int", "comments":"format:string[]" }
-            $tokens = explode(" ", $annotation);
-            $name = $tokens[1];
-            
-            $jsonStart = strpos($annotation, "{");
-            $json = substr($annotation, $jsonStart);
-            $format = json_decode($json);
-
-            $formats[$name] = $format;
-        }
-        return $formats;
-    }
-
-    private static function extractMethodFormats(string $className, string $methodName): array
-    {
-        $annotations = self::getMethodAnnotations($className, $methodName);
-        return self::extractFormatData($annotations);
-    }
-
-    public static function extractClassFormats(string $className): array
-    {
-        $methods = get_class_methods($className);
-        $formatDicts = [];
-        foreach ($methods as $method) {
-            $formatDicts[] = self::extractMethodFormats($className, $method);
-        }
-
-        return array_merge(...$formatDicts);
-    }
-
-    public static function extractMethodCheckedParams(string $className, string $methodName): array
-    {
-        $annotations = self::getMethodAnnotations($className, $methodName);
-        $filtered = self::filterAnnotations($annotations, "@checked_param");
-        
-        $paramMap = [];
-        foreach ($filtered as $annotation) {
-            // sample: @checked_param format:group group
-            $tokens = explode(" ", $annotation);
-            $format = $tokens[1];
-            $name = $tokens[2];
-            $paramMap[$name] = $format;
-        }
-
-        return $paramMap;
     }
 }
