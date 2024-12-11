@@ -2,15 +2,11 @@
 
 namespace App\Console;
 
-use App\Helpers\Notifications\ReviewsEmailsSender;
-use App\Model\Repository\AssignmentSolutions;
-use App\Model\Entity\Group;
-use App\Model\Entity\User;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use DateTime;
+use App\Model\View\TestView;
 
 ///TODO: this command is debug only, delete it
 class MetaTester extends Command
@@ -30,8 +26,9 @@ class MetaTester extends Command
         return Command::SUCCESS;
     }
 
-    function test(string $arg) {
-        $view = new \App\Model\View\TestView();
+    function test(string $arg)
+    {
+        $view = new TestView();
         $view->endpoint([
             "id" => "0",
             "organizational" => false,

@@ -9,7 +9,6 @@ use App\Model\Entity\GroupExam;
 use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
-use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Users;
 use App\Helpers\FileStorageManager;
 use App\Helpers\TmpFilesHelper;
@@ -398,7 +397,8 @@ class TestGroupsPresenter extends Tester\TestCase
         $instance = $this->presenter->instances->findAll()[0];
         $allGroupsCount = count($this->presenter->groups->findAll());
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:Groups',
             'POST',
             ['action' => 'addGroup'],
@@ -415,24 +415,17 @@ class TestGroupsPresenter extends Tester\TestCase
                 'parentGroupId' => null,
                 'publicStats' => true,
                 'isPublic' => true,
-                'hasThreshold' => false,
                 'isOrganizational' => false,
                 'isExam' => false,
                 'detaining' => true,
+                'pointsLimit' => 42,
             ]
         );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        /** @var Group $payload */
-        $payload = $result['payload'];
 
         Assert::count(1, $payload["localizedTexts"]);
         $localizedGroup = current($payload["localizedTexts"]);
         Assert::notSame(null, $localizedGroup);
 
-        Assert::equal(200, $result['code']);
         Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
         Assert::equal('new name', $localizedGroup->getName());
         Assert::equal('some neaty description', $localizedGroup->getDescription());
@@ -446,6 +439,8 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(true, $payload["public"]);
         Assert::count(1, $payload['primaryAdminsIds']);
         Assert::equal($admin->getId(), $payload["primaryAdminsIds"][0]);
+        Assert::null($payload["privateData"]["threshold"]);
+        Assert::equal(42, $payload["privateData"]["pointsLimit"]);
     }
 
     public function testAddOrganizationalGroup()
@@ -474,7 +469,6 @@ class TestGroupsPresenter extends Tester\TestCase
                 'parentGroupId' => null,
                 'publicStats' => true,
                 'isPublic' => false,
-                'hasThreshold' => false,
                 'isOrganizational' => true,
             ]
         );
@@ -531,7 +525,6 @@ class TestGroupsPresenter extends Tester\TestCase
                 'parentGroupId' => null,
                 'publicStats' => true,
                 'isPublic' => false,
-                'hasThreshold' => false,
                 'isExam' => true,
                 'detaining' => true,
             ]
@@ -589,7 +582,6 @@ class TestGroupsPresenter extends Tester\TestCase
                 'parentGroupId' => null,
                 'publicStats' => true,
                 'isPublic' => true,
-                'hasThreshold' => false,
                 'isOrganizational' => false,
                 'detaining' => true,
                 'noAdmin' => true,
@@ -690,12 +682,12 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testUpdateGroup()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
+        PresenterTestHelper::login($this->container, $this->adminLogin);
         $allGroups = $this->presenter->groups->findAll();
         $group = array_pop($allGroups);
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:Groups',
             'POST',
             ['action' => 'updateGroup', 'id' => $group->getId()],
@@ -711,16 +703,9 @@ class TestGroupsPresenter extends Tester\TestCase
                 'publicStats' => true,
                 'detaining' => true,
                 'isPublic' => true,
-                'hasThreshold' => true,
-                'threshold' => 80
+                'threshold' => 80,
             ]
         );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        $payload = $result['payload'];
-        Assert::equal(200, $result['code']);
 
         Assert::equal($group->getId(), $payload["id"]);
         Assert::count(1, $payload["localizedTexts"]);
@@ -732,6 +717,40 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal(true, $payload["privateData"]["detaining"]);
         Assert::equal(true, $payload["public"]);
         Assert::equal(0.8, $payload["privateData"]["threshold"]);
+    }
+
+    public function testUpdateGroupNotPointsLimitAndThreshold()
+    {
+        PresenterTestHelper::login($this->container, $this->adminLogin);
+        $allGroups = $this->presenter->groups->findAll();
+        $group = array_pop($allGroups);
+
+        Assert::exception(
+            function () use ($group) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->presenter,
+                    'V1:Groups',
+                    'POST',
+                    ['action' => 'updateGroup', 'id' => $group->getId()],
+                    [
+                        'localizedTexts' => [
+                            [
+                                'locale' => 'en',
+                                'name' => 'new name',
+                                'description' => 'some neaty description',
+                            ]
+                        ],
+                        'externalId' => 'external identification of exercise',
+                        'publicStats' => true,
+                        'detaining' => true,
+                        'isPublic' => true,
+                        'threshold' => 80,
+                        'pointsLimit' => 42,
+                    ]
+                );
+            },
+            \App\Exceptions\InvalidArgumentException::class
+        );
     }
 
     public function testRemoveGroup()
@@ -1895,7 +1914,6 @@ class TestGroupsPresenter extends Tester\TestCase
                         'parentGroupId' => $group->getId(),
                         'publicStats' => true,
                         'isPublic' => true,
-                        'hasThreshold' => false,
                         'isOrganizational' => false,
                         'detaining' => true,
                     ]
