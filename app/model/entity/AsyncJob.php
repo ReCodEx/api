@@ -211,9 +211,21 @@ class AsyncJob implements JsonSerializable
         return $this->error;
     }
 
+    /**
+     * Makes sure the error string fits the data column.
+     * Truncates and adds ellipsis '...' at the end if it overflows.
+     */
+    private function sanitizeErrorLength(): void
+    {
+        if ($this->error !== null && strlen($this->error) > 250) {
+            $this->error = substr($this->error, 0, 250) . '...';
+        }
+    }
+
     public function setError(?string $error)
     {
         $this->error = $error;
+        $this->sanitizeErrorLength();
     }
 
     public function appendError(string $error)
@@ -223,6 +235,7 @@ class AsyncJob implements JsonSerializable
         } else {
             $this->error .= "\n$error";
         }
+        $this->sanitizeErrorLength();
     }
 
     /**
