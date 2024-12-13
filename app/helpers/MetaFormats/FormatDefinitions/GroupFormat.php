@@ -2,52 +2,33 @@
 
 namespace App\Helpers\MetaFormats\FormatDefinitions;
 
+use App\Helpers\MetaFormats\FormatAttribute;
 use App\Helpers\MetaFormats\MetaFormat;
 
-/**
- * @format_def group
- */
+#[FormatAttribute("group")]
 class GroupFormat extends MetaFormat
 {
-    /**
-     * @format uuid
-     */
+    #[FormatAttribute("uuid")]
     public string $id;
-    /**
-     * @format uuid
-     */
+    #[FormatAttribute("uuid")]
     public string $externalId;
     public bool $organizational;
     public bool $exam;
     public bool $archived;
     public bool $public;
     public bool $directlyArchived;
-    /**
-     * @format localizedText[]
-     */
+    #[FormatAttribute("localizedText[]")]
     public array $localizedTexts;
-    /**
-     * @format uuid[]
-     */
+    #[FormatAttribute("uuid[]")]
     public array $primaryAdminsIds;
-    /**
-     * @format uuid?
-     */
+    #[FormatAttribute("uuid?")]
     public string $parentGroupId;
-    /**
-     * @format uuid[]
-     */
+    #[FormatAttribute("uuid[]")]
     public array $parentGroupsIds;
-    /**
-     * @format uuid[]
-     */
+    #[FormatAttribute("uuid[]")]
     public array $childGroups;
-    /**
-     * @format groupPrivateData
-     */
+    #[FormatAttribute("groupPrivateData")]
     public $privateData;
-    /**
-     * @format acl[]
-     */
+    #[FormatAttribute("acl[]")]
     public array $permissionHints;
 }

@@ -2,8 +2,10 @@
 
 namespace App\Helpers\MetaFormats;
 
+use App\Exceptions\InternalServerException;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;
+use ReflectionProperty;
 
 class MetaFormatHelper
 {
@@ -56,8 +58,25 @@ class MetaFormatHelper
         return $paramMap;
     }
 
+    private static function extractFormatFromAttribute(ReflectionClass|ReflectionProperty $reflectionObject): ?string
+    {
+        $formatAttributes = $reflectionObject->getAttributes(FormatAttribute::class);
+        $name = $reflectionObject->getName();
+        if (count($formatAttributes) === 0) {
+            return null;
+        }
+
+        // check attribute correctness
+        $formatArguments = $formatAttributes[0]->getArguments();
+        if (count($formatArguments) !== 1) {
+            throw new InternalServerException("The entity $name does not have a single attribute argument.");
+        }
+
+        return $formatArguments[0];
+    }
+
   /**
-   * Parses the field annotations of a class and returns their metadata.
+   * Parses the format attributes of class fields and returns their metadata.
    * @param string $className The name of the class.
    * @return array{format: string|null, type: string|null} with the field name as the key.
    */
@@ -68,7 +87,8 @@ class MetaFormatHelper
         $formats = [];
         foreach ($fields as $fieldName => $value) {
             $field = $class->getProperty($fieldName);
-            $format = self::extractFormatData(AnnotationHelper::getAnnotationLines($field->getDocComment()));
+            // the format can be null (not present)
+            $format = self::extractFormatFromAttribute($field);
             // get null if there is no type
             $fieldType = $field->getType()?->getName();
 
@@ -101,17 +121,14 @@ class MetaFormatHelper
         $formatClassMap = [];
 
         foreach ($classes as $className) {
+            // get the format attribute
             $class = new ReflectionClass($className);
-            $annotations = AnnotationHelper::getAnnotationLines($class->getDocComment());
-            $type_defs = AnnotationHelper::filterAnnotations($annotations, "@format_def");
-            if (count($type_defs) !== 1) {
-                continue;
+            $format = self::extractFormatFromAttribute($class);
+            if ($format === null) {
+                throw new InternalServerException("The class {$className} does not have the format attribute.");
             }
 
-            $tokens = explode(" ", $type_defs[0]);
-
-            // the second token is the group name, the first one is the tag
-            $formatClassMap[$tokens[1]] = $className;
+            $formatClassMap[$format] = $className;
         }
 
         return $formatClassMap;
