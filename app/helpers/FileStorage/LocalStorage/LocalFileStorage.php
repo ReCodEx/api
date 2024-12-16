@@ -81,13 +81,11 @@ class LocalFileStorage implements IFileStorage
      */
     private function decodePath(string &$path, bool $exists = null, $mkdir = false): array
     {
-        $path = self::normalizePath($path);
-
         $tokens = explode('#', $path, 2);
         array_push($tokens, null); // make sure second item always exists
         [$realPath, $zipEntry] = $tokens;
 
-        $realPath = $this->rootDirectory . '/' . $realPath;
+        $realPath = $this->rootDirectory . '/' . self::normalizePath($realPath);
         if (is_dir($realPath)) {
             throw new FileStorageException("Given path refers to a directory.", $path);
         }
