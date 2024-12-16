@@ -4,8 +4,6 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Nette\Utils\Strings;
 
@@ -117,7 +115,7 @@ class JvmRunBox extends ExecutionBox
         // name from class filename, so we are gonna be nice and do this tedious job
         // instead of java runtime, you are welcome
         $runnerClass = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
-        if (Strings::endsWith($runnerClass, ".class")) {
+        if (str_ends_with($runnerClass, ".class")) {
             $runnerLength = Strings::length($runnerClass);
             // as we can see above, we have runner class with '.class' extension
             // to be able to run this class we have to get its name without

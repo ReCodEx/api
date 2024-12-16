@@ -236,7 +236,7 @@ class FileStorageManager
 
     /**
      * Concatenate all partial file chunks into a final result -- the uploaded file.
-     * @param UploadedPartialFile $file entity that keeps track about partial uploads of one file
+     * @param UploadedPartialFile $partFile entity that keeps track about partial uploads of one file
      * @param UploadedFile $file final uploaded file database entity
      * @throws FileStorageException
      */

@@ -7,7 +7,6 @@ use Doctrine\DBAL;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AssignedGenerator;
 use Nette\Utils\Finder;
-use Nette\Utils\Strings;
 use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -136,12 +135,12 @@ class DoctrineFixtures extends Command
             }
 
             if ($platform === 'mysql') {
-                if (!Strings::startsWith($tableName, '``')) {
+                if (!str_starts_with($tableName, '``')) {
                     $tableName = '`' . $tableName . '`';
                 }
             } else {
                 if ($platform === 'sqlite') {
-                    if (!Strings::startsWith($tableName, '``')) {
+                    if (!str_starts_with($tableName, '``')) {
                         $tableName = '"' . $tableName . '"';
                     }
                 }

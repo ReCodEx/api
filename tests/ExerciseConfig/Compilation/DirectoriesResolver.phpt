@@ -14,7 +14,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use Nette\Utils\Strings;
 use Tester\Assert;
 
 
@@ -121,12 +120,12 @@ class TestDirectoriesResolver extends Tester\TestCase
         Assert::count(1, $mkdirCustomA->getChildren());
         Assert::count(0, $mkdirCustomA->getDependencies());
         Assert::equal(null, $mkdirCustomA->getTestId());
-        Assert::true(Strings::startsWith($mkdirCustomA->getBox()->getDirectory(), "custom_"));
+        Assert::true(str_starts_with($mkdirCustomA->getBox()->getDirectory(), "custom_"));
         Assert::equal(17, strlen($mkdirCustomA->getBox()->getDirectory()));
         Assert::equal("mkdir", $mkdirCustomA->getBox()->getType());
         Assert::count(1, $mkdirCustomA->getBox()->getInputPorts());
         Assert::true(
-            Strings::startsWith(
+            str_starts_with(
                 current($mkdirCustomA->getBox()->getInputPorts())->getVariableValue()->getValue(),
                 "custom_"
             )
@@ -164,12 +163,12 @@ class TestDirectoriesResolver extends Tester\TestCase
         Assert::equal([$A], $mkdirCustomB->getChildren());
         Assert::count(0, $mkdirCustomB->getDependencies());
         Assert::equal(null, $mkdirCustomB->getTestId());
-        Assert::true(Strings::startsWith($mkdirCustomB->getBox()->getDirectory(), "custom_custom_"));
+        Assert::true(str_starts_with($mkdirCustomB->getBox()->getDirectory(), "custom_custom_"));
         Assert::equal(24, strlen($mkdirCustomB->getBox()->getDirectory()));
         Assert::equal("mkdir", $mkdirCustomB->getBox()->getType());
         Assert::count(1, $mkdirCustomB->getBox()->getInputPorts());
         Assert::true(
-            Strings::startsWith(
+            str_starts_with(
                 current($mkdirCustomB->getBox()->getInputPorts())->getVariableValue()->getValue(),
                 "custom_"
             )
@@ -382,7 +381,6 @@ class TestDirectoriesResolver extends Tester\TestCase
         );
         Assert::count(0, $G->getBox()->getOutputPorts());
     }
-
 }
 
 # Testing methods run

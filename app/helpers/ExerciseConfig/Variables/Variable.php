@@ -268,7 +268,7 @@ class Variable implements JsonSerializable
     public function getValue(string $prefix = "")
     {
         $value = $this->value;
-        if (is_scalar($value) && Strings::startsWith($value, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
+        if (is_scalar($value) && str_starts_with($value, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
             return Strings::substring($value, 1);
         }
 
@@ -343,7 +343,7 @@ class Variable implements JsonSerializable
     public function getReference(): ?string
     {
         $val = $this->value;
-        if (is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY)) {
+        if (is_scalar($val) && str_starts_with($val, self::$REFERENCE_KEY)) {
             return Strings::substring($val, 1);
         }
 
@@ -357,7 +357,7 @@ class Variable implements JsonSerializable
     public function isReference(): bool
     {
         $val = $this->value;
-        return is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY);
+        return is_scalar($val) && str_starts_with($val, self::$REFERENCE_KEY);
     }
 
 
