@@ -80,7 +80,7 @@ class MetaFormatHelper
    * @param string $className The name of the class.
    * @return array{format: string|null, type: string|null} with the field name as the key.
    */
-    public static function getClassFormats(string $className)
+    public static function createNameToFieldDefinitionsMap(string $className)
     {
         $class = new ReflectionClass($className);
         $fields = get_class_vars($className);
@@ -92,10 +92,7 @@ class MetaFormatHelper
             // get null if there is no type
             $fieldType = $field->getType()?->getName();
 
-            $formats[$fieldName] = [
-              "type" => $fieldType,
-              "format" => $format,
-            ];
+            $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType);
         }
 
         return $formats;
@@ -104,7 +101,7 @@ class MetaFormatHelper
   /**
    * Creates a mapping from formats to class names, where the class defines the format.
    */
-    public static function getFormatDefinitions()
+    public static function createFormatToClassMap()
     {
         // scan directory of format definitions
         $formatFiles = scandir(self::$formatDefinitionFolder);

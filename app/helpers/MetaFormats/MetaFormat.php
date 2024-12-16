@@ -2,19 +2,23 @@
 
 namespace App\Helpers\MetaFormats;
 
+use App\Exceptions\InternalServerException;
 use App\Helpers\Swagger\AnnotationHelper;
+
+use function Symfony\Component\String\b;
 
 class MetaFormat
 {
-    // validates primitive formats of intrinsic PHP types
-    ///TODO: make this static somehow (or cached)
-    private $validators;
-
-    public function __construct()
+    public function checkIfAssignable(string $fieldName, mixed $value): bool
     {
-        $this->validators = MetaFormatHelper::getValidators();
+        $fieldFormats = FormatCache::getFieldDefinitions(get_class($this));
+        if (!array_key_exists($fieldName, $fieldFormats)) {
+            throw new InternalServerException("The field name $fieldName is not present in the format definition.");
+        }
+        // get the definition for the specific field
+        $formatDefinition = $fieldFormats[$fieldName];
+        return $formatDefinition->conformsToDefinition($value);
     }
-
 
     /**
      * Validates the given format.
@@ -27,60 +31,15 @@ class MetaFormat
             return false;
         }
 
-        // check properties
-        $selfFormat = MetaFormatHelper::getClassFormats(get_class($this));
-        foreach ($selfFormat as $propertyName => $propertyFormat) {
-            ///TODO: check if this is true
-            /// if the property is checked by type only, there is no need to check it as an invalid assignment
-            /// would rise an error
-            $value = $this->$propertyName;
-            $format = $propertyFormat["format"];
-            if ($format === null) {
-                continue;
-            }
-
-            // enables parsing more complicated formats (string[]?, string?[], string?[][]?, ...)
-            $parsedFormat = new FormatParser($format);
-            if (!$this->recursiveFormatChecker($value, $parsedFormat)) {
+        // go through all fields and check whether they were assigned properly
+        $fieldFormats = FormatCache::getFieldDefinitions(get_class($this));
+        foreach ($fieldFormats as $fieldName => $fieldFormat) {
+            if (!$this->checkIfAssignable($fieldName, $this->$fieldName)) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    private function recursiveFormatChecker($value, FormatParser $parsedFormat)
-    {
-        // enables parsing more complicated formats (string[]?, string?[], string?[][]?, ...)
-
-        // check nullability
-        if ($value === null) {
-            return $parsedFormat->nullable;
-        }
-
-        // handle arrays
-        if ($parsedFormat->isArray) {
-            if (!is_array($value)) {
-                return false;
-            }
-
-            // if any element fails, the whole format fails
-            foreach ($value as $element) {
-                if (!$this->recursiveFormatChecker($element, $parsedFormat->nested)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        ///TODO: raise an error
-        // check whether the validator exists
-        if (!array_key_exists($parsedFormat->format, $this->validators)) {
-            echo "Error: missing validator for format: " . $parsedFormat->format . "\n";
-            return false;
-        }
-
-        return $this->validators[$parsedFormat->format]($value);
     }
 
     /**
