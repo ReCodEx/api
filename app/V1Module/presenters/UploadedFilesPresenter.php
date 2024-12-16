@@ -25,7 +25,6 @@ use App\Model\Entity\SolutionZipFile;
 use App\Security\ACL\IUploadedFilePermissions;
 use App\Security\ACL\IUploadedPartialFilePermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
-use ForceUTF8\Encoding;
 use Nette\Utils\Strings;
 use Nette\Http\IResponse;
 use Tracy\ILogger;

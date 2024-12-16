@@ -15,7 +15,6 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
 use App\Model\Repository\Users;
 use App\Helpers\TmpFilesHelper;
-use Nette\Utils\Strings;
 use Tester\Assert;
 
 /**
@@ -66,7 +65,7 @@ class TestFileStorage extends Tester\TestCase
             $path = "$root/recodex-$ts-$counter";
         } while (file_exists($path) || !@mkdir($path));
 
-        if (!is_dir($path) || !Strings::startsWith($path, sys_get_temp_dir())) {
+        if (!is_dir($path) || !str_starts_with($path, sys_get_temp_dir())) {
             throw new \Exception("Unable to create tmp dir $path");
         }
         return $path;
@@ -74,10 +73,10 @@ class TestFileStorage extends Tester\TestCase
 
     private static function rmdirRecursive($path)
     {
-        if (!Strings::startsWith($path, sys_get_temp_dir())) {
+        if (!str_starts_with($path, sys_get_temp_dir())) {
             throw new \Exception("Must not rmdir something oustise temp dir $path");
         }
-        if (Strings::endsWith($path, '/.') || Strings::endsWith($path, '/..')) {
+        if (str_ends_with($path, '/.') || str_ends_with($path, '/..')) {
             return;
         }
         if (is_dir($path)) {
@@ -151,7 +150,7 @@ class TestFileStorage extends Tester\TestCase
         $storage = new LocalFileStorage(new TmpFilesHelper($this->tmpDir), [ 'root' => $rootDir ]);
 
         foreach ($files as $file => $contents) {
-            if (Strings::contains($file, '/')) {
+            if (str_contains($file, '/')) {
                 @mkdir($rootDir . '/' . dirname($file), 0777, true);
             }
             $file = "$rootDir/$file";
@@ -824,7 +823,7 @@ class TestFileStorage extends Tester\TestCase
         $root = $storage->getRootDirectory();
 
         $deleted = $storage->deleteByFilter('foo', function ($file) {
-            return !Strings::endsWith($file->getStoragePath(), '.txt')
+            return !str_ends_with($file->getStoragePath(), '.txt')
                 || $file->getSize() < 3;
         });
 

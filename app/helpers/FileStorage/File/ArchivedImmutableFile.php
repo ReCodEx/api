@@ -75,8 +75,7 @@ class ArchivedImmutableFile implements IImmutableFile
     private function openZip()
     {
         $zip = new ZipArchive();
-        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
-        $res = $zip->open($this->archivePath);
+        $res = $zip->open($this->archivePath, ZipArchive::RDONLY);
         if ($res !== true) {
             throw new FileStorageException("Unable to open ZIP archive (code $res).", $this->archivePath);
         }
@@ -160,8 +159,7 @@ class ArchivedImmutableFile implements IImmutableFile
         ZipFileStorage::extractZipEntryToFile($sourceZip, $this->archivePath, $this->entry, $path);
 
         $zip = new ZipArchive();
-        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
-        $res = $zip->open($path);
+        $res = $zip->open($path, ZipArchive::RDONLY);
         if ($res === true) {
             $zip->close();
         }

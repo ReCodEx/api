@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use Nette\StaticClass;
-use Nette\Utils\Strings;
 use ReflectionNamedType;
 use ReflectionClass;
 use ReflectionMethod;
@@ -55,7 +54,7 @@ class PermissionHints
     {
         $reflectionClass = new ReflectionClass($aclModule);
         foreach ($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            if (!Strings::startsWith($method->getName(), "can")) {
+            if (!str_starts_with($method->getName(), "can")) {
                 continue;
             }
 

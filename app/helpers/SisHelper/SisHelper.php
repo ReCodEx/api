@@ -7,7 +7,6 @@ use Generator;
 use Nette;
 use GuzzleHttp;
 use Nette\Utils\Json;
-use Nette\Utils\Strings;
 
 class SisHelper
 {
@@ -33,7 +32,7 @@ class SisHelper
         $this->faculty = $faculty;
         $this->secret = $secret;
 
-        if (!Strings::endsWith($this->apiBase, '/')) {
+        if (!str_ends_with($this->apiBase, '/')) {
             $this->apiBase .= '/';
         }
 

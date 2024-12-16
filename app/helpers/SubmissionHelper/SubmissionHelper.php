@@ -15,7 +15,6 @@ use App\Helpers\FileStorage\FileStorageException;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\HardwareGroup;
@@ -27,18 +26,14 @@ use App\Model\Entity\SolutionZipFile;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
-use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
-use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Repository\RuntimeEnvironments;
 use Nette\Http\IResponse;
 use Nette\Utils\Strings;
-use Nette\Utils\Arrays;
 use ZMQSocketException;
 use Exception;
 
@@ -258,7 +253,7 @@ class SubmissionHelper
         }
 
         $file = reset($files);
-        if (!Strings::endsWith(Strings::lower($file->getName()), '.zip')) {
+        if (!str_ends_with(Strings::lower($file->getName()), '.zip')) {
             return false; // not zip extension
         }
 
