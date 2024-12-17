@@ -50,7 +50,7 @@ class MetaFormat
     public function validate()
     {
         // check whether all higher level contracts hold
-        if (!$this->validateSelf()) {
+        if (!$this->validateStructure()) {
             return false;
         }
 
@@ -60,19 +60,23 @@ class MetaFormat
             if (!$this->checkIfAssignable($fieldName, $this->$fieldName)) {
                 return false;
             }
+
+            // check nested formats recursively
+            if ($this->$fieldName instanceof MetaFormat && !$this->$fieldName->validate()) {
+                return false;
+            }
         }
 
         return true;
     }
 
     /**
-     * Validates this format. Automatically called by the validate method on all fields.
-     * Primitive formats should always override this, composite formats might want to override
-     * this in case more complex contracts need to be enforced.
+     * Validates this format. Automatically called by the validate method on all suitable fields.
+     * Formats might want to override this in case more complex contracts need to be enforced.
      * This method should not check the format of nested types.
      * @return bool Returns whether the format is valid.
      */
-    protected function validateSelf()
+    public function validateStructure()
     {
         // there are no constraints by default
         return true;

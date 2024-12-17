@@ -217,20 +217,24 @@ class BasePresenter extends \App\Presenters\BasePresenter
             return;
         }
 
+        ///TODO: handle nested MetaFormat creation
         $fieldNames = FormatCache::getFormatFieldNames($format);
         $formatInstance = MetaFormatHelper::createFormatInstance($format);
         foreach ($fieldNames as $field) {
             ///TODO: check if required
             $value = $this->getPostField($field, false);
-            $this->logger->log(var_export([$field, $value], true), ILogger::DEBUG);
             if (!$formatInstance->checkedAssign($field, $value)) {
                 ///TODO: it would be nice to give a more detailed error message here
                 throw new InvalidArgumentException($field);
             }
         }
 
+        // validate structural constraints
+        if (!$formatInstance->validateStructure()) {
+            throw new BadRequestException("All request fields are valid but additional structural constraints failed.");
+        }
+
         $this->requestFormatInstance = $formatInstance;
-        $this->logger->log(var_export($formatInstance, true), ILogger::DEBUG);
 
         // $this->logger->log(var_export($annotations, true), ILogger::DEBUG);
         // $this->logger->log(var_export($requiredFields, true), ILogger::DEBUG);
