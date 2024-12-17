@@ -205,6 +205,8 @@ parameters:
     roles:  # restrict the cleanup to the following roles
       - "student"
 
+  extensions: []
+
 
 application:
   errorPresenter: V1:ApiError
@@ -389,6 +391,7 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\DirectoriesResolver
   - App\Helpers\ExerciseConfig\Helper
   - App\Helpers\ExerciseConfig\PipelinesCache
+  - App\Helpers\Extensions(%extensions%)
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
