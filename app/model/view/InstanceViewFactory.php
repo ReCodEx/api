@@ -12,7 +12,6 @@ use App\Model\Entity\LocalizedGroup;
  */
 class InstanceViewFactory
 {
-
     /** @var GroupViewFactory */
     private $groupViewFactory;
 

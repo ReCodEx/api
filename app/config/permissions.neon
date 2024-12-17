@@ -402,7 +402,6 @@ permissions:
         - setIsAllowed
         - createLocalAccount
         - invalidateTokens
-        - delete
 
     - allow: true
       role: student

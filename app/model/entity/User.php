@@ -9,7 +9,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Gravatar\Gravatar;
-use App\Exceptions\ApiException;
 use InvalidArgumentException;
 use DateTime;
 use DateTimeInterface;
