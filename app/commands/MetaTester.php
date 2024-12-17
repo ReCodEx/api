@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
+use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,7 +37,10 @@ class MetaTester extends Command
         // ], "0001");
         // // $view->get_user_info(0);
 
-        $format = new GroupFormat();
-        var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
+        // $format = new GroupFormat();
+        // var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
+
+        $format = new UserFormat();
+        $format->checkedAssign("titlesBeforeName", null);
     }
 }

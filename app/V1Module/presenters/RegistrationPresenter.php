@@ -21,11 +21,13 @@ use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
+use App\Helpers\MetaFormats\FormatAttribute;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Nette\Http\IResponse;
 use Nette\Security\Passwords;
+use Tracy\ILogger;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -161,9 +163,10 @@ class RegistrationPresenter extends BasePresenter
      * @throws WrongCredentialsException
      * @throws InvalidArgumentException
      */
+    #[FormatAttribute("userRegistration")]
     public function actionCreateAccount()
     {
-        $req = $this->getRequest();
+        $req = $this->getMetaRequest();
 
         // check if the email is free
         $email = trim($req->getPost("email"));

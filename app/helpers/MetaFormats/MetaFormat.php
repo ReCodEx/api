@@ -9,6 +9,13 @@ use function Symfony\Component\String\b;
 
 class MetaFormat
 {
+    /**
+     * Checks whether the value can be assigned to a field.
+     * @param string $fieldName The name of the field.
+     * @param mixed $value The value to be assigned.
+     * @throws \App\Exceptions\InternalServerException Thrown when the field was not found.
+     * @return bool Returns whether the value conforms to the type and format of the field.
+     */
     public function checkIfAssignable(string $fieldName, mixed $value): bool
     {
         $fieldFormats = FormatCache::getFieldDefinitions(get_class($this));
@@ -18,6 +25,22 @@ class MetaFormat
         // get the definition for the specific field
         $formatDefinition = $fieldFormats[$fieldName];
         return $formatDefinition->conformsToDefinition($value);
+    }
+
+    /**
+     * Tries to assign a value to a field. If the value does not conform to the field format, it will not be assigned.
+     * @param string $fieldName The name of the field.
+     * @param mixed $value The value to be assigned.
+     * @return bool Returns whether the value was assigned.
+     */
+    public function checkedAssign(string $fieldName, mixed $value)
+    {
+        if (!$this->checkIfAssignable($fieldName, $value)) {
+            return false;
+        }
+
+        $this->$fieldName = $value;
+        return true;
     }
 
     /**

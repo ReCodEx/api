@@ -5,6 +5,7 @@ namespace App\Helpers\MetaFormats;
 use App\Exceptions\InternalServerException;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;
+use ReflectionMethod;
 use ReflectionProperty;
 
 class MetaFormatHelper
@@ -58,10 +59,17 @@ class MetaFormatHelper
         return $paramMap;
     }
 
-    private static function extractFormatFromAttribute(ReflectionClass|ReflectionProperty $reflectionObject): ?string
-    {
+    /**
+     * Checks whether an entity contains a FormatAttribute and extracts the format if so.
+     * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject A reflection
+     * object of the entity.
+     * @throws \App\Exceptions\InternalServerException Thrown when the FormatAttribute was used incorrectly.
+     * @return ?string Returns the format or null if no FormatAttribute was present.
+     */
+    public static function extractFormatFromAttribute(
+        ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
+    ): ?string {
         $formatAttributes = $reflectionObject->getAttributes(FormatAttribute::class);
-        $name = $reflectionObject->getName();
         if (count($formatAttributes) === 0) {
             return null;
         }
@@ -69,6 +77,7 @@ class MetaFormatHelper
         // check attribute correctness
         $formatArguments = $formatAttributes[0]->getArguments();
         if (count($formatArguments) !== 1) {
+            $name = $reflectionObject->getName();
             throw new InternalServerException("The entity $name does not have a single attribute argument.");
         }
 
@@ -90,9 +99,11 @@ class MetaFormatHelper
             // the format can be null (not present)
             $format = self::extractFormatFromAttribute($field);
             // get null if there is no type
-            $fieldType = $field->getType()?->getName();
+            $reflectionType = $field->getType();
+            $fieldType = $reflectionType?->getName();
+            $nullable = $reflectionType?->allowsNull() ?? false;
 
-            $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType);
+            $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType, $nullable);
         }
 
         return $formats;
@@ -167,5 +178,23 @@ class MetaFormatHelper
     public static function getValidators(): array
     {
         return array_merge(self::getPrimitiveValidators(), self::getMetaValidators());
+    }
+
+    /**
+     * Creates a MetaFormat instance of the given format.
+     * @param string $format The name of the format.
+     * @throws \App\Exceptions\InternalServerException Thrown when the format does not exist.
+     * @return \App\Helpers\MetaFormats\MetaFormat Returns the constructed MetaFormat instance.
+     */
+    public static function createFormatInstance(string $format): MetaFormat
+    {
+        $formatToClassMap = FormatCache::getFormatToClassMap();
+        if (!array_key_exists($format, $formatToClassMap)) {
+            throw new InternalServerException("The format $format does not exist.");
+        }
+
+        $className = $formatToClassMap[$format];
+        $instance = new $className();
+        return $instance;
     }
 }

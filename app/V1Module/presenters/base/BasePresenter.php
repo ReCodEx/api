@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\Pagination;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
@@ -21,6 +22,9 @@ use App\Helpers\UserActions;
 use App\Helpers\Validators;
 use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\AnnotationsParser;
+use App\Helpers\MetaFormats\FormatCache;
+use App\Helpers\MetaFormats\MetaFormat;
+use App\Helpers\MetaFormats\MetaRequest;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
@@ -70,8 +74,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     public $logger;
 
-    /** @var object Processed parameters from annotations */
-    protected $parameters;
+    /** @var MetaFormat Processed parameters from the request */
+    private MetaFormat $requestFormatInstance;
 
     protected function formatPermissionCheckMethod($action)
     {
@@ -106,7 +110,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
     {
         parent::startup();
         $this->application->errorPresenter = "V1:ApiError";
-        $this->parameters = new \stdClass();
 
         try {
             $presenterReflection = new ReflectionClass($this);
@@ -130,6 +133,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
         Validators::init();
         $this->processParams($actionReflection);
+
+        $this->logger->log(var_export($this->getRequest(), true), ILogger::DEBUG);
     }
 
     protected function isRequestJson(): bool
@@ -193,36 +198,68 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $identity->isInScope($scope);
     }
 
+    public function getMetaRequest(): MetaRequest|null
+    {
+        $request = parent::getRequest();
+        return new MetaRequest($request, $this->requestFormatInstance);
+    }
+
     private function processParams(ReflectionMethod $reflection)
     {
-        $annotations = AnnotationsParser::getAll($reflection);
-        $requiredFields = Arrays::get($annotations, "Param", []);
+        // $annotations = AnnotationsParser::getAll($reflection);
+        // $requiredFields = Arrays::get($annotations, "Param", []);
 
-        foreach ($requiredFields as $field) {
-            $type = strtolower($field->type);
-            $name = $field->name;
-            $validationRule = isset($field->validation) ? $field->validation : null;
-            $msg = isset($field->msg) ? $field->msg : null;
-            $required = isset($field->required) ? $field->required : true;
+        ///TODO: add support for post/query type distinction
+        $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
 
-            $value = null;
-            switch ($type) {
-                case "post":
-                    $value = $this->getPostField($name, $required);
-                    break;
-                case "query":
-                    $value = $this->getQueryField($name, $required);
-                    break;
-                default:
-                    throw new InternalServerException("Unknown parameter type '$type'");
-            }
-
-            if ($validationRule !== null && $value !== null) {
-                $value = $this->validateValue($name, $value, $validationRule, $msg);
-            }
-
-            $this->parameters->$name = $value;
+        // ignore request that do not yet have the attribute
+        if ($format === null) {
+            return;
         }
+
+        $fieldNames = FormatCache::getFormatFieldNames($format);
+        $formatInstance = MetaFormatHelper::createFormatInstance($format);
+        foreach ($fieldNames as $field) {
+            ///TODO: check if required
+            $value = $this->getPostField($field, false);
+            $this->logger->log(var_export([$field, $value], true), ILogger::DEBUG);
+            if (!$formatInstance->checkedAssign($field, $value)) {
+                ///TODO: it would be nice to give a more detailed error message here
+                throw new InvalidArgumentException($field);
+            }
+        }
+
+        $this->requestFormatInstance = $formatInstance;
+        $this->logger->log(var_export($formatInstance, true), ILogger::DEBUG);
+
+        // $this->logger->log(var_export($annotations, true), ILogger::DEBUG);
+        // $this->logger->log(var_export($requiredFields, true), ILogger::DEBUG);
+
+        // foreach ($requiredFields as $field) {
+        //     $type = strtolower($field->type);
+        //     $name = $field->name;
+        //     $validationRule = isset($field->validation) ? $field->validation : null;
+        //     $msg = isset($field->msg) ? $field->msg : null;
+        //     $required = isset($field->required) ? $field->required : true;
+
+        //     $this->logger->log("test", ILogger::DEBUG);
+
+        //     $value = null;
+        //     switch ($type) {
+        //         case "post":
+        //             $value = $this->getPostField($name, $required);
+        //             break;
+        //         case "query":
+        //             $value = $this->getQueryField($name, $required);
+        //             break;
+        //         default:
+        //             throw new InternalServerException("Unknown parameter type '$type'");
+        //     }
+
+        //     if ($validationRule !== null && $value !== null) {
+        //         $value = $this->validateValue($name, $value, $validationRule, $msg);
+        //     }
+        // }
     }
 
     private function getPostField($param, $required = true)

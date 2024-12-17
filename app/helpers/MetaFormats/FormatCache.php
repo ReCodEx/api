@@ -43,6 +43,15 @@ class FormatCache
         return self::$formatToFieldFormatsMap;
     }
 
+    public static function getFormatFieldNames(string $format): array
+    {
+        $formatToFieldDefinitionsMap = self::getFormatToFieldDefinitionsMap();
+        if (!array_key_exists($format, $formatToFieldDefinitionsMap)) {
+            throw new InternalServerException("The format $format does not have a field format definition.");
+        }
+        return array_keys($formatToFieldDefinitionsMap[$format]);
+    }
+
     public static function getValidators(): array
     {
         if (self::$validators == null) {
