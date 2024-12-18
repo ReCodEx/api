@@ -41,6 +41,6 @@ class MetaTester extends Command
         // var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
 
         $format = new UserFormat();
-        $format->checkedAssign("titlesBeforeName", null);
+        var_dump($format->checkedAssign("email", "a@a.a.a"));
     }
 }

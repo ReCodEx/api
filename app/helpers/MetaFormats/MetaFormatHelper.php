@@ -84,6 +84,22 @@ class MetaFormatHelper
         return $formatArguments[0];
     }
 
+    public static function extractRequestAttributeData(
+        ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
+    ): ?RequestParamData {
+        $requestAttribute = $reflectionObject->getAttributes(RequestAttribute::class);
+        if (count($requestAttribute) === 0) {
+            return null;
+        }
+
+        $requestArguments = $requestAttribute[0]->getArguments();
+        $type = $requestArguments["type"];
+        $description = array_key_exists("description", $requestArguments) ? $requestArguments["description"] : "";
+        $required = array_key_exists("required", $requestArguments) ? $requestArguments["required"] : true;
+
+        return new RequestParamData($type, $description, $required);
+    }
+
   /**
    * Parses the format attributes of class fields and returns their metadata.
    * @param string $className The name of the class.
@@ -103,7 +119,12 @@ class MetaFormatHelper
             $fieldType = $reflectionType?->getName();
             $nullable = $reflectionType?->allowsNull() ?? false;
 
-            $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType, $nullable);
+            $requestParamData = self::extractRequestAttributeData($field);
+            if ($requestParamData === null) {
+                throw new InternalServerException("The field $fieldName of class $className does not have a RequestAttribute.");
+            }
+
+            $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType, $nullable, $requestParamData);
         }
 
         return $formats;

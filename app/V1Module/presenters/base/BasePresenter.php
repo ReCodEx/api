@@ -25,6 +25,7 @@ use App\Helpers\AnnotationsParser;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\MetaRequest;
+use App\Helpers\MetaFormats\RequestParamType;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
@@ -206,10 +207,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     private function processParams(ReflectionMethod $reflection)
     {
-        // $annotations = AnnotationsParser::getAll($reflection);
-        // $requiredFields = Arrays::get($annotations, "Param", []);
-
-        ///TODO: add support for post/query type distinction
         $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
 
         // ignore request that do not yet have the attribute
@@ -217,15 +214,36 @@ class BasePresenter extends \App\Presenters\BasePresenter
             return;
         }
 
+        // get the parsed attribute data from the format fields
+        $formatToFieldDefinitionsMap = FormatCache::getFormatToFieldDefinitionsMap();
+        if (!array_key_exists($format, $formatToFieldDefinitionsMap)) {
+            throw new InternalServerException("The format $format is not defined.");
+        }
+
+        // maps field names to their attribute data
+        $nameToFieldDefinitionsMap = $formatToFieldDefinitionsMap[$format];
+
         ///TODO: handle nested MetaFormat creation
-        $fieldNames = FormatCache::getFormatFieldNames($format);
         $formatInstance = MetaFormatHelper::createFormatInstance($format);
-        foreach ($fieldNames as $field) {
-            ///TODO: check if required
-            $value = $this->getPostField($field, false);
-            if (!$formatInstance->checkedAssign($field, $value)) {
+        foreach ($nameToFieldDefinitionsMap as $fieldName => $fieldData) {
+            $requestParamData = $fieldData->requestData;
+            $this->logger->log(var_export($requestParamData, true), ILogger::DEBUG);
+
+            $value = null;
+            switch ($requestParamData->type) {
+                case RequestParamType::Post:
+                    $value = $this->getPostField($fieldName, required: $requestParamData->required);
+                    break;
+                case RequestParamType::Query:
+                    $value = $this->getQueryField($fieldName, required: $requestParamData->required);
+                    break;
+                default:
+                    throw new InternalServerException("Unknown parameter type: {$requestParamData->type}");
+            }
+
+            if (!$formatInstance->checkedAssign($fieldName, $value)) {
                 ///TODO: it would be nice to give a more detailed error message here
-                throw new InvalidArgumentException($field);
+                throw new InvalidArgumentException($fieldName);
             }
         }
 
@@ -235,6 +253,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
 
         $this->requestFormatInstance = $formatInstance;
+
+        // $annotations = AnnotationsParser::getAll($reflection);
+        // $requiredFields = Arrays::get($annotations, "Param", []);
 
         // $this->logger->log(var_export($annotations, true), ILogger::DEBUG);
         // $this->logger->log(var_export($requiredFields, true), ILogger::DEBUG);

@@ -10,6 +10,7 @@ class FieldFormatDefinition
     // A string name of the field type yielded by 'ReflectionProperty::getType()'.
     public ?string $type;
     public bool $nullable;
+    public RequestParamData $requestData;
 
     ///TODO: double check this
     private static array $gettypeToReflectiveMap = [
@@ -29,9 +30,10 @@ class FieldFormatDefinition
      * @param ?string $format The format of the field.
      * @param ?string $type The PHP type of the field yielded by a 'ReflectionProperty::getType()' call.
      * @param bool $nullable Whether the type is nullable.
+     * @param RequestParamData $requestData Request data such as param type and description.
      * @throws \App\Exceptions\InternalServerException Thrown when both @format and @type were null.
      */
-    public function __construct(?string $format, ?string $type, bool $nullable)
+    public function __construct(?string $format, ?string $type, bool $nullable, RequestParamData $requestData)
     {
         // if both are null, there is no way to validate an assigned value
         if ($format === null && $type === null) {
@@ -41,6 +43,7 @@ class FieldFormatDefinition
         $this->format = $format;
         $this->type = $type;
         $this->nullable = $nullable;
+        $this->requestData = $requestData;
     }
 
     /**
