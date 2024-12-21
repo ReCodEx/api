@@ -40,10 +40,10 @@ class Extensions
     /**
      * Filter out extensions that are accessible by given user in given instance.
      * @param Instance $instance
-     * @param User $user
+     * @param User|null $user (if null, only extensions available to all users are listed)
      * @return ExtensionConfig[] array indexed by extension IDs
      */
-    public function getAccessibleExtensions(Instance $instance, User $user): array
+    public function getAccessibleExtensions(Instance $instance, ?User $user): array
     {
         $res = [];
         foreach ($this->extensions as $id => $extension) {

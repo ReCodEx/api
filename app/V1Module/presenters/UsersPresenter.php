@@ -655,7 +655,10 @@ class UsersPresenter extends BasePresenter
     {
         $user = $this->users->findOrThrow($id);
 
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstances($user->getInstances()->toArray()));
+        $this->sendSuccessResponse($this->instanceViewFactory->getInstances(
+            $user->getInstances()->toArray(),
+            $this->getCurrentUser()
+        ));
     }
 
     public function checkSetRole(string $id)

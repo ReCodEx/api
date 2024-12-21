@@ -82,7 +82,7 @@ parameters:
         en: "English Caption"
       url: "https://extetrnal.domain.com/recodex/extension?token={token}&locale={locale}"  # '{token}' and '{locale}' are placeholders
       token:  # generated from tmp tokens passed via URL so the ext. tool can access ReCodEx API
-        scope: master  # scope of generated tokens (to be used by the extension)
+        scopes: [ 'master', 'refresh' ]  # list of scopes for generated tokens (to be used by the extension)
         user: null  # user override (ID) for generating tokens (if null, the token will be generated for logged-in user)
       instances: []  # array of instances where this extension is enabled (empty array = all)
       user:  # filters applied to determine, whether logged-in user can access the extension

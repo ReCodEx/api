@@ -2,7 +2,6 @@
 
 namespace App\Console;
 
-use App\Model\Entity\User;
 use App\Model\Repository\Users;
 use App\Security\AccessManager;
 use App\Security\TokenScope;
