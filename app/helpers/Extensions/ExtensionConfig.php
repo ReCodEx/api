@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Exceptions\ConfigException;
+use App\Security\TokenScope;
 use Nette;
 use Nette\Utils\Arrays;
 
@@ -34,9 +35,10 @@ class ExtensionConfig
     private string $url;
 
     /**
-     * A scope that will be set to (full) access tokens generated after tmp-token verification.
+     * List of scopes that will be set to (full) access tokens generated after tmp-token verification.
+     * @var string[]
      */
-    private string $tokenScope;
+    private array $tokenScopes;
 
     /**
      * User override for (full) access tokens. This user will be used instead of user ID passed in tmp token.
@@ -79,11 +81,15 @@ class ExtensionConfig
         }
 
         $this->url = Arrays::get($config, "url");
-        $this->tokenScope = Arrays::get($config, ["token", "scope"], "master");
+        $this->tokenScopes = Arrays::get(
+            $config,
+            ["token", "scopes"],
+            [ TokenScope::MASTER, TokenScope::REFRESH ]
+        ) ?? [];
         $this->tokenUserId = Arrays::get($config, ["token", "user"], null);
-        $this->instances = Arrays::get($config, "instances", []);
-        $this->userRoles = Arrays::get($config, ["user", "roles"], []);
-        $this->userExternalLogins = Arrays::get($config, ["user", "externalLogins"], []);
+        $this->instances = Arrays::get($config, "instances", []) ?? [];
+        $this->userRoles = Arrays::get($config, ["user", "roles"], []) ?? [];
+        $this->userExternalLogins = Arrays::get($config, ["user", "externalLogins"], []) ?? [];
     }
 
     public function getId(): string
@@ -113,13 +119,18 @@ class ExtensionConfig
     /**
      * Check whether this extension is accessible by given user in given instance.
      * @param Instance $instance
-     * @param User $user
+     * @param User|null $user (if null, the extension must be accessible by all users)
      * @return bool true if the extension is accessible
      */
-    public function isAccessible(Instance $instance, User $user): bool
+    public function isAccessible(Instance $instance, ?User $user): bool
     {
         if ($this->instances && !in_array($instance->getId(), $this->instances)) {
             return false;
+        }
+
+        if (!$user) {
+            // test accessibility for all users (no user filters must be present)
+            return !$this->userRoles && !$this->userExternalLogins;
         }
 
         if ($this->userRoles && !in_array($user->getRole(), $this->userRoles)) {
