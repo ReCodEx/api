@@ -35,6 +35,16 @@ class ExtensionConfig
     private string $url;
 
     /**
+     * Expiration time (in seconds) for temporary tokens.
+     */
+    private int $urlTokenExpiration;
+
+    /**
+     * Expiration time (in seconds) for full tokens.
+     */
+    private int $tokenExpiration;
+
+    /**
      * List of scopes that will be set to (full) access tokens generated after tmp-token verification.
      * @var string[]
      */
@@ -81,6 +91,8 @@ class ExtensionConfig
         }
 
         $this->url = Arrays::get($config, "url");
+        $this->urlTokenExpiration = Arrays::get($config, "urlTokenExpiration", 60);
+        $this->tokenExpiration = Arrays::get($config, ["token", "expiration"], 86400 /* one day */);
         $this->tokenScopes = Arrays::get(
             $config,
             ["token", "scopes"],
@@ -97,6 +109,9 @@ class ExtensionConfig
         return $this->id;
     }
 
+    /**
+     * @return string|array Either a universal caption or an array [ locale => localized-caption ]
+     */
     public function getCaption(): string|array
     {
         return $this->caption;
@@ -114,6 +129,39 @@ class ExtensionConfig
         $url = str_replace('{token}', urlencode($token), $url);
         $url = str_replace('{locale}', urlencode($locale), $url);
         return $url;
+    }
+
+    /**
+     * @return int expiration in seconds
+     */
+    public function getUrlTokenExpiration(): int
+    {
+        return $this->urlTokenExpiration;
+    }
+
+    /**
+     * @return int expiration in seconds
+     */
+    public function getTokenExpiration(): int
+    {
+        return $this->tokenExpiration;
+    }
+
+    /**
+     * @return string[] list of scopes assigned to a full token
+     */
+    public function getTokenScopes(): array
+    {
+        return $this->tokenScopes;
+    }
+
+    /**
+     * Get ID of a user who should be used as an authority for full tokens.
+     * @return string|null either user ID (for auth override) or null (current user)
+     */
+    public function getTokenUserId(): ?string
+    {
+        return $this->tokenUserId;
     }
 
     /**

@@ -137,19 +137,26 @@ class BasePresenter extends \App\Presenters\BasePresenter
     }
 
     /**
+     * @return User|null (null if no user is authenticated)
+     */
+    protected function getCurrentUserOrNull(): ?User
+    {
+        /** @var ?Identity $identity */
+        $identity = $this->getUser()->getIdentity();
+        return $identity?->getUserData();
+    }
+
+    /**
      * @return User
      * @throws ForbiddenRequestException
      */
     protected function getCurrentUser(): User
     {
-        /** @var ?Identity $identity */
-        $identity = $this->getUser()->getIdentity();
-
-        if ($identity === null || $identity->getUserData() === null) {
+        $user = $this->getCurrentUserOrNull();
+        if ($user === null) {
             throw new ForbiddenRequestException();
         }
-
-        return $identity->getUserData();
+        return $user;
     }
 
     /**

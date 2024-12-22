@@ -116,13 +116,14 @@ class UserViewFactory
     }
 
     /**
-     * Get all information about user even private ones.
+     * Get all information about user (bypassing ACLs) even the private ones.
      * @param User $user
+     * @param bool $reallyShowEverything
      * @return array
      */
-    public function getFullUser(User $user)
+    public function getFullUser(User $user, bool $reallyShowEverything = true)
     {
-        return $this->getUserData($user, true, true); // true, true = really show everyting
+        return $this->getUserData($user, true, $reallyShowEverything);
     }
 
     /**

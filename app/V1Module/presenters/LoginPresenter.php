@@ -15,7 +15,6 @@ use App\Model\Repository\Logins;
 use App\Model\Repository\SecurityEvents;
 use App\Model\Repository\Users;
 use App\Model\View\UserViewFactory;
-use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\ACL\IUserPermissions;
 use App\Security\CredentialsAuthenticator;
@@ -257,7 +256,7 @@ class LoginPresenter extends BasePresenter
         $this->sendSuccessResponse(
             [
                 "accessToken" => $this->accessManager->issueToken($user, $effectiveRole, $scopes, $expiration),
-                "user" => $this->userViewFactory->getFullUser($user)
+                "user" => $this->userViewFactory->getFullUser($user),
             ]
         );
     }
