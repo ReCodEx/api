@@ -4,9 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
-use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
-use App\Model\Entity\User;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;

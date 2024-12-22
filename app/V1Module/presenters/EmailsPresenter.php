@@ -14,7 +14,6 @@ use App\Security\Roles;
 
 class EmailsPresenter extends BasePresenter
 {
-
     /**
      * @var EmailLocalizationHelper
      * @inject
@@ -57,7 +56,8 @@ class EmailsPresenter extends BasePresenter
      * Sends an email with provided subject and message to all ReCodEx users.
      * @POST
      * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
+     * @Param(type="post", name="message", validation="string:1..",
+     *        description="Message which will be sent, can be html code")
      */
     public function actionDefault()
     {
@@ -87,7 +87,8 @@ class EmailsPresenter extends BasePresenter
      * Sends an email with provided subject and message to all supervisors and superadmins.
      * @POST
      * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
+     * @Param(type="post", name="message", validation="string:1..",
+     *        description="Message which will be sent, can be html code")
      */
     public function actionSendToSupervisors()
     {
@@ -123,7 +124,8 @@ class EmailsPresenter extends BasePresenter
      * Sends an email with provided subject and message to all regular users.
      * @POST
      * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
+     * @Param(type="post", name="message", validation="string:1..",
+     *        description="Message which will be sent, can be html code")
      */
     public function actionSendToRegularUsers()
     {
