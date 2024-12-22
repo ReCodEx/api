@@ -2,27 +2,15 @@
 
 namespace App\Console;
 
-use App\Model\Repository\RuntimeEnvironments;
-use App\Model\Repository\Pipelines;
-use App\Model\Repository\UploadedFiles;
-use App\Model\Entity\RuntimeEnvironment;
-use App\Model\Entity\Pipeline;
-use App\Model\Entity\SupplementaryExerciseFile;
-use App\Helpers\TmpFilesHelper;
-use App\Helpers\FileStorageManager;
-use App\Helpers\FileStorage\ZipFileStorage;
-use App\Helpers\ExerciseConfig\Loader;
-use App\Helpers\ExerciseConfig\Validator as ConfigValidator;
 use DateTime;
 use Exception;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Helper\QuestionHelper;
 
 /**
@@ -137,5 +125,24 @@ class BaseCommand extends Command
         // translate the selection back to an option and report it
         $selectedKey = $helper->ask($this->input, $this->output, $question);
         return array_key_exists($selectedKey, $translateBack) ? $translateBack[$selectedKey] : null;
+    }
+
+    /**
+     * Prompts the user for inputting specific text value.
+     * @param string $text question asked to the user before prompt
+     * @param string $default default value returned if the user does not input anything
+     * @param bool $hidden input (e.g., when password is prompted)
+     * @return string input (answer) from the user
+     */
+    protected function prompt(string $text, string $default = '', bool $hidden = false): string
+    {
+        /** @var QuestionHelper */
+        $helper = $this->getHelper('question');
+        $question = new Question($text, $default);
+        if ($hidden) {
+            $question->setHidden(true);
+            $question->setHiddenFallback(false);
+        }
+        return $helper->ask($this->input, $this->output, $question);
     }
 }

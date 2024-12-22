@@ -91,7 +91,9 @@ class ExtensionsPresenter extends BasePresenter
          */
 
         // All users within this scope are allowed the operation...
-        $this->isInScope(TokenScope::EXTENSIONS);
+        if (!$this->isInScope(TokenScope::EXTENSIONS)) {
+            throw new ForbiddenRequestException();
+        }
 
         // ...but the token must be also valid...
         $token = $this->getAccessToken();

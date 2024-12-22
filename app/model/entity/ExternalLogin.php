@@ -3,8 +3,6 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Exceptions\InvalidArgumentException;
-use Nette\Utils\Validators;
 
 /**
  * @ORM\Entity
