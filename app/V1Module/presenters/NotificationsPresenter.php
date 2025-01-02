@@ -103,10 +103,14 @@ class NotificationsPresenter extends BasePresenter
 
     /**
      * Create notification with given attributes
-     * @Param(type="post", name="groupsIds", validation="array", description="Identification of groups")
-     * @Param(type="post", name="visibleFrom", validation="timestamp", description="Date from which is notification visible")
-     * @Param(type="post", name="visibleTo", validation="timestamp", description="Date to which is notification visible")
-     * @Param(type="post", name="role", validation="string:1..", description="Users with this role and its children can see notification")
+     * @Param(type="post", name="groupsIds", validation="array",
+     *        description="Identification of groups")
+     * @Param(type="post", name="visibleFrom", validation="timestamp",
+     *        description="Date from which is notification visible")
+     * @Param(type="post", name="visibleTo", validation="timestamp",
+     *        description="Date to which is notification visible")
+     * @Param(type="post", name="role", validation="string:1..",
+     *        description="Users with this role and its children can see notification")
      * @Param(type="post", name="type", validation="string", description="Type of the notification (custom)")
      * @Param(type="post", name="localizedTexts", validation="array", description="Text of notification")
      * @POST
@@ -218,9 +222,12 @@ class NotificationsPresenter extends BasePresenter
      * @POST
      * @param string $id
      * @Param(type="post", name="groupsIds", validation="array", description="Identification of groups")
-     * @Param(type="post", name="visibleFrom", validation="timestamp", description="Date from which is notification visible")
-     * @Param(type="post", name="visibleTo", validation="timestamp", description="Date to which is notification visible")
-     * @Param(type="post", name="role", validation="string:1..", description="Users with this role and its children can see notification")
+     * @Param(type="post", name="visibleFrom", validation="timestamp",
+     *        description="Date from which is notification visible")
+     * @Param(type="post", name="visibleTo", validation="timestamp",
+     *        description="Date to which is notification visible")
+     * @Param(type="post", name="role", validation="string:1..",
+     *        description="Users with this role and its children can see notification")
      * @Param(type="post", name="type", validation="string", description="Type of the notification (custom)")
      * @Param(type="post", name="localizedTexts", validation="array", description="Text of notification")
      * @throws NotFoundException

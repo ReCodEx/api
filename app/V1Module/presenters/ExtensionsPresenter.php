@@ -60,8 +60,9 @@ class ExtensionsPresenter extends BasePresenter
      * Return URL refering to the extension with properly injected temporary JWT token.
      * @GET
      * @Param(type="query", name="locale", required=false, validation="string:2")
+     * @Param(type="query", name="return", required=false, validation="string")
      */
-    public function actionUrl(string $extId, string $instanceId, ?string $locale)
+    public function actionUrl(string $extId, string $instanceId, ?string $locale, ?string $return)
     {
         $user = $this->getCurrentUser();
         $extension = $this->extensions->getExtension($extId);
@@ -78,7 +79,7 @@ class ExtensionsPresenter extends BasePresenter
             $locale = $this->getCurrentUserLocale();
         }
 
-        $this->sendSuccessResponse($extension->getUrl($token, $locale));
+        $this->sendSuccessResponse($extension->getUrl($token, $locale, $return ?? ''));
     }
 
     public function checkToken(string $extId)
