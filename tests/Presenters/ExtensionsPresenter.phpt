@@ -86,18 +86,19 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
 
-        $this->injectExtension('test', 'Test', 'https://test.example.com/{token}/{locale}');
+        $this->injectExtension('test', 'Test', 'https://test.example.com/{token}/{locale}?return={return}');
+        $returnUrl = 'http://back.com?foo=bar';
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Extensions',
             'GET',
-            ['action' => 'url', 'extId' => 'test', 'instanceId' => $instanceId, 'locale' => 'de']
+            ['action' => 'url', 'extId' => 'test', 'instanceId' => $instanceId, 'locale' => 'de', 'return' => $returnUrl]
         );
 
         Assert::type('string', $payload);
         Assert::true(str_starts_with($payload, 'https://test.example.com/'));
-        Assert::true(str_ends_with($payload, '/de'));
+        Assert::true(str_ends_with($payload, '/de?return=' . urlencode($returnUrl)));
         $tokens = explode('/', $payload);
         Assert::count(5, $tokens);
         $token = $this->accessManager->decodeToken($tokens[3]);

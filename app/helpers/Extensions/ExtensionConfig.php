@@ -31,6 +31,7 @@ class ExtensionConfig
      * URL template for the external service. The template may hold the following placeholders:
      * - {token} - will be replaced with URL-encoded temporary token
      * - {locale} - will be replaced with a language identifier ('en', 'cs', ...) based on currently selected language
+     * - {return} - will be replaced with a return URL (so the user can be returned back from the ext to the same page)
      */
     private string $url;
 
@@ -118,16 +119,18 @@ class ExtensionConfig
     }
 
     /**
-     * Get formatted URL. A template is injected a token and current locale.
+     * Get formatted URL. A template is injected a token, current locale, and return URL.
      * @param string $token already serialized JWT
      * @param string $locale language identification ('en', 'cs', ...)
+     * @param string $return URL to which the user should return from the extension
      * @return string an instantiated URL template
      */
-    public function getUrl(string $token, string $locale): string
+    public function getUrl(string $token, string $locale = '', string $return = ''): string
     {
         $url = $this->url;
         $url = str_replace('{token}', urlencode($token), $url);
         $url = str_replace('{locale}', urlencode($locale), $url);
+        $url = str_replace('{return}', urlencode($return), $url);
         return $url;
     }
 

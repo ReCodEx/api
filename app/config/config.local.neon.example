@@ -80,7 +80,8 @@ parameters:
       caption:  # to be displayed in UI; could be also single string (for all localizations)
         cs: "Český popisek"
         en: "English Caption"
-      url: "https://extetrnal.domain.com/recodex/extension?token={token}&locale={locale}"  # '{token}' and '{locale}' are placeholders
+      # in URL, '{*}' are placeholders for auth token, locale (en/cs), and return URL
+      url: "https://extetrnal.domain.com/recodex/extension?token={token}&locale={locale}&return={return}"
       urlTokenExpiration: 60  # [s] how long a temporary url token lasts
       token:  # generated from tmp tokens passed via URL so the ext. tool can access ReCodEx API
         expiration: 86400  # [s] how long a full token lasts

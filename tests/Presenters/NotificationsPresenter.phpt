@@ -75,13 +75,13 @@ class TestNotificationsPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         // Demo group does not have notification,
         // so only one global should be returned
-        $group = current(
-            $this->presenter->groups->findFiltered(
-                null,
-                null,
-                "Demo group"
-            )
+        $groups = $this->presenter->groups->findFiltered(
+            null,
+            null,
+            "Demo group"
         );
+        Assert::count(1, $groups);
+        $group = current($groups);
 
         $request = new Nette\Application\Request(
             "V1:Notifications",
