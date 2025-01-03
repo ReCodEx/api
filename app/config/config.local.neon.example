@@ -75,6 +75,23 @@ parameters:
     # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
     threshold: "2 years"
 
+  extensions:  # 3rd party tools which are linked from UI and can cooperate with ReCodEx
+    - id: "ext-identifier"
+      caption:  # to be displayed in UI; could be also single string (for all localizations)
+        cs: "Český popisek"
+        en: "English Caption"
+      # in URL, '{*}' are placeholders for auth token, locale (en/cs), and return URL
+      url: "https://extetrnal.domain.com/recodex/extension?token={token}&locale={locale}&return={return}"
+      urlTokenExpiration: 60  # [s] how long a temporary url token lasts
+      token:  # generated from tmp tokens passed via URL so the ext. tool can access ReCodEx API
+        expiration: 86400  # [s] how long a full token lasts
+        scopes: [ 'master', 'refresh' ]  # list of scopes for generated tokens (to be used by the extension)
+        user: null  # user override (ID) for generating tokens (if null, the token will be generated for logged-in user)
+      instances: []  # array of instances where this extension is enabled (empty array = all)
+      user:  # filters applied to determine, whether logged-in user can access the extension
+        roles: []  # array of enabled user roles (empty array = all)
+        externalLogins: []  # list of external_login.auth_service IDs (at least one is required, empty array = nothing is required)
+
 
 # The most important part - a database system connection
 nettrine.dbal:

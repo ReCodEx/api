@@ -4,7 +4,6 @@ namespace App\Helpers\FileStorage;
 
 use App\Helpers\TmpFilesHelper;
 use Nette\Utils\Arrays;
-use Nette\Utils\Strings;
 use Nette\SmartObject;
 use ZipArchive;
 use FilesystemIterator;
@@ -33,7 +32,7 @@ class LocalFileStorage implements IFileStorage
 
     protected $rootDirectory;
 
-    public function getRootDirectory(): string
+    public function getRootDirectory(): ?string
     {
         return $this->rootDirectory;
     }
@@ -65,7 +64,7 @@ class LocalFileStorage implements IFileStorage
         $path = preg_replace('@/[.]/@', '/', $path);
         $path = preg_replace('@[/\\\\]+@', '/', $path);
         $path = preg_replace('@(^[.]/)|(/[.]?$)@', '', $path);
-        if (Strings::startsWith($path, '../') || Strings::contains($path, '/../') || Strings::endsWith($path, '/..')) {
+        if (str_starts_with($path, '../') || str_contains($path, '/../') || str_ends_with($path, '/..')) {
             throw new FileStorageException("Substring '..' must not be present in any path.", $path);
         }
         return $path;
@@ -81,13 +80,11 @@ class LocalFileStorage implements IFileStorage
      */
     private function decodePath(string &$path, bool $exists = null, $mkdir = false): array
     {
-        $path = self::normalizePath($path);
-
         $tokens = explode('#', $path, 2);
         array_push($tokens, null); // make sure second item always exists
         [$realPath, $zipEntry] = $tokens;
 
-        $realPath = $this->rootDirectory . '/' . $realPath;
+        $realPath = $this->rootDirectory . '/' . self::normalizePath($realPath);
         if (is_dir($realPath)) {
             throw new FileStorageException("Given path refers to a directory.", $path);
         }
@@ -145,7 +142,7 @@ class LocalFileStorage implements IFileStorage
             closedir($dh);
 
             // It is empty, let's proceed!
-            if (@rmdir($realPath) && Strings::contains($path, '/')) {
+            if (@rmdir($realPath) && str_contains($path, '/')) {
                 $this->removeEmptyDirectory(dirname($path));
             }
         }
@@ -398,7 +395,7 @@ class LocalFileStorage implements IFileStorage
             if (file_exists($srcReal) && !@unlink($srcReal)) {
                 throw new FileStorageException("Unable to delete file in the storage.", $storagePath);
             }
-            if (Strings::contains($storagePath, '/')) {
+            if (str_contains($storagePath, '/')) {
                 // removing unnecessary empty directories
                 $this->removeEmptyDirectory(dirname($storagePath));
             }
@@ -417,7 +414,7 @@ class LocalFileStorage implements IFileStorage
             if (!@unlink($realPath)) {
                 throw new FileStorageException("Unable to delete file in the storage.", $path);
             }
-            if (Strings::contains($path, '/')) {
+            if (str_contains($path, '/')) {
                 // removing unnecessary empty directories
                 $this->removeEmptyDirectory(dirname($path));
             }
@@ -434,7 +431,7 @@ class LocalFileStorage implements IFileStorage
     public function deleteOldFiles(string $glob, int $threshold): int
     {
         $glob = $this->rootDirectory . '/' . $glob;
-        $rootDirLen = strlen($this->rootDirectory);
+        $rootDirLen = strlen($this->rootDirectory ?? '');
 
         $deleted = 0;
         $affectedDirectories = [];
@@ -481,7 +478,7 @@ class LocalFileStorage implements IFileStorage
             return 0; // nothinth to do
         }
 
-        $rootDirLen = strlen($this->rootDirectory) + 1; // plus 1 for '/';
+        $rootDirLen = strlen($this->rootDirectory ?? '') + 1; // plus 1 for '/';
         $dirIterator = new RecursiveDirectoryIterator(
             $root,
             FilesystemIterator::CURRENT_AS_PATHNAME | FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
@@ -491,11 +488,11 @@ class LocalFileStorage implements IFileStorage
         // iterate over files and filter them
         $toDelete = []; // we store the paths as a list first to avoid any iterator confusions
         foreach ($recursiveIterator as $realPath) {
-            if (!Strings::startsWith($realPath, $root)) {
+            if (!str_starts_with($realPath, $root)) {
                 throw new FileStorageException("Iterator returned a file outside the root directory.", $realPath);
             }
             $path = substr($realPath, $rootDirLen); // get the suffix without the root directory
-            if (!$prefix || Strings::startsWith($path, $prefix)) {
+            if (!$prefix || str_starts_with($path, $prefix)) {
                 $file = new LocalImmutableFile($realPath, $path);
                 if (!$filter($file)) {
                     $toDelete[] = $path;

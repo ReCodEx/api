@@ -15,9 +15,6 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DomainException;
 use UnexpectedValueException;
-use Firebase\JWT\ExpiredException;
-use Firebase\JWT\SignatureInvalidException;
-use Firebase\JWT\BeforeValidException;
 
 class AccessManager
 {
@@ -247,7 +244,7 @@ class AccessManager
         $parts = Strings::split($authorizationHeader, "/ /");
         if (count($parts) === 2) {
             list($bearer, $accessToken) = $parts;
-            if ($bearer === "Bearer" && !Strings::contains($accessToken, " ") && Strings::length($accessToken) > 0) {
+            if ($bearer === "Bearer" && !str_contains($accessToken, " ") && Strings::length($accessToken) > 0) {
                 return $accessToken;
             }
         }

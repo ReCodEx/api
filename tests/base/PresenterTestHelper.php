@@ -149,7 +149,9 @@ class PresenterTestHelper
     public static function login(
         Container $container,
         string $login,
-        array $scopes = [TokenScope::MASTER, TokenScope::REFRESH]
+        array $scopes = [TokenScope::MASTER, TokenScope::REFRESH],
+        ?int $tokenExpiration = null,
+        array $tokenPayload = []
     ): string {
         /** @var \Nette\Security\User $userSession */
         $userSession = $container->getByType(\Nette\Security\User::class);
@@ -157,7 +159,7 @@ class PresenterTestHelper
 
         /** @var AccessManager $accessManager */
         $accessManager = $container->getByType(AccessManager::class);
-        $tokenText = $accessManager->issueToken($user, null, $scopes);
+        $tokenText = $accessManager->issueToken($user, null, $scopes, $tokenExpiration, $tokenPayload);
         $token = $accessManager->decodeToken($tokenText);
 
         $userSession->login(new \App\Security\Identity($user, $token));
@@ -166,9 +168,11 @@ class PresenterTestHelper
 
     public static function loginDefaultAdmin(
         Container $container,
-        array $scopes = [TokenScope::MASTER, TokenScope::REFRESH]
+        array $scopes = [TokenScope::MASTER, TokenScope::REFRESH],
+        ?int $tokenExpiration = null,
+        array $tokenPayload = []
     ): string {
-        return self::login($container, self::ADMIN_LOGIN, $scopes);
+        return self::login($container, self::ADMIN_LOGIN, $scopes, $tokenExpiration, $tokenPayload);
     }
 
     public static function getUser(Container $container, $login = null): User
@@ -190,7 +194,7 @@ class PresenterTestHelper
      * @param array $params Parameters of the request.
      * @param array $post Body of the request (must be POST).
      * @param int $expectedCode Expected HTTP response code (200 by default).
-     * @return array|null Payload subtree of JSON request.
+     * @return mixed Payload subtree of JSON request.
      * @throws Exception
      */
     public static function performPresenterRequest(

@@ -492,8 +492,7 @@ class RuntimeImport extends BaseCommand
 
             // open the ZIP archive for reading
             $zip = new ZipArchive();
-            // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
-            $opened = $zip->open($fileName);
+            $opened = $zip->open($fileName, ZipArchive::RDONLY);
             if ($opened !== true) {
                 throw new RuntimeException("Unable to open file '$fileName' for reading (code $opened).");
             }

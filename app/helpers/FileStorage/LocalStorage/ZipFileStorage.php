@@ -3,11 +3,9 @@
 namespace App\Helpers\FileStorage;
 
 use App\Helpers\TmpFilesHelper;
-use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
 use Nette\SmartObject;
 use ZipArchive;
-use Exception;
 
 /**
  * Simplified implementation of file storage over single ZIP file.
@@ -81,7 +79,7 @@ class ZipFileStorage implements IFileStorage
     private function setCompressionLevel(string $storagePath, ?int $level = null): void
     {
         if ($level === null) {
-            $level = Strings::endsWith(Strings::lower($storagePath), '.zip')
+            $level = str_ends_with(Strings::lower($storagePath), '.zip')
                 ? ZipArchive::CM_STORE : ZipArchive::CM_DEFAULT;
         }
         $this->zip->setCompressionName($storagePath, $level);
@@ -271,14 +269,11 @@ class ZipFileStorage implements IFileStorage
             throw new FileStorageException("Given file is not accessible for reading.", $localPath);
         }
 
-        // TODO: PHP 8.0 introduced addFile() flags (especially ZipArchive::FL_OVERWRITE), which may replace this.
-        if ($overwrite) {
-            $this->zip->deleteName($storagePath);
-        } elseif ($this->zip->statName($storagePath)) {
+        if (!$overwrite && $this->zip->statName($storagePath)) {
             throw new FileStorageException("Target entry already exists.", $storagePath);
         }
 
-        if (!$this->zip->addFile($localPath, $storagePath)) {
+        if (!$this->zip->addFile($localPath, $storagePath, 0, 0, ZipArchive::FL_OVERWRITE)) {
             throw new FileStorageException("Unable to add file into ZIP archive.", $localPath);
         }
         $this->setCompressionLevel($storagePath); // make sure proper compression level is selected
@@ -295,14 +290,11 @@ class ZipFileStorage implements IFileStorage
             throw new FileStorageException("The ZIP archive has already been closed.", $this->archivePath);
         }
 
-        // TODO: PHP 8.0 introduced addFile() flags (especially ZipArchive::FL_OVERWRITE), which may replace this.
-        if ($overwrite) {
-            $this->zip->deleteName($storagePath);
-        } elseif ($this->zip->statName($storagePath)) {
+        if (!$overwrite && $this->zip->statName($storagePath)) {
             throw new FileStorageException("Target entry already exists.", $storagePath);
         }
 
-        if (!$this->zip->addFromString($storagePath, $contents)) {
+        if (!$this->zip->addFromString($storagePath, $contents, ZipArchive::FL_OVERWRITE)) {
             throw new FileStorageException("Unable to add contents into ZIP archive.", $this->archivePath);
         }
 
@@ -428,10 +420,10 @@ class ZipFileStorage implements IFileStorage
         $toDelete = []; // we store the paths as a list first to avoid any iterator confusions
         for ($i = 0; $i < $this->zip->numFiles; ++$i) {
             $path = $this->zip->getNameIndex($i);
-            if (Strings::endsWith($path, '/')) {
+            if (str_ends_with($path, '/')) {
                 continue; // skipping directories
             }
-            if ($prefix && !Strings::startsWith($path, $prefix)) {
+            if ($prefix && !str_starts_with($path, $prefix)) {
                 continue; // skipping entries that do not match the prefix
             }
 

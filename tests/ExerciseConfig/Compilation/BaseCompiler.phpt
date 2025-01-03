@@ -333,14 +333,14 @@ class TestBaseCompiler extends Tester\TestCase
         $it = 0;
 
         $initiationMkdir = $jobConfig->getTasks()[0];
-        Assert::true(Strings::startsWith($initiationMkdir->getId(), "initiation_"));
-        Assert::true(Strings::endsWith($initiationMkdir->getId(), "..mkdir." . $it++));
+        Assert::true(str_starts_with($initiationMkdir->getId(), "initiation_"));
+        Assert::true(str_ends_with($initiationMkdir->getId(), "..mkdir." . $it++));
         Assert::equal(Priorities::$DEFAULT, $initiationMkdir->getPriority());
         Assert::count(0, $initiationMkdir->getDependencies());
         Assert::equal("mkdir", $initiationMkdir->getCommandBinary());
         Assert::count(1, $initiationMkdir->getCommandArguments());
         Assert::true(
-            Strings::startsWith($initiationMkdir->getCommandArguments()[0], ConfigParams::$SOURCE_DIR . "initiation_")
+            str_starts_with($initiationMkdir->getCommandArguments()[0], ConfigParams::$SOURCE_DIR . "initiation_")
         );
         Assert::null($initiationMkdir->getType());
         Assert::equal(null, $initiationMkdir->getTestId());

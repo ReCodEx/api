@@ -116,8 +116,7 @@ class LocalImmutableFile implements IImmutableFile
     public function isZipArchive(): bool
     {
         $zip = new ZipArchive();
-        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
-        $res = $zip->open($this->realPath);
+        $res = $zip->open($this->realPath, ZipArchive::RDONLY);
         if ($res === true) {
             $zip->close();
         }
@@ -127,8 +126,7 @@ class LocalImmutableFile implements IImmutableFile
     public function getZipEntries(): array
     {
         $zip = new ZipArchive();
-        // TODO: ZipArchive::RDONLY flag would be nice here, but it requires PHP 7.4.3+
-        $res = $zip->open($this->realPath);
+        $res = $zip->open($this->realPath, ZipArchive::RDONLY);
         if ($res !== true) {
             throw new FileStorageException(
                 "Cannot list entries from a file which is not a ZIP archive.",

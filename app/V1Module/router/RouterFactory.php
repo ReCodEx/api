@@ -58,6 +58,7 @@ class RouterFactory
         $router[] = self::createWorkerFilesRoutes("$prefix/worker-files");
         $router[] = self::createAsyncJobsRoutes("$prefix/async-jobs");
         $router[] = self::createPlagiarismRoutes("$prefix/plagiarism");
+        $router[] = self::createExtensionsRoutes("$prefix/extensions");
 
         return $router;
     }
@@ -662,6 +663,14 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>", "Plagiarism:updateBatch");
         $router[] = new GetRoute("$prefix/<id>/<solutionId>", "Plagiarism:getSimilarities");
         $router[] = new PostRoute("$prefix/<id>/<solutionId>", "Plagiarism:addSimilarities");
+        return $router;
+    }
+
+    private static function createExtensionsRoutes(string $prefix): RouteList
+    {
+        $router = new RouteList();
+        $router[] = new GetRoute("$prefix/<extId>/<instanceId>", "Extensions:url");
+        $router[] = new PostRoute("$prefix/<extId>", "Extensions:token");
         return $router;
     }
 }

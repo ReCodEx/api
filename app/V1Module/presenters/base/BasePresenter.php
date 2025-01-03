@@ -7,7 +7,6 @@ use App\Helpers\Pagination;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
 use App\Security\Identity;
-use Nette\Utils\Strings;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongHttpMethodException;
@@ -144,19 +143,26 @@ class BasePresenter extends \App\Presenters\BasePresenter
     }
 
     /**
+     * @return User|null (null if no user is authenticated)
+     */
+    protected function getCurrentUserOrNull(): ?User
+    {
+        /** @var ?Identity $identity */
+        $identity = $this->getUser()->getIdentity();
+        return $identity?->getUserData();
+    }
+
+    /**
      * @return User
      * @throws ForbiddenRequestException
      */
     protected function getCurrentUser(): User
     {
-        /** @var ?Identity $identity */
-        $identity = $this->getUser()->getIdentity();
-
-        if ($identity === null || $identity->getUserData() === null) {
+        $user = $this->getCurrentUserOrNull();
+        if ($user === null) {
             throw new ForbiddenRequestException();
         }
-
-        return $identity->getUserData();
+        return $user;
     }
 
     /**
@@ -327,7 +333,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     private function validateValue($param, $value, $validationRule, $msg = null)
     {
         foreach (["int", "integer"] as $rule) {
-            if ($validationRule === $rule || Strings::startsWith($validationRule, $rule . ":")) {
+            if ($validationRule === $rule || str_starts_with($validationRule, $rule . ":")) {
                 throw new LogicException("Validation rule '$validationRule' will not work for request parameters");
             }
         }

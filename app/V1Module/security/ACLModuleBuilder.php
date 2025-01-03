@@ -14,7 +14,7 @@ class ACLModuleBuilder
     public function getClassName($interfaceName, $uniqueId)
     {
         $interfaceName = Strings::after($interfaceName, '\\', -1) ?: $interfaceName;
-        if (Strings::startsWith($interfaceName, "I")) {
+        if (str_starts_with($interfaceName, "I")) {
             $rest = Strings::after($interfaceName, "I");
 
             if (Strings::firstUpper($rest) === $rest) {
@@ -42,7 +42,7 @@ class ACLModuleBuilder
         $class->addMethod("getResourceName")->addBody('return ?;', [$name]);
 
         foreach ($interface->getMethods(ReflectionMethod::IS_ABSTRACT) as $method) {
-            $isNameCorrect = Strings::startsWith($method->getName(), "can");
+            $isNameCorrect = str_starts_with($method->getName(), "can");
             /** @var ?ReflectionNamedType $methodReturnType */
             $methodReturnType = $method->getReturnType();
             $isBoolean = $methodReturnType !== null ? $methodReturnType->getName() === "bool" : false;

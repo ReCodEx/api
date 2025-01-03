@@ -56,4 +56,9 @@ class TokenScope
      * Usually used in combination with other scopes. Allows refreshing the token.
      */
     public const REFRESH = "refresh";
+
+    /**
+     * Scope for handling handshake and auth-exchange with 3rd party extensions. Temp tokens must use this scope.
+     */
+    public const EXTENSIONS = "extensions";
 }

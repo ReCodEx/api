@@ -12,7 +12,6 @@ use App\Helpers\Emails\EmailRenderResult;
 use App\Helpers\WebappLinks;
 use App\Security\TokenScope;
 use Exception;
-use Latte;
 use Nette\Utils\Arrays;
 use App\Model\Entity\User;
 use App\Security\AccessToken;

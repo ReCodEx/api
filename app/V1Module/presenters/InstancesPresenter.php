@@ -4,9 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
-use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
-use App\Model\Entity\User;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;
@@ -25,7 +23,6 @@ use App\Model\Entity\Licence;
  */
 class InstancesPresenter extends BasePresenter
 {
-
     /**
      * @var Instances
      * @inject
@@ -94,7 +91,9 @@ class InstancesPresenter extends BasePresenter
                 return $instance->isAllowed();
             }
         );
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstances($instances));
+        $this->sendSuccessResponse(
+            $this->instanceViewFactory->getInstances($instances, $this->getCurrentUserOrNull())
+        );
     }
 
     public function checkCreateInstance()
@@ -109,7 +108,8 @@ class InstancesPresenter extends BasePresenter
      * @POST
      * @Param(type="post", name="name", validation="string:2..", description="Name of the instance")
      * @Param(type="post", name="description", required=false, description="Description of the instance")
-     * @Param(type="post", name="isOpen", validation="bool", description="Should the instance be open for registration?")
+     * @Param(type="post", name="isOpen", validation="bool",
+     *        description="Should the instance be open for registration?")
      * @throws ForbiddenRequestException
      */
     public function actionCreateInstance()
@@ -129,7 +129,7 @@ class InstancesPresenter extends BasePresenter
         $this->instances->persist($instance->getRootGroup(), false);
         $this->instances->persist($localizedRootGroup, false);
         $this->instances->persist($instance);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance), IResponse::S201_CREATED);
+        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $user), IResponse::S201_CREATED);
     }
 
     public function checkUpdateInstance(string $id)
@@ -144,7 +144,8 @@ class InstancesPresenter extends BasePresenter
     /**
      * Update an instance
      * @POST
-     * @Param(type="post", name="isOpen", validation="bool", required=false, description="Should the instance be open for registration?")
+     * @Param(type="post", name="isOpen", validation="bool", required=false,
+     *        description="Should the instance be open for registration?")
      * @param string $id An identifier of the updated instance
      */
     public function actionUpdateInstance(string $id)
@@ -159,7 +160,7 @@ class InstancesPresenter extends BasePresenter
 
         $instance->setIsOpen($isOpen);
         $this->instances->persist($instance);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance));
+        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $this->getCurrentUser()));
     }
 
     public function checkDeleteInstance(string $id)
@@ -208,7 +209,7 @@ class InstancesPresenter extends BasePresenter
     public function actionDetail(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance));
+        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $this->getCurrentUser()));
     }
 
     public function checkLicences(string $id)
@@ -268,9 +269,12 @@ class InstancesPresenter extends BasePresenter
     /**
      * Update an existing license for an instance
      * @POST
-     * @Param(type="post", name="note", validation="string:2..255", required=false, description="A note for users or administrators")
-     * @Param(type="post", name="validUntil", validation="string", required=false, description="Expiration date of the license")
-     * @Param(type="post", name="isValid", validation="bool", required=false, description="Administrator switch to toggle licence validity")
+     * @Param(type="post", name="note", validation="string:2..255", required=false,
+     *        description="A note for users or administrators")
+     * @Param(type="post", name="validUntil", validation="string", required=false,
+     *        description="Expiration date of the license")
+     * @Param(type="post", name="isValid", validation="bool", required=false,
+     *        description="Administrator switch to toggle licence validity")
      * @param string $licenceId Identifier of the licence
      * @throws NotFoundException
      */

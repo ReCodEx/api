@@ -2,8 +2,6 @@
 
 namespace App\Security;
 
-use Nette\Utils\Strings;
-
 /**
  * Class used for management of user roles, which are dynamically loaded from
  * permission configuration file.
@@ -43,7 +41,7 @@ abstract class Roles
             return true;
         }
 
-        if ($actualTestedRole === self::SUPERADMIN_ROLE && !Strings::startsWith($minimalRequestedRole, 'scope-')) {
+        if ($actualTestedRole === self::SUPERADMIN_ROLE && !str_starts_with($minimalRequestedRole, 'scope-')) {
             return true;  // special case -- superadmin takes it all, except for the scopes
         }
 
