@@ -5,10 +5,10 @@ namespace App\Helpers\MetaFormats;
 use Attribute;
 
 /**
- * Attribute for request parameter details.
+ * Attribute used to annotate format definition class fields.
  */
 #[Attribute]
-class RequestAttribute
+class FormatParameterAttribute
 {
     public function __construct(RequestParamType $type, string $description = "", bool $required = true)
     {

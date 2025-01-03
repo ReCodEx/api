@@ -87,7 +87,7 @@ class MetaFormatHelper
     public static function extractRequestAttributeData(
         ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
     ): ?RequestParamData {
-        $requestAttribute = $reflectionObject->getAttributes(RequestAttribute::class);
+        $requestAttribute = $reflectionObject->getAttributes(FormatParameterAttribute::class);
         if (count($requestAttribute) === 0) {
             return null;
         }
@@ -121,7 +121,9 @@ class MetaFormatHelper
 
             $requestParamData = self::extractRequestAttributeData($field);
             if ($requestParamData === null) {
-                throw new InternalServerException("The field $fieldName of class $className does not have a RequestAttribute.");
+                throw new InternalServerException(
+                    "The field $fieldName of class $className does not have a RequestAttribute."
+                );
             }
 
             $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType, $nullable, $requestParamData);
