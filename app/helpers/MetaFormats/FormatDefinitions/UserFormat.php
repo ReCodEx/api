@@ -2,9 +2,9 @@
 
 namespace App\Helpers\MetaFormats\FormatDefinitions;
 
-use App\Helpers\MetaFormats\FormatAttribute;
+use App\Helpers\MetaFormats\Attributes\FormatAttribute;
 use App\Helpers\MetaFormats\MetaFormat;
-use App\Helpers\MetaFormats\FormatParameterAttribute;
+use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\RequestParamType;
 
 #[FormatAttribute("userRegistration")]

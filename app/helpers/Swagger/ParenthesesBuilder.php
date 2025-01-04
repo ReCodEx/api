@@ -48,6 +48,6 @@ class ParenthesesBuilder
 
     public function toString(): string
     {
-        return '(' . implode(',', $this->tokens) . ')';
+        return '(' . implode(', ', $this->tokens) . ')';
     }
 }

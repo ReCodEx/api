@@ -215,6 +215,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
     {
         $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
 
+        $this->logger->log(var_export(MetaFormatHelper::debugGetAttributes($reflection), true), ILogger::DEBUG);
+
+
         // ignore request that do not yet have the attribute
         if ($format === null) {
             return;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\MetaFormats;
+namespace App\Helpers\MetaFormats\Attributes;
 
 use Attribute;
 

@@ -21,7 +21,9 @@ use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
-use App\Helpers\MetaFormats\FormatAttribute;
+use App\Helpers\MetaFormats\Attributes\FormatAttribute;
+use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
+use App\Helpers\MetaFormats\Attributes\ParamAttribute;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -164,6 +166,7 @@ class RegistrationPresenter extends BasePresenter
      * @throws InvalidArgumentException
      */
     #[FormatAttribute("userRegistration")]
+    #[ParamAttribute("email", "An email that will serve as a login name", validation: [ new UserFormat() ])]
     public function actionCreateAccount()
     {
         $req = $this->getMetaRequest();

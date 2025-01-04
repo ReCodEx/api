@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Helpers\MetaFormats\AnnotationToAttributeConverter;
 use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use Symfony\Component\Console\Command\Command;
@@ -40,7 +41,41 @@ class MetaTester extends Command
         // $format = new GroupFormat();
         // var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
 
-        $format = new UserFormat();
-        var_dump($format->checkedAssign("email", "a@a.a.a"));
+        // $format = new UserFormat();
+        // var_dump($format->checkedAssign("email", "a@a.a.a"));
+
+        $inDir = __DIR__ . "/../V1Module/presenters";
+        $outDir = __DIR__ . "/../V1Module/presenters2";
+
+        // create output folder
+        if (!is_dir($outDir)) {
+            mkdir($outDir);
+
+            // copy base subfolder
+            $inBaseDir = $inDir . "/base";
+            $outBaseDir = $outDir . "/base";
+            mkdir($outBaseDir);
+            $baseFilenames = scandir($inBaseDir);
+            foreach ($baseFilenames as $filename) {
+                if (!str_ends_with($filename, ".php")) {
+                    continue;
+                }
+
+                copy($inBaseDir . "/" . $filename, $outBaseDir);
+            }
+        }
+
+        $filenames = scandir($inDir);
+        foreach ($filenames as $filename) {
+            if (!str_ends_with($filename, "Presenter.php")) {
+                continue;
+            }
+
+            $filepath = $inDir . "/" . $filename;
+            $newContent = AnnotationToAttributeConverter::convertFile($filepath);
+            $newFile = fopen($outDir . "/" . $filename, "w");
+            fwrite($newFile, $newContent);
+            fclose($newFile);
+        }
     }
 }

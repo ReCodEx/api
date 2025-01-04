@@ -100,6 +100,23 @@ class MetaFormatHelper
         return new RequestParamData($type, $description, $required);
     }
 
+    /**
+     * Debug method used to extract all attribute data of a reflection object.
+     * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject The reflection object.
+     * @return array Returns an array, where each element represents an attribute in top-down order of definition
+     *   in the code. Each element is an array of constructor arguments of the attribute.
+     */
+    public static function debugGetAttributes(
+        ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
+    ): array {
+        $requestAttributes = $reflectionObject->getAttributes();
+        $data = [];
+        foreach ($requestAttributes as $attr) {
+            $data[] = $attr->getArguments();
+        }
+        return $data;
+    }
+
   /**
    * Parses the format attributes of class fields and returns their metadata.
    * @param string $className The name of the class.

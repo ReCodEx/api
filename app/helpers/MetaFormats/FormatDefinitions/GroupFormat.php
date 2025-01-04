@@ -2,7 +2,7 @@
 
 namespace App\Helpers\MetaFormats\FormatDefinitions;
 
-use App\Helpers\MetaFormats\FormatAttribute;
+use App\Helpers\MetaFormats\Attributes\FormatAttribute;
 use App\Helpers\MetaFormats\MetaFormat;
 
 #[FormatAttribute("group")]
