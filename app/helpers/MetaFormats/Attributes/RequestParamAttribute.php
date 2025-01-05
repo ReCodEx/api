@@ -8,9 +8,15 @@ use Attribute;
 /**
  * Attribute used to annotate individual post or query parameters of endpoints.
  */
-#[Attribute]
-class ParamAttribute
+#[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD)]
+class RequestParamAttribute
 {
+    public RequestParamType $type;
+    public string $paramName;
+    public string $description;
+    public bool $required;
+    public array $validators;
+
     /**
      * @param \App\Helpers\MetaFormats\RequestParamType $type The request parameter type (Post or Query).
      * @param string $name The name of the request parameter.
@@ -25,5 +31,10 @@ class ParamAttribute
         bool $required = true,
         array $validators = [],
     ) {
+        $this->type = $type;
+        $this->paramName = $name;
+        $this->description = $description;
+        $this->required = $required;
+        $this->validators = $validators;
     }
 }

@@ -166,7 +166,6 @@ class RegistrationPresenter extends BasePresenter
      * @throws InvalidArgumentException
      */
     #[FormatAttribute("userRegistration")]
-    #[ParamAttribute("email", "An email that will serve as a login name", validation: [ new UserFormat() ])]
     public function actionCreateAccount()
     {
         $req = $this->getMetaRequest();

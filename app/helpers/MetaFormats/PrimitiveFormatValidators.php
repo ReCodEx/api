@@ -32,7 +32,7 @@ class PrimitiveFormatValidators
         return true;
     }
 
-    private static function checkType($value, PhpTypes $type): bool
+    public static function checkType($value, PhpTypes $type): bool
     {
         return gettype($value) === $type->value;
     }

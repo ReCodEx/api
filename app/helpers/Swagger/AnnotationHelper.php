@@ -17,7 +17,7 @@ class AnnotationHelper
      * @param string $methodName The name of the method.
      * @return \ReflectionMethod Returns the ReflectionMethod object.
      */
-    private static function getMethod(string $className, string $methodName): ReflectionMethod
+    public static function getMethod(string $className, string $methodName): ReflectionMethod
     {
         $class = new ReflectionClass($className);
         return $class->getMethod($methodName);

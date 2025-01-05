@@ -5,6 +5,8 @@ namespace App\Console;
 use App\Helpers\MetaFormats\AnnotationToAttributeConverter;
 use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
+use App\Helpers\MetaFormats\MetaFormatHelper;
+use App\Helpers\Swagger\AnnotationHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,6 +46,7 @@ class MetaTester extends Command
         // $format = new UserFormat();
         // var_dump($format->checkedAssign("email", "a@a.a.a"));
 
+        /*
         $inDir = __DIR__ . "/../V1Module/presenters";
         $outDir = __DIR__ . "/../V1Module/presenters2";
 
@@ -61,7 +64,7 @@ class MetaTester extends Command
                     continue;
                 }
 
-                copy($inBaseDir . "/" . $filename, $outBaseDir);
+                copy($inBaseDir . "/" . $filename, $outBaseDir . "/" . $filename);
             }
         }
 
@@ -77,5 +80,10 @@ class MetaTester extends Command
             fwrite($newFile, $newContent);
             fclose($newFile);
         }
+        */
+
+        $reflection = AnnotationHelper::getMethod("App\V1Module\Presenters\RegistrationPresenter", "actionCreateAccount");
+        $attrs = MetaFormatHelper::extractRequestParamData($reflection);
+        var_dump($attrs);
     }
 }

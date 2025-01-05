@@ -3,6 +3,10 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
+use App\Helpers\MetaFormats\Attributes\FormatAttribute;
+use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
+use App\Helpers\MetaFormats\Attributes\ParamAttribute;
+use App\Helpers\MetaFormats\Attributes\RequestParamAttribute;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;
 use ReflectionMethod;
@@ -82,6 +86,28 @@ class MetaFormatHelper
         }
 
         return $formatArguments[0];
+    }
+
+    /**
+     * Fetches all attributes of a method and extracts the parameter data.
+     * @param \ReflectionMethod $reflectionMethod The method reflection object.
+     * @return array Returns an array of RequestParamData objects with the extracted data.
+     */
+    public static function extractRequestParamData(ReflectionMethod $reflectionMethod): array
+    {
+        $attrs = $reflectionMethod->getAttributes(RequestParamAttribute::class);
+        $data = [];
+        foreach ($attrs as $attr) {
+            $paramAttr = $attr->newInstance();
+            $type = $paramAttr->type;
+            $description = $paramAttr->description;
+            $required = $paramAttr->required;
+            $validators = $paramAttr->validators;
+
+            $data[] = new RequestParamData($type, $description, $required, $validators);
+        }
+
+        return $data;
     }
 
     public static function extractRequestAttributeData(

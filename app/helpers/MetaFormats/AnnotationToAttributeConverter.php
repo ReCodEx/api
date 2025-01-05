@@ -74,8 +74,8 @@ class AnnotationToAttributeConverter
         }
 
         if (array_key_exists("validation", $annotationParameters)) {
-            ///TODO
-            $parenthesesBuilder->addValue("validation: [ \"{$annotationParameters["validation"]}\" ]");
+            $validator = self::convertAnnotationValidationToValidatorString($annotationParameters["validation"]);
+            $parenthesesBuilder->addValue("validators: [ $validator ]");
         }
 
         if (array_key_exists("required", $annotationParameters)) {
@@ -86,7 +86,63 @@ class AnnotationToAttributeConverter
             throw new InternalServerException("Missing type parameter.");
         }
 
-        return "#[ParamAttribute{$parenthesesBuilder->toString()}]";
+        return "#[RequestParamAttribute{$parenthesesBuilder->toString()}]";
+    }
+
+    /**
+     * Converts annotation validation values (such as "string:1..255") to Validator construction
+     *   strings (such as "new StringValidator(1, 255)").
+     * @param string $validation The annotation validation string.
+     * @return string Returns the object construction string.
+     */
+    private static function convertAnnotationValidationToValidatorString(string $validation): string
+    {
+        if (str_starts_with($validation, "string")) {
+            // handle string length constraints, such as "string:1..255"
+            if (strlen($validation) > 6) {
+                if ($validation[6] !== ":") {
+                    throw new InternalServerException("Unknown string validation format: $validation");
+                }
+                $suffix = substr($validation, 7);
+
+                // special case for uuids
+                if ($suffix === "36") {
+                    return "new UuidValidator()";
+                }
+
+                // capture the two bounding numbers and the double dot in strings of
+                // types "1..255", "..255", "1..", or "255"
+                if (preg_match("/([0-9]*)(..)?([0-9]+)?/", $suffix, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
+                    throw new InternalServerException("Unknown string validation format: $validation");
+                }
+
+                // type "255", exact match
+                if ($matches[2] === null) {
+                    return "new StringValidator({$matches[1]}, {$matches[1]})";
+                // type "1..255"
+                } elseif ($matches[1] !== null && $matches[3] !== null) {
+                    return "new StringValidator({$matches[1]}, {$matches[3]})";
+                // type "..255"
+                } elseif ($matches[1] === null) {
+                    return "new StringValidator(0, {$matches[3]})";
+                // type "1.."
+                } elseif ($matches[3] === null) {
+                    return "new StringValidator({$matches[1]})";
+                }
+
+                throw new InternalServerException("Unknown string validation format: $validation");
+            }
+
+            return "new StringValidator()";
+        }
+
+        switch ($validation) {
+            case "email":
+                return "new EmailValidator()";
+            default:
+                ///TODO
+                return "\"UNSUPPORTED\"";
+        }
     }
 
     public static function convertFile(string $path)
@@ -104,12 +160,15 @@ class AnnotationToAttributeConverter
         foreach (preg_split("/((\r?\n)|(\r\n?))/", $withInterleavedAttributes) as $line) {
             // add usings for new types
             if (!$usingsAdded && strlen($line) > 3 && substr($line, 0, 3) === "use") {
-                $lines[] = "use App\Helpers\MetaFormats\Attributes\ParamAttribute;";
+                $lines[] = "use App\Helpers\MetaFormats\Attributes\RequestParamAttribute;";
                 $lines[] = "use App\Helpers\MetaFormats\RequestParamType;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\StringValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\EmailValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\UuidValidator;";
                 $lines[] = $line;
                 $usingsAdded = true;
             // store attribute lines in the buffer and do not write them
-            } elseif (preg_match("/#\[ParamAttribute/", $line) === 1) {
+            } elseif (preg_match("/#\[RequestParamAttribute/", $line) === 1) {
                 $attributeLinesBuffer[] = $line;
             // flush attribute lines
             } elseif (trim($line) === "*/") {
