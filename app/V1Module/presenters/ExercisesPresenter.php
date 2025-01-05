@@ -757,8 +757,7 @@ class ExercisesPresenter extends BasePresenter
      * @Param(type="query", name="renameTo", validation="string:1..32", required=false,
      *        description="New name of the tag")
      * @Param(type="query", name="force", validation="bool", required=false,
-     *        description="If true, the rename will be allowed even if the new tag name exists (tags will be merged).
-     *                     Otherwise, name collisions will result in error.")
+     *        description="If true, the rename will be allowed even if the new tag name exists (tags will be merged). Otherwise, name collisions will result in error.")
      */
     public function actionTagsUpdateGlobal(string $tag, string $renameTo = null, bool $force = false)
     {
