@@ -434,18 +434,15 @@ class UsersPresenter extends BasePresenter
      * @Param(type="post", name="pointsChangedEmails", validation="bool", required=false,
      *        description="Flag if email should be sent to user when the points were awarded for assignment")
      * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to group supervisor if a student submits new solution
-     *                     for already accepted assignment")
+     *        description="Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment")
      * @Param(type="post", name="assignmentSubmitAfterReviewedEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to group supervisor if a student submits new solution
-     *                     for already reviewed and not accepted assignment")
+     *        description="Flag if email should be sent to group supervisor if a student submits new solution for already reviewed and not accepted assignment")
      * @Param(type="post", name="exerciseNotificationEmails", validation="bool", required=false,
      *        description="Flag if notifications sent by authors of exercises should be sent via email.")
      * @Param(type="post", name="solutionAcceptedEmails", validation="bool", required=false,
      *        description="Flag if notification should be sent to a student when solution accepted flag is changed.")
      * @Param(type="post", name="solutionReviewRequestedEmails", validation="bool", required=false,
-     *        description="Flag if notification should be send to a teacher when a solution reviewRequested flag
-     *                      is chagned in a supervised/admined group.")
+     *        description="Flag if notification should be send to a teacher when a solution reviewRequested flag is chagned in a supervised/admined group.")
      * @throws NotFoundException
      */
     public function actionUpdateSettings(string $id)

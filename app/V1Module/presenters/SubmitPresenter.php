@@ -342,7 +342,7 @@ class SubmitPresenter extends BasePresenter
      * @POST
      * @param string $id Identifier of the solution
      * @Param(type="post", name="debug", validation="bool", required=false,
-     *        "Debugging resubmit with all logs and outputs")
+     *        description="Debugging resubmit with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException

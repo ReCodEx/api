@@ -168,8 +168,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @Param(type="query", name="entry", required=false, validation="string:1..",
      *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
      * @Param(type="query", name="similarSolutionId", required=false, validation="string:36",
-     *        description="Id of an assignment solution which has detected possible plagiarism in this file.
-     *                     This is basically a shortcut (hint) for ACLs.")
+     *        description="Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.")
      * @throws \Nette\Application\AbortException
      * @throws \Nette\Application\BadRequestException
      */
@@ -210,8 +209,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @Param(type="query", name="entry", required=false, validation="string:1..",
      *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
      * @Param(type="query", name="similarSolutionId", required=false, validation="string:36",
-     *        description="Id of an assignment solution which has detected possible plagiarism in this file.
-     *                     This is basically a shortcut (hint) for ACLs.")
+     *        description="Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.")
      */
     public function actionContent(string $id, ?string $entry = null)
     {
