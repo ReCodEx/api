@@ -120,11 +120,12 @@ class MetaFormatHelper
         }
 
         $requestArguments = $requestAttribute[0]->getArguments();
+        $name = $reflectionObject->name;
         $type = $requestArguments["type"];
         $description = array_key_exists("description", $requestArguments) ? $requestArguments["description"] : "";
         $required = array_key_exists("required", $requestArguments) ? $requestArguments["required"] : true;
 
-        return new RequestParamData($type, "TODO_IMPLEMENT_FOR_FormatParameterAttribute", $description, $required);
+        return new RequestParamData($type, $name, $description, $required);
     }
 
     /**

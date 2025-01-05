@@ -24,6 +24,7 @@ use App\Helpers\AnnotationsParser;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\MetaRequest;
+use App\Helpers\MetaFormats\RequestParamData;
 use App\Helpers\MetaFormats\RequestParamType;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
@@ -207,22 +208,59 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     public function getMetaRequest(): MetaRequest|null
     {
+        if ($this->requestFormatInstance === null) {
+            throw new InternalServerException(
+                "getMetaRequest() cannot be used without a format class defined for the endpoint."
+            );
+        }
+
         $request = parent::getRequest();
         return new MetaRequest($request, $this->requestFormatInstance);
     }
 
     private function processParams(ReflectionMethod $reflection)
     {
-        $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
-
         $this->logger->log(var_export(MetaFormatHelper::debugGetAttributes($reflection), true), ILogger::DEBUG);
 
-
-        // ignore request that do not yet have the attribute
-        if ($format === null) {
+        // use a method specialized for formats if there is a format available
+        $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
+        if ($format !== null) {
+            $this->processParamsFormat($format);
             return;
         }
 
+        // otherwise use a method for loose parameters
+        $paramData = MetaFormatHelper::extractRequestParamData($reflection);
+        $this->processParamsLoose($paramData);
+    }
+
+    private function processParamsLoose(array $paramData)
+    {
+        // validate each param
+        foreach ($paramData as $param) {
+            $paramValue = $this->getValueFromParamData($param);
+
+            // check if null
+            if ($paramValue === null) {
+                if ($param->required) {
+                    throw new InvalidArgumentException($param->name, "The parameter is required and cannot be null.");
+                }
+
+                // only non null values should be validated
+                continue;
+            }
+
+            // use every provided validator
+            foreach ($param->validators as $validator) {
+                if (!$validator->validate($paramValue)) {
+                    throw new InvalidArgumentException($param->name);
+                }
+            }
+        }
+    }
+
+    private function processParamsFormat(string $format)
+    {
         // get the parsed attribute data from the format fields
         $formatToFieldDefinitionsMap = FormatCache::getFormatToFieldDefinitionsMap();
         if (!array_key_exists($format, $formatToFieldDefinitionsMap)) {
@@ -236,19 +274,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
         $formatInstance = MetaFormatHelper::createFormatInstance($format);
         foreach ($nameToFieldDefinitionsMap as $fieldName => $fieldData) {
             $requestParamData = $fieldData->requestData;
-            $this->logger->log(var_export($requestParamData, true), ILogger::DEBUG);
+            //$this->logger->log(var_export($requestParamData, true), ILogger::DEBUG);
 
-            $value = null;
-            switch ($requestParamData->type) {
-                case RequestParamType::Post:
-                    $value = $this->getPostField($fieldName, required: $requestParamData->required);
-                    break;
-                case RequestParamType::Query:
-                    $value = $this->getQueryField($fieldName, required: $requestParamData->required);
-                    break;
-                default:
-                    throw new InternalServerException("Unknown parameter type: {$requestParamData->type}");
-            }
+            $value = $this->getValueFromParamData($requestParamData);
 
             if (!$formatInstance->checkedAssign($fieldName, $value)) {
                 ///TODO: it would be nice to give a more detailed error message here
@@ -262,38 +290,24 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
 
         $this->requestFormatInstance = $formatInstance;
+    }
 
-        // $annotations = AnnotationsParser::getAll($reflection);
-        // $requiredFields = Arrays::get($annotations, "Param", []);
-
-        // $this->logger->log(var_export($annotations, true), ILogger::DEBUG);
-        // $this->logger->log(var_export($requiredFields, true), ILogger::DEBUG);
-
-        // foreach ($requiredFields as $field) {
-        //     $type = strtolower($field->type);
-        //     $name = $field->name;
-        //     $validationRule = isset($field->validation) ? $field->validation : null;
-        //     $msg = isset($field->msg) ? $field->msg : null;
-        //     $required = isset($field->required) ? $field->required : true;
-
-        //     $this->logger->log("test", ILogger::DEBUG);
-
-        //     $value = null;
-        //     switch ($type) {
-        //         case "post":
-        //             $value = $this->getPostField($name, $required);
-        //             break;
-        //         case "query":
-        //             $value = $this->getQueryField($name, $required);
-        //             break;
-        //         default:
-        //             throw new InternalServerException("Unknown parameter type '$type'");
-        //     }
-
-        //     if ($validationRule !== null && $value !== null) {
-        //         $value = $this->validateValue($name, $value, $validationRule, $msg);
-        //     }
-        // }
+    /**
+     * Calls either getPostField or getQueryField based on the provided metadata.
+     * @param \App\Helpers\MetaFormats\RequestParamData $paramData Metadata of the request parameter.
+     * @throws \App\Exceptions\InternalServerException Thrown when an unexpected parameter location was set.
+     * @return mixed Returns the value from the request.
+     */
+    private function getValueFromParamData(RequestParamData $paramData): mixed
+    {
+        switch ($paramData->type) {
+            case RequestParamType::Post:
+                return $this->getPostField($paramData->name, required: $paramData->required);
+            case RequestParamType::Query:
+                return $this->getQueryField($paramData->name, required: $paramData->required);
+            default:
+                throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
+        }
     }
 
     private function getPostField($param, $required = true)
