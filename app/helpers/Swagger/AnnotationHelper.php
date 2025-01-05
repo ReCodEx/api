@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Helpers\MetaFormats\MetaFormatHelper;
 use ReflectionClass;
 use ReflectionMethod;
 use Exception;
@@ -39,8 +40,10 @@ class AnnotationHelper
 
         // check if the annotations have an http method
         foreach ($methods as $methodString => $methodEnum) {
-            if (in_array($methodString, $annotations)) {
-                return $methodEnum;
+            foreach ($annotations as $annotation) {
+                if (str_starts_with($annotation, $methodString)) {
+                    return $methodEnum;
+                }
             }
         }
 
@@ -218,8 +221,11 @@ class AnnotationHelper
 
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
         $standardAnnotationParams = self::extractStandardAnnotationParams($methodAnnotations, $route);
-        $netteAnnotationParams = self::extractNetteAnnotationParams($methodAnnotations);
-        $params = array_merge($standardAnnotationParams, $netteAnnotationParams);
+        $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
+        $attributeParams = array_map(function ($data) {
+            return $data->toAnnotationParameterData();
+        }, $attributeData);
+        $params = array_merge($standardAnnotationParams, $attributeParams);
 
         $pathParams = [];
         $queryParams = [];

@@ -99,12 +99,13 @@ class MetaFormatHelper
         $data = [];
         foreach ($attrs as $attr) {
             $paramAttr = $attr->newInstance();
-            $type = $paramAttr->type;
-            $description = $paramAttr->description;
-            $required = $paramAttr->required;
-            $validators = $paramAttr->validators;
-
-            $data[] = new RequestParamData($type, $description, $required, $validators);
+            $data[] = new RequestParamData(
+                $paramAttr->type,
+                $paramAttr->paramName,
+                $paramAttr->description,
+                $paramAttr->required,
+                $paramAttr->validators
+            );
         }
 
         return $data;
@@ -123,7 +124,7 @@ class MetaFormatHelper
         $description = array_key_exists("description", $requestArguments) ? $requestArguments["description"] : "";
         $required = array_key_exists("required", $requestArguments) ? $requestArguments["required"] : true;
 
-        return new RequestParamData($type, $description, $required);
+        return new RequestParamData($type, "TODO_IMPLEMENT_FOR_FormatParameterAttribute", $description, $required);
     }
 
     /**

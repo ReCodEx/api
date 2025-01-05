@@ -78,14 +78,14 @@ class AnnotationParameterData
             if ($this->isDatatypeNullable()) {
                 $typename = substr($typename, 0, -strlen(self::$nullableSuffix));
             }
-  
+
             if (self::$typeMap[$typename] === null) {
                 ///TODO: Return the commented exception below once the meta-view formats are implemented.
                 /// This detaults to strings because custom types like 'email' are not supported yet.
                 return 'string';
             }
             //throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
-          
+
             $type = self::$typeMap[$typename];
         }
         return $type;

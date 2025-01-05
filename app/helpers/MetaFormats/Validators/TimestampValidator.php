@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Helpers\MetaFormats\Validators;
+
+use App\Helpers\MetaFormats\PhpTypes;
+use App\Helpers\MetaFormats\PrimitiveFormatValidators;
+
+class TimestampValidator
+{
+    public const SWAGGER_TYPE = "string";
+
+    public function validate(string $value)
+    {
+        ///TODO: check if timestamp
+        return true;
+    }
+}

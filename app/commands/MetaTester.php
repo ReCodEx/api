@@ -46,7 +46,6 @@ class MetaTester extends Command
         // $format = new UserFormat();
         // var_dump($format->checkedAssign("email", "a@a.a.a"));
 
-        /*
         $inDir = __DIR__ . "/../V1Module/presenters";
         $outDir = __DIR__ . "/../V1Module/presenters2";
 
@@ -80,10 +79,9 @@ class MetaTester extends Command
             fwrite($newFile, $newContent);
             fclose($newFile);
         }
-        */
 
-        $reflection = AnnotationHelper::getMethod("App\V1Module\Presenters\RegistrationPresenter", "actionCreateAccount");
-        $attrs = MetaFormatHelper::extractRequestParamData($reflection);
-        var_dump($attrs);
+        // $reflection = AnnotationHelper::getMethod("App\V1Module\Presenters\RegistrationPresenter", "actionCreateAccount");
+        // $attrs = MetaFormatHelper::extractRequestParamData($reflection);
+        // var_dump($attrs);
     }
 }

@@ -136,11 +136,31 @@ class AnnotationToAttributeConverter
             return "new StringValidator()";
         }
 
+        ///TODO: this ignores nullability
+        if (str_ends_with($validation, "|null")) {
+            $validation = substr($validation, 0, -5);
+        }
+
         switch ($validation) {
             case "email":
+            // there is one occurrence of this
+            case "email:1..":
                 return "new EmailValidator()";
+            case "numericint":
+                return "new IntValidator()";
+            case "bool":
+            case "boolean":
+                return "new BoolValidator()";
+            case "array":
+            case "list":
+                return "new ArrayValidator()";
+            case "timestamp":
+                return "new TimestampValidator()";
+            case "numeric":
+                return "new FloatValidator()";
             default:
                 ///TODO
+                var_dump("unsupported: $validation");
                 return "\"UNSUPPORTED\"";
         }
     }
@@ -165,6 +185,11 @@ class AnnotationToAttributeConverter
                 $lines[] = "use App\Helpers\MetaFormats\Validators\StringValidator;";
                 $lines[] = "use App\Helpers\MetaFormats\Validators\EmailValidator;";
                 $lines[] = "use App\Helpers\MetaFormats\Validators\UuidValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\BoolValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\ArrayValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\FloatValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\IntValidator;";
+                $lines[] = "use App\Helpers\MetaFormats\Validators\TimestampValidator;";
                 $lines[] = $line;
                 $usingsAdded = true;
             // store attribute lines in the buffer and do not write them
