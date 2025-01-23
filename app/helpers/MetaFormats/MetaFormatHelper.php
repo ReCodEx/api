@@ -67,7 +67,6 @@ class MetaFormatHelper
      * Checks whether an entity contains a FormatAttribute and extracts the format if so.
      * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject A reflection
      * object of the entity.
-     * @throws \App\Exceptions\InternalServerException Thrown when the FormatAttribute was used incorrectly.
      * @return ?string Returns the format or null if no FormatAttribute was present.
      */
     public static function extractFormatFromAttribute(
@@ -78,14 +77,8 @@ class MetaFormatHelper
             return null;
         }
 
-        // check attribute correctness
-        $formatArguments = $formatAttributes[0]->getArguments();
-        if (count($formatArguments) !== 1) {
-            $name = $reflectionObject->getName();
-            throw new InternalServerException("The entity $name does not have a single attribute argument.");
-        }
-
-        return $formatArguments[0];
+        $formatAttribute = $formatAttributes[0]->newInstance();
+        return $formatAttribute->class;
     }
 
     /**
@@ -111,28 +104,28 @@ class MetaFormatHelper
         return $data;
     }
 
-    public static function extractRequestAttributeData(
-        ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
-    ): ?RequestParamData {
-        $requestAttribute = $reflectionObject->getAttributes(FormatParameterAttribute::class);
-        if (count($requestAttribute) === 0) {
+    public static function extractFormatParameterData(ReflectionProperty $reflectionObject): ?RequestParamData
+    {
+        $requestAttributes = $reflectionObject->getAttributes(FormatParameterAttribute::class);
+        if (count($requestAttributes) === 0) {
             return null;
         }
 
-        $requestArguments = $requestAttribute[0]->getArguments();
-        $name = $reflectionObject->name;
-        $type = $requestArguments["type"];
-        $description = array_key_exists("description", $requestArguments) ? $requestArguments["description"] : "";
-        $required = array_key_exists("required", $requestArguments) ? $requestArguments["required"] : true;
-
-        return new RequestParamData($type, $name, $description, $required);
+        $requestAttribute = $requestAttributes[0]->newInstance();
+        return new RequestParamData(
+            $requestAttribute->type,
+            $reflectionObject->name,
+            $requestAttribute->description,
+            $requestAttribute->required,
+            $requestAttribute->validators
+        );
     }
 
     /**
      * Debug method used to extract all attribute data of a reflection object.
      * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject The reflection object.
      * @return array Returns an array, where each element represents an attribute in top-down order of definition
-     *   in the code. Each element is an array of constructor arguments of the attribute.
+     *   in the code. Each element is an instance of the specific attribute.
      */
     public static function debugGetAttributes(
         ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
@@ -140,7 +133,7 @@ class MetaFormatHelper
         $requestAttributes = $reflectionObject->getAttributes();
         $data = [];
         foreach ($requestAttributes as $attr) {
-            $data[] = $attr->getArguments();
+            $data[] = $attr->newInstance();
         }
         return $data;
     }
@@ -164,7 +157,7 @@ class MetaFormatHelper
             $fieldType = $reflectionType?->getName();
             $nullable = $reflectionType?->allowsNull() ?? false;
 
-            $requestParamData = self::extractRequestAttributeData($field);
+            $requestParamData = self::extractFormatParameterData($field);
             if ($requestParamData === null) {
                 throw new InternalServerException(
                     "The field $fieldName of class $className does not have a RequestAttribute."
@@ -210,44 +203,6 @@ class MetaFormatHelper
         return $formatClassMap;
     }
 
-  /**
-   * Extracts all primitive validator methods (starting with "validate") and returns a map from format to a callback.
-   * The callbacks have one parameter that is passed to the validator.
-   */
-    private static function getPrimitiveValidators(): array
-    {
-          $instance = new PrimitiveFormatValidators();
-          $className = get_class($instance);
-          $methodNames = get_class_methods($className);
-
-          $validators = [];
-        foreach ($methodNames as $methodName) {
-            // all validation methods start with validate
-            if (!str_starts_with($methodName, "validate")) {
-                continue;
-            }
-
-            $annotations = AnnotationHelper::getMethodAnnotations($className, $methodName);
-            $format = self::extractFormatData($annotations);
-            $callback = function ($param) use ($instance, $methodName) {
-                return $instance->$methodName($param);
-            };
-            $validators[$format] = $callback;
-        }
-
-          return $validators;
-    }
-
-    private static function getMetaValidators(): array
-    {
-        return [];
-    }
-
-    public static function getValidators(): array
-    {
-        return array_merge(self::getPrimitiveValidators(), self::getMetaValidators());
-    }
-
     /**
      * Creates a MetaFormat instance of the given format.
      * @param string $format The name of the format.
@@ -264,5 +219,16 @@ class MetaFormatHelper
         $className = $formatToClassMap[$format];
         $instance = new $className();
         return $instance;
+    }
+
+    /**
+     * Checks whether a value is of a given type.
+     * @param mixed $value The value to be tested.
+     * @param \App\Helpers\MetaFormats\PhpTypes $type The desired type of the value.
+     * @return bool Returns whether the value is of the given type.
+     */
+    public static function checkType($value, PhpTypes $type): bool
+    {
+        return gettype($value) === $type->value;
     }
 }

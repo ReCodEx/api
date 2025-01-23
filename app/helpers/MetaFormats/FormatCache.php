@@ -52,14 +52,6 @@ class FormatCache
         return array_keys($formatToFieldDefinitionsMap[$format]);
     }
 
-    public static function getValidators(): array
-    {
-        if (self::$validators == null) {
-            self::$validators = MetaFormatHelper::getValidators();
-        }
-        return self::$validators;
-    }
-
     public static function getFieldDefinitions(string $className)
     {
         $classToFormatMap = self::getClassToFormatMap();

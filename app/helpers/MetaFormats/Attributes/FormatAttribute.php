@@ -10,7 +10,10 @@ use Attribute;
 #[Attribute]
 class FormatAttribute
 {
-    public function __construct(string $format)
+    public string $class;
+
+    public function __construct(string $class)
     {
+        $this->class = $class;
     }
 }

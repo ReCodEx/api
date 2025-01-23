@@ -2,8 +2,8 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
+use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
 class StringValidator
 {
@@ -21,7 +21,7 @@ class StringValidator
 
     public function validate(string $value)
     {
-        if (!PrimitiveFormatValidators::checkType($value, PhpTypes::String)) {
+        if (!MetaFormatHelper::checkType($value, PhpTypes::String)) {
             return false;
         }
 

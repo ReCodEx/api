@@ -7,7 +7,7 @@ use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\RequestParamType;
 
-#[FormatAttribute("userRegistration")]
+#[FormatAttribute(UserFormat::class)]
 class UserFormat extends MetaFormat
 {
     #[FormatAttribute("email")]
