@@ -249,6 +249,13 @@ class BasePresenter extends \App\Presenters\BasePresenter
                     throw new InvalidArgumentException($param->name, "The parameter is required and cannot be null.");
                 }
 
+                if (!$param->nullable) {
+                    throw new InvalidArgumentException(
+                        $param->name,
+                        "The parameter is not nullable and thus cannot be null."
+                    );
+                }
+
                 // only non null values should be validated
                 continue;
             }

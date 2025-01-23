@@ -6,6 +6,7 @@ use App\Helpers\MetaFormats\Attributes\FormatAttribute;
 use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\RequestParamType;
+use App\Helpers\MetaFormats\Validators\StringValidator;
 
 #[FormatAttribute(UserFormat::class)]
 class UserFormat extends MetaFormat
@@ -17,7 +18,7 @@ class UserFormat extends MetaFormat
     #[FormatParameterAttribute(type: RequestParamType::Post, description: "First name")]
     public string $firstName;
 
-    #[FormatParameterAttribute(type: RequestParamType::Post, description: "Last name")]
+    #[FormatParameterAttribute(type: RequestParamType::Post, description: "Last name", validators: [ new StringValidator(2) ])]
     public string $lastName;
 
     #[FormatParameterAttribute(type: RequestParamType::Post, description: "A password for authentication")]
@@ -32,14 +33,16 @@ class UserFormat extends MetaFormat
     #[FormatParameterAttribute(
         type: RequestParamType::Post,
         description: "Titles that are placed before user name",
-        required: false
+        required: false,
+        nullable: true
     )]
     public ?string $titlesBeforeName;
 
     #[FormatParameterAttribute(
         type: RequestParamType::Post,
         description: "Titles that are placed after user name",
-        required: false
+        required: false,
+        nullable: true
     )]
     public ?string $titlesAfterName;
 }

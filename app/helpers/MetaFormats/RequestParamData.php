@@ -12,19 +12,22 @@ class RequestParamData
     public string $description;
     public bool $required;
     public array $validators;
+    public bool $nullable;
 
     public function __construct(
         RequestParamType $type,
         string $name,
         string $description,
         bool $required,
-        array $validators = []
+        array $validators = [],
+        bool $nullable = false,
     ) {
         $this->type = $type;
         $this->name = $name;
         $this->description = $description;
         $this->required = $required;
         $this->validators = $validators;
+        $this->nullable = $nullable;
     }
 
     public function toAnnotationParameterData()
@@ -34,6 +37,7 @@ class RequestParamData
             $dataType = $this->validators[0]::SWAGGER_TYPE;
         }
 
+        ///TODO: does not pass null
         return new AnnotationParameterData(
             $dataType,
             $this->name,

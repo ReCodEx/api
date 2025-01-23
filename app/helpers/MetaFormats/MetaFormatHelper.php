@@ -97,7 +97,8 @@ class MetaFormatHelper
                 $paramAttr->paramName,
                 $paramAttr->description,
                 $paramAttr->required,
-                $paramAttr->validators
+                $paramAttr->validators,
+                $paramAttr->nullable,
             );
         }
 
@@ -117,7 +118,8 @@ class MetaFormatHelper
             $reflectionObject->name,
             $requestAttribute->description,
             $requestAttribute->required,
-            $requestAttribute->validators
+            $requestAttribute->validators,
+            $requestAttribute->nullable,
         );
     }
 

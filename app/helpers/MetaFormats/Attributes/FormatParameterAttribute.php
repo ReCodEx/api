@@ -15,22 +15,27 @@ class FormatParameterAttribute
     public string $description;
     public bool $required;
     public array $validators;
+    // there is not an easy way to check whether a property has the nullability flag set
+    public bool $nullable;
 
     /**
      * @param \App\Helpers\MetaFormats\RequestParamType $type The request parameter type (Post or Query).
      * @param string $description The description of the request parameter.
      * @param bool $required Whether the request parameter is required.
      * @param array $validators An array of validators applied to the request parameter.
+     * @param bool $nullable Whether the request parameter can be null.
      */
     public function __construct(
         RequestParamType $type,
         string $description = "",
         bool $required = true,
         array $validators = [],
+        bool $nullable = false,
     ) {
         $this->type = $type;
         $this->description = $description;
         $this->required = $required;
         $this->validators = $validators;
+        $this->nullable = $nullable;
     }
 }

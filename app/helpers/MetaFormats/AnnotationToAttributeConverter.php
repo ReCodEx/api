@@ -49,6 +49,10 @@ class AnnotationToAttributeConverter
         $parenthesesBuilder = new ParenthesesBuilder();
 
         // add type
+        if (!array_key_exists("type", $annotationParameters)) {
+            throw new InternalServerException("Missing type parameter.");
+        }
+
         $typeStr = $annotationParameters["type"];
         $type = null;
         switch ($typeStr) {
@@ -73,20 +77,35 @@ class AnnotationToAttributeConverter
             $parenthesesBuilder->addValue("description: \"{$annotationParameters["description"]}\"");
         }
 
+        $nullable = false;
         if (array_key_exists("validation", $annotationParameters)) {
-            $validator = self::convertAnnotationValidationToValidatorString($annotationParameters["validation"]);
-            $parenthesesBuilder->addValue("validators: [ $validator ]");
+            $validation = $annotationParameters["validation"];
+
+            if (self::checkValidationNullability($validation)) {
+                // remove the '|null' from the end of the string
+                $validation = substr($validation, 0, -5);
+                $nullable = true;
+            }
+
+            // this will always produce a single validator (the annotations do not contain multiple validation fields)
+            $validator = self::convertAnnotationValidationToValidatorString($validation);
+            $parenthesesBuilder->addValue(value: "validators: [ $validator ]");
         }
 
         if (array_key_exists("required", $annotationParameters)) {
             $parenthesesBuilder->addValue("required: " . $annotationParameters["required"]);
         }
 
-        if (!array_key_exists("type", $annotationParameters)) {
-            throw new InternalServerException("Missing type parameter.");
+        if ($nullable) {
+            $parenthesesBuilder->addValue("nullable: true");
         }
 
         return "#[RequestParamAttribute{$parenthesesBuilder->toString()}]";
+    }
+
+    private static function checkValidationNullability(string $validation): bool
+    {
+        return str_ends_with($validation, "|null");
     }
 
     /**
@@ -134,11 +153,6 @@ class AnnotationToAttributeConverter
             }
 
             return "new StringValidator()";
-        }
-
-        ///TODO: this ignores nullability
-        if (str_ends_with($validation, "|null")) {
-            $validation = substr($validation, 0, -5);
         }
 
         switch ($validation) {
