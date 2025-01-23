@@ -243,29 +243,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
             $paramValue = $this->getValueFromParamData($param);
             $formatInstanceArr[$param->name] = $paramValue;
 
-            // check if null
-            if ($paramValue === null) {
-                if ($param->required) {
-                    throw new InvalidArgumentException($param->name, "The parameter is required and cannot be null.");
-                }
-
-                if (!$param->nullable) {
-                    throw new InvalidArgumentException(
-                        $param->name,
-                        "The parameter is not nullable and thus cannot be null."
-                    );
-                }
-
-                // only non null values should be validated
-                continue;
-            }
-
-            // use every provided validator
-            foreach ($param->validators as $validator) {
-                if (!$validator->validate($paramValue)) {
-                    throw new InvalidArgumentException($param->name);
-                }
-            }
+            // this throws when it does not conform
+            $this->logger->log(var_export($param, true), ILogger::DEBUG);
+            $param->conformsToDefinition($paramValue);
         }
 
         // cast to stdClass
@@ -285,10 +265,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
         ///TODO: handle nested MetaFormat creation
         $formatInstance = MetaFormatHelper::createFormatInstance($format);
-        foreach ($nameToFieldDefinitionsMap as $fieldName => $fieldData) {
-            $requestParamData = $fieldData->requestData;
-            //$this->logger->log(var_export($requestParamData, true), ILogger::DEBUG);
-
+        foreach ($nameToFieldDefinitionsMap as $fieldName => $requestParamData) {
             $value = $this->getValueFromParamData($requestParamData);
 
             if (!$formatInstance->checkedAssign($fieldName, $value)) {

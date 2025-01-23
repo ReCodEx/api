@@ -152,13 +152,6 @@ class MetaFormatHelper
         $formats = [];
         foreach ($fields as $fieldName => $value) {
             $field = $class->getProperty($fieldName);
-            // the format can be null (not present)
-            $format = self::extractFormatFromAttribute($field);
-            // get null if there is no type
-            $reflectionType = $field->getType();
-            $fieldType = $reflectionType?->getName();
-            $nullable = $reflectionType?->allowsNull() ?? false;
-
             $requestParamData = self::extractFormatParameterData($field);
             if ($requestParamData === null) {
                 throw new InternalServerException(
@@ -166,7 +159,8 @@ class MetaFormatHelper
                 );
             }
 
-            $formats[$fieldName] = new FieldFormatDefinition($format, $fieldType, $nullable, $requestParamData);
+            ///TODO: add base type (PHP type of the field) validators to $requestParamData
+            $formats[$fieldName] = $requestParamData;
         }
 
         return $formats;
