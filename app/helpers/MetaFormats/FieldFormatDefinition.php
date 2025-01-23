@@ -106,6 +106,7 @@ class FieldFormatDefinition
         }
 
         // check whether the validator exists
+        ///TODO: replace this mechanism
         $validators = FormatCache::getValidators();
         if (!array_key_exists($parsedFormat->format, $validators)) {
             throw new InternalServerException("The format {$parsedFormat->format} does not have a validator.");

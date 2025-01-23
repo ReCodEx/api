@@ -165,7 +165,7 @@ class RegistrationPresenter extends BasePresenter
      * @throws WrongCredentialsException
      * @throws InvalidArgumentException
      */
-    #[FormatAttribute("userRegistration")]
+    #[FormatAttribute(UserFormat::class)]
     public function actionCreateAccount()
     {
         $req = $this->getMetaRequest();

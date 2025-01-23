@@ -75,8 +75,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     public $logger;
 
-    /** @var MetaFormat Processed parameters from the request */
-    private MetaFormat $requestFormatInstance;
+    /** @var mixed Processed parameters from the request (MetaFormat or stdClass) */
+    private mixed $requestFormatInstance;
 
     protected function formatPermissionCheckMethod($action)
     {
@@ -236,9 +236,12 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     private function processParamsLoose(array $paramData)
     {
+        $formatInstanceArr = [];
+
         // validate each param
         foreach ($paramData as $param) {
             $paramValue = $this->getValueFromParamData($param);
+            $formatInstanceArr[$param->name] = $paramValue;
 
             // check if null
             if ($paramValue === null) {
@@ -257,6 +260,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 }
             }
         }
+
+        // cast to stdClass
+        $this->requestFormatInstance = (object)$formatInstanceArr;
     }
 
     private function processParamsFormat(string $format)

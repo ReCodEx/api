@@ -7,9 +7,9 @@ use Nette\Application\Request;
 class MetaRequest
 {
     private Request $baseRequest;
-    private MetaFormat $requestFormatInstance;
+    private mixed $requestFormatInstance;
 
-    public function __construct(Request $request, MetaFormat $requestFormatInstance)
+    public function __construct(Request $request, mixed $requestFormatInstance)
     {
         $this->baseRequest = $request;
         $this->requestFormatInstance = $requestFormatInstance;
