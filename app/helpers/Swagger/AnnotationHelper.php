@@ -126,6 +126,8 @@ class AnnotationHelper
     {
         $routeParams = self::getRoutePathParamNames($route);
 
+        ///TODO: there can be unannotated query params as well
+
         $params = [];
         foreach ($annotations as $annotation) {
             // assumed that all query parameters have a @param annotation
@@ -144,6 +146,9 @@ class AnnotationHelper
                 if (in_array($name, $routeParams)) {
                     $location = 'path';
                     $isPathParam = true;
+                    // remove the path param from the path param list to detect parameters left behind
+                    // (this happens when the path param does not have an annotation line)
+                    unset($routeParams[array_search($name, $routeParams)]);
                 }
 
                 $swaggerType = self::getSwaggerType($annotationType);
@@ -164,6 +169,21 @@ class AnnotationHelper
                 $params[] = $descriptor;
             }
         }
+
+        // handle path params without annotations
+        foreach ($routeParams as $pathParam) {
+            $descriptor = new AnnotationParameterData(
+                // some type needs to be assigned and string seems reasonable for a param without any info
+                "string",
+                $pathParam,
+                null,
+                "path",
+                true,
+                false,
+            );
+            $params[] = $descriptor;
+        }
+
         return $params;
     }
 
