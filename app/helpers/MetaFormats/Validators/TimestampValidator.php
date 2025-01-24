@@ -9,7 +9,7 @@ class TimestampValidator
 {
     public const SWAGGER_TYPE = "string";
 
-    public function validate(string $value)
+    public function validate(mixed $value): bool
     {
         ///TODO: check if timestamp
         return true;

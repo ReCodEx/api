@@ -2,93 +2,59 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Exceptions\InternalServerException;
+
 /**
  * Contains data of a single annotation parameter.
  */
 class AnnotationParameterData
 {
-    public string | null $dataType;
+    public string $swaggerType;
     public string $name;
-    public string | null $description;
+    public ?string $description;
     public string $location;
-
-    private static $nullableSuffix = '|null';
-    private static $typeMap = [
-      'bool' => 'boolean',
-      'boolean' => 'boolean',
-      'array' => 'array',
-      'int' => 'integer',
-      'integer' => 'integer',
-      'float' => 'number',
-      'number' => 'number',
-      'numeric' => 'number',
-      'numericint' => 'integer',
-      'timestamp' => 'integer',
-      'string' => 'string',
-      'unicode' => 'string',
-      'email' => 'string',
-      'url' => 'string',
-      'uri' => 'string',
-      'pattern' => null,
-      'alnum' => 'string',
-      'alpha' => 'string',
-      'digit' => 'string',
-      'lower' => 'string',
-      'upper' => 'string',
-    ];
+    public bool $required;
+    public bool $nullable;
+    public ?string $example;
+    public ?string $nestedArraySwaggerType;
 
     public function __construct(
-        string | null $dataType,
+        string $swaggerType,
         string $name,
-        string | null $description,
-        string $location
+        ?string $description,
+        string $location,
+        bool $required,
+        bool $nullable,
+        string $example = null,
+        string $nestedArraySwaggerType = null,
     ) {
-        $this->dataType = $dataType;
+        $this->swaggerType = $swaggerType;
         $this->name = $name;
         $this->description = $description;
         $this->location = $location;
+        $this->required = $required;
+        $this->nullable = $nullable;
+        $this->example = $example;
+        $this->nestedArraySwaggerType = $nestedArraySwaggerType;
     }
 
-    private function isDatatypeNullable(): bool
+    private function addArrayItemsIfArray(string $swaggerType, ParenthesesBuilder $container)
     {
-        // if the dataType is not specified (it is null), it means that the annotation is not
-        // complete and defaults to a non nullable string
-        if ($this->dataType === null) {
-            return false;
-        }
+        if ($swaggerType === "array") {
+            $itemsHead = "@OA\\Items";
+            $items = new ParenthesesBuilder();
 
-        // assumes that the typename ends with '|null'
-        if (str_ends_with($this->dataType, self::$nullableSuffix)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns the swagger type associated with the annotation data type.
-     * @return string Returns the name of the swagger type.
-     */
-    private function getSwaggerType(): string
-    {
-        // if the type is not specified, default to a string
-        $type = 'string';
-        $typename = $this->dataType;
-        if ($typename !== null) {
-            if ($this->isDatatypeNullable()) {
-                $typename = substr($typename, 0, -strlen(self::$nullableSuffix));
+            if ($this->nestedArraySwaggerType !== null) {
+                $items->addKeyValue("type", $this->nestedArraySwaggerType);
             }
 
-            if (self::$typeMap[$typename] === null) {
-                ///TODO: Return the commented exception below once the meta-view formats are implemented.
-                /// This detaults to strings because custom types like 'email' are not supported yet.
-                return 'string';
+            // add example value
+            if ($this->example != null) {
+                $items->addKeyValue("example", $this->example);
             }
-            //throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
 
-            $type = self::$typeMap[$typename];
+            $container->addValue($itemsHead . $items->toString());
         }
-        return $type;
     }
 
     /**
@@ -100,7 +66,9 @@ class AnnotationParameterData
         $head = "@OA\\Schema";
         $body = new ParenthesesBuilder();
 
-        $body->addKeyValue("type", $this->getSwaggerType());
+        $body->addKeyValue("type", $this->swaggerType);
+        $this->addArrayItemsIfArray($this->swaggerType, $body);
+
         return $head . $body->toString();
     }
 
@@ -111,10 +79,11 @@ class AnnotationParameterData
     {
         $head = "@OA\\Parameter";
         $body = new ParenthesesBuilder();
-      
+
         $body->addKeyValue("name", $this->name);
         $body->addKeyValue("in", $this->location);
-        $body->addKeyValue("required", !$this->isDatatypeNullable());
+        $body->addKeyValue("required", $this->required);
+
         if ($this->description !== null) {
             $body->addKeyValue("description", $this->description);
         }
@@ -135,7 +104,23 @@ class AnnotationParameterData
 
         ///TODO: Once the meta-view formats are implemented, add support for property nullability here.
         $body->addKeyValue("property", $this->name);
-        $body->addKeyValue("type", $this->getSwaggerType());
+        $body->addKeyValue("type", $this->swaggerType);
+        $body->addKeyValue("nullable", $this->nullable);
+
+        if ($this->description !== null) {
+            $body->addKeyValue("description", $this->description);
+        }
+
+        // handle arrays
+        $this->addArrayItemsIfArray($this->swaggerType, $body);
+
+        // add example value
+        if ($this->swaggerType !== "array") {
+            if ($this->example != null) {
+                $body->addKeyValue("example", $this->example);
+            }
+        }
+
         return $head . $body->toString();
     }
 }

@@ -12,6 +12,31 @@ use Exception;
  */
 class AnnotationHelper
 {
+    private static $nullableSuffix = '|null';
+    private static $typeMap = [
+      'bool' => 'boolean',
+      'boolean' => 'boolean',
+      'array' => 'array',
+      'int' => 'integer',
+      'integer' => 'integer',
+      'float' => 'number',
+      'number' => 'number',
+      'numeric' => 'number',
+      'numericint' => 'integer',
+      'timestamp' => 'integer',
+      'string' => 'string',
+      'unicode' => 'string',
+      'email' => 'string',
+      'url' => 'string',
+      'uri' => 'string',
+      'pattern' => null,
+      'alnum' => 'string',
+      'alpha' => 'string',
+      'digit' => 'string',
+      'lower' => 'string',
+      'upper' => 'string',
+    ];
+
     /**
      * Returns a ReflectionMethod object matching the name of the method and containing class.
      * @param string $className The name of the containing class.
@@ -50,6 +75,45 @@ class AnnotationHelper
         return null;
     }
 
+    private static function isDatatypeNullable(string $annotationType): bool
+    {
+        // if the dataType is not specified (it is null), it means that the annotation is not
+        // complete and defaults to a non nullable string
+        if ($annotationType === null) {
+            return false;
+        }
+
+        // assumes that the typename ends with '|null'
+        if (str_ends_with($annotationType, self::$nullableSuffix)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the swagger type associated with the annotation data type.
+     * @return string Returns the name of the swagger type.
+     */
+    private static function getSwaggerType(string $annotationType): string
+    {
+        // if the type is not specified, default to a string
+        $type = 'string';
+        $typename = $annotationType;
+        if ($typename !== null) {
+            if (self::isDatatypeNullable($annotationType)) {
+                $typename = substr($typename, 0, -strlen(self::$nullableSuffix));
+            }
+
+            if (self::$typeMap[$typename] === null) {
+                throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
+            }
+
+            $type = self::$typeMap[$typename];
+        }
+        return $type;
+    }
+
     /**
      * Extracts standart doc comments from endpoints, such as '@param string $id An identifier'.
      * Based on the HTTP route of the endpoint, the extracted param can be identified as either a path or
@@ -68,18 +132,35 @@ class AnnotationHelper
             if (str_starts_with($annotation, "@param")) {
                 // sample: @param string $id Identifier of the user
                 $tokens = explode(" ", $annotation);
-                $type = $tokens[1];
+                $annotationType = $tokens[1];
                 // assumed that all names start with $
                 $name = substr($tokens[2], 1);
                 $description = implode(" ", array_slice($tokens, 3));
 
+                // path params have to be required
+                $isPathParam = false;
                 // figure out where the parameter is located
                 $location = 'query';
                 if (in_array($name, $routeParams)) {
                     $location = 'path';
+                    $isPathParam = true;
                 }
 
-                $descriptor = new AnnotationParameterData($type, $name, $description, $location);
+                $swaggerType = self::getSwaggerType($annotationType);
+                $nullable = self::isDatatypeNullable($annotationType);
+
+                ///TODO: how to find out the correct query type?
+                $nestedArraySwaggerType = null;
+
+                $descriptor = new AnnotationParameterData(
+                    $swaggerType,
+                    $name,
+                    $description,
+                    $location,
+                    $isPathParam,
+                    $nullable,
+                    nestedArraySwaggerType: $nestedArraySwaggerType,
+                );
                 $params[] = $descriptor;
             }
         }
@@ -103,36 +184,6 @@ class AnnotationHelper
             $dict[$name] = $value;
         }
         return $dict;
-    }
-
-    /**
-     * Extracts annotation parameter data from Nette annotations starting with the '@Param' prefix.
-     * @param array $annotations An array of annotations.
-     * @return array Returns an array of AnnotationParameterData objects describing the parameters.
-     */
-    private static function extractNetteAnnotationParams(array $annotations): array
-    {
-        $bodyParams = [];
-        $prefix = "@Param";
-        foreach ($annotations as $annotation) {
-            // assumed that all body parameters have a @Param annotation
-            if (str_starts_with($annotation, $prefix)) {
-                // sample: @Param(type="post", name="uiData", validation="array|null",
-                //      description="Structured user-specific UI data")
-                // remove '@Param(' from the start and ')' from the end
-                $body = substr($annotation, strlen($prefix) + 1, -1);
-                $tokens = explode(", ", $body);
-                $values = self::stringArrayToAssociativeArray($tokens);
-                $descriptor = new AnnotationParameterData(
-                    $values["validation"],
-                    $values["name"],
-                    $values["description"],
-                    $values["type"]
-                );
-                $bodyParams[] = $descriptor;
-            }
-        }
-        return $bodyParams;
     }
 
     /**
@@ -163,7 +214,8 @@ class AnnotationHelper
             $line = $lines[$i];
 
             // skip lines not starting with '@'
-            if ($line[0] !== "@") {
+            // also do not skip the first description line
+            if ($i != 0 && $line[0] !== "@") {
                 continue;
             }
 
@@ -206,6 +258,19 @@ class AnnotationHelper
     }
 
     /**
+     * Extracts the annotation description line.
+     * @param array $annotations The array of annotations.
+     */
+    private static function extractAnnotationDescription(array $annotations): ?string
+    {
+        // it is either the first line (already merged if multiline), or none at all
+        if (!str_starts_with($annotations[0], "@")) {
+            return $annotations[0];
+        }
+        return null;
+    }
+
+    /**
      * Extracts the annotation data of an endpoint. The data contains request parameters based on their type
      * and the HTTP method.
      * @param string $className The name of the containing class.
@@ -243,8 +308,9 @@ class AnnotationHelper
             }
         }
 
+        $description = self::extractAnnotationDescription($methodAnnotations);
 
-        $data = new AnnotationData($httpMethod, $pathParams, $queryParams, $bodyParams);
+        $data = new AnnotationData($httpMethod, $pathParams, $queryParams, $bodyParams, $description);
         return $data;
     }
 

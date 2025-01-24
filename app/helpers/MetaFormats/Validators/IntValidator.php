@@ -9,7 +9,7 @@ class IntValidator
 {
     public const SWAGGER_TYPE = "integer";
 
-    public function validate(string $value)
+    public function validate(mixed $value)
     {
         ///TODO: check if int
         return true;

@@ -19,7 +19,12 @@ class StringValidator
         $this->regex = $regex;
     }
 
-    public function validate(string $value)
+    public function getExampleValue()
+    {
+        return "text";
+    }
+
+    public function validate(mixed $value): bool
     {
         if (!MetaFormatHelper::checkType($value, PhpTypes::String)) {
             return false;

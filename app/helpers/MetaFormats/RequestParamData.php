@@ -3,6 +3,7 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\MetaFormats\Validators\ArrayValidator;
 use App\Helpers\MetaFormats\Validators\StringValidator;
 use App\Helpers\Swagger\AnnotationParameterData;
 
@@ -69,19 +70,38 @@ class RequestParamData
         return true;
     }
 
+    private function hasValidators(): bool
+    {
+        return count($this->validators) > 0;
+    }
+
     public function toAnnotationParameterData()
     {
-        $dataType = null;
-        if (count($this->validators) > 0) {
-            $dataType = $this->validators[0]::SWAGGER_TYPE;
+        $swaggerType = "string";
+        $nestedArraySwaggerType = null;
+        if ($this->hasValidators()) {
+            $swaggerType = $this->validators[0]::SWAGGER_TYPE;
+            if ($this->validators[0] instanceof ArrayValidator) {
+                $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
+            }
+        }
+
+        // retrieve the example value from the getExampleValue method if present
+        $exampleValue = null;
+        if ($this->hasValidators() && method_exists(get_class($this->validators[0]), "getExampleValue")) {
+            $exampleValue = $this->validators[0]->getExampleValue();
         }
 
         ///TODO: does not pass null
         return new AnnotationParameterData(
-            $dataType,
+            $swaggerType,
             $this->name,
             $this->description,
-            strtolower($this->type->name)
+            strtolower($this->type->name),
+            $this->required,
+            $this->nullable,
+            $exampleValue,
+            $nestedArraySwaggerType,
         );
     }
 }

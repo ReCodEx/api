@@ -6,6 +6,8 @@ use App\Helpers\MetaFormats\AnnotationToAttributeConverter;
 use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use App\Helpers\MetaFormats\MetaFormatHelper;
+use App\Helpers\MetaFormats\Validators\ArrayValidator;
+use App\Helpers\MetaFormats\Validators\StringValidator;
 use App\Helpers\Swagger\AnnotationHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -31,21 +33,8 @@ class MetaTester extends Command
         return Command::SUCCESS;
     }
 
-    public function test(string $arg)
+    public function generatePresenters()
     {
-        // $view = new TestView();
-        // $view->endpoint([
-        //     "id" => "0",
-        //     "organizational" => false,
-        // ], "0001");
-        // // $view->get_user_info(0);
-
-        // $format = new GroupFormat();
-        // var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
-
-        // $format = new UserFormat();
-        // var_dump($format->checkedAssign("email", "a@a.a.a"));
-
         $inDir = __DIR__ . "/../V1Module/presenters";
         $outDir = __DIR__ . "/../V1Module/presenters2";
 
@@ -79,9 +68,36 @@ class MetaTester extends Command
             fwrite($newFile, $newContent);
             fclose($newFile);
         }
+    }
 
+    public function test(string $arg)
+    {
+        // $view = new TestView();
+        // $view->endpoint([
+        //     "id" => "0",
+        //     "organizational" => false,
+        // ], "0001");
+        // // $view->get_user_info(0);
+
+        // $format = new GroupFormat();
+        // var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
+
+        // $format = new UserFormat();
+        // var_dump($format->checkedAssign("email", "a@a.a.a"));
+
+        
         // $reflection = AnnotationHelper::getMethod("App\V1Module\Presenters\RegistrationPresenter", "actionCreateAccount");
         // $attrs = MetaFormatHelper::extractRequestParamData($reflection);
         // var_dump($attrs);
+        
+        // $this->generatePresenters();
+
+        $val = new ArrayValidator();
+
+        $name = get_class($val) . "::DEFAULT_SWAGGER_VALUE";
+        var_dump($name);
+        var_dump(defined($name));
+
+
     }
 }

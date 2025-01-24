@@ -9,7 +9,7 @@ class FloatValidator
 {
     public const SWAGGER_TYPE = "number";
 
-    public function validate(string $value)
+    public function validate(mixed $value)
     {
         ///TODO: check if float
         return true;

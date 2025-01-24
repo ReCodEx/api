@@ -9,7 +9,7 @@ class BoolValidator
 {
     public const SWAGGER_TYPE = "boolean";
 
-    public function validate(string $value)
+    public function validate(mixed $value)
     {
         ///TODO: check if bool
         return true;
