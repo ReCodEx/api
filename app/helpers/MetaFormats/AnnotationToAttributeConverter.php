@@ -3,6 +3,15 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
+use App\Helpers\MetaFormats\Attributes\RequestParamAttribute;
+use App\Helpers\MetaFormats\Validators\ArrayValidator;
+use App\Helpers\MetaFormats\Validators\BoolValidator;
+use App\Helpers\MetaFormats\Validators\EmailValidator;
+use App\Helpers\MetaFormats\Validators\FloatValidator;
+use App\Helpers\MetaFormats\Validators\IntValidator;
+use App\Helpers\MetaFormats\Validators\StringValidator;
+use App\Helpers\MetaFormats\Validators\TimestampValidator;
+use App\Helpers\MetaFormats\Validators\UuidValidator;
 use App\Helpers\Swagger\ParenthesesBuilder;
 
 class AnnotationToAttributeConverter
@@ -16,6 +25,12 @@ class AnnotationToAttributeConverter
      *   an optional comma etc., it ends with the closing parentheses of the @Param annotation.
      */
     private static string $postRegex = "/\*\s*@Param\((?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?([a-z]+?=.+)\)/";
+
+    private static function shortenClass(string $className)
+    {
+        $tokens = explode("\\", $className);
+        return end($tokens);
+    }
 
     /**
      * Converts an array of preg_replace_callback matches to an attribute string.
@@ -54,13 +69,14 @@ class AnnotationToAttributeConverter
         }
 
         $typeStr = $annotationParameters["type"];
+        $paramTypeClass = self::shortenClass(RequestParamType::class);
         $type = null;
         switch ($typeStr) {
             case "post":
-                $type = "RequestParamType::Post";
+                $type = $paramTypeClass . "::Post";
                 break;
             case "query":
-                $type = "RequestParamType::Query";
+                $type = $paramTypeClass . "::Query";
                 break;
             default:
                 throw new InternalServerException("Unknown request type: $typeStr");
@@ -100,7 +116,8 @@ class AnnotationToAttributeConverter
             $parenthesesBuilder->addValue("nullable: true");
         }
 
-        return "#[RequestParamAttribute{$parenthesesBuilder->toString()}]";
+        $paramAttributeClass = self::shortenClass(RequestParamAttribute::class);
+        return "#[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
     }
 
     private static function checkValidationNullability(string $validation): bool
@@ -117,6 +134,8 @@ class AnnotationToAttributeConverter
     private static function convertAnnotationValidationToValidatorString(string $validation): string
     {
         if (str_starts_with($validation, "string")) {
+            $stringValidator = self::shortenClass(StringValidator::class);
+
             // handle string length constraints, such as "string:1..255"
             if (strlen($validation) > 6) {
                 if ($validation[6] !== ":") {
@@ -126,7 +145,7 @@ class AnnotationToAttributeConverter
 
                 // special case for uuids
                 if ($suffix === "36") {
-                    return "new UuidValidator()";
+                    return "new " . self::shortenClass(UuidValidator::class) . "()";
                 }
 
                 // capture the two bounding numbers and the double dot in strings of
@@ -137,46 +156,74 @@ class AnnotationToAttributeConverter
 
                 // type "255", exact match
                 if ($matches[2] === null) {
-                    return "new StringValidator({$matches[1]}, {$matches[1]})";
+                    return "new {$stringValidator}({$matches[1]}, {$matches[1]})";
                 // type "1..255"
                 } elseif ($matches[1] !== null && $matches[3] !== null) {
-                    return "new StringValidator({$matches[1]}, {$matches[3]})";
+                    return "new {$stringValidator}({$matches[1]}, {$matches[3]})";
                 // type "..255"
                 } elseif ($matches[1] === null) {
-                    return "new StringValidator(0, {$matches[3]})";
+                    return "new {$stringValidator}(0, {$matches[3]})";
                 // type "1.."
                 } elseif ($matches[3] === null) {
-                    return "new StringValidator({$matches[1]})";
+                    return "new {$stringValidator}({$matches[1]})";
                 }
 
                 throw new InternalServerException("Unknown string validation format: $validation");
             }
 
-            return "new StringValidator()";
+            return "new {$stringValidator}()";
         }
 
+        // non-string validation rules do not have parameters, so they can be converted directly
+        $validatorClass = null;
         switch ($validation) {
             case "email":
             // there is one occurrence of this
             case "email:1..":
-                return "new EmailValidator()";
+                $validatorClass = EmailValidator::class;
+                break;
             case "numericint":
-                return "new IntValidator()";
+                $validatorClass = IntValidator::class;
+                break;
             case "bool":
             case "boolean":
-                return "new BoolValidator()";
+                $validatorClass = BoolValidator::class;
+                break;
             case "array":
             case "list":
-                return "new ArrayValidator()";
+                $validatorClass = ArrayValidator::class;
+                break;
             case "timestamp":
-                return "new TimestampValidator()";
+                $validatorClass = TimestampValidator::class;
+                break;
             case "numeric":
-                return "new FloatValidator()";
+                $validatorClass = FloatValidator::class;
+                break;
             default:
-                ///TODO
-                var_dump("unsupported: $validation");
-                return "\"UNSUPPORTED\"";
+                throw new InternalServerException("Unknown validation rule: $validation");
         }
+
+        return "new " . self::shortenClass($validatorClass) . "()";
+    }
+
+    /**
+     * @return string[] Returns an array of Validator class names (without the namespace).
+     */
+    private static function getValidatorNames()
+    {
+        $dir = __DIR__ . "/Validators";
+        $baseFilenames = scandir($dir);
+        $classNames = [];
+        foreach ($baseFilenames as $filename) {
+            if (!str_ends_with($filename, ".php")) {
+                continue;
+            }
+
+            // remove the ".php" suffix
+            $className = substr($filename, 0, -4);
+            $classNames[] = $className;
+        }
+        return $classNames;
     }
 
     public static function convertFile(string $path)
@@ -191,25 +238,22 @@ class AnnotationToAttributeConverter
         $lines = [];
         $attributeLinesBuffer = [];
         $usingsAdded = false;
+        $paramAttributeClass = self::shortenClass(RequestParamAttribute::class);
         foreach (preg_split("/((\r?\n)|(\r\n?))/", $withInterleavedAttributes) as $line) {
-            // add usings for new types
+            // detected the initial "use" block, add usings for new types
             if (!$usingsAdded && strlen($line) > 3 && substr($line, 0, 3) === "use") {
-                $lines[] = "use App\Helpers\MetaFormats\Attributes\RequestParamAttribute;";
+                $lines[] = "use App\Helpers\MetaFormats\Attributes\{$paramAttributeClass};";
                 $lines[] = "use App\Helpers\MetaFormats\RequestParamType;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\StringValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\EmailValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\UuidValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\BoolValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\ArrayValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\FloatValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\IntValidator;";
-                $lines[] = "use App\Helpers\MetaFormats\Validators\TimestampValidator;";
+                foreach (self::getValidatorNames() as $validator) {
+                    $lines[] = "use App\Helpers\MetaFormats\Validators\{$validator};";
+                }
+                // write the detected line (the first detected "use" line)
                 $lines[] = $line;
                 $usingsAdded = true;
-            // store attribute lines in the buffer and do not write them
-            } elseif (preg_match("/#\[RequestParamAttribute/", $line) === 1) {
+            // detected the new attribute line, store it in the buffer and do not write it yet
+            } elseif (preg_match("/#\[{$paramAttributeClass}/", $line) === 1) {
                 $attributeLinesBuffer[] = $line;
-            // flush attribute lines
+            // detected the end of the comment block "*/", flush attribute lines
             } elseif (trim($line) === "*/") {
                 $lines[] = $line;
                 foreach ($attributeLinesBuffer as $attributeLine) {
