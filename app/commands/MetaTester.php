@@ -3,11 +3,12 @@
 namespace App\Console;
 
 use App\Helpers\MetaFormats\AnnotationToAttributeConverter;
+use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\Validators\ArrayValidator;
-use App\Helpers\MetaFormats\Validators\StringValidator;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\Swagger\AnnotationHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -90,14 +91,12 @@ class MetaTester extends Command
         // $attrs = MetaFormatHelper::extractRequestParamData($reflection);
         // var_dump($attrs);
         
-        // $this->generatePresenters();
+        $this->generatePresenters();
 
-        $val = new ArrayValidator();
+        // $val = new VArray();
 
-        $name = get_class($val) . "::DEFAULT_SWAGGER_VALUE";
-        var_dump($name);
-        var_dump(defined($name));
-
-
+        // $name = get_class($val) . "::DEFAULT_SWAGGER_VALUE";
+        // var_dump($name);
+        // var_dump(defined($name));
     }
 }

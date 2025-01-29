@@ -6,7 +6,7 @@ use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\Attributes\FormatAttribute;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\Attributes\ParamAttribute;
-use App\Helpers\MetaFormats\Attributes\RequestParamAttribute;
+use App\Helpers\MetaFormats\Attributes\Param;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;
 use ReflectionMethod;
@@ -88,7 +88,7 @@ class MetaFormatHelper
      */
     public static function extractRequestParamData(ReflectionMethod $reflectionMethod): array
     {
-        $attrs = $reflectionMethod->getAttributes(RequestParamAttribute::class);
+        $attrs = $reflectionMethod->getAttributes(Param::class);
         $data = [];
         foreach ($attrs as $attr) {
             $paramAttr = $attr->newInstance();

@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
-class TimestampValidator
+class VTimestamp
 {
     public const SWAGGER_TYPE = "string";
 

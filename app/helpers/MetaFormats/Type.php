@@ -6,7 +6,7 @@ namespace App\Helpers\MetaFormats;
 /**
  * An enumeration of request parameter types.
  */
-enum RequestParamType
+enum Type
 {
   case Post;
   case Query;

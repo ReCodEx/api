@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
-class UuidValidator extends StringValidator
+class VUuid extends VString
 {
     public function __construct()
     {

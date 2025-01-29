@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
-class ArrayValidator
+class VArray
 {
     public const SWAGGER_TYPE = "array";
 

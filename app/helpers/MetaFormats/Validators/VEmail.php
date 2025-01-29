@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
-class EmailValidator extends StringValidator
+class VEmail extends VString
 {
     public function __construct()
     {

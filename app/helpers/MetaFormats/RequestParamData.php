@@ -3,13 +3,13 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InvalidArgumentException;
-use App\Helpers\MetaFormats\Validators\ArrayValidator;
-use App\Helpers\MetaFormats\Validators\StringValidator;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\Swagger\AnnotationParameterData;
 
 class RequestParamData
 {
-    public RequestParamType $type;
+    public Type $type;
     public string $name;
     public string $description;
     public bool $required;
@@ -17,7 +17,7 @@ class RequestParamData
     public bool $nullable;
 
     public function __construct(
-        RequestParamType $type,
+        Type $type,
         string $name,
         string $description,
         bool $required,
@@ -81,7 +81,7 @@ class RequestParamData
         $nestedArraySwaggerType = null;
         if ($this->hasValidators()) {
             $swaggerType = $this->validators[0]::SWAGGER_TYPE;
-            if ($this->validators[0] instanceof ArrayValidator) {
+            if ($this->validators[0] instanceof VArray) {
                 $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
             }
         }

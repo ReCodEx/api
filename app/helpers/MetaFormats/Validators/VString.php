@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
 
-class StringValidator
+class VString
 {
     public const SWAGGER_TYPE = "string";
     private int $minLength;

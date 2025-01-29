@@ -5,13 +5,13 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
-class IntValidator
+class VBool
 {
-    public const SWAGGER_TYPE = "integer";
+    public const SWAGGER_TYPE = "boolean";
 
     public function validate(mixed $value)
     {
-        ///TODO: check if int
+        ///TODO: check if bool
         return true;
     }
 }

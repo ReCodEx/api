@@ -3,15 +3,15 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
-use App\Helpers\MetaFormats\Attributes\RequestParamAttribute;
-use App\Helpers\MetaFormats\Validators\ArrayValidator;
-use App\Helpers\MetaFormats\Validators\BoolValidator;
-use App\Helpers\MetaFormats\Validators\EmailValidator;
-use App\Helpers\MetaFormats\Validators\FloatValidator;
-use App\Helpers\MetaFormats\Validators\IntValidator;
-use App\Helpers\MetaFormats\Validators\StringValidator;
-use App\Helpers\MetaFormats\Validators\TimestampValidator;
-use App\Helpers\MetaFormats\Validators\UuidValidator;
+use App\Helpers\MetaFormats\Attributes\Param;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Helpers\Swagger\ParenthesesBuilder;
 
 class AnnotationToAttributeConverter
@@ -69,7 +69,7 @@ class AnnotationToAttributeConverter
         }
 
         $typeStr = $annotationParameters["type"];
-        $paramTypeClass = self::shortenClass(RequestParamType::class);
+        $paramTypeClass = self::shortenClass(Type::class);
         $type = null;
         switch ($typeStr) {
             case "post":
@@ -89,10 +89,6 @@ class AnnotationToAttributeConverter
         }
         $parenthesesBuilder->addValue("\"{$annotationParameters["name"]}\"");
 
-        if (array_key_exists("description", $annotationParameters)) {
-            $parenthesesBuilder->addValue("description: \"{$annotationParameters["description"]}\"");
-        }
-
         $nullable = false;
         if (array_key_exists("validation", $annotationParameters)) {
             $validation = $annotationParameters["validation"];
@@ -105,7 +101,11 @@ class AnnotationToAttributeConverter
 
             // this will always produce a single validator (the annotations do not contain multiple validation fields)
             $validator = self::convertAnnotationValidationToValidatorString($validation);
-            $parenthesesBuilder->addValue(value: "validators: [ $validator ]");
+            $parenthesesBuilder->addValue(value: "[ $validator ]");
+        }
+
+        if (array_key_exists("description", $annotationParameters)) {
+            $parenthesesBuilder->addValue("\"{$annotationParameters["description"]}\"");
         }
 
         if (array_key_exists("required", $annotationParameters)) {
@@ -116,7 +116,7 @@ class AnnotationToAttributeConverter
             $parenthesesBuilder->addValue("nullable: true");
         }
 
-        $paramAttributeClass = self::shortenClass(RequestParamAttribute::class);
+        $paramAttributeClass = self::shortenClass(Param::class);
         return "#[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
     }
 
@@ -127,14 +127,14 @@ class AnnotationToAttributeConverter
 
     /**
      * Converts annotation validation values (such as "string:1..255") to Validator construction
-     *   strings (such as "new StringValidator(1, 255)").
+     *   strings (such as "new VString(1, 255)").
      * @param string $validation The annotation validation string.
      * @return string Returns the object construction string.
      */
     private static function convertAnnotationValidationToValidatorString(string $validation): string
     {
         if (str_starts_with($validation, "string")) {
-            $stringValidator = self::shortenClass(StringValidator::class);
+            $stringValidator = self::shortenClass(VString::class);
 
             // handle string length constraints, such as "string:1..255"
             if (strlen($validation) > 6) {
@@ -145,7 +145,7 @@ class AnnotationToAttributeConverter
 
                 // special case for uuids
                 if ($suffix === "36") {
-                    return "new " . self::shortenClass(UuidValidator::class) . "()";
+                    return "new " . self::shortenClass(VUuid::class) . "()";
                 }
 
                 // capture the two bounding numbers and the double dot in strings of
@@ -180,24 +180,24 @@ class AnnotationToAttributeConverter
             case "email":
             // there is one occurrence of this
             case "email:1..":
-                $validatorClass = EmailValidator::class;
+                $validatorClass = VEmail::class;
                 break;
             case "numericint":
-                $validatorClass = IntValidator::class;
+                $validatorClass = VInt::class;
                 break;
             case "bool":
             case "boolean":
-                $validatorClass = BoolValidator::class;
+                $validatorClass = VBool::class;
                 break;
             case "array":
             case "list":
-                $validatorClass = ArrayValidator::class;
+                $validatorClass = VArray::class;
                 break;
             case "timestamp":
-                $validatorClass = TimestampValidator::class;
+                $validatorClass = VTimestamp::class;
                 break;
             case "numeric":
-                $validatorClass = FloatValidator::class;
+                $validatorClass = VFloat::class;
                 break;
             default:
                 throw new InternalServerException("Unknown validation rule: $validation");
@@ -238,8 +238,8 @@ class AnnotationToAttributeConverter
         $lines = [];
         $attributeLinesBuffer = [];
         $usingsAdded = false;
-        $paramAttributeClass = self::shortenClass(RequestParamAttribute::class);
-        $paramTypeClass = self::shortenClass(RequestParamType::class);
+        $paramAttributeClass = self::shortenClass(Param::class);
+        $paramTypeClass = self::shortenClass(Type::class);
         foreach (preg_split("/((\r?\n)|(\r\n?))/", $withInterleavedAttributes) as $line) {
             // detected the initial "use" block, add usings for new types
             if (!$usingsAdded && strlen($line) > 3 && substr($line, 0, 3) === "use") {

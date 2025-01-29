@@ -25,7 +25,7 @@ use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\MetaRequest;
 use App\Helpers\MetaFormats\RequestParamData;
-use App\Helpers\MetaFormats\RequestParamType;
+use App\Helpers\MetaFormats\Type;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
@@ -291,9 +291,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
     private function getValueFromParamData(RequestParamData $paramData): mixed
     {
         switch ($paramData->type) {
-            case RequestParamType::Post:
+            case Type::Post:
                 return $this->getPostField($paramData->name, required: $paramData->required);
-            case RequestParamType::Query:
+            case Type::Query:
                 return $this->getQueryField($paramData->name, required: $paramData->required);
             default:
                 throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
