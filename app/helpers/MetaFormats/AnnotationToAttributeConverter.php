@@ -239,13 +239,14 @@ class AnnotationToAttributeConverter
         $attributeLinesBuffer = [];
         $usingsAdded = false;
         $paramAttributeClass = self::shortenClass(RequestParamAttribute::class);
+        $paramTypeClass = self::shortenClass(RequestParamType::class);
         foreach (preg_split("/((\r?\n)|(\r\n?))/", $withInterleavedAttributes) as $line) {
             // detected the initial "use" block, add usings for new types
             if (!$usingsAdded && strlen($line) > 3 && substr($line, 0, 3) === "use") {
-                $lines[] = "use App\Helpers\MetaFormats\Attributes\{$paramAttributeClass};";
-                $lines[] = "use App\Helpers\MetaFormats\RequestParamType;";
+                $lines[] = "use App\\Helpers\\MetaFormats\\Attributes\\{$paramAttributeClass};";
+                $lines[] = "use App\\Helpers\\MetaFormats\\{$paramTypeClass};";
                 foreach (self::getValidatorNames() as $validator) {
-                    $lines[] = "use App\Helpers\MetaFormats\Validators\{$validator};";
+                    $lines[] = "use App\\Helpers\\MetaFormats\\Validators\\{$validator};";
                 }
                 // write the detected line (the first detected "use" line)
                 $lines[] = $line;
