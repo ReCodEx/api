@@ -1,14 +1,9 @@
 <?php
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\InvalidExternalTokenException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
-use App\Helpers\ExternalLogin\UserData;
 use App\Helpers\EmailVerificationHelper;
-use App\Model\Entity\ExternalLogin;
-use App\Model\Entity\Instance;
-use App\Model\Entity\User;
 use App\Model\Repository\Instances;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Logins;
@@ -49,16 +44,17 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase
         $this->users = $container->getByType(Users::class);
         $this->logins = $container->getByType(Logins::class);
         $this->authenticator = new ExternalServiceAuthenticator(
-            [ [
+            [[
                 'name' => self::AUTH_NAME,
                 'jwtSecret' => self::AUTH_SECRET,
                 'expiration' => 60,
-            ] ],
+            ]],
             $this->externalLogins,
             $this->users,
             $this->logins,
             $container->getByType(Instances::class),
-            $container->getByType(EmailVerificationHelper::class)
+            $container->getByType(EmailVerificationHelper::class),
+            $container->getByType(App\Helpers\FailureHelper::class)
         );
     }
 

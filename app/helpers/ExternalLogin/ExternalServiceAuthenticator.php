@@ -15,6 +15,7 @@ use App\Model\Repository\Logins;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Helpers\EmailVerificationHelper;
+use App\Helpers\FailureHelper;
 use Nette\Utils\Arrays;
 use Nette\Http\IResponse;
 use Firebase\JWT\JWT;
@@ -42,6 +43,9 @@ class ExternalServiceAuthenticator
     /** @var EmailVerificationHelper */
     public $emailVerificationHelper;
 
+    /** @var FailureHelper */
+    public $failureHelper;
+
     /**
      * @var array [ name => { jwtSecret, expiration } ]
      */
@@ -61,13 +65,15 @@ class ExternalServiceAuthenticator
         Users $users,
         Logins $logins,
         Instances $instances,
-        EmailVerificationHelper $emailVerificationHelper
+        EmailVerificationHelper $emailVerificationHelper,
+        FailureHelper $failureHelper,
     ) {
         $this->externalLogins = $externalLogins;
         $this->users = $users;
         $this->logins = $logins;
         $this->instances = $instances;
         $this->emailVerificationHelper = $emailVerificationHelper;
+        $this->failureHelper = $failureHelper;
 
         foreach ($authenticators as $auth) {
             if (!empty($auth['name'] && !empty($auth['jwtSecret']))) {
@@ -75,8 +81,9 @@ class ExternalServiceAuthenticator
                     'jwtSecret' => $auth['jwtSecret'],
                     'expiration' => Arrays::get($auth, 'expiration', 60),
                     'defaultRole' => Arrays::get($auth, 'defaultRole', null),
-                    'usedAlgorithm' => Arrays::get($auth, 'usedAlgorithm', 'HS256'),
                     // if set, users may register even when extrnal authenticator does not provide role
+                    'usedAlgorithm' => Arrays::get($auth, 'jwtAlgorithm', 'HS256'),
+                    'extraIds' => Arrays::get($auth, 'extraIds', []),
                 ];
             }
         }
@@ -144,6 +151,7 @@ class ExternalServiceAuthenticator
             }
         }
 
+        // failures throw exceptions...
         if ($user === null) {
             throw new WrongCredentialsException(
                 "User authenticated through '$authName' has no corresponding account in ReCodEx.",
@@ -158,6 +166,7 @@ class ExternalServiceAuthenticator
             );
         }
 
+        $this->handleExtraIds($user, $decodedToken, $this->authenticators[$authName]->extraIds);
 
         return $user;
     }
@@ -236,5 +245,54 @@ class ExternalServiceAuthenticator
         }
 
         return null;
+    }
+
+    /**
+     * Process possible additional (extra) identifiers present in the token.
+     * @param User $user being authenticated
+     * @param object $decodedToken
+     * @param string[] $allowedServices whose extra IDs may be added from the token
+     */
+    private function handleExtraIds(User $user, $decodedToken, array $allowedServices)
+    {
+        if (empty($decodedToken->extId)) {
+            return;
+        }
+
+        foreach ($decodedToken->extId as $service => $eid) {
+            if (!in_array($service, $allowedServices)) {
+                continue;  // skip services that are not allowed
+            }
+
+            $extUser = $this->externalLogins->getUser($service, $eid);
+            if ($extUser) {
+                if ($extUser->getId() !== $user->getId()) {
+                    // Identity crysis! ID belongs to another user...
+                    $this->failureHelper->report(
+                        FailureHelper::TYPE_API_ERROR,
+                        sprintf(
+                            "User '%s' was provided with extra ID '%s' (%s), "
+                                . "but that is already associated with user '%s'.",
+                            $user->getId(),
+                            $eid,
+                            $service,
+                            $extUser->getId()
+                        )
+                    );
+                }
+
+                continue; // either already exist or we cannot proceed anyway
+            }
+
+            $login = $this->externalLogins->findByUser($user, $service);
+            if ($login->getExternalId() !== $eid) {
+                // extra ID has changed (strange, but possible)
+                $login->setExternalId($eid);
+                $this->externalLogins->persist($login);
+                continue;
+            }
+
+            $this->externalLogins->connect($service, $user, $eid);
+        }
     }
 }
