@@ -60,6 +60,11 @@ class ExternalLogin
         return $this->externalId;
     }
 
+    public function setExternalId(string $externalId): void
+    {
+        $this->externalId = $externalId;
+    }
+
     public function getUser(): User
     {
         return $this->user;

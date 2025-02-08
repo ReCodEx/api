@@ -51,8 +51,9 @@ parameters:
   externalAuthenticators:
     - name: "cas-auth-ext"
       jwtSecret: "secretStringSharedWithExternAuth"
+      jwtAlgorithm: HS256 # optional, HS256 is default
       expiration: 60 # seconds passed since iat
-      usedAlgorithm: HS256 # optional, HS256 is default
+      extraIds: []  # additional service types whose IDs may be provided as extra IDs in the auth token
 
   emails:
     footerUrl: "%webapp.address%"
