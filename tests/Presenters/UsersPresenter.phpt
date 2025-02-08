@@ -244,7 +244,6 @@ class TestUsersPresenter extends Tester\TestCase
                 'lastName' => $lastName,
                 'titlesBeforeName' => $titlesBeforeName,
                 'titlesAfterName' => $titlesAfterName,
-                'gravatarUrlEnabled' => false
             ]
         );
         $response = $this->presenter->run($request);
@@ -276,6 +275,9 @@ class TestUsersPresenter extends Tester\TestCase
         $emailVerificationHelper->shouldReceive("process")->with($user)->andReturn()->once();
         $this->presenter->emailVerificationHelper = $emailVerificationHelper;
 
+        $user->setGravatar(true);
+        $this->presenter->users->persist($user);
+
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'POST',
@@ -286,7 +288,7 @@ class TestUsersPresenter extends Tester\TestCase
                 'titlesBeforeName' => $titlesBeforeName,
                 'titlesAfterName' => $titlesAfterName,
                 'email' => $email,
-                'gravatarUrlEnabled' => false
+                'gravatarUrlEnabled' => false // make sure gravatar gets reset
             ]
         );
         $response = $this->presenter->run($request);
@@ -313,6 +315,9 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $login = $this->presenter->logins->findByUsernameOrThrow($user->getEmail());
 
+        $user->setGravatar(true);
+        $this->presenter->users->persist($user);
+
         $firstName = "firstNameUpdated";
         $lastName = "lastNameUpdated";
         $titlesBeforeName = "titlesBeforeNameUpdated";
@@ -333,7 +338,6 @@ class TestUsersPresenter extends Tester\TestCase
                 'oldPassword' => $oldPassword,
                 'password' => $password,
                 'passwordConfirm' => $passwordConfirm,
-                'gravatarUrlEnabled' => false
             ]
         );
         $response = $this->presenter->run($request);
@@ -345,7 +349,7 @@ class TestUsersPresenter extends Tester\TestCase
         $updatedUser = $result["payload"]["user"];
         Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $updatedUser["fullName"]);
         Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
-        Assert::null($updatedUser["avatarUrl"]);
+        Assert::true($updatedUser["avatarUrl"] !== null); // gravatar was not reset
 
         $storedUpdatedUser = $this->users->get($user->getId());
         Assert::equal($updatedUser["id"], $storedUpdatedUser->getId());
@@ -459,7 +463,7 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'titlesBeforeName' => '',
                 'titlesAfterName' => '',
-                'gravatarUrlEnabled' => false,
+                'gravatarUrlEnabled' => null,
                 'password' => $newPassword,
                 'passwordConfirm' => $newPassword,
             ]
@@ -467,6 +471,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         $updatedUser = $payload["user"];
         Assert::equal($updatedUser["privateData"]["email"], PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        Assert::null($updatedUser["avatarUrl"]);
 
         $login = $this->logins->findByUsernameOrThrow($user->getEmail());
         Assert::true($login->passwordsMatch($newPassword, $this->presenter->passwordsService));
@@ -579,13 +584,13 @@ class TestUsersPresenter extends Tester\TestCase
         );
         Assert::equal($uiData, $payload["privateData"]["uiData"]);
 
-        $nested = [ 'pos1' => 0 ];
+        $nested = ['pos1' => 0];
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            ['uiData' => [ 'stretcherSize' => 54, 'nestedStructure' => $nested ] ]
+            ['uiData' => ['stretcherSize' => 54, 'nestedStructure' => $nested]]
         );
         $uiData['stretcherSize'] = 54;
         $uiData['nestedStructure'] = $nested;
@@ -596,7 +601,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            [ 'uiData' => $uiData2, 'overwrite' => true ]
+            ['uiData' => $uiData2, 'overwrite' => true]
         );
         Assert::equal($uiData2, $payload["privateData"]["uiData"]);
 
@@ -605,7 +610,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            [ 'uiData' => null ]
+            ['uiData' => null]
         );
         Assert::equal($uiData2, $payload["privateData"]["uiData"]);
 
@@ -614,7 +619,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            [ 'uiData' => null, 'overwrite' => true ]
+            ['uiData' => null, 'overwrite' => true]
         );
         Assert::null($payload["privateData"]["uiData"]);
     }

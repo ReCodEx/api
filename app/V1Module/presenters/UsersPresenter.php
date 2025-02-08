@@ -225,7 +225,7 @@ class UsersPresenter extends BasePresenter
      *        description="New password of current user")
      * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..",
      *        description="Confirmation of new password of current user")
-     * @Param(type="post", name="gravatarUrlEnabled", validation="bool",
+     * @Param(type="post", name="gravatarUrlEnabled", validation="bool", required=false,
      *        description="Enable or disable gravatar profile image")
      * @throws WrongCredentialsException
      * @throws NotFoundException
@@ -254,7 +254,10 @@ class UsersPresenter extends BasePresenter
             $req->getPost("passwordConfirm")
         );
 
-        $user->setGravatar(filter_var($req->getPost("gravatarUrlEnabled"), FILTER_VALIDATE_BOOLEAN));
+        $gravatarUrlEnabled = $req->getPost("gravatarUrlEnabled");
+        if ($gravatarUrlEnabled !== null) {  // null or missing value -> no update
+            $user->setGravatar(filter_var($gravatarUrlEnabled, FILTER_VALIDATE_BOOLEAN));
+        }
 
         // make changes permanent
         $this->users->flush();
