@@ -7,6 +7,7 @@ use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\InvalidExternalTokenException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
@@ -15,6 +16,7 @@ use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Helpers\EmailVerificationHelper;
 use Nette\Utils\Arrays;
+use Nette\Http\IResponse;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DomainException;
@@ -148,7 +150,14 @@ class ExternalServiceAuthenticator
                 FrontendErrorMappings::E400_104__EXTERNAL_AUTH_FAILED_USER_NOT_FOUND,
                 ["service" => $authName]
             );
+        } elseif (!$user->isAllowed()) {
+            throw new ForbiddenRequestException(
+                "Forbidden Request - User account was disabled",
+                IResponse::S403_Forbidden,
+                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
+            );
         }
+
 
         return $user;
     }
