@@ -855,6 +855,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         Assert::equal($user->getId(), $payload['id']);
         Assert::true($payload['privateData']['isExternal']);
+        Assert::equal(['test-cas' => 'abc'], $payload['privateData']['externalIds']);
 
         $els = $this->presenter->externalLogins->findAll();
         Assert::count(1, $els);
@@ -887,6 +888,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         Assert::equal($user->getId(), $payload['id']);
         Assert::true($payload['privateData']['isExternal']);
+        Assert::equal(['test-cas' => 'abc'], $payload['privateData']['externalIds']);
 
         $els = $this->presenter->externalLogins->findAll();
         Assert::count(1, $els);
@@ -918,6 +920,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         Assert::equal($user->getId(), $payload['id']);
         Assert::false($payload['privateData']['isExternal']);
+        Assert::equal([], $payload['privateData']['externalIds']);
 
         $els = $this->presenter->externalLogins->findAll();
         Assert::count(0, $els);
