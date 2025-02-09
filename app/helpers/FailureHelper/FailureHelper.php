@@ -15,7 +15,6 @@ use App\Model\Entity\ReportedErrors;
  */
 class FailureHelper
 {
-
     public const TYPE_BACKEND_ERROR = "BACKEND ERROR";
     public const TYPE_API_ERROR = "API ERROR";
 
