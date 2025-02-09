@@ -2,14 +2,10 @@
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Helpers\BrokerProxy;
 use App\V1Module\Presenters\AssignmentSolversPresenter;
-use App\Model\Entity\AssignmentSolver;
 use App\Model\Repository\Assignments;
-use App\Model\Repository\AssignmentSolvers;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
-use Tracy\ILogger;
 
 $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 

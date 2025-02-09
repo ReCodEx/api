@@ -18,6 +18,7 @@ use App\Helpers\EmailVerificationHelper;
 use App\Helpers\FailureHelper;
 use Nette\Utils\Arrays;
 use Nette\Http\IResponse;
+use Tracy\ILogger;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DomainException;
@@ -46,6 +47,9 @@ class ExternalServiceAuthenticator
     /** @var FailureHelper */
     public $failureHelper;
 
+    /** @var ILogger|null */
+    public $logger = null;
+
     /**
      * @var array [ name => { jwtSecret, expiration } ]
      */
@@ -67,6 +71,7 @@ class ExternalServiceAuthenticator
         Instances $instances,
         EmailVerificationHelper $emailVerificationHelper,
         FailureHelper $failureHelper,
+        ?ILogger $logger = null,
     ) {
         $this->externalLogins = $externalLogins;
         $this->users = $users;
@@ -74,6 +79,7 @@ class ExternalServiceAuthenticator
         $this->instances = $instances;
         $this->emailVerificationHelper = $emailVerificationHelper;
         $this->failureHelper = $failureHelper;
+        $this->logger = $logger;
 
         foreach ($authenticators as $auth) {
             if (!empty($auth['name'] && !empty($auth['jwtSecret']))) {
@@ -87,6 +93,18 @@ class ExternalServiceAuthenticator
                 ];
             }
         }
+    }
+
+    private function log($level, $msg, ...$args)
+    {
+        if (!$this->logger) {
+            return;
+        }
+
+        if ($args) {
+            $msg = sprintf($msg, ...$args);
+        }
+        $this->logger->log($msg, $level);
     }
 
     /**
@@ -129,6 +147,15 @@ class ExternalServiceAuthenticator
         // try to match existing local user by email address
         if ($user === null) {
             $user = $this->tryConnect($authName, $userData);
+            if ($user) {
+                $this->log(
+                    ILogger::INFO,
+                    "User '%s' was paired with external ID='%s' (%s)",
+                    $user->getId(),
+                    $userData->getId(),
+                    $authName
+                );
+            }
         }
 
         // try to register a new user
@@ -148,6 +175,13 @@ class ExternalServiceAuthenticator
                 // connect the account to the login method
                 $this->externalLogins->connect($authName, $user, $userData->getId());
                 $this->emailVerificationHelper->process($user, true); // true = just created
+                $this->log(
+                    ILogger::INFO,
+                    "User '%s' just registered via external auth '%s' (ID='%s')",
+                    $user->getId(),
+                    $authName,
+                    $userData->getId()
+                );
             }
         }
 
@@ -259,13 +293,23 @@ class ExternalServiceAuthenticator
             return;
         }
 
+        $this->log(ILogger::DEBUG, "User '%s' got extra IDs: %s", $user->getId(), json_encode($decodedToken->extId));
+
         foreach ($decodedToken->extId as $service => $eid) {
             if (!in_array($service, $allowedServices)) {
+                $this->log(
+                    ILogger::DEBUG,
+                    "User '%s' got new [%s] ID='%s', but this auth service is not allowed",
+                    $user->getId(),
+                    $service,
+                    $eid
+                );
+
                 continue;  // skip services that are not allowed
             }
 
             $extUser = $this->externalLogins->getUser($service, $eid);
-            if ($extUser) {
+            if ($extUser) {  // a user with given ID exists
                 if ($extUser->getId() !== $user->getId()) {
                     // Identity crysis! ID belongs to another user...
                     $this->failureHelper->report(
@@ -285,14 +329,26 @@ class ExternalServiceAuthenticator
             }
 
             $login = $this->externalLogins->findByUser($user, $service);
-            if ($login->getExternalId() !== $eid) {
-                // extra ID has changed (strange, but possible)
-                $login->setExternalId($eid);
-                $this->externalLogins->persist($login);
-                continue;
+            if ($login) { // a connected external login record for the auth service already exist
+                if ($login->getExternalId() !== $eid) {
+                    // extra ID has changed (strange, but possible)
+                    $this->log(
+                        ILogger::INFO,
+                        "User '%s' got new [%s] ID='%s', but already had different ID='%s'",
+                        $user->getId(),
+                        $service,
+                        $eid,
+                        $login->getExternalId()
+                    );
+                    $login->setExternalId($eid);
+                    $this->externalLogins->persist($login);
+                }
+
+                continue; // either already exist or was duly updated
             }
 
             $this->externalLogins->connect($service, $user, $eid);
+            $this->log(ILogger::INFO, "User '%s' got new extra ID='%s' [%s]", $user->getId(), $eid, $service);
         }
     }
 }
