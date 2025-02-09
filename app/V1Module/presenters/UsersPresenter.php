@@ -814,6 +814,7 @@ class UsersPresenter extends BasePresenter
             }
 
             $this->externalLogins->persist($login);
+            $this->users->refresh($user);
         }
 
         $this->sendSuccessResponse($this->userViewFactory->getUser($user));
@@ -841,6 +842,7 @@ class UsersPresenter extends BasePresenter
         $login = $this->externalLogins->findByUser($user, $service);
         if ($login) {
             $this->externalLogins->remove($login);
+            $this->users->refresh($user);
         }
         $this->sendSuccessResponse($this->userViewFactory->getUser($user));
     }

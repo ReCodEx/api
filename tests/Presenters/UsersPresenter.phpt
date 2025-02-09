@@ -837,6 +837,95 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::false($payload['privateData']['isAllowed']);
         Assert::false($this->users->getByEmail($victim)->isAllowed());
     }
+
+    public function testSetNewExternalId()
+    {
+        $victim = "user2@example.com";
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail($victim);
+        Assert::false($user->hasExternalAccounts());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateExternalLogin', 'id' => $user->getId(), 'service' => 'test-cas'],
+            ['externalId' => 'abc']
+        );
+
+        Assert::equal($user->getId(), $payload['id']);
+        Assert::true($payload['privateData']['isExternal']);
+
+        $els = $this->presenter->externalLogins->findAll();
+        Assert::count(1, $els);
+        Assert::equal($user->getId(), $els[0]->getUser()->getId());
+        Assert::equal('abc', $els[0]->getExternalId());
+        Assert::equal('test-cas', $els[0]->getAuthService());
+
+        $this->users->refresh($user);
+        Assert::true($user->hasExternalAccounts());
+        Assert::equal(['test-cas' => 'abc'], $user->getConsolidatedExternalLogins());
+    }
+
+    public function testUpdateExternalId()
+    {
+        $victim = "user2@example.com";
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail($victim);
+        Assert::false($user->hasExternalAccounts());
+        $this->presenter->externalLogins->connect('test-cas', $user, 'old');
+        $this->users->refresh($user);
+        Assert::equal(['test-cas' => 'old'], $user->getConsolidatedExternalLogins());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateExternalLogin', 'id' => $user->getId(), 'service' => 'test-cas'],
+            ['externalId' => 'abc']
+        );
+
+        Assert::equal($user->getId(), $payload['id']);
+        Assert::true($payload['privateData']['isExternal']);
+
+        $els = $this->presenter->externalLogins->findAll();
+        Assert::count(1, $els);
+        Assert::equal($user->getId(), $els[0]->getUser()->getId());
+        Assert::equal('abc', $els[0]->getExternalId());
+        Assert::equal('test-cas', $els[0]->getAuthService());
+
+        $this->users->refresh($user);
+        Assert::true($user->hasExternalAccounts());
+        Assert::equal(['test-cas' => 'abc'], $user->getConsolidatedExternalLogins());
+    }
+
+    public function testRemoveExternalId()
+    {
+        $victim = "user2@example.com";
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail($victim);
+        Assert::false($user->hasExternalAccounts());
+        $this->presenter->externalLogins->connect('test-cas', $user, 'old');
+        $this->users->refresh($user);
+        Assert::equal(['test-cas' => 'old'], $user->getConsolidatedExternalLogins());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'DELETE',
+            ['action' => 'removeExternalLogin', 'id' => $user->getId(), 'service' => 'test-cas']
+        );
+
+        Assert::equal($user->getId(), $payload['id']);
+        Assert::false($payload['privateData']['isExternal']);
+
+        $els = $this->presenter->externalLogins->findAll();
+        Assert::count(0, $els);
+
+        $this->users->refresh($user);
+        Assert::false($user->hasExternalAccounts());
+        Assert::equal([], $user->getConsolidatedExternalLogins());
+    }
 }
 
 (new TestUsersPresenter())->run();
