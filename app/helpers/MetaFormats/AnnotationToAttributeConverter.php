@@ -32,6 +32,8 @@ class AnnotationToAttributeConverter
         return end($tokens);
     }
 
+    private static array $attributeParenthesesBuilders = [];
+
     /**
      * Converts an array of preg_replace_callback matches to an attribute string.
      * @param array $matches An array of matches, with empty captures as NULL (PREG_UNMATCHED_AS_NULL flag).
@@ -117,7 +119,8 @@ class AnnotationToAttributeConverter
         }
 
         $paramAttributeClass = self::shortenClass(Param::class);
-        return "#[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
+        self::$attributeParenthesesBuilders[] = $parenthesesBuilder;
+        return "#[{$paramAttributeClass}]";
     }
 
     private static function checkValidationNullability(string $validation): bool
@@ -230,6 +233,7 @@ class AnnotationToAttributeConverter
     {
         // read file and replace @Param annotations with attributes
         $content = file_get_contents($path);
+        self::$attributeParenthesesBuilders = [];
         $withInterleavedAttributes = preg_replace_callback(self::$postRegex, function ($matches) {
             return self::regexCaptureToAttributeCallback($matches);
         }, $content, -1, $count, PREG_UNMATCHED_AS_NULL);
@@ -257,10 +261,16 @@ class AnnotationToAttributeConverter
             // detected the end of the comment block "*/", flush attribute lines
             } elseif (trim($line) === "*/") {
                 $lines[] = $line;
-                foreach ($attributeLinesBuffer as $attributeLine) {
-                    // the attribute lines are shifted by one space to the right (due to the comment block origin)
-                    $lines[] = substr($attributeLine, 1);
+                for ($i = 0; $i < count($attributeLinesBuffer); $i++) {
+                    $parenthesesBuilder = self::$attributeParenthesesBuilders[$i];
+                    $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
+                    // change to multiline if the line is too long
+                    if (strlen($attributeLine) > 120) {
+                        $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toMultilineString(4)}]";
+                    }
+                    $lines[] = $attributeLine;
                 }
+
                 $attributeLinesBuffer = [];
             } else {
                 $lines[] = $line;

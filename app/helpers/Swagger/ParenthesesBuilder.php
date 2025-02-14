@@ -48,6 +48,23 @@ class ParenthesesBuilder
 
     public function toString(): string
     {
-        return '(' . implode(', ', $this->tokens) . ')';
+        return "(" . implode(", ", $this->tokens) . ")";
+    }
+
+    private static function spaces(int $count): string
+    {
+        return str_repeat(" ", $count);
+    }
+
+    private const CODEBASE_INDENTATION = 4;
+    public function toMultilineString(int $initialIndentation): string
+    {
+        // do not add indentation to the first line
+        $str = "(\n";
+        foreach ($this->tokens as $token) {
+            $str .= self::spaces($initialIndentation + self::CODEBASE_INDENTATION) . $token . ",\n";
+        }
+        $str .= self::spaces($initialIndentation) . ")";
+        return $str;
     }
 }
