@@ -244,7 +244,6 @@ class TestUsersPresenter extends Tester\TestCase
                 'lastName' => $lastName,
                 'titlesBeforeName' => $titlesBeforeName,
                 'titlesAfterName' => $titlesAfterName,
-                'gravatarUrlEnabled' => false
             ]
         );
         $response = $this->presenter->run($request);
@@ -276,6 +275,9 @@ class TestUsersPresenter extends Tester\TestCase
         $emailVerificationHelper->shouldReceive("process")->with($user)->andReturn()->once();
         $this->presenter->emailVerificationHelper = $emailVerificationHelper;
 
+        $user->setGravatar(true);
+        $this->presenter->users->persist($user);
+
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'POST',
@@ -286,7 +288,7 @@ class TestUsersPresenter extends Tester\TestCase
                 'titlesBeforeName' => $titlesBeforeName,
                 'titlesAfterName' => $titlesAfterName,
                 'email' => $email,
-                'gravatarUrlEnabled' => false
+                'gravatarUrlEnabled' => false // make sure gravatar gets reset
             ]
         );
         $response = $this->presenter->run($request);
@@ -313,6 +315,9 @@ class TestUsersPresenter extends Tester\TestCase
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $login = $this->presenter->logins->findByUsernameOrThrow($user->getEmail());
 
+        $user->setGravatar(true);
+        $this->presenter->users->persist($user);
+
         $firstName = "firstNameUpdated";
         $lastName = "lastNameUpdated";
         $titlesBeforeName = "titlesBeforeNameUpdated";
@@ -333,7 +338,6 @@ class TestUsersPresenter extends Tester\TestCase
                 'oldPassword' => $oldPassword,
                 'password' => $password,
                 'passwordConfirm' => $passwordConfirm,
-                'gravatarUrlEnabled' => false
             ]
         );
         $response = $this->presenter->run($request);
@@ -345,7 +349,7 @@ class TestUsersPresenter extends Tester\TestCase
         $updatedUser = $result["payload"]["user"];
         Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $updatedUser["fullName"]);
         Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
-        Assert::null($updatedUser["avatarUrl"]);
+        Assert::true($updatedUser["avatarUrl"] !== null); // gravatar was not reset
 
         $storedUpdatedUser = $this->users->get($user->getId());
         Assert::equal($updatedUser["id"], $storedUpdatedUser->getId());
@@ -459,7 +463,7 @@ class TestUsersPresenter extends Tester\TestCase
             [
                 'titlesBeforeName' => '',
                 'titlesAfterName' => '',
-                'gravatarUrlEnabled' => false,
+                'gravatarUrlEnabled' => null,
                 'password' => $newPassword,
                 'passwordConfirm' => $newPassword,
             ]
@@ -467,6 +471,7 @@ class TestUsersPresenter extends Tester\TestCase
 
         $updatedUser = $payload["user"];
         Assert::equal($updatedUser["privateData"]["email"], PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+        Assert::null($updatedUser["avatarUrl"]);
 
         $login = $this->logins->findByUsernameOrThrow($user->getEmail());
         Assert::true($login->passwordsMatch($newPassword, $this->presenter->passwordsService));
@@ -579,13 +584,13 @@ class TestUsersPresenter extends Tester\TestCase
         );
         Assert::equal($uiData, $payload["privateData"]["uiData"]);
 
-        $nested = [ 'pos1' => 0 ];
+        $nested = ['pos1' => 0];
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            ['uiData' => [ 'stretcherSize' => 54, 'nestedStructure' => $nested ] ]
+            ['uiData' => ['stretcherSize' => 54, 'nestedStructure' => $nested]]
         );
         $uiData['stretcherSize'] = 54;
         $uiData['nestedStructure'] = $nested;
@@ -596,7 +601,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            [ 'uiData' => $uiData2, 'overwrite' => true ]
+            ['uiData' => $uiData2, 'overwrite' => true]
         );
         Assert::equal($uiData2, $payload["privateData"]["uiData"]);
 
@@ -605,7 +610,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            [ 'uiData' => null ]
+            ['uiData' => null]
         );
         Assert::equal($uiData2, $payload["privateData"]["uiData"]);
 
@@ -614,7 +619,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'updateUiData', 'id' => $user->getId()],
-            [ 'uiData' => null, 'overwrite' => true ]
+            ['uiData' => null, 'overwrite' => true]
         );
         Assert::null($payload["privateData"]["uiData"]);
     }
@@ -831,6 +836,98 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::same($user->getId(), $payload['id']);
         Assert::false($payload['privateData']['isAllowed']);
         Assert::false($this->users->getByEmail($victim)->isAllowed());
+    }
+
+    public function testSetNewExternalId()
+    {
+        $victim = "user2@example.com";
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail($victim);
+        Assert::false($user->hasExternalAccounts());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateExternalLogin', 'id' => $user->getId(), 'service' => 'test-cas'],
+            ['externalId' => 'abc']
+        );
+
+        Assert::equal($user->getId(), $payload['id']);
+        Assert::true($payload['privateData']['isExternal']);
+        Assert::equal(['test-cas' => 'abc'], $payload['privateData']['externalIds']);
+
+        $els = $this->presenter->externalLogins->findAll();
+        Assert::count(1, $els);
+        Assert::equal($user->getId(), $els[0]->getUser()->getId());
+        Assert::equal('abc', $els[0]->getExternalId());
+        Assert::equal('test-cas', $els[0]->getAuthService());
+
+        $this->users->refresh($user);
+        Assert::true($user->hasExternalAccounts());
+        Assert::equal(['test-cas' => 'abc'], $user->getConsolidatedExternalLogins());
+    }
+
+    public function testUpdateExternalId()
+    {
+        $victim = "user2@example.com";
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail($victim);
+        Assert::false($user->hasExternalAccounts());
+        $this->presenter->externalLogins->connect('test-cas', $user, 'old');
+        $this->users->refresh($user);
+        Assert::equal(['test-cas' => 'old'], $user->getConsolidatedExternalLogins());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'updateExternalLogin', 'id' => $user->getId(), 'service' => 'test-cas'],
+            ['externalId' => 'abc']
+        );
+
+        Assert::equal($user->getId(), $payload['id']);
+        Assert::true($payload['privateData']['isExternal']);
+        Assert::equal(['test-cas' => 'abc'], $payload['privateData']['externalIds']);
+
+        $els = $this->presenter->externalLogins->findAll();
+        Assert::count(1, $els);
+        Assert::equal($user->getId(), $els[0]->getUser()->getId());
+        Assert::equal('abc', $els[0]->getExternalId());
+        Assert::equal('test-cas', $els[0]->getAuthService());
+
+        $this->users->refresh($user);
+        Assert::true($user->hasExternalAccounts());
+        Assert::equal(['test-cas' => 'abc'], $user->getConsolidatedExternalLogins());
+    }
+
+    public function testRemoveExternalId()
+    {
+        $victim = "user2@example.com";
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->users->getByEmail($victim);
+        Assert::false($user->hasExternalAccounts());
+        $this->presenter->externalLogins->connect('test-cas', $user, 'old');
+        $this->users->refresh($user);
+        Assert::equal(['test-cas' => 'old'], $user->getConsolidatedExternalLogins());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'DELETE',
+            ['action' => 'removeExternalLogin', 'id' => $user->getId(), 'service' => 'test-cas']
+        );
+
+        Assert::equal($user->getId(), $payload['id']);
+        Assert::false($payload['privateData']['isExternal']);
+        Assert::equal([], $payload['privateData']['externalIds']);
+
+        $els = $this->presenter->externalLogins->findAll();
+        Assert::count(0, $els);
+
+        $this->users->refresh($user);
+        Assert::false($user->hasExternalAccounts());
+        Assert::equal([], $user->getConsolidatedExternalLogins());
     }
 }
 

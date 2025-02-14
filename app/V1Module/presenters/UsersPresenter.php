@@ -7,11 +7,13 @@ use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
+use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\Group;
 use App\Model\Entity\Login;
 use App\Model\Entity\SecurityEvent;
 use App\Model\Entity\User;
 use App\Model\Entity\UserUiData;
+use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Logins;
 use App\Model\Repository\SecurityEvents;
 use App\Exceptions\BadRequestException;
@@ -35,6 +37,12 @@ class UsersPresenter extends BasePresenter
      * @inject
      */
     public $logins;
+
+    /**
+     * @var ExternalLogins
+     * @inject
+     */
+    public $externalLogins;
 
     /**
      * @var SecurityEvents
@@ -225,7 +233,7 @@ class UsersPresenter extends BasePresenter
      *        description="New password of current user")
      * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..",
      *        description="Confirmation of new password of current user")
-     * @Param(type="post", name="gravatarUrlEnabled", validation="bool",
+     * @Param(type="post", name="gravatarUrlEnabled", validation="bool", required=false,
      *        description="Enable or disable gravatar profile image")
      * @throws WrongCredentialsException
      * @throws NotFoundException
@@ -254,7 +262,10 @@ class UsersPresenter extends BasePresenter
             $req->getPost("passwordConfirm")
         );
 
-        $user->setGravatar(filter_var($req->getPost("gravatarUrlEnabled"), FILTER_VALIDATE_BOOLEAN));
+        $gravatarUrlEnabled = $req->getPost("gravatarUrlEnabled");
+        if ($gravatarUrlEnabled !== null) {  // null or missing value -> no update
+            $user->setGravatar(filter_var($gravatarUrlEnabled, FILTER_VALIDATE_BOOLEAN));
+        }
 
         // make changes permanent
         $this->users->flush();
@@ -291,7 +302,7 @@ class UsersPresenter extends BasePresenter
         }
 
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new InvalidArgumentException("Provided email is not in correct format");
+            throw new InvalidArgumentException('email', "Provided email is not in correct format");
         }
 
         $oldEmail = $user->getEmail();
@@ -372,7 +383,7 @@ class UsersPresenter extends BasePresenter
 
         if (!$password || !$passwordConfirm) {
             // old password was provided but the new ones not, illegal state
-            throw new InvalidArgumentException("New password was not provided");
+            throw new InvalidArgumentException('password|passwordConfirm', "New password was not provided");
         }
 
         // passwords need to be handled differently
@@ -756,6 +767,80 @@ class UsersPresenter extends BasePresenter
         $isAllowed = filter_var($this->getRequest()->getPost("isAllowed"), FILTER_VALIDATE_BOOLEAN);
         $user->setIsAllowed($isAllowed);
         $this->users->flush();
+        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    }
+
+    public function checkUpdateExternalLogin(string $id, string $service)
+    {
+        $user = $this->users->findOrThrow($id);
+        if (!$this->userAcl->canSetExternalIds($user)) {
+            throw new ForbiddenRequestException();
+        }
+
+        // in the future, we might consider cross-checking the service ID
+    }
+
+    /**
+     * Add or update existing external ID of given authentication service.
+     * @POST
+     * @param string $id identifier of the user
+     * @param string $service identifier of the authentication service (login type)
+     * @Param(type="post", name="externalId", validation="string:1..128")
+     * @throws InvalidArgumentException
+     */
+    public function actionUpdateExternalLogin(string $id, string $service)
+    {
+        $user = $this->users->findOrThrow($id);
+
+        // make sure the external ID is not used for another user
+        $externalId = $this->getRequest()->getPost("externalId");
+        $anotherUser = $this->externalLogins->getUser($service, $externalId);
+        if ($anotherUser) {
+            if ($anotherUser->getId() !== $id) {
+                // oopsie, this external ID is alreay used for a different user
+                throw new InvalidArgumentException('externalId', "This ID is already used by another user.");
+            }
+            // otherwise the external ID is already set to this user, so there is nothing to change...
+        } else {
+            // create/update external login entry
+            $login = $this->externalLogins->findByUser($user, $service);
+            if ($login) {
+                $login->setExternalId($externalId);
+            } else {
+                $login = new ExternalLogin($user, $service, $externalId);
+            }
+
+            $this->externalLogins->persist($login);
+            $this->users->refresh($user);
+        }
+
+        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    }
+
+    public function checkRemoveExternalLogin(string $id, string $service)
+    {
+        $user = $this->users->findOrThrow($id);
+        if (!$this->userAcl->canSetExternalIds($user)) {
+            throw new ForbiddenRequestException();
+        }
+
+        // in the future, we might consider cross-checking the service ID
+    }
+
+    /**
+     * Remove external ID of given authentication service.
+     * @DELETE
+     * @param string $id identifier of the user
+     * @param string $service identifier of the authentication service (login type)
+     */
+    public function actionRemoveExternalLogin(string $id, string $service)
+    {
+        $user = $this->users->findOrThrow($id);
+        $login = $this->externalLogins->findByUser($user, $service);
+        if ($login) {
+            $this->externalLogins->remove($login);
+            $this->users->refresh($user);
+        }
         $this->sendSuccessResponse($this->userViewFactory->getUser($user));
     }
 }

@@ -36,6 +36,8 @@ interface IUserPermissions
 
     public function canSetIsAllowed(User $user): bool;
 
+    public function canSetExternalIds(User $user): bool;
+
     public function canInvalidateTokens(User $user): bool;
 
     public function canForceChangePassword(User $user): bool;

@@ -6,7 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"auth_service", "external_id"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"auth_service", "user_id"}),
+ *                               @ORM\UniqueConstraint(columns={"auth_service", "external_id"})})
  */
 class ExternalLogin
 {
@@ -58,6 +59,11 @@ class ExternalLogin
     public function getExternalId(): string
     {
         return $this->externalId;
+    }
+
+    public function setExternalId(string $externalId): void
+    {
+        $this->externalId = $externalId;
     }
 
     public function getUser(): User

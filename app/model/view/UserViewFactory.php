@@ -45,7 +45,7 @@ class UserViewFactory
      */
     private function getExternalIds(User $user, bool $canViewAllExternalIds = false)
     {
-        if (!$canViewAllExternalIds) {
+        if (!$canViewAllExternalIds && !$this->userAcl->canSetExternalIds($user)) {
             if (!$this->loggedInUser) {
                 return [];
             }

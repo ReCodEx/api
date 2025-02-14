@@ -52,6 +52,9 @@ class TestLoginPresenter extends Tester\TestCase
     /** @var \App\Helpers\EmailVerificationHelper */
     private $emailVerificationHelper;
 
+    /** @var \App\Helpers\FailureHelper */
+    private $failureHelper;
+
     public function __construct($container)
     {
         $this->container = $container;
@@ -62,6 +65,7 @@ class TestLoginPresenter extends Tester\TestCase
         $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
         $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
         $this->emailVerificationHelper = $container->getByType(\App\Helpers\EmailVerificationHelper::class);
+        $this->failureHelper = $container->getByType(App\Helpers\FailureHelper::class);
     }
 
     protected function setUp()
@@ -86,8 +90,8 @@ class TestLoginPresenter extends Tester\TestCase
             "POST",
             ["action" => "default"],
             [
-            "username" => $this->userLogin,
-            "password" => $this->userPassword
+                "username" => $this->userLogin,
+                "password" => $this->userPassword
             ]
         );
 
@@ -114,8 +118,8 @@ class TestLoginPresenter extends Tester\TestCase
             "POST",
             ["action" => "default"],
             [
-            "username" => $this->userLogin,
-            "password" => $this->userPassword . "42"
+                "username" => $this->userLogin,
+                "password" => $this->userPassword . "42"
             ]
         );
 
@@ -135,15 +139,16 @@ class TestLoginPresenter extends Tester\TestCase
         Assert::count(0, $events);
 
         $authenticator = new ExternalServiceAuthenticator(
-            [ [
+            [[
                 'name' => 'test-cas',
                 'jwtSecret' => 'tajnyRetezec',
-            ] ],
+            ]],
             $this->externalLogins,
             $this->users,
             $this->logins,
             $this->instances,
-            $this->emailVerificationHelper
+            $this->emailVerificationHelper,
+            $this->failureHelper
         );
 
         $user = $this->presenter->users->getByEmail($this->userLogin);
@@ -159,7 +164,7 @@ class TestLoginPresenter extends Tester\TestCase
 
         $this->presenter->externalServiceAuthenticator = $authenticator;
 
-        $request = new Request("V1:Login", "POST", ["action" => "external", "authenticatorName" => "test-cas"], [ 'token' => $token ]);
+        $request = new Request("V1:Login", "POST", ["action" => "external", "authenticatorName" => "test-cas"], ['token' => $token]);
 
         $response = $this->presenter->run($request);
         Assert::type(JsonResponse::class, $response);

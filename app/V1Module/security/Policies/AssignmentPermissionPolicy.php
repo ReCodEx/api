@@ -123,13 +123,14 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
     }
 
     /**
-     * The assignment is not in an exam group, or it is already after the exam.
+     * The assignment is not in an exam group, or it is still before/already after the exam.
      */
     public function isExamNotInProgress(Identity $identity, Assignment $assignment): bool
     {
         $group = $assignment->getGroup();
         $now = new DateTime();
-        return $group && (!$group->hasExamPeriodSet($now) || $group->getExamEnd() < $now);
+        return $group && (!$group->hasExamPeriodSet($now) ||
+            $now < $group->getExamBegin() || $group->getExamEnd() < $now);
     }
 
     /**

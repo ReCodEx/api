@@ -112,7 +112,7 @@ class AccessManager
         if (!$user) {
             throw new ForbiddenRequestException(
                 "Forbidden Request - User does not exist",
-                IResponse::S403_FORBIDDEN,
+                IResponse::S403_Forbidden,
                 FrontendErrorMappings::E403_001__USER_NOT_EXIST
             );
         }
@@ -120,7 +120,7 @@ class AccessManager
         if (!$user->isAllowed()) {
             throw new ForbiddenRequestException(
                 "Forbidden Request - User account was disabled",
-                IResponse::S403_FORBIDDEN,
+                IResponse::S403_Forbidden,
                 FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
             );
         }
@@ -148,7 +148,7 @@ class AccessManager
         if (!$user->isAllowed()) {
             throw new ForbiddenRequestException(
                 "Forbidden Request - User account was disabled",
-                IResponse::S403_FORBIDDEN,
+                IResponse::S403_Forbidden,
                 FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
             );
         }

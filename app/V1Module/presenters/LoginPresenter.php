@@ -22,6 +22,7 @@ use App\Security\Identity;
 use App\Security\Roles;
 use App\Security\TokenScope;
 use Nette\Security\AuthenticationException;
+use Nette\Http\IResponse;
 
 /**
  * Endpoints used to log a user in
@@ -201,6 +202,14 @@ class LoginPresenter extends BasePresenter
         $token = $this->getAccessToken();
 
         $user = $this->getCurrentUser();
+        if (!$user->isAllowed()) {
+            throw new ForbiddenRequestException(
+                "Forbidden Request - User account was disabled",
+                IResponse::S403_Forbidden,
+                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
+            );
+        }
+
         $user->updateLastAuthenticationAt();
         $this->users->flush();
 
@@ -247,6 +256,14 @@ class LoginPresenter extends BasePresenter
         $this->validateEffectiveRole($effectiveRole);
 
         $user = $this->getCurrentUser();
+        if (!$user->isAllowed()) {
+            throw new ForbiddenRequestException(
+                "Forbidden Request - User account was disabled",
+                IResponse::S403_Forbidden,
+                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
+            );
+        }
+
         $user->updateLastAuthenticationAt();
         $this->users->flush();
 
@@ -265,7 +282,7 @@ class LoginPresenter extends BasePresenter
     {
         $forbiddenScopes = [
             TokenScope::CHANGE_PASSWORD =>
-                "Password change tokens can only be issued through the password reset endpoint",
+            "Password change tokens can only be issued through the password reset endpoint",
             TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail",
         ];
 
