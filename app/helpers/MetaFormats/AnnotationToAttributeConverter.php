@@ -24,7 +24,15 @@ class AnnotationToAttributeConverter
      * The regex ends with '([a-z]+?=.+)\)', which is similar to the above, but instead of ending with
      *   an optional comma etc., it ends with the closing parentheses of the @Param annotation.
      */
-    private static string $postRegex = "/\*\s*@Param\((?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?([a-z]+?=.+)\)/";
+    private static string $netteRegex = "/\*\s*@Param\((?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?([a-z]+?=.+)\)/";
+
+    /**
+     * A regex that matches standard PHP @param annotations of the <@param type $name description> format.
+     * There are three capture groups: type, name and description.
+     * The name does not contain the '$' prefix, and the description can contain '*', newline symbols,
+     * and extra spaces if multiline.
+     */
+    private static string $standardRegex = "/\*\s*@param\s+(?<type>\S*)\s+\$(?<name>\S*)\s*(?<description>.*(?:(?!\s*\*\s*(?:@|\/))(?:\s*\*\s*.*))*)/";
 
     private static function shortenClass(string $className)
     {
@@ -32,20 +40,13 @@ class AnnotationToAttributeConverter
         return end($tokens);
     }
 
-    private static array $attributeParenthesesBuilders = [];
-
-    /**
-     * Converts an array of preg_replace_callback matches to an attribute string.
-     * @param array $matches An array of matches, with empty captures as NULL (PREG_UNMATCHED_AS_NULL flag).
-     * @return string Returns an attribute string.
-     */
-    private static function regexCaptureToAttributeCallback(array $matches)
+    private static function convertNetteRegexCapturesToParenthesesBuilder(array $captures)
     {
         // convert the string assignments in $matches to an associative array
         $annotationParameters = [];
         // the first element is the matched string
-        for ($i = 1; $i < count($matches); $i++) {
-            $capture = $matches[$i];
+        for ($i = 1; $i < count($captures); $i++) {
+            $capture = $captures[$i];
             if ($capture === null) {
                 continue;
             }
@@ -118,8 +119,20 @@ class AnnotationToAttributeConverter
             $parenthesesBuilder->addValue("nullable: true");
         }
 
+        return $parenthesesBuilder;
+    }
+
+    /**
+     * Used by preg_replace_callback to replace captures with "#[Param]" strings to mark the lines for future
+     * replacement. Additionally stores the captures into an output array.
+     * @param array $captures An array of captures, with empty captures as NULL (PREG_UNMATCHED_AS_NULL flag).
+     * @param array $capturesList An output list for captures.
+     * @return string Returns "#[Param]".
+     */
+    private static function netteRegexCaptureToAttributeCallback(array $captures, array &$capturesList)
+    {
+        $capturesList[] = $captures;
         $paramAttributeClass = self::shortenClass(Param::class);
-        self::$attributeParenthesesBuilders[] = $parenthesesBuilder;
         return "#[{$paramAttributeClass}]";
     }
 
@@ -233,10 +246,19 @@ class AnnotationToAttributeConverter
     {
         // read file and replace @Param annotations with attributes
         $content = file_get_contents($path);
-        self::$attributeParenthesesBuilders = [];
-        $withInterleavedAttributes = preg_replace_callback(self::$postRegex, function ($matches) {
-            return self::regexCaptureToAttributeCallback($matches);
-        }, $content, -1, $count, PREG_UNMATCHED_AS_NULL);
+        // Array that contains parentheses builders of all future generated attributes.
+        // Filled dynamically with the preg_replace_callback callback.
+        $capturesList = [];
+        $withInterleavedAttributes = preg_replace_callback(
+            self::$netteRegex,
+            function ($matches) use (&$capturesList) {
+                return self::netteRegexCaptureToAttributeCallback($matches, $capturesList);
+            },
+            $content,
+            -1,
+            $count,
+            PREG_UNMATCHED_AS_NULL
+        );
 
         // move the attribute lines below the comment block
         $lines = [];
@@ -262,7 +284,7 @@ class AnnotationToAttributeConverter
             } elseif (trim($line) === "*/") {
                 $lines[] = $line;
                 for ($i = 0; $i < count($attributeLinesBuffer); $i++) {
-                    $parenthesesBuilder = self::$attributeParenthesesBuilders[$i];
+                    $parenthesesBuilder = self::convertNetteRegexCapturesToParenthesesBuilder($capturesList[$i]);
                     $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
                     // change to multiline if the line is too long
                     if (strlen($attributeLine) > 120) {
