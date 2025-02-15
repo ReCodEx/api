@@ -3,15 +3,20 @@
 namespace App\Helpers\Swagger;
 
 use App\Helpers\MetaFormats\MetaFormatHelper;
+use App\V1Module\Router\MethodRoute;
+use App\V1Module\RouterFactory;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use Exception;
+use Nette\Routing\RouteList;
 
 /**
  * Parser that can parse the annotations of existing recodex endpoints.
  */
 class AnnotationHelper
 {
+    ///TODO: the null might be a prefix as well
     private static $nullableSuffix = '|null';
     private static $typeMap = [
       'bool' => 'boolean',
@@ -36,6 +41,8 @@ class AnnotationHelper
       'lower' => 'string',
       'upper' => 'string',
     ];
+
+    private static $presenterNamespace = 'App\V1Module\Presenters\\';
 
     /**
      * Returns a ReflectionMethod object matching the name of the method and containing class.
@@ -83,8 +90,8 @@ class AnnotationHelper
             return false;
         }
 
-        // assumes that the typename ends with '|null'
-        if (str_ends_with($annotationType, self::$nullableSuffix)) {
+        // assumes that the typename contains 'null'
+        if (str_contains($annotationType, "null")) {
             return true;
         }
 
@@ -349,5 +356,114 @@ class AnnotationHelper
             }
         }
         return $rows;
+    }
+
+    /**
+     * Finds all route objects of the API and returns their metadata.
+     * @return array Returns an array of dictionaries with the keys "route", "class", and "method".
+     */
+    public static function getRoutesMetadata(): array
+    {
+        $router = RouterFactory::createRouter();
+
+        // find all route object using a queue
+        $queue = [$router];
+        $routes = [];
+        while (count($queue) != 0) {
+            $cursor = array_shift($queue);
+
+            if ($cursor instanceof RouteList) {
+                foreach ($cursor->getRouters() as $item) {
+                    // lists contain routes or nested lists
+                    if ($item instanceof RouteList) {
+                        array_push($queue, $item);
+                    } else {
+                        // the first route is special and holds no useful information for annotation
+                        if (get_parent_class($item) !== MethodRoute::class) {
+                            continue;
+                        }
+
+                        $routes[] = self::getPropertyValue($item, "route");
+                    }
+                }
+            }
+        }
+
+
+        $routeMetadata = [];
+        foreach ($routes as $routeObj) {
+            // extract class and method names of the endpoint
+            $metadata = self::extractMetadata($routeObj);
+            $route = self::extractRoute($routeObj);
+            $className = self::$presenterNamespace . $metadata['class'];
+            $methodName = $metadata['method'];
+
+            $routeMetadata[] = [
+                "route" => $route,
+                "class" => $className,
+                "method" => $methodName,
+            ];
+        }
+
+        return $routeMetadata;
+    }
+
+    /**
+     * Helper function that can extract a property value from an arbitrary object where
+     * the property can be private.
+     * @param mixed $object The object to extract from.
+     * @param string $propertyName The name of the property.
+     * @return mixed Returns the value of the property.
+     */
+    public static function getPropertyValue(mixed $object, string $propertyName): mixed
+    {
+        $class = new ReflectionClass($object);
+
+        do {
+            try {
+                $property = $class->getProperty($propertyName);
+            } catch (ReflectionException $exception) {
+                $class = $class->getParentClass();
+                $property = null;
+            }
+        } while ($property === null && $class !== null);
+
+        $property->setAccessible(true);
+        return $property->getValue($object);
+    }
+
+        /**
+     * Extracts the route string from a route object. Replaces '<..>' in the route with '{...}'.
+     * @param mixed $routeObj
+     */
+    private static function extractRoute($routeObj): string
+    {
+        $mask = AnnotationHelper::getPropertyValue($routeObj, "mask");
+
+        // sample: replaces '/users/<id>' with '/users/{id}'
+        $mask = str_replace(["<", ">"], ["{", "}"], $mask);
+        return "/" . $mask;
+    }
+
+    /**
+     * Extracts the class and method names of the endpoint handler.
+     * @param mixed $routeObj The route object representing the endpoint.
+     * @return string[] Returns a dictionary [ "class" => ..., "method" => ...]
+     */
+    private static function extractMetadata($routeObj)
+    {
+        $metadata = AnnotationHelper::getPropertyValue($routeObj, "metadata");
+        $presenter = $metadata["presenter"]["value"];
+        $action = $metadata["action"]["value"];
+
+        // if the name is empty, the method will be called 'actionDefault'
+        if ($action === null) {
+            $action = "default";
+        }
+
+        return [
+            "class" => $presenter . "Presenter",
+            "method" => "action" . ucfirst($action),
+        ];
     }
 }

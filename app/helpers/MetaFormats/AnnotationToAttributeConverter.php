@@ -12,7 +12,9 @@ use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
+use App\Helpers\Swagger\AnnotationHelper;
 use App\Helpers\Swagger\ParenthesesBuilder;
+use App\V1Module\Presenters\BasePresenter;
 
 class AnnotationToAttributeConverter
 {
@@ -28,11 +30,21 @@ class AnnotationToAttributeConverter
 
     /**
      * A regex that matches standard PHP @param annotations of the <@param type $name description> format.
-     * There are three capture groups: type, name and description.
+     * There are three capture groups: validation (type), name and description.
      * The name does not contain the '$' prefix, and the description can contain '*', newline symbols,
      * and extra spaces if multiline.
      */
-    private static string $standardRegex = "/\*\s*@param\s+(?<type>\S*)\s+\$(?<name>\S*)\s*(?<description>.*(?:(?!\s*\*\s*(?:@|\/))(?:\s*\*\s*.*))*)/";
+    private static string $standardRegex = "/\*\h*@param\h+(?<validation>\S*)\h+\\$(?<name>\S*)\h*(?<description>.*(?:(?!\s*\*\s*(?:@|\/))(?:\s*\*\s*.*))*)/";
+
+    // placeholder for detected nette annotations ("@Param")
+    // this text must not be present in the presenter files
+    private static string $netteAttributePlaceholder = "<!>#nette#<!>";
+    // placeholder for detected standard php parameter annotations ("@param")
+    private static string $standardAttributePlaceholder = "<!>#standard#<!>";
+
+    // Metadata about endpoints used to determine what class methods are endpoints and what params
+    // are path and query. Initialized lazily (it cannot be assigned here because it is not a constant expression). 
+    private static ?array $routesMetadata = null;
 
     private static function shortenClass(string $className)
     {
@@ -40,9 +52,9 @@ class AnnotationToAttributeConverter
         return end($tokens);
     }
 
-    private static function convertNetteRegexCapturesToParenthesesBuilder(array $captures)
+    private static function convertNetteRegexCapturesToDictionary(array $captures)
     {
-        // convert the string assignments in $matches to an associative array
+        // convert the string assignments in $captures to an associative array
         $annotationParameters = [];
         // the first element is the matched string
         for ($i = 1; $i < count($captures); $i++) {
@@ -63,6 +75,33 @@ class AnnotationToAttributeConverter
             $annotationParameters[$key] = $value;
         }
 
+        return $annotationParameters;
+    }
+
+    private static function convertStandardRegexCapturesToDictionary(array $captures)
+    {
+        ///TODO: add functionality to check whether the parameter is from query or path
+        $annotationParameters = [];
+
+        if (!array_key_exists("validation", $captures)) {
+            throw new InternalServerException("Missing validation parameter.");
+        }
+        $annotationParameters["validation"] = $captures["validation"];
+
+        if (!array_key_exists("name", $captures)) {
+            throw new InternalServerException("Missing name parameter.");
+        }
+        $annotationParameters["name"] = $captures["name"];
+
+        if (array_key_exists("description", $captures)) {
+            $annotationParameters["description"] = $captures["description"];
+        }
+
+        return $annotationParameters;
+    }
+
+    private static function convertRegexCapturesToParenthesesBuilder(array $annotationParameters)
+    {
         // serialize the parameters to an attribute
         $parenthesesBuilder = new ParenthesesBuilder();
 
@@ -123,17 +162,29 @@ class AnnotationToAttributeConverter
     }
 
     /**
-     * Used by preg_replace_callback to replace captures with "#[Param]" strings to mark the lines for future
-     * replacement. Additionally stores the captures into an output array.
+     * Used by preg_replace_callback to replace "@param" annotation captures with placeholder strings to
+     * mark the lines for future replacement. Additionally stores the captures into an output array.
      * @param array $captures An array of captures, with empty captures as NULL (PREG_UNMATCHED_AS_NULL flag).
      * @param array $capturesList An output list for captures.
-     * @return string Returns "#[Param]".
+     * @return string Returns a placeholder.
+     */
+    private static function standardRegexCaptureToAttributeCallback(array $captures, array &$capturesList)
+    {
+        $capturesList[] = $captures;
+        return self::$standardAttributePlaceholder;
+    }
+
+    /**
+     * Used by preg_replace_callback to replace "@Param" annotation captures with placeholder strings to mark the
+     * lines for future replacement. Additionally stores the captures into an output array.
+     * @param array $captures An array of captures, with empty captures as NULL (PREG_UNMATCHED_AS_NULL flag).
+     * @param array $capturesList An output list for captures.
+     * @return string Returns a placeholder.
      */
     private static function netteRegexCaptureToAttributeCallback(array $captures, array &$capturesList)
     {
         $capturesList[] = $captures;
-        $paramAttributeClass = self::shortenClass(Param::class);
-        return "#[{$paramAttributeClass}]";
+        return self::$netteAttributePlaceholder;
     }
 
     private static function checkValidationNullability(string $validation): bool
@@ -242,27 +293,64 @@ class AnnotationToAttributeConverter
         return $classNames;
     }
 
+    private static function preprocessFile(string $path)
+    {
+        if (self::$routesMetadata == null) {
+            self::$routesMetadata = AnnotationHelper::getRoutesMetadata();
+        }
+
+        // extract presenter namespace from BasePresenter
+        $namespaceTokens = explode("\\", BasePresenter::class);
+        $namespace = implode("\\", array_slice($namespaceTokens, 0, count($namespaceTokens) - 1));
+        // join with presenter name from the file
+        $className = $namespace . "\\" . basename($path, ".php");
+
+        $endpoints = array_filter(self::$routesMetadata, function ($route) use ($className) {
+            return $route["class"] == $className;
+        });
+
+        foreach ($endpoints as $endpoint) {
+            $annotationData = AnnotationHelper::extractAnnotationData(
+                $endpoint["class"],
+                $endpoint["method"],
+                $endpoint["route"]
+            );
+            var_dump($annotationData);
+        }
+
+    }
+
     public static function convertFile(string $path)
     {
+        self::preprocessFile($path);
+        return;
         // read file and replace @Param annotations with attributes
         $content = file_get_contents($path);
         // Array that contains parentheses builders of all future generated attributes.
         // Filled dynamically with the preg_replace_callback callback.
-        $capturesList = [];
+        $standardCapturesList = [];
+        $netteCapturesList = [];
         $withInterleavedAttributes = preg_replace_callback(
-            self::$netteRegex,
-            function ($matches) use (&$capturesList) {
-                return self::netteRegexCaptureToAttributeCallback($matches, $capturesList);
+            self::$standardRegex,
+            function ($matches) use (&$standardCapturesList) {
+                return self::standardRegexCaptureToAttributeCallback($matches, $standardCapturesList);
             },
             $content,
-            -1,
-            $count,
-            PREG_UNMATCHED_AS_NULL
+            flags: PREG_UNMATCHED_AS_NULL
         );
+        // $withInterleavedAttributes = preg_replace_callback(
+        //     self::$netteRegex,
+        //     function ($matches) use (&$netteCapturesList) {
+        //         return self::netteRegexCaptureToAttributeCallback($matches, $netteCapturesList);
+        //     },
+        //     $withInterleavedAttributes,
+        //     flags: PREG_UNMATCHED_AS_NULL
+        // );
 
         // move the attribute lines below the comment block
         $lines = [];
-        $attributeLinesBuffer = [];
+        $standardAttributeLinesCount = 0;
+        $netteAttributeLinesCount = 0;
         $usingsAdded = false;
         $paramAttributeClass = self::shortenClass(Param::class);
         $paramTypeClass = self::shortenClass(Type::class);
@@ -277,14 +365,21 @@ class AnnotationToAttributeConverter
                 // write the detected line (the first detected "use" line)
                 $lines[] = $line;
                 $usingsAdded = true;
-            // detected the new attribute line, store it in the buffer and do not write it yet
-            } elseif (preg_match("/#\[{$paramAttributeClass}/", $line) === 1) {
-                $attributeLinesBuffer[] = $line;
+            // detected an attribute line placeholder, increment the counter and remove the line
+            } elseif (str_contains($line, self::$standardAttributePlaceholder)) {
+                $standardAttributeLinesCount++;
+            } elseif (str_contains($line, self::$netteAttributePlaceholder)) {
+                $netteAttributeLinesCount++;
             // detected the end of the comment block "*/", flush attribute lines
             } elseif (trim($line) === "*/") {
                 $lines[] = $line;
-                for ($i = 0; $i < count($attributeLinesBuffer); $i++) {
-                    $parenthesesBuilder = self::convertNetteRegexCapturesToParenthesesBuilder($capturesList[$i]);
+                for ($i = 0; $i < $standardAttributeLinesCount; $i++) {
+                    self::convertStandardRegexCapturesToDictionary($standardCapturesList[$i]);
+                    ///TODO: implement rest of logic
+                }
+                for ($i = 0; $i < $netteAttributeLinesCount; $i++) {
+                    $annotationParameters = self::convertNetteRegexCapturesToDictionary($netteCapturesList[$i]);
+                    $parenthesesBuilder = self::convertRegexCapturesToParenthesesBuilder($annotationParameters);
                     $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
                     // change to multiline if the line is too long
                     if (strlen($attributeLine) > 120) {
@@ -292,15 +387,16 @@ class AnnotationToAttributeConverter
                     }
                     $lines[] = $attributeLine;
                 }
-
-                $attributeLinesBuffer = [];
+                
+                // reset the counters for the next detected endpoint
+                ///TODO: these should not be reset (later captures will never be used)
+                $standardAttributeLinesCount = 0;
+                $netteAttributeLinesCount = 0;
             } else {
                 $lines[] = $line;
             }
         }
 
-        ///TODO: add usings for used validators
-        ///TODO: handle too long lines
         return implode("\n", $lines);
     }
 }
