@@ -3,20 +3,39 @@
 namespace App\Helpers\MetaFormats\AnnotationConversion;
 
 use App\Exceptions\InternalServerException;
+use App\V1Module\Presenters\BasePresenter;
 
 class Utils
 {
+    /**
+     * Converts a fully qualified class name to a class name without namespace prefixes.
+     * @param string $className Fully qualified class name, such
+     * as "App\Helpers\MetaFormats\AnnotationConversion\Utils".
+     * @return string Class name without namespace prefixes, such as "Utils".
+     */
     public static function shortenClass(string $className)
     {
         $tokens = explode("\\", $className);
         return end($tokens);
     }
 
+    /**
+     * Checks whether the validation string ends with the "|null" suffix.
+     * Validation strings contain the "null" qualifier always at the end of the string.
+     * @param string $validation The validation string.
+     * @return bool Returns whether the validation ends with "|null".
+     */
     public static function checkValidationNullability(string $validation): bool
     {
         return str_ends_with($validation, "|null");
     }
 
+    /**
+     * Splits a string into lines.
+     * @param string $fileContent The string to be split.
+     * @throws \App\Exceptions\InternalServerException Thrown when the string cannot be split.
+     * @return array The lines of the string.
+     */
     public static function fileStringToLines(string $fileContent): array
     {
         $lines = preg_split("/((\r?\n)|(\r\n?))/", $fileContent);
@@ -26,6 +45,11 @@ class Utils
         return $lines;
     }
 
+    /**
+     * Joins an array of strings into a single string separated by '\n'.
+     * @param array $lines The lines to be joined.
+     * @return string The joined string.
+     */
     public static function linesToFileString(array $lines): string
     {
         return implode("\n", $lines);
@@ -49,5 +73,13 @@ class Utils
             $classNames[] = $className;
         }
         return $classNames;
+    }
+
+    public static function getPresenterNamespace()
+    {
+        // extract presenter namespace from BasePresenter
+        $namespaceTokens = explode("\\", BasePresenter::class);
+        $namespace = implode("\\", array_slice($namespaceTokens, 0, count($namespaceTokens) - 1));
+        return $namespace;
     }
 }

@@ -7,9 +7,14 @@ use App\Helpers\MetaFormats\Type;
 
 class AnnotationToAttributeConverter
 {
-    public static function convertFile(string $path)
+    /**
+     * Converts the endpoint annotations in a presenter class file into attributes.
+     * @param string $path The path to the presenter.
+     * @return string Returns the converted file content as a string.
+     */
+    public static function convertFile(string $path): string
     {
-        $content = StandardAnnotationConverter::preprocessFile($path);
+        $content = StandardAnnotationConverter::convertStandardAnnotations($path);
         $nettePreprocess = NetteAnnotationConverter::regexReplaceAnnotations($content);
 
         $netteCapturesList = $nettePreprocess["captures"];
@@ -33,20 +38,13 @@ class AnnotationToAttributeConverter
                 $lines[] = $line;
                 $usingsAdded = true;
             // detected an attribute line placeholder, increment the counter and remove the line
-            } elseif (str_contains($line, NetteAnnotationConverter::$netteAttributePlaceholder)) {
+            } elseif (str_contains($line, NetteAnnotationConverter::$attributePlaceholder)) {
                 $netteAttributeLinesCount++;
             // detected the end of the comment block "*/", flush attribute lines
             } elseif (trim($line) === "*/") {
                 $lines[] = $line;
                 for ($i = 0; $i < $netteAttributeLinesCount; $i++) {
-                    $annotationParameters = NetteAnnotationConverter::convertNetteRegexCapturesToDictionary($netteCapturesList[$i]);
-                    $parenthesesBuilder = NetteAnnotationConverter::convertRegexCapturesToParenthesesBuilder($annotationParameters);
-                    $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
-                    // change to multiline if the line is too long
-                    if (strlen($attributeLine) > 120) {
-                        $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toMultilineString(4)}]";
-                    }
-                    $lines[] = $attributeLine;
+                    $lines[] = NetteAnnotationConverter::convertCapturesToAttributeString($netteCapturesList[$i]);
                 }
 
                 // remove the captures used in this endpoint

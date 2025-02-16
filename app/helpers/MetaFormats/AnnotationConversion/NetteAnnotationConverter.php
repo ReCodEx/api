@@ -3,6 +3,7 @@
 namespace App\Helpers\MetaFormats\AnnotationConversion;
 
 use App\Exceptions\InternalServerException;
+use App\Helpers\MetaFormats\Attributes\Param;
 use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
@@ -20,40 +21,72 @@ class NetteAnnotationConverter
      * A regex that matches @Param annotations and captures its parameters. Can capture up to 7 parameters.
      * Contains 6 copies of the following sub-regex: '(?:([a-z]+?=.+?),?\s*\*?\s*)?', which
      *   matches 'name=value' assignments followed by an optional comma, whitespace,
-     *   star (multi-line annotation support), whitespace. The capture contains only 'name=value'.
+     *   star (multi-line annotation support), and whitespace. The capture contains only 'name=value'.
      * The regex ends with '([a-z]+?=.+)\)', which is similar to the above, but instead of ending with
      *   an optional comma etc., it ends with the closing parentheses of the @Param annotation.
      */
-    private static string $netteRegex = "/\*\s*@Param\((?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?([a-z]+?=.+)\)/";
+    private static string $paramRegex = "/\*\s*@Param\((?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?([a-z]+?=.+)\)/";
 
-    // placeholder for detected nette annotations ("@Param")
+    // placeholder for detected nette annotations (prefixed with "@Param")
     // this text must not be present in the presenter files
-    public static string $netteAttributePlaceholder = "<!>#nette#<!>";
+    public static string $attributePlaceholder = "<!>#nette#<!>";
 
+
+    /**
+     * Replaces "@Param" annotations with placeholders and extracts its data.
+     * @param string $fileContent The file content to be replaced.
+     * @return array{captures: array, contentWithPlaceholders: string} Returns the content with placeholders and the
+     * extracted data.
+     */
     public static function regexReplaceAnnotations(string $fileContent)
     {
         // Array that contains parentheses builders of all future generated attributes.
         // Filled dynamically with the preg_replace_callback callback.
-        $netteCapturesList = [];
+        $captures = [];
 
-        $withPlaceholders = preg_replace_callback(
-            self::$netteRegex,
-            function ($matches) use (&$netteCapturesList) {
-                return self::netteRegexCaptureToAttributeCallback($matches, $netteCapturesList);
+        $contentWithPlaceholders = preg_replace_callback(
+            self::$paramRegex,
+            function ($matches) use (&$captures) {
+                return self::regexCaptureToAttributeCallback($matches, $captures);
             },
             $fileContent,
             flags: PREG_UNMATCHED_AS_NULL
         );
 
         return [
-            "contentWithPlaceholders" => $withPlaceholders,
-            "captures" => $netteCapturesList,
+            "contentWithPlaceholders" => $contentWithPlaceholders,
+            "captures" => $captures,
         ];
     }
-
-    public static function convertNetteRegexCapturesToDictionary(array $captures)
+    
+    /**
+     * Converts regex parameter captures to an attribute string.
+     * @param array $captures Regex parameter captures.
+     * @return string Returns the attribute string.
+     */
+    public static function convertCapturesToAttributeString(array $captures)
     {
-        // convert the string assignments in $captures to an associative array
+        $paramAttributeClass = Utils::shortenClass(Param::class);
+
+        $annotationParameters = NetteAnnotationConverter::convertCapturesToDictionary($captures);
+        $parenthesesBuilder = NetteAnnotationConverter::convertRegexCapturesToParenthesesBuilder($annotationParameters);
+        $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
+        // change to multiline if the line is too long
+        if (strlen($attributeLine) > 120) {
+            $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toMultilineString(4)}]";
+        }
+        return $attributeLine;
+    }
+
+    /**
+     * Converts regex parameter captures into a dictionary.
+     * @param array $captures The regex captures.
+     * @throws \App\Exceptions\InternalServerException
+     * @return array Returns a dictionary with field names as keys pointing to values.
+     */
+    private static function convertCapturesToDictionary(array $captures)
+    {
+        // convert the string assignments in $captures to a dictionary
         $annotationParameters = [];
         // the first element is the matched string
         for ($i = 1; $i < count($captures); $i++) {
@@ -84,30 +117,10 @@ class NetteAnnotationConverter
      * @param array $capturesList An output list for captures.
      * @return string Returns a placeholder.
      */
-    private static function netteRegexCaptureToAttributeCallback(array $captures, array &$capturesList)
+    private static function regexCaptureToAttributeCallback(array $captures, array &$capturesList)
     {
         $capturesList[] = $captures;
-        return self::$netteAttributePlaceholder;
-    }
-
-    /**
-     * @return string[] Returns an array of Validator class names (without the namespace).
-     */
-    private static function getValidatorNames()
-    {
-        $dir = __DIR__ . "/Validators";
-        $baseFilenames = scandir($dir);
-        $classNames = [];
-        foreach ($baseFilenames as $filename) {
-            if (!str_ends_with($filename, ".php")) {
-                continue;
-            }
-
-            // remove the ".php" suffix
-            $className = substr($filename, 0, -4);
-            $classNames[] = $className;
-        }
-        return $classNames;
+        return self::$attributePlaceholder;
     }
 
     /**
@@ -193,7 +206,7 @@ class NetteAnnotationConverter
     }
 
     /**
-     * Convers an associative array into an attribute string builder.
+     * Convers a parameter dictionary into an attribute string builder.
      * @param array $annotationParameters An associative array with a subset of the following keys:
      *  type, name, validation, description, required, nullable.
      * @throws \App\Exceptions\InternalServerException
