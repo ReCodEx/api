@@ -15,6 +15,7 @@ use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Helpers\Swagger\AnnotationHelper;
 use App\Helpers\Swagger\ParenthesesBuilder;
 use App\V1Module\Presenters\BasePresenter;
+use ReflectionMethod;
 
 class AnnotationToAttributeConverter
 {
@@ -100,6 +101,13 @@ class AnnotationToAttributeConverter
         return $annotationParameters;
     }
 
+    /**
+     * Convers an associative array into an attribute string builder.
+     * @param array $annotationParameters An associative array with a subset of the following keys:
+     *  type, name, validation, description, required, nullable.
+     * @throws \App\Exceptions\InternalServerException
+     * @return ParenthesesBuilder A string builder used to build the final attribute string.
+     */
     private static function convertRegexCapturesToParenthesesBuilder(array $annotationParameters)
     {
         // serialize the parameters to an attribute
@@ -119,6 +127,9 @@ class AnnotationToAttributeConverter
                 break;
             case "query":
                 $type = $paramTypeClass . "::Query";
+                break;
+            case "path":
+                $type = $paramTypeClass . "::Path";
                 break;
             default:
                 throw new InternalServerException("Unknown request type: $typeStr");
@@ -250,6 +261,7 @@ class AnnotationToAttributeConverter
                 $validatorClass = VEmail::class;
                 break;
             case "numericint":
+            case "integer":
                 $validatorClass = VInt::class;
                 break;
             case "bool":
@@ -305,47 +317,159 @@ class AnnotationToAttributeConverter
         // join with presenter name from the file
         $className = $namespace . "\\" . basename($path, ".php");
 
+        // get endpoint metadata for this file
         $endpoints = array_filter(self::$routesMetadata, function ($route) use ($className) {
             return $route["class"] == $className;
         });
 
+        // add info about where the method starts
+        foreach ($endpoints as &$endpoint) {
+            $reflectionMethod = new ReflectionMethod($endpoint["class"], $endpoint["method"]);
+            // the method returns the line indexed from 1
+            $endpoint["startLine"] = $reflectionMethod->getStartLine() - 1;
+            $endpoint["endLine"] = $reflectionMethod->getEndLine() - 1;
+        }
+        
+        // sort endpoint based on position in the file (so that the file preprocessing can be done top-down)
+        $startLines = array_column($endpoints, "startLine");
+        array_multisort($startLines, SORT_ASC, $endpoints);
+        
+        // get file lines
+        $content = file_get_contents($path);
+        $lines = self::fileStringToLines($content);
+
+        // maps certain line indices to replacement annotation blocks and their extends
+        $annotationReplacements = [];
+
         foreach ($endpoints as $endpoint) {
+            $class = $endpoint["class"];
+            $method = $endpoint["method"];
+            $route = $endpoint["route"];
+            $startLine = $endpoint["startLine"];
+
+            // get info about endpoint parameters and their types
             $annotationData = AnnotationHelper::extractAnnotationData(
-                $endpoint["class"],
-                $endpoint["method"],
-                $endpoint["route"]
+                $class,
+                $method,
+                $route
             );
-            var_dump($annotationData);
+
+            // find start and end lines of method annotations
+            $annotationEndLine = $startLine - 1;
+            $annotationStartLine = -1;
+            for ($i = $annotationEndLine - 1; $i >= 0; $i--) {
+                if (str_contains($lines[$i], "/**")) {
+                    $annotationStartLine = $i;
+                    break;
+                }
+            }
+            if ($annotationStartLine == -1) {
+                throw new InternalServerException("Could not find annotation start line");
+            }
+
+            $annotationLines = array_slice($lines, $annotationStartLine, $annotationEndLine - $annotationStartLine + 1);
+            $params = $annotationData->getAllParams();
+
+            /// attempt to remove param lines, but it is too complicated (handle missing param lines + multiline params)
+            // foreach ($params as $param) {
+            //     // matches the line containing the parameter name with word boundaries
+            //     $paramLineRegex = "/\\$\\b" . $param->name . "\\b/";
+            //     $lineIdx = -1;
+            //     for ($i = 0; $i < count($annotationLines); $i++) {
+            //         if (preg_match($paramLineRegex, $annotationLines[$i]) == 1) {
+            //             $lineIdx = $i;
+            //             break;
+            //         }
+            //     }
+            // }
+
+            // crate an attribute from each parameter
+            foreach ($params as $param) {
+                $data = [
+                    "name" => $param->name,
+                    "validation" => $param->swaggerType,
+                    "type" => $param->location,
+                    "required" => ($param->required ? "true" : "false"),
+                    "nullable" => ($param->nullable ? "true" : "false"),
+                ];
+                if ($param->description != null) {
+                    $data["description"] = $param->description;
+                }
+
+                $builder = self::convertRegexCapturesToParenthesesBuilder($data);
+                $paramAttributeClass = self::shortenClass(Param::class);
+                $attributeLine = "    #[{$paramAttributeClass}{$builder->toString()}]";
+                // change to multiline if the line is too long
+                if (strlen($attributeLine) > 120) {
+                    $attributeLine = "    #[{$paramAttributeClass}{$builder->toMultilineString(4)}]";
+                }
+
+                // append the attribute line to the existing annotations
+                $annotationLines[] = $attributeLine;
+            }
+
+            $annotationReplacements[$annotationStartLine] = [
+                "annotations" => $annotationLines,
+                "originalAnnotationEndLine" => $annotationEndLine,
+            ];
         }
 
+        $newLines = [];
+        for ($i = 0; $i < count($lines); $i++) {
+            // copy non-annotation lines
+            if (!array_key_exists($i, $annotationReplacements)) {
+                $newLines[] = $lines[$i];
+                continue;
+            }
+
+            // add new annotations
+            foreach ($annotationReplacements[$i]["annotations"] as $replacementLine) {
+                $newLines[] = $replacementLine;
+            }
+            // move $i to the original annotation end line
+            $i = $annotationReplacements[$i]["originalAnnotationEndLine"];
+        }
+
+        return self::linesToFileString($newLines);
+    }
+
+    private static function fileStringToLines(string $fileContent): array
+    {
+        $lines = preg_split("/((\r?\n)|(\r\n?))/", $fileContent);
+        if ($lines == false) {
+            throw new InternalServerException("File content cannot be split into lines");
+        }
+        return $lines;
+    }
+
+    private static function linesToFileString(array $lines): string
+    {
+        return implode("\n", $lines);
     }
 
     public static function convertFile(string $path)
     {
-        self::preprocessFile($path);
-        return;
-        // read file and replace @Param annotations with attributes
-        $content = file_get_contents($path);
+        $content = self::preprocessFile($path);
         // Array that contains parentheses builders of all future generated attributes.
         // Filled dynamically with the preg_replace_callback callback.
         $standardCapturesList = [];
         $netteCapturesList = [];
+        // $withInterleavedAttributes = preg_replace_callback(
+        //     self::$standardRegex,
+        //     function ($matches) use (&$standardCapturesList) {
+        //         return self::standardRegexCaptureToAttributeCallback($matches, $standardCapturesList);
+        //     },
+        //     $content,
+        //     flags: PREG_UNMATCHED_AS_NULL
+        // );
         $withInterleavedAttributes = preg_replace_callback(
-            self::$standardRegex,
-            function ($matches) use (&$standardCapturesList) {
-                return self::standardRegexCaptureToAttributeCallback($matches, $standardCapturesList);
+            self::$netteRegex,
+            function ($matches) use (&$netteCapturesList) {
+                return self::netteRegexCaptureToAttributeCallback($matches, $netteCapturesList);
             },
             $content,
             flags: PREG_UNMATCHED_AS_NULL
         );
-        // $withInterleavedAttributes = preg_replace_callback(
-        //     self::$netteRegex,
-        //     function ($matches) use (&$netteCapturesList) {
-        //         return self::netteRegexCaptureToAttributeCallback($matches, $netteCapturesList);
-        //     },
-        //     $withInterleavedAttributes,
-        //     flags: PREG_UNMATCHED_AS_NULL
-        // );
 
         // move the attribute lines below the comment block
         $lines = [];
@@ -354,7 +478,7 @@ class AnnotationToAttributeConverter
         $usingsAdded = false;
         $paramAttributeClass = self::shortenClass(Param::class);
         $paramTypeClass = self::shortenClass(Type::class);
-        foreach (preg_split("/((\r?\n)|(\r\n?))/", $withInterleavedAttributes) as $line) {
+        foreach (self::fileStringToLines($withInterleavedAttributes) as $line) {
             // detected the initial "use" block, add usings for new types
             if (!$usingsAdded && strlen($line) > 3 && substr($line, 0, 3) === "use") {
                 $lines[] = "use App\\Helpers\\MetaFormats\\Attributes\\{$paramAttributeClass};";
@@ -397,6 +521,6 @@ class AnnotationToAttributeConverter
             }
         }
 
-        return implode("\n", $lines);
+        return self::linesToFileString($lines);
     }
 }

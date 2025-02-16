@@ -28,6 +28,11 @@ class AnnotationData
         $this->endpointDescription = $endpointDescription;
     }
 
+    public function getAllParams(): array
+    {
+        return array_merge($this->pathParams, $this->queryParams, $this->bodyParams);
+    }
+
     /**
      * Creates a method annotation string parsable by the swagger generator.
      * Example: if the method name is 'Put', the method will return '@OA\\PUT'.

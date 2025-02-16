@@ -10,5 +10,6 @@ enum Type
 {
   case Post;
   case Query;
+  case Path;
 }
 // @codingStandardsIgnoreEnd
