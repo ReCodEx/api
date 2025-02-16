@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Helpers\MetaFormats\AnnotationToAttributeConverter;
+use App\Helpers\MetaFormats\AnnotationConversion\AnnotationToAttributeConverter;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
