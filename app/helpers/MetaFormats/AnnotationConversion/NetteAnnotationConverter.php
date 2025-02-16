@@ -246,20 +246,22 @@ class NetteAnnotationConverter
         }
         $parenthesesBuilder->addValue("\"{$annotationParameters["name"]}\"");
 
-        $nullable = false;
-        if (array_key_exists("validation", $annotationParameters)) {
-            $validation = $annotationParameters["validation"];
-
-            if (Utils::checkValidationNullability($validation)) {
-                // remove the '|null' from the end of the string
-                $validation = substr($validation, 0, -5);
-                $nullable = true;
-            }
-
-            // this will always produce a single validator (the annotations do not contain multiple validation fields)
-            $validator = self::convertAnnotationValidationToValidatorString($validation);
-            $parenthesesBuilder->addValue(value: "[ $validator ]");
+        // replace missing validations with string validations
+        if (!array_key_exists("validation", $annotationParameters)) {
+            $annotationParameters["validation"] = "string";
         }
+        $nullable = false;
+        $validation = $annotationParameters["validation"];
+
+        if (Utils::checkValidationNullability($validation)) {
+            // remove the '|null' from the end of the string
+            $validation = substr($validation, 0, -5);
+            $nullable = true;
+        }
+
+        // this will always produce a single validator (the annotations do not contain multiple validation fields)
+        $validator = self::convertAnnotationValidationToValidatorString($validation);
+        $parenthesesBuilder->addValue(value: "[ $validator ]");
 
         if (array_key_exists("description", $annotationParameters)) {
             $parenthesesBuilder->addValue("\"{$annotationParameters["description"]}\"");
