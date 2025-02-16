@@ -32,11 +32,9 @@ class AnnotationToAttributeConverter
     // placeholder for detected nette annotations ("@Param")
     // this text must not be present in the presenter files
     private static string $netteAttributePlaceholder = "<!>#nette#<!>";
-    // placeholder for detected standard php parameter annotations ("@param")
-    private static string $standardAttributePlaceholder = "<!>#standard#<!>";
 
     // Metadata about endpoints used to determine what class methods are endpoints and what params
-    // are path and query. Initialized lazily (it cannot be assigned here because it is not a constant expression). 
+    // are path and query. Initialized lazily (it cannot be assigned here because it is not a constant expression).
     private static ?array $routesMetadata = null;
 
     private static function shortenClass(string $className)
@@ -453,9 +451,10 @@ class AnnotationToAttributeConverter
                     }
                     $lines[] = $attributeLine;
                 }
-                
+
+                // remove the captures used in this endpoint
+                $netteCapturesList = array_slice($netteCapturesList, $netteAttributeLinesCount);
                 // reset the counters for the next detected endpoint
-                ///TODO: these should not be reset (later captures will never be used)
                 $netteAttributeLinesCount = 0;
             } else {
                 $lines[] = $line;
