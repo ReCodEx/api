@@ -263,7 +263,11 @@ class NetteAnnotationConverter
         $parenthesesBuilder->addValue(value: $validator);
 
         if (array_key_exists("description", $annotationParameters)) {
-            $parenthesesBuilder->addValue("\"{$annotationParameters["description"]}\"");
+            $description = $annotationParameters["description"];
+            // escape all quotes and dollar signs
+            $description = str_replace("\"", "\\\"", $description);
+            $description = str_replace("$", "\\$", $description);
+            $parenthesesBuilder->addValue("\"{$description}\"");
         }
 
         if (array_key_exists("required", $annotationParameters)) {

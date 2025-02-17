@@ -15,7 +15,7 @@ class RequestParamData
     public string $name;
     public string $description;
     public bool $required;
-    public mixed $validators;
+    public array $validators;
     public bool $nullable;
 
     public function __construct(
@@ -23,7 +23,7 @@ class RequestParamData
         string $name,
         string $description,
         bool $required,
-        mixed $validators = [],
+        array $validators = [],
         bool $nullable = false,
     ) {
         $this->type = $type;
@@ -67,21 +67,15 @@ class RequestParamData
         // if an unexpected error is thrown, it is likely that the validator does not conform to the validator
         // interface
         try {
-            if (is_array($this->validators)) {
-                // use every provided validator
-                foreach ($this->validators as $validator) {
-                    if (!$validator->validate($value)) {
-                        throw new InvalidArgumentException($this->name);
-                    }
-                }
-            } else {
-                if (!$this->validators->validate($value)) {
+            // use every provided validator
+            foreach ($this->validators as $validator) {
+                if (!$validator->validate($value)) {
                     throw new InvalidArgumentException($this->name);
                 }
             }
         } catch (Exception $e) {
             throw new InternalServerException(
-                "The validator of parameter <{$this->name}> is corrupted. Parameter description: {$this->description}"
+                "The validator of parameter {$this->name} is corrupted. Parameter description: {$this->description}"
             );
         }
 
@@ -90,18 +84,23 @@ class RequestParamData
 
     private function hasValidators(): bool
     {
-        return count($this->validators) > 0;
+        if (is_array($this->validators)) {
+            return count($this->validators) > 0;
+        }
+        return $this->validators !== null;
     }
 
     public function toAnnotationParameterData()
     {
+        if (!$this->hasValidators()) {
+            throw new InternalServerException("No validator found for parameter {$this->name}, description: {$this->description}.");
+        }
+
         $swaggerType = "string";
         $nestedArraySwaggerType = null;
-        if ($this->hasValidators()) {
-            $swaggerType = $this->validators[0]::SWAGGER_TYPE;
-            if ($this->validators[0] instanceof VArray) {
-                $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
-            }
+        $swaggerType = $this->validators[0]::SWAGGER_TYPE;
+        if ($this->validators[0] instanceof VArray) {
+            $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
         }
 
         // retrieve the example value from the getExampleValue method if present

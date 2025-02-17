@@ -2,6 +2,7 @@
 
 namespace App\Helpers\MetaFormats\Attributes;
 
+use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\Type;
 use Attribute;
 
@@ -12,7 +13,7 @@ use Attribute;
 class FormatParameterAttribute
 {
     public Type $type;
-    public mixed $validators;
+    public array $validators;
     public string $description;
     public bool $required;
     // there is not an easy way to check whether a property has the nullability flag set
@@ -27,15 +28,27 @@ class FormatParameterAttribute
      */
     public function __construct(
         Type $type,
-        mixed $validators = [],
+        mixed $validators,
         string $description = "",
         bool $required = true,
         bool $nullable = false,
     ) {
         $this->type = $type;
-        $this->validators = $validators;
         $this->description = $description;
         $this->required = $required;
         $this->nullable = $nullable;
+
+        // assign validators
+        if ($validators == null) {
+            throw new InternalServerException("Parameter Attribute validators are mandatory.");
+        }
+        if (!is_array($validators)) {
+            $this->validators = [ $validators ];
+        } else {
+            if (count($validators) == 0) {
+                throw new InternalServerException("Parameter Attribute validators are mandatory.");
+            }
+            $this->validators = $validators;
+        }
     }
 }

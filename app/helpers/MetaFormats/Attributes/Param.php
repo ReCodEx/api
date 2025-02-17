@@ -9,14 +9,9 @@ use Attribute;
  * Attribute used to annotate individual post or query parameters of endpoints.
  */
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD)]
-class Param
+class Param extends FormatParameterAttribute
 {
-    public Type $type;
     public string $paramName;
-    public mixed $validators;
-    public string $description;
-    public bool $required;
-    public bool $nullable;
 
     /**
      * @param \App\Helpers\MetaFormats\Type $type The request parameter type (Post or Query).
@@ -34,11 +29,7 @@ class Param
         bool $required = true,
         bool $nullable = false,
     ) {
-        $this->type = $type;
+        parent::__construct($type, $validators, $description, $required, $nullable);
         $this->paramName = $name;
-        $this->validators = $validators;
-        $this->description = $description;
-        $this->required = $required;
-        $this->nullable = $nullable;
     }
 }
