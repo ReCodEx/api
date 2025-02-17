@@ -12,7 +12,7 @@ use Attribute;
 class FormatParameterAttribute
 {
     public Type $type;
-    public array $validators;
+    public mixed $validators;
     public string $description;
     public bool $required;
     // there is not an easy way to check whether a property has the nullability flag set
@@ -20,14 +20,14 @@ class FormatParameterAttribute
 
     /**
      * @param \App\Helpers\MetaFormats\Type $type The request parameter type (Post or Query).
-     * @param array $validators An array of validators applied to the request parameter.
+     * @param mixed $validators A validator object or an array of validators applied to the request parameter.
      * @param string $description The description of the request parameter.
      * @param bool $required Whether the request parameter is required.
      * @param bool $nullable Whether the request parameter can be null.
      */
     public function __construct(
         Type $type,
-        array $validators = [],
+        mixed $validators = [],
         string $description = "",
         bool $required = true,
         bool $nullable = false,

@@ -258,10 +258,9 @@ class NetteAnnotationConverter
             $validation = substr($validation, 0, -5);
             $nullable = true;
         }
-
         // this will always produce a single validator (the annotations do not contain multiple validation fields)
         $validator = self::convertAnnotationValidationToValidatorString($validation);
-        $parenthesesBuilder->addValue(value: "[ $validator ]");
+        $parenthesesBuilder->addValue(value: $validator);
 
         if (array_key_exists("description", $annotationParameters)) {
             $parenthesesBuilder->addValue("\"{$annotationParameters["description"]}\"");

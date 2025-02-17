@@ -13,7 +13,7 @@ class Param
 {
     public Type $type;
     public string $paramName;
-    public array $validators;
+    public mixed $validators;
     public string $description;
     public bool $required;
     public bool $nullable;
@@ -21,7 +21,7 @@ class Param
     /**
      * @param \App\Helpers\MetaFormats\Type $type The request parameter type (Post or Query).
      * @param string $name The name of the request parameter.
-     * @param array $validators An array of validators applied to the request parameter.
+     * @param mixed $validators A validator object or an array of validators applied to the request parameter.
      * @param string $description The description of the request parameter.
      * @param bool $required Whether the request parameter is required.
      * @param bool $nullable Whether the request parameter can be null.
@@ -29,7 +29,7 @@ class Param
     public function __construct(
         Type $type,
         string $name,
-        array $validators,
+        mixed $validators,
         string $description = "",
         bool $required = true,
         bool $nullable = false,

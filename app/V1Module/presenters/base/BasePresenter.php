@@ -206,7 +206,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $identity->isInScope($scope);
     }
 
-    public function getMetaRequest(): MetaRequest|null
+    public function getMetaRequest(): MetaRequest | null
     {
         if ($this->requestFormatInstance === null) {
             throw new InternalServerException(

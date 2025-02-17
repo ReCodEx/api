@@ -2,10 +2,12 @@
 
 namespace App\Helpers\MetaFormats;
 
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\Swagger\AnnotationParameterData;
+use Exception;
 
 class RequestParamData
 {
@@ -13,7 +15,7 @@ class RequestParamData
     public string $name;
     public string $description;
     public bool $required;
-    public array $validators;
+    public mixed $validators;
     public bool $nullable;
 
     public function __construct(
@@ -21,7 +23,7 @@ class RequestParamData
         string $name,
         string $description,
         bool $required,
-        array $validators = [],
+        mixed $validators = [],
         bool $nullable = false,
     ) {
         $this->type = $type;
@@ -60,11 +62,27 @@ class RequestParamData
             return true;
         }
 
-        // use every provided validator
-        foreach ($this->validators as $validator) {
-            if (!$validator->validate($value)) {
-                throw new InvalidArgumentException($this->name);
+        ///TODO: check whether this works (test the internal exception as well)
+        // apply validators
+        // if an unexpected error is thrown, it is likely that the validator does not conform to the validator
+        // interface
+        try {
+            if (is_array($this->validators)) {
+                // use every provided validator
+                foreach ($this->validators as $validator) {
+                    if (!$validator->validate($value)) {
+                        throw new InvalidArgumentException($this->name);
+                    }
+                }
+            } else {
+                if (!$this->validators->validate($value)) {
+                    throw new InvalidArgumentException($this->name);
+                }
             }
+        } catch (Exception $e) {
+            throw new InternalServerException(
+                "The validator of parameter <{$this->name}> is corrupted. Parameter description: {$this->description}"
+            );
         }
 
         return true;
