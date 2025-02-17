@@ -3,8 +3,6 @@
 namespace App\Helpers\MetaFormats\AnnotationConversion;
 
 use App\Exceptions\InternalServerException;
-use App\Helpers\MetaFormats\Attributes\Param;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
@@ -58,7 +56,7 @@ class NetteAnnotationConverter
             "captures" => $captures,
         ];
     }
-    
+
     /**
      * Converts regex parameter captures to an attribute string.
      * @param array $captures Regex parameter captures.
@@ -66,9 +64,9 @@ class NetteAnnotationConverter
      */
     public static function convertCapturesToAttributeString(array $captures)
     {
-        $paramAttributeClass = Utils::shortenClass(Param::class);
-
+        
         $annotationParameters = NetteAnnotationConverter::convertCapturesToDictionary($captures);
+        $paramAttributeClass = Utils::getAttributeClassFromString($annotationParameters["type"]);
         $parenthesesBuilder = NetteAnnotationConverter::convertRegexCapturesToParenthesesBuilder($annotationParameters);
         $attributeLine = "    #[{$paramAttributeClass}{$parenthesesBuilder->toString()}]";
         // change to multiline if the line is too long
@@ -208,7 +206,7 @@ class NetteAnnotationConverter
     /**
      * Convers a parameter dictionary into an attribute string builder.
      * @param array $annotationParameters An associative array with a subset of the following keys:
-     *  type, name, validation, description, required, nullable.
+     *  name, validation, description, required, nullable.
      * @throws \App\Exceptions\InternalServerException
      * @return ParenthesesBuilder A string builder used to build the final attribute string.
      */
@@ -216,29 +214,6 @@ class NetteAnnotationConverter
     {
         // serialize the parameters to an attribute
         $parenthesesBuilder = new ParenthesesBuilder();
-
-        // add type
-        if (!array_key_exists("type", $annotationParameters)) {
-            throw new InternalServerException("Missing type parameter.");
-        }
-
-        $typeStr = $annotationParameters["type"];
-        $paramTypeClass = Utils::shortenClass(Type::class);
-        $type = null;
-        switch ($typeStr) {
-            case "post":
-                $type = $paramTypeClass . "::Post";
-                break;
-            case "query":
-                $type = $paramTypeClass . "::Query";
-                break;
-            case "path":
-                $type = $paramTypeClass . "::Path";
-                break;
-            default:
-                throw new InternalServerException("Unknown request type: $typeStr");
-        }
-        $parenthesesBuilder->addValue($type);
 
         // add name
         if (!array_key_exists("name", $annotationParameters)) {

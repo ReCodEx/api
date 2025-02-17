@@ -2,7 +2,6 @@
 
 namespace App\Helpers\MetaFormats\AnnotationConversion;
 
-use App\Helpers\MetaFormats\Attributes\Param;
 use App\Helpers\MetaFormats\Type;
 
 class AnnotationToAttributeConverter
@@ -24,12 +23,15 @@ class AnnotationToAttributeConverter
         $lines = [];
         $netteAttributeLinesCount = 0;
         $usingsAdded = false;
-        $paramAttributeClass = Utils::shortenClass(Param::class);
+        $paramAttributeClasses = Utils::getParamAttributeClassNames();
         $paramTypeClass = Utils::shortenClass(Type::class);
         foreach (Utils::fileStringToLines($contentWithPlaceholders) as $line) {
             // detected the initial "use" block, add usings for new types
             if (!$usingsAdded && strlen($line) > 3 && substr($line, 0, 3) === "use") {
-                $lines[] = "use App\\Helpers\\MetaFormats\\Attributes\\{$paramAttributeClass};";
+                // add usings for attributes
+                foreach ($paramAttributeClasses as $class) {
+                    $lines[] = "use App\\Helpers\\MetaFormats\\Attributes\\{$class};";
+                }
                 $lines[] = "use App\\Helpers\\MetaFormats\\{$paramTypeClass};";
                 foreach (Utils::getValidatorNames() as $validator) {
                     $lines[] = "use App\\Helpers\\MetaFormats\\Validators\\{$validator};";

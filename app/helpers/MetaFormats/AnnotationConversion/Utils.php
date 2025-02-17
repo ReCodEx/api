@@ -3,6 +3,9 @@
 namespace App\Helpers\MetaFormats\AnnotationConversion;
 
 use App\Exceptions\InternalServerException;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
 use App\V1Module\Presenters\BasePresenter;
 
 class Utils
@@ -81,5 +84,26 @@ class Utils
         $namespaceTokens = explode("\\", BasePresenter::class);
         $namespace = implode("\\", array_slice($namespaceTokens, 0, count($namespaceTokens) - 1));
         return $namespace;
+    }
+
+    public static function getAttributeClassFromString(string $type)
+    {
+        switch ($type) {
+            case "post":
+                return self::shortenClass(Post::class);
+            case "query":
+                return self::shortenClass(Query::class);
+            case "path":
+                return self::shortenClass(Path::class);
+        }
+    }
+
+    public static function getParamAttributeClassNames()
+    {
+        return [
+            self::shortenClass(Post::class),
+            self::shortenClass(Query::class),
+            self::shortenClass(Path::class),
+        ];
     }
 }

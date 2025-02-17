@@ -5,7 +5,6 @@ namespace App\Helpers\MetaFormats;
 use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\Attributes\FormatAttribute;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
-use App\Helpers\MetaFormats\Attributes\ParamAttribute;
 use App\Helpers\MetaFormats\Attributes\Param;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;

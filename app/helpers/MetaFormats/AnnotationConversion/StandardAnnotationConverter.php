@@ -3,10 +3,8 @@
 namespace App\Helpers\MetaFormats\AnnotationConversion;
 
 use App\Exceptions\InternalServerException;
-use App\Helpers\MetaFormats\Attributes\Param;
 use App\Helpers\Swagger\AnnotationHelper;
 use App\Helpers\Swagger\AnnotationParameterData;
-use App\V1Module\Presenters\BasePresenter;
 use ReflectionMethod;
 
 class StandardAnnotationConverter
@@ -44,11 +42,11 @@ class StandardAnnotationConverter
             $endpoint["startLine"] = $reflectionMethod->getStartLine() - 1;
             $endpoint["endLine"] = $reflectionMethod->getEndLine() - 1;
         }
-        
+
         // sort endpoints based on position in the file (so that the file preprocessing can be done top-down)
         $startLines = array_column($endpoints, "startLine");
         array_multisort($startLines, SORT_ASC, $endpoints);
-        
+
         // get file lines
         $content = file_get_contents($path);
         $lines = Utils::fileStringToLines($content);
@@ -159,7 +157,7 @@ class StandardAnnotationConverter
         }
 
         $builder = NetteAnnotationConverter::convertRegexCapturesToParenthesesBuilder($data);
-        $paramAttributeClass = Utils::shortenClass(Param::class);
+        $paramAttributeClass = Utils::getAttributeClassFromString($data["type"]);
         $attributeLine = "    #[{$paramAttributeClass}{$builder->toString()}]";
         // change to multiline if the line is too long
         if (strlen($attributeLine) > 120) {
