@@ -240,6 +240,11 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
         // validate each param
         foreach ($paramData as $param) {
+            ///TODO: path parameters are not checked yet
+            if ($param->type == Type::Path) {
+                continue;
+            }
+
             $paramValue = $this->getValueFromParamData($param);
             $formatInstanceArr[$param->name] = $paramValue;
 
@@ -266,6 +271,11 @@ class BasePresenter extends \App\Presenters\BasePresenter
         ///TODO: handle nested MetaFormat creation
         $formatInstance = MetaFormatHelper::createFormatInstance($format);
         foreach ($nameToFieldDefinitionsMap as $fieldName => $requestParamData) {
+            ///TODO: path parameters are not checked yet
+            if ($requestParamData->type == Type::Path) {
+                continue;
+            }
+
             $value = $this->getValueFromParamData($requestParamData);
 
             if (!$formatInstance->checkedAssign($fieldName, $value)) {
