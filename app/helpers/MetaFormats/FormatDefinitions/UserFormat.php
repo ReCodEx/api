@@ -19,7 +19,7 @@ class UserFormat extends MetaFormat
     #[FormatParameterAttribute(Type::Post, new VString(), "First name")]
     public string $firstName;
 
-    #[FormatParameterAttribute(Type::Post, new VString(), "Last name", validators: [ new VString(2) ])]
+    #[FormatParameterAttribute(Type::Post, new VString(), "Last name")]
     public string $lastName;
 
     #[FormatParameterAttribute(Type::Post, new VString(), "A password for authentication")]
