@@ -134,8 +134,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
         Validators::init();
         $this->processParams($actionReflection);
-
-        $this->logger->log(var_export($this->getRequest(), true), ILogger::DEBUG);
     }
 
     protected function isRequestJson(): bool
@@ -220,8 +218,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     private function processParams(ReflectionMethod $reflection)
     {
-        $this->logger->log(var_export(MetaFormatHelper::debugGetAttributes($reflection), true), ILogger::DEBUG);
-
         // use a method specialized for formats if there is a format available
         $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
         if ($format !== null) {
@@ -249,7 +245,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
             $formatInstanceArr[$param->name] = $paramValue;
 
             // this throws when it does not conform
-            $this->logger->log(var_export($param, true), ILogger::DEBUG);
             $param->conformsToDefinition($paramValue);
         }
 

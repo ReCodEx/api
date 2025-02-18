@@ -165,10 +165,9 @@ class RegistrationPresenter extends BasePresenter
      * @throws WrongCredentialsException
      * @throws InvalidArgumentException
      */
-    #[FormatAttribute(UserFormat::class)]
     public function actionCreateAccount()
     {
-        $req = $this->getMetaRequest();
+        $req = $this->getRequest();
 
         // check if the email is free
         $email = trim($req->getPost("email"));
