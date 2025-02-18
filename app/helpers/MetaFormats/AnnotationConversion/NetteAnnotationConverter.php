@@ -64,7 +64,7 @@ class NetteAnnotationConverter
      */
     public static function convertCapturesToAttributeString(array $captures)
     {
-        
+
         $annotationParameters = NetteAnnotationConverter::convertCapturesToDictionary($captures);
         $paramAttributeClass = Utils::getAttributeClassFromString($annotationParameters["type"]);
         $parenthesesBuilder = NetteAnnotationConverter::convertRegexCapturesToParenthesesBuilder($annotationParameters);
@@ -151,16 +151,16 @@ class NetteAnnotationConverter
                 }
 
                 // type "255", exact match
-                if ($matches[2] === null) {
+                if ($matches[2] == null) {
                     return "new {$stringValidator}({$matches[1]}, {$matches[1]})";
                 // type "1..255"
-                } elseif ($matches[1] !== null && $matches[3] !== null) {
+                } elseif ($matches[1] != null && $matches[3] !== null) {
                     return "new {$stringValidator}({$matches[1]}, {$matches[3]})";
                 // type "..255"
-                } elseif ($matches[1] === null) {
+                } elseif ($matches[1] == null) {
                     return "new {$stringValidator}(0, {$matches[3]})";
                 // type "1.."
-                } elseif ($matches[3] === null) {
+                } elseif ($matches[3] == null) {
                     return "new {$stringValidator}({$matches[1]})";
                 }
 

@@ -347,26 +347,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $value;
     }
 
-    private function validateValue($param, $value, $validationRule, $msg = null)
-    {
-        foreach (["int", "integer"] as $rule) {
-            if ($validationRule === $rule || str_starts_with($validationRule, $rule . ":")) {
-                throw new LogicException("Validation rule '$validationRule' will not work for request parameters");
-            }
-        }
-
-        $value = Validators::preprocessValue($value, $validationRule);
-        if (Validators::is($value, $validationRule) === false) {
-            throw new InvalidArgumentException(
-                $param,
-                $msg ?? "The value '$value' does not match validation rule '$validationRule'"
-                    . " - for more information check the documentation of Nette\\Utils\\Validators"
-            );
-        }
-
-        return $value;
-    }
-
     protected function logUserAction($code = IResponse::S200_OK)
     {
         if ($this->getUser()->isLoggedIn()) {

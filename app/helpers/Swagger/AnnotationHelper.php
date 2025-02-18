@@ -82,7 +82,7 @@ class AnnotationHelper
         return null;
     }
 
-    private static function isDatatypeNullable(string $annotationType): bool
+    private static function isDatatypeNullable(mixed $annotationType): bool
     {
         // if the dataType is not specified (it is null), it means that the annotation is not
         // complete and defaults to a non nullable string
@@ -192,25 +192,6 @@ class AnnotationHelper
         }
 
         return $params;
-    }
-
-    /**
-     * Converts an array of assignment string to an associative array.
-     * @param array $expressions An array containing values in the following format: 'key="value"'.
-     * @return array Returns an associative array made from the string array.
-     */
-    private static function stringArrayToAssociativeArray(array $expressions): array
-    {
-        $dict = [];
-        //sample: [ 'name="uiData"', 'validation="array|null"' ]
-        foreach ($expressions as $expression) {
-            $tokens = explode('="', $expression);
-            $name = $tokens[0];
-            // remove the '"' at the end
-            $value = substr($tokens[1], 0, -1);
-            $dict[$name] = $value;
-        }
-        return $dict;
     }
 
     /**

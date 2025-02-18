@@ -9,7 +9,6 @@ class FormatCache
     private static ?array $formatToClassMap = null;
     private static ?array $classToFormatMap = null;
     private static ?array $formatToFieldFormatsMap = null;
-    private static ?array $validators = null;
 
     public static function getFormatToClassMap(): array
     {

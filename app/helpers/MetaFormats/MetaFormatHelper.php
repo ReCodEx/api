@@ -16,27 +16,6 @@ class MetaFormatHelper
     private static string $formatDefinitionFolder = __DIR__ . '/FormatDefinitions';
     private static string $formatDefinitionsNamespace = "App\\Helpers\\MetaFormats\\FormatDefinitions";
 
-    private static function extractFormatData(array $annotations)
-    {
-        $filtered = AnnotationHelper::filterAnnotations($annotations, "@format");
-        // there should either be one or none format declaration
-        if (count($filtered) == 0) {
-            return null;
-        }
-        if (count($filtered) > 1) {
-            ///TODO: throw exception
-            echo "Error in extractFormatData: Multiple format definitions.\n";
-            return null;
-        }
-
-        // sample: @format uuid
-        $annotation = $filtered[0];
-        $tokens = explode(" ", $annotation);
-        $format = $tokens[1];
-
-        return $format;
-    }
-
   /**
    * Checks all @checked_param annotations of a method and returns a map from parameter names to their formats.
    * @param string $className The name of the containing class.
@@ -142,9 +121,9 @@ class MetaFormatHelper
   /**
    * Parses the format attributes of class fields and returns their metadata.
    * @param string $className The name of the class.
-   * @return array{format: string|null, type: string|null} with the field name as the key.
+   * @return array Returns a dictionary with the field name as the key and RequestParamData as the value.
    */
-    public static function createNameToFieldDefinitionsMap(string $className)
+    public static function createNameToFieldDefinitionsMap(string $className): array
     {
         $class = new ReflectionClass($className);
         $fields = get_class_vars($className);

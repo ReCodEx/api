@@ -93,7 +93,9 @@ class RequestParamData
     public function toAnnotationParameterData()
     {
         if (!$this->hasValidators()) {
-            throw new InternalServerException("No validator found for parameter {$this->name}, description: {$this->description}.");
+            throw new InternalServerException(
+                "No validator found for parameter {$this->name}, description: {$this->description}."
+            );
         }
 
         $swaggerType = "string";
@@ -105,7 +107,7 @@ class RequestParamData
 
         // retrieve the example value from the getExampleValue method if present
         $exampleValue = null;
-        if ($this->hasValidators() && method_exists(get_class($this->validators[0]), "getExampleValue")) {
+        if (method_exists(get_class($this->validators[0]), "getExampleValue")) {
             $exampleValue = $this->validators[0]->getExampleValue();
         }
 

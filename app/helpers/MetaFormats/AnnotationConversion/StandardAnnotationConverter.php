@@ -79,8 +79,8 @@ class StandardAnnotationConverter
      * @param array $endpoints Endpoint method metadata sorted by line number.
      * @param array $lines Lines of the file to be converted.
      * @throws \App\Exceptions\InternalServerException
-     * @return array<array{annotations: array, originalAnnotationEndLine: float|int>} a list of dictionaries
-     *  containing the new annotation lines and the end line of the original annotations.
+     * @return array A list of dictionaries containing the new annotation lines and the end line
+     *  of the original annotations.
      */
     private static function convertEndpointAnnotations(array $endpoints, array $lines): array
     {
