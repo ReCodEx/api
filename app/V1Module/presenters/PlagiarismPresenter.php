@@ -8,8 +8,8 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
@@ -235,7 +235,7 @@ class PlagiarismPresenter extends BasePresenter
         required: false,
     )]
     #[Post("authorId", new VUuid(), "Id of the author of the similar solutions/files.")]
-    #[Post("similarity", new VFloat(), "Relative similarity of the records associated with selected author [0-1].")]
+    #[Post("similarity", new VDouble(), "Relative similarity of the records associated with selected author [0-1].")]
     #[Post("files", new VArray(), "List of similar files and their records.")]
     #[Path("id", new VString(), required: true)]
     #[Path("solutionId", new VString(), required: true)]

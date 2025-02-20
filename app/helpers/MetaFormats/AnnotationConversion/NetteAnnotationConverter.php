@@ -6,7 +6,7 @@ use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
@@ -195,7 +195,7 @@ class NetteAnnotationConverter
                 $validatorClass = VTimestamp::class;
                 break;
             case "numeric":
-                $validatorClass = VFloat::class;
+                $validatorClass = VDouble::class;
                 break;
             case "mixed":
                 $validatorClass = VMixed::class;

@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
-class VFloat
+class VDouble
 {
     public const SWAGGER_TYPE = "number";
 

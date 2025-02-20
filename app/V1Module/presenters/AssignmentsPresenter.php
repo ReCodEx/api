@@ -8,8 +8,8 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
@@ -268,7 +268,7 @@ class AssignmentsPresenter extends BasePresenter
     #[Post("isBonus", new VBool(), "If true, points from this exercise will not be included in overall score of group")]
     #[Post(
         "pointsPercentualThreshold",
-        new VFloat(),
+        new VDouble(),
         "A minimum percentage of points needed to gain point from assignment",
         required: false,
     )]
