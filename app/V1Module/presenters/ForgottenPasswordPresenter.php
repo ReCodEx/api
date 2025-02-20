@@ -110,7 +110,7 @@ class ForgottenPasswordPresenter extends BasePresenter
      * Check if a password is strong enough
      * @POST
      */
-    #[Post("password", new VString(), "The password to be checked")]
+    #[Post("password", new VString(), "The password to be checked", nullable: true)]
     public function actionValidatePasswordStrength()
     {
         $password = $this->getRequest()->getPost("password");
