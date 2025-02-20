@@ -225,11 +225,13 @@ class NetteAnnotationConverter
         }
         $parenthesesBuilder->addValue("\"{$annotationParameters["name"]}\"");
 
+        $nullable = false;
         // replace missing validations with placeholder validations
         if (!array_key_exists("validation", $annotationParameters)) {
             $annotationParameters["validation"] = "mixed";
+            // missing validations imply nullability
+            $nullable = true;
         }
-        $nullable = false;
         $validation = $annotationParameters["validation"];
 
         if (Utils::checkValidationNullability($validation)) {
@@ -246,7 +248,7 @@ class NetteAnnotationConverter
             // escape all quotes and dollar signs
             $description = str_replace("\"", "\\\"", $description);
             $description = str_replace("$", "\\$", $description);
-            $parenthesesBuilder->addValue("\"{$description}\"");
+            $parenthesesBuilder->addValue(value: "\"{$description}\"");
         }
 
         if (array_key_exists("required", $annotationParameters)) {

@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -150,8 +151,8 @@ class SisPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      */
-    #[Post("year", new VString())]
-    #[Post("term", new VString())]
+    #[Post("year", new VMixed(), nullable: true)]
+    #[Post("term", new VMixed(), nullable: true)]
     public function actionRegisterTerm()
     {
         $year = intval($this->getRequest()->getPost("year"));
@@ -422,7 +423,7 @@ class SisPresenter extends BasePresenter
      * @throws InvalidArgumentException
      * @throws Exception
      */
-    #[Post("parentGroupId", new VString())]
+    #[Post("parentGroupId", new VMixed(), nullable: true)]
     #[Path("courseId", new VString(), required: true)]
     public function actionCreateGroup($courseId)
     {
@@ -495,7 +496,7 @@ class SisPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      */
-    #[Post("groupId", new VString())]
+    #[Post("groupId", new VMixed(), nullable: true)]
     #[Path("courseId", new VString(), required: true)]
     public function actionBindGroup($courseId)
     {

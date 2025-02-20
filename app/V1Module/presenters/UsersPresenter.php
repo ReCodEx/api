@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -248,8 +249,8 @@ class UsersPresenter extends BasePresenter
      */
     #[Post("firstName", new VString(2), "First name", required: false)]
     #[Post("lastName", new VString(2), "Last name", required: false)]
-    #[Post("titlesBeforeName", new VString(), "Titles before name", required: false)]
-    #[Post("titlesAfterName", new VString(), "Titles after name", required: false)]
+    #[Post("titlesBeforeName", new VMixed(), "Titles before name", required: false, nullable: true)]
+    #[Post("titlesAfterName", new VMixed(), "Titles after name", required: false, nullable: true)]
     #[Post("email", new VEmail(), "New email address", required: false)]
     #[Post("oldPassword", new VString(1), "Old password of current user", required: false)]
     #[Post("password", new VString(1), "New password of current user", required: false)]

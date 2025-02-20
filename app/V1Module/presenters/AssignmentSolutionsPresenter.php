@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -344,7 +345,13 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws InvalidStateException
      */
     #[Post("bonusPoints", new VInt(), "New amount of bonus points, can be negative number")]
-    #[Post("overriddenPoints", new VString(), "Overrides points assigned to solution by the system", required: false)]
+    #[Post(
+        "overriddenPoints",
+        new VMixed(),
+        "Overrides points assigned to solution by the system",
+        required: false,
+        nullable: true,
+    )]
     #[Path("id", new VString(), "Identifier of the solution", required: true)]
     public function actionSetBonusPoints(string $id)
     {

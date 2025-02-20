@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -87,7 +88,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * @POST
      */
     #[Post("expireAt", new VTimestamp(), "When the invitation expires.", nullable: true)]
-    #[Post("note", new VString(), "Note for the students who wish to use the invitation link.")]
+    #[Post("note", new VMixed(), "Note for the students who wish to use the invitation link.", nullable: true)]
     #[Path("id", new VString(), required: true)]
     public function actionUpdate($id)
     {
@@ -181,7 +182,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * @POST
      */
     #[Post("expireAt", new VTimestamp(), "When the invitation expires.", nullable: true)]
-    #[Post("note", new VString(), "Note for the students who wish to use the invitation link.")]
+    #[Post("note", new VMixed(), "Note for the students who wish to use the invitation link.", nullable: true)]
     #[Path("groupId", new VString(), required: true)]
     public function actionCreate($groupId)
     {

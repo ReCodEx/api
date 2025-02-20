@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -121,7 +122,7 @@ class InstancesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("name", new VString(2), "Name of the instance")]
-    #[Post("description", new VString(), "Description of the instance", required: false)]
+    #[Post("description", new VMixed(), "Description of the instance", required: false, nullable: true)]
     #[Post("isOpen", new VBool(), "Should the instance be open for registration?")]
     public function actionCreateInstance()
     {

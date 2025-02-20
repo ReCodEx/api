@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -333,7 +334,12 @@ class ExercisesPresenter extends BasePresenter
      * @throws InvalidArgumentException
      */
     #[Post("version", new VInt(), "Version of the edited exercise")]
-    #[Post("difficulty", new VString(), "Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")]
+    #[Post(
+        "difficulty",
+        new VMixed(),
+        "Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'",
+        nullable: true,
+    )]
     #[Post("localizedTexts", new VArray(), "A description of the exercise")]
     #[Post("isPublic", new VBool(), "Exercise can be public or private", required: false)]
     #[Post("isLocked", new VBool(), "If true, the exercise cannot be assigned", required: false)]
@@ -526,7 +532,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws ApiException
      * @throws ParseException
      */
-    #[Post("groupId", new VString(), "Identifier of the group to which exercise belongs to")]
+    #[Post("groupId", new VMixed(), "Identifier of the group to which exercise belongs to", nullable: true)]
     public function actionCreate()
     {
         $user = $this->getCurrentUser();
@@ -641,7 +647,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws ParseException
      */
-    #[Post("groupId", new VString(), "Identifier of the group to which exercise will be forked")]
+    #[Post("groupId", new VMixed(), "Identifier of the group to which exercise will be forked", nullable: true)]
     #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionForkFrom(string $id)
     {

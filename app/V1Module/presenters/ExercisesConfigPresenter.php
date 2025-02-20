@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -701,8 +702,9 @@ class ExercisesConfigPresenter extends BasePresenter
     #[Post("scoreCalculator", new VString(), "ID of the score calculator")]
     #[Post(
         "scoreConfig",
-        new VString(),
+        new VMixed(),
         "A configuration of the score calculator (the format depends on the calculator type)",
+        nullable: true,
     )]
     #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionSetScoreConfig(string $id)

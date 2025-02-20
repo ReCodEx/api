@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -261,7 +262,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws NotFoundException
      */
-    #[Post("groupId", new VString(), "Identifier of the group")]
+    #[Post("groupId", new VMixed(), "Identifier of the group", nullable: true)]
     public function actionCreate()
     {
         $req = $this->getRequest();

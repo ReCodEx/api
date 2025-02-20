@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -249,10 +250,15 @@ class SubmitPresenter extends BasePresenter
      * @throws ParseException
      */
     #[Post("note", new VString(0, 1024), "A note by the author of the solution")]
-    #[Post("userId", new VString(), "Author of the submission", required: false)]
-    #[Post("files", new VString(), "Submitted files")]
-    #[Post("runtimeEnvironmentId", new VString(), "Identifier of the runtime environment used for evaluation")]
-    #[Post("solutionParams", new VString(), "Solution parameters", required: false)]
+    #[Post("userId", new VMixed(), "Author of the submission", required: false, nullable: true)]
+    #[Post("files", new VMixed(), "Submitted files", nullable: true)]
+    #[Post(
+        "runtimeEnvironmentId",
+        new VMixed(),
+        "Identifier of the runtime environment used for evaluation",
+        nullable: true,
+    )]
+    #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
     #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionSubmit(string $id)
     {

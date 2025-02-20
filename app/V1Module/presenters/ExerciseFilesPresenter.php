@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -101,7 +102,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws InvalidArgumentException
      * @throws SubmissionFailedException
      */
-    #[Post("files", new VString(), "Identifiers of supplementary files")]
+    #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
     #[Path("id", new VString(), "identification of exercise", required: true)]
     public function actionUploadSupplementaryFiles(string $id)
     {
@@ -262,7 +263,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @POST
      * @throws ForbiddenRequestException
      */
-    #[Post("files", new VString(), "Identifiers of attachment files")]
+    #[Post("files", new VMixed(), "Identifiers of attachment files", nullable: true)]
     #[Path("id", new VString(), "identification of exercise", required: true)]
     public function actionUploadAttachmentFiles(string $id)
     {

@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -38,8 +39,8 @@ class SecurityPresenter extends BasePresenter
     /**
      * @POST
      */
-    #[Post("url", new VString(), "URL of the resource that we are checking", required: true)]
-    #[Post("method", new VString(), "The HTTP method", required: true)]
+    #[Post("url", new VMixed(), "URL of the resource that we are checking", required: true, nullable: true)]
+    #[Post("method", new VMixed(), "The HTTP method", required: true, nullable: true)]
     public function actionCheck()
     {
         $requestParams = $this->router->match(

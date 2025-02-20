@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -325,8 +326,8 @@ class PipelinesPresenter extends BasePresenter
      */
     #[Post("name", new VString(2), "Name of the pipeline")]
     #[Post("version", new VInt(), "Version of the edited pipeline")]
-    #[Post("description", new VString(), "Human readable description of pipeline")]
-    #[Post("pipeline", new VString(), "Pipeline configuration", required: false)]
+    #[Post("description", new VMixed(), "Human readable description of pipeline", nullable: true)]
+    #[Post("pipeline", new VMixed(), "Pipeline configuration", required: false, nullable: true)]
     #[Post("parameters", new VArray(), "A set of parameters", required: false)]
     #[Post(
         "global",
@@ -470,7 +471,7 @@ class PipelinesPresenter extends BasePresenter
      * @throws SubmissionFailedException
      * @throws NotFoundException
      */
-    #[Post("files", new VString(), "Identifiers of supplementary files")]
+    #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
     #[Path("id", new VString(), "identification of pipeline", required: true)]
     public function actionUploadSupplementaryFiles(string $id)
     {

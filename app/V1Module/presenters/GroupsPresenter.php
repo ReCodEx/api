@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -255,7 +256,13 @@ class GroupsPresenter extends BasePresenter
      * @throws InvalidArgumentException
      */
     #[Post("instanceId", new VUuid(), "An identifier of the instance where the group should be created")]
-    #[Post("externalId", new VString(), "An informative, human readable identifier of the group", required: false)]
+    #[Post(
+        "externalId",
+        new VMixed(),
+        "An informative, human readable identifier of the group",
+        required: false,
+        nullable: true,
+    )]
     #[Post(
         "parentGroupId",
         new VUuid(),
@@ -338,10 +345,10 @@ class GroupsPresenter extends BasePresenter
      * @POST
      * @throws ForbiddenRequestException
      */
-    #[Post("name", new VString(), "Name of the group")]
-    #[Post("locale", new VString(), "The locale of the name")]
-    #[Post("instanceId", new VString(), "Identifier of the instance where the group belongs")]
-    #[Post("parentGroupId", new VString(), "Identifier of the parent group", required: false)]
+    #[Post("name", new VMixed(), "Name of the group", nullable: true)]
+    #[Post("locale", new VMixed(), "The locale of the name", nullable: true)]
+    #[Post("instanceId", new VMixed(), "Identifier of the instance where the group belongs", nullable: true)]
+    #[Post("parentGroupId", new VMixed(), "Identifier of the parent group", required: false, nullable: true)]
     public function actionValidateAddGroupData()
     {
         $req = $this->getRequest();
@@ -375,7 +382,13 @@ class GroupsPresenter extends BasePresenter
      * @POST
      * @throws InvalidArgumentException
      */
-    #[Post("externalId", new VString(), "An informative, human readable indentifier of the group", required: false)]
+    #[Post(
+        "externalId",
+        new VMixed(),
+        "An informative, human readable indentifier of the group",
+        required: false,
+        nullable: true,
+    )]
     #[Post("publicStats", new VBool(), "Should students be able to see each other's results?")]
     #[Post("detaining", new VBool(), "Are students prevented from leaving the group on their own?", required: false)]
     #[Post("isPublic", new VBool(), "Should the group be visible to all student?")]

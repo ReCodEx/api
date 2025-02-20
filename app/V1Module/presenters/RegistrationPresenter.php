@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -238,8 +239,8 @@ class RegistrationPresenter extends BasePresenter
      * Check if the registered E-mail isn't already used and if the password is strong enough
      * @POST
      */
-    #[Post("email", new VString(), "E-mail address (login name)")]
-    #[Post("password", new VString(), "Authentication password", required: false)]
+    #[Post("email", new VMixed(), "E-mail address (login name)", nullable: true)]
+    #[Post("password", new VMixed(), "Authentication password", required: false, nullable: true)]
     public function actionValidateRegistrationData()
     {
         $req = $this->getRequest();

@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -183,8 +184,8 @@ class BrokerReportsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws InvalidStateException
      */
-    #[Post("status", new VString(), "The new status of the job")]
-    #[Post("message", new VString(), "A textual explanation of the status change", required: false)]
+    #[Post("status", new VMixed(), "The new status of the job", nullable: true)]
+    #[Post("message", new VMixed(), "A textual explanation of the status change", required: false, nullable: true)]
     #[Path("jobId", new VString(), "Identifier of the job whose status is being reported", required: true)]
     public function actionJobStatus($jobId)
     {
@@ -210,7 +211,7 @@ class BrokerReportsPresenter extends BasePresenter
      * @POST
      * @throws InternalServerException
      */
-    #[Post("message", new VString(), "A textual description of the error")]
+    #[Post("message", new VMixed(), "A textual description of the error", nullable: true)]
     public function actionError()
     {
         $req = $this->getRequest();

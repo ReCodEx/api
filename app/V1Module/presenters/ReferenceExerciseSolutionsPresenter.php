@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -431,9 +432,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("note", new VString(), "Description of this particular reference solution, for example used algorithm")]
-    #[Post("files", new VString(), "Files of the reference solution")]
-    #[Post("runtimeEnvironmentId", new VString(), "ID of runtime for this solution")]
-    #[Post("solutionParams", new VString(), "Solution parameters", required: false)]
+    #[Post("files", new VMixed(), "Files of the reference solution", nullable: true)]
+    #[Post("runtimeEnvironmentId", new VMixed(), "ID of runtime for this solution", nullable: true)]
+    #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
     #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionSubmit(string $exerciseId)
     {
