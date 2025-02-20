@@ -68,7 +68,7 @@ class RequestParamData
                 $type = $validator::SWAGGER_TYPE;
                 throw new InvalidArgumentException(
                     $this->name,
-                    "The provided value for parameter '{$this->name}' did not pass validation of type '{$type}'."
+                    "The provided value did not pass the validation of type '{$type}'."
                 );
             }
         }

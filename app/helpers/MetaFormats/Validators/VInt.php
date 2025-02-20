@@ -18,6 +18,9 @@ class VInt
 
     public function validate(mixed $value)
     {
+        if (!MetaFormatHelper::checkType($value, PhpTypes::Int)) {
+            throw new InternalServerException("err: {$value}");
+        }
         return MetaFormatHelper::checkType($value, PhpTypes::Int);
     }
 }
