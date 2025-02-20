@@ -26,9 +26,11 @@ class VArray
         return null;
     }
 
-    public function getElementSwaggerType()
+    /**
+     * @return string|null Returns the element swagger type. Can be null if the element validator is not set.
+     */
+    public function getElementSwaggerType(): mixed
     {
-        // default to string for unknown element types
         if ($this->nestedValidator === null) {
             return null;
         }
