@@ -73,10 +73,8 @@ class RequestParamData
                     throw new InvalidArgumentException($this->name);
                 }
             }
-        } catch (Exception $e) {
-            throw new InternalServerException(
-                "The validator of parameter {$this->name} is corrupted. Parameter description: {$this->description}"
-            );
+        } catch (InternalServerException $e) {
+            throw $e;
         }
 
         return true;
