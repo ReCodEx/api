@@ -8,6 +8,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VFloat;
 use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -196,6 +197,9 @@ class NetteAnnotationConverter
             case "numeric":
                 $validatorClass = VFloat::class;
                 break;
+            case "mixed":
+                $validatorClass = VMixed::class;
+                break;
             default:
                 throw new InternalServerException("Unknown validation rule: $validation");
         }
@@ -221,9 +225,9 @@ class NetteAnnotationConverter
         }
         $parenthesesBuilder->addValue("\"{$annotationParameters["name"]}\"");
 
-        // replace missing validations with string validations
+        // replace missing validations with placeholder validations
         if (!array_key_exists("validation", $annotationParameters)) {
-            $annotationParameters["validation"] = "string";
+            $annotationParameters["validation"] = "mixed";
         }
         $nullable = false;
         $validation = $annotationParameters["validation"];
