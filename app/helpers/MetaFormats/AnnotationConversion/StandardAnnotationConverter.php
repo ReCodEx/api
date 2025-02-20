@@ -106,21 +106,42 @@ class StandardAnnotationConverter
                 throw new InternalServerException("Could not find annotation start line");
             }
 
+            // get all annotation lines for the endoint
             $annotationLines = array_slice($lines, $annotationStartLine, $annotationEndLine - $annotationStartLine + 1);
             $params = $annotationData->getAllParams();
 
-            /// attempt to remove param lines, but it is too complicated (handle missing param lines + multiline params)
-            // foreach ($params as $param) {
-            //     // matches the line containing the parameter name with word boundaries
-            //     $paramLineRegex = "/\\$\\b" . $param->name . "\\b/";
-            //     $lineIdx = -1;
-            //     for ($i = 0; $i < count($annotationLines); $i++) {
-            //         if (preg_match($paramLineRegex, $annotationLines[$i]) == 1) {
-            //             $lineIdx = $i;
-            //             break;
-            //         }
-            //     }
-            // }
+            foreach ($params as $param) {
+                // matches the line containing the parameter name with word boundaries
+                $paramLineRegex = "/\\$\\b" . $param->name . "\\b/";
+                $lineIdx = -1;
+                for ($i = 0; $i < count($annotationLines); $i++) {
+                    if (preg_match($paramLineRegex, $annotationLines[$i]) == 1) {
+                        $lineIdx = $i;
+                        break;
+                    }
+                }
+
+                // the endpoint is missing the annotation for the parameter, skip the parameter
+                if ($lineIdx == -1) {
+                    continue;
+                }
+
+                // length of the param annotation in lines
+                $paramAnnotationLength = 1;
+                // matches lines starting with an asterisks not continued by the @ symbol
+                $paramContinuationRegex = "/\h*\*\h+[^@]/";
+                // find out how long the parameter annotation is
+                for ($i = $lineIdx + 1; $i < count($annotationLines); $i++) {
+                    if (preg_match($paramContinuationRegex, $annotationLines[$i]) == 1) {
+                        $paramAnnotationLength += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                // remove param annotations
+                array_splice($annotationLines, $lineIdx, $paramAnnotationLength);
+            }
 
             // crate an attribute from each parameter
             foreach ($params as $param) {
