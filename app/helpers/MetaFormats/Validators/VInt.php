@@ -18,9 +18,16 @@ class VInt
 
     public function validate(mixed $value)
     {
-        if (!MetaFormatHelper::checkType($value, PhpTypes::Int)) {
-            throw new InternalServerException("err: {$value}");
+        // check if it is an integer
+        if (MetaFormatHelper::checkType($value, PhpTypes::Int)) {
+            return true;
         }
-        return MetaFormatHelper::checkType($value, PhpTypes::Int);
+
+        // the value may be a string containing the integer
+        if (!is_numeric($value)) {
+            return false;
+        }
+
+        return intval($value) == floatval($value);
     }
 }
