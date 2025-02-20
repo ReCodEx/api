@@ -62,19 +62,11 @@ class RequestParamData
             return true;
         }
 
-        ///TODO: check whether this works (test the internal exception as well)
-        // apply validators
-        // if an unexpected error is thrown, it is likely that the validator does not conform to the validator
-        // interface
-        try {
-            // use every provided validator
-            foreach ($this->validators as $validator) {
-                if (!$validator->validate($value)) {
-                    throw new InvalidArgumentException($this->name);
-                }
+        // use every provided validator
+        foreach ($this->validators as $validator) {
+            if (!$validator->validate($value)) {
+                throw new InvalidArgumentException($this->name);
             }
-        } catch (InternalServerException $e) {
-            throw $e;
         }
 
         return true;
