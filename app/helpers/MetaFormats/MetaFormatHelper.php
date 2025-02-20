@@ -6,6 +6,9 @@ use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\Attributes\FormatAttribute;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\Attributes\Param;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;
 use ReflectionMethod;
@@ -60,13 +63,27 @@ class MetaFormatHelper
     }
 
     /**
+     * Extracts all endpoint parameter attributes.
+     * @param \ReflectionMethod $reflectionMethod The endpoint reflection method.
+     * @return array Returns an array of parameter attributes.
+     */
+    public static function getEndpointAttributes(ReflectionMethod $reflectionMethod): array
+    {
+        $path = $reflectionMethod->getAttributes(name: Path::class);
+        $query = $reflectionMethod->getAttributes(name: Query::class);
+        $post = $reflectionMethod->getAttributes(name: Post::class);
+        $param = $reflectionMethod->getAttributes(name: Param::class);
+        return array_merge($path, $query, $post, $param);
+    }
+
+    /**
      * Fetches all attributes of a method and extracts the parameter data.
      * @param \ReflectionMethod $reflectionMethod The method reflection object.
      * @return array Returns an array of RequestParamData objects with the extracted data.
      */
     public static function extractRequestParamData(ReflectionMethod $reflectionMethod): array
     {
-        $attrs = $reflectionMethod->getAttributes(Param::class);
+        $attrs = self::getEndpointAttributes($reflectionMethod);
         $data = [];
         foreach ($attrs as $attr) {
             $paramAttr = $attr->newInstance();
@@ -108,7 +125,7 @@ class MetaFormatHelper
      *   in the code. Each element is an instance of the specific attribute.
      */
     public static function debugGetAttributes(
-        ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
+        ReflectionClass | ReflectionProperty | ReflectionMethod $reflectionObject
     ): array {
         $requestAttributes = $reflectionObject->getAttributes();
         $data = [];
