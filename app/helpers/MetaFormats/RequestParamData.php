@@ -65,7 +65,11 @@ class RequestParamData
         // use every provided validator
         foreach ($this->validators as $validator) {
             if (!$validator->validate($value)) {
-                throw new InvalidArgumentException($this->name);
+                $type = $validator::SWAGGER_TYPE;
+                throw new InvalidArgumentException(
+                    $this->name,
+                    "The provided value for parameter '{$this->name}' did not pass validation of type '{$type}'."
+                );
             }
         }
 
