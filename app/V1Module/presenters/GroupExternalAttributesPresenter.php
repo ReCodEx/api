@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use App\Model\Repository\GroupExternalAttributes;
@@ -52,8 +64,6 @@ class GroupExternalAttributesPresenter extends BasePresenter
     /**
      * Return all attributes that correspond to given filtering parameters.
      * @GET
-     * @Param(type="query", name="filter", required=true, validation="string",
-     *        description="JSON-encoded filter query in DNF as [clause OR clause...]")
      *
      * The filter is encocded as array of objects (logically represented as disjunction of clauses)
      * -- i.e., [clause1 OR clause2 ...]. Each clause is an object with the following keys:
@@ -64,6 +74,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
      *
      * The endpoint will return a list of matching attributes and all related group entities.
      */
+    #[Query("filter", new VString(), "JSON-encoded filter query in DNF as [clause OR clause...]", required: true)]
     public function actionDefault(?string $filter)
     {
         $filterStruct = json_decode($filter ?? '', true);
@@ -99,14 +110,12 @@ class GroupExternalAttributesPresenter extends BasePresenter
 
     /**
      * Create an external attribute for given group.
-     * @Param(type="post", name="service", required=true, validation="string:1..32",
-     *        description="Identifier of the external service creating the attribute")
-     * @Param(type="post", name="key", required=true, validation="string:1..32",
-     *        description="Key of the attribute (must be valid identifier)")
-     * @Param(type="post", name="value", required=true, validation="string:0..255",
-     *        description="Value of the attribute (arbitrary string)")
      * @POST
      */
+    #[Post("service", new VString(1, 32), "Identifier of the external service creating the attribute", required: true)]
+    #[Post("key", new VString(1, 32), "Key of the attribute (must be valid identifier)", required: true)]
+    #[Post("value", new VString(0, 255), "Value of the attribute (arbitrary string)", required: true)]
+    #[Path("groupId", new VString(), required: true)]
     public function actionAdd(string $groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
@@ -132,6 +141,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
      * Remove selected attribute
      * @DELETE
      */
+    #[Path("id", new VString(), required: true)]
     public function actionRemove(string $id)
     {
         $attribute = $this->groupExternalAttributes->findOrThrow($id);

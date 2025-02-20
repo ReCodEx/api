@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
@@ -177,8 +189,8 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Get details of an assignment
      * @GET
-     * @param string $id Identifier of the assignment
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionDetail(string $id)
     {
         $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($this->assignments->findOrThrow($id)));
@@ -195,53 +207,89 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Update details of an assignment
      * @POST
-     * @Param(type="post", name="version", validation="numericint", description="Version of the edited assignment")
-     * @Param(type="post", name="isPublic", validation="bool",
-     *        description="Is the assignment ready to be displayed to students?")
-     * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
-     * @Param(type="post", name="firstDeadline", validation="timestamp",
-     *        description="First deadline for submission of the assignment")
-     * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint",
-     *        description="A maximum of points that can be awarded for a submission before first deadline")
-     * @Param(type="post", name="submissionsCountLimit", validation="numericint",
-     *        description="A maximum amount of submissions by a student for the assignment")
-     * @Param(type="post", name="solutionFilesLimit", validation="numericint|null",
-     *        description="Maximal number of files in a solution being submitted")
-     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
-     *        description="Maximal size (bytes) of all files in a solution being submitted")
-     * @Param(type="post", name="allowSecondDeadline", validation="bool",
-     *        description="Should there be a second deadline for students who didn't make the first one?")
-     * @Param(type="post", name="visibleFrom", validation="timestamp", required=false,
-     *        description="Date from which this assignment will be visible to students")
-     * @Param(type="post", name="canViewLimitRatios", validation="bool",
-     *        description="Can all users view ratio of theirs solution memory and time usages and assignment limits?")
-     * @Param(type="post", name="canViewMeasuredValues", validation="bool",
-     *        description="Can all users view absolute memory and time values?")
-     * @Param(type="post", name="canViewJudgeStdout", validation="bool",
-     *        description="Can all users view judge primary log (stdout) of theirs solution?")
-     * @Param(type="post", name="canViewJudgeStderr", validation="bool",
-     *        description="Can all users view judge secondary log (stderr) of theirs solution?")
-     * @Param(type="post", name="secondDeadline", validation="timestamp", required=false,
-     *        description="A second deadline for submission of the assignment (with different point award)")
-     * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false,
-     *        description="A maximum of points that can be awarded for a late submission")
-     * @Param(type="post", name="maxPointsDeadlineInterpolation", validation="bool",
-     *        description="Use linear interpolation for max. points between 1st and 2nd deadline")
-     * @Param(type="post", name="isBonus", validation="bool",
-     *        description="If true, points from this exercise will not be included in overall score of group")
-     * @Param(type="post", name="pointsPercentualThreshold", validation="numeric", required=false,
-     *        description="A minimum percentage of points needed to gain point from assignment")
-     * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false,
-     *        description="Identifiers of runtime environments that should not be used for student submissions")
-     * @Param(type="post", name="sendNotification", required=false, validation="bool",
-     *        description="If email notification (when assignment becomes public) should be sent")
-     * @Param(type="post", name="isExam", required=false, validation="bool",
-     *        description="This assignemnt is dedicated for an exam (should be solved in exam mode)")
-     * @param string $id Identifier of the updated assignment
      * @throws BadRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
+    #[Post("version", new VInt(), "Version of the edited assignment")]
+    #[Post("isPublic", new VBool(), "Is the assignment ready to be displayed to students?")]
+    #[Post("localizedTexts", new VArray(), "A description of the assignment")]
+    #[Post("firstDeadline", new VTimestamp(), "First deadline for submission of the assignment")]
+    #[Post(
+        "maxPointsBeforeFirstDeadline",
+        new VInt(),
+        "A maximum of points that can be awarded for a submission before first deadline",
+    )]
+    #[Post("submissionsCountLimit", new VInt(), "A maximum amount of submissions by a student for the assignment")]
+    #[Post("solutionFilesLimit", new VInt(), "Maximal number of files in a solution being submitted", nullable: true)]
+    #[Post(
+        "solutionSizeLimit",
+        new VInt(),
+        "Maximal size (bytes) of all files in a solution being submitted",
+        nullable: true,
+    )]
+    #[Post(
+        "allowSecondDeadline",
+        new VBool(),
+        "Should there be a second deadline for students who didn't make the first one?",
+    )]
+    #[Post(
+        "visibleFrom",
+        new VTimestamp(),
+        "Date from which this assignment will be visible to students",
+        required: false,
+    )]
+    #[Post(
+        "canViewLimitRatios",
+        new VBool(),
+        "Can all users view ratio of theirs solution memory and time usages and assignment limits?",
+    )]
+    #[Post("canViewMeasuredValues", new VBool(), "Can all users view absolute memory and time values?")]
+    #[Post("canViewJudgeStdout", new VBool(), "Can all users view judge primary log (stdout) of theirs solution?")]
+    #[Post("canViewJudgeStderr", new VBool(), "Can all users view judge secondary log (stderr) of theirs solution?")]
+    #[Post(
+        "secondDeadline",
+        new VTimestamp(),
+        "A second deadline for submission of the assignment (with different point award)",
+        required: false,
+    )]
+    #[Post(
+        "maxPointsBeforeSecondDeadline",
+        new VInt(),
+        "A maximum of points that can be awarded for a late submission",
+        required: false,
+    )]
+    #[Post(
+        "maxPointsDeadlineInterpolation",
+        new VBool(),
+        "Use linear interpolation for max. points between 1st and 2nd deadline",
+    )]
+    #[Post("isBonus", new VBool(), "If true, points from this exercise will not be included in overall score of group")]
+    #[Post(
+        "pointsPercentualThreshold",
+        new VFloat(),
+        "A minimum percentage of points needed to gain point from assignment",
+        required: false,
+    )]
+    #[Post(
+        "disabledRuntimeEnvironmentIds",
+        new VArray(),
+        "Identifiers of runtime environments that should not be used for student submissions",
+        required: false,
+    )]
+    #[Post(
+        "sendNotification",
+        new VBool(),
+        "If email notification (when assignment becomes public) should be sent",
+        required: false,
+    )]
+    #[Post(
+        "isExam",
+        new VBool(),
+        "This assignemnt is dedicated for an exam (should be solved in exam mode)",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the updated assignment", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -471,10 +519,10 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Check if the version of the assignment is up-to-date.
      * @POST
-     * @Param(type="post", name="version", validation="numericint", description="Version of the assignment.")
-     * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
      */
+    #[Post("version", new VInt(), "Version of the assignment.")]
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionValidate($id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -492,13 +540,13 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Assign an exercise to a group
      * @POST
-     * @Param(type="post", name="exerciseId", description="Identifier of the exercise")
-     * @Param(type="post", name="groupId", description="Identifier of the group")
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws InvalidStateException
      * @throws NotFoundException
      */
+    #[Post("exerciseId", new VString(), "Identifier of the exercise")]
+    #[Post("groupId", new VString(), "Identifier of the group")]
     public function actionCreate()
     {
         $req = $this->getRequest();
@@ -576,8 +624,8 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Delete an assignment
      * @DELETE
-     * @param string $id Identifier of the assignment to be removed
      */
+    #[Path("id", new VString(), "Identifier of the assignment to be removed", required: true)]
     public function actionRemove(string $id)
     {
         $this->assignments->remove($this->assignments->findOrThrow($id));
@@ -594,11 +642,11 @@ class AssignmentsPresenter extends BasePresenter
 
     /**
      * Update the assignment so that it matches with the current version of the exercise (limits, texts, etc.)
-     * @param string $id Identifier of the assignment that should be synchronized
      * @POST
      * @throws BadRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment that should be synchronized", required: true)]
     public function actionSyncWithExercise($id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -631,9 +679,9 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Get a list of solutions of all users for the assignment
      * @GET
-     * @param string $id Identifier of the assignment
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionSolutions(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -665,9 +713,9 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Get a list of solutions created by a user of an assignment
      * @GET
-     * @param string $id Identifier of the assignment
-     * @param string $userId Identifier of the user
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("userId", new VString(), "Identifier of the user", required: true)]
     public function actionUserSolutions(string $id, string $userId)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -708,10 +756,10 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Get the best solution by a user to an assignment
      * @GET
-     * @param string $id Identifier of the assignment
-     * @param string $userId Identifier of the user
      * @throws ForbiddenRequestException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("userId", new VString(), "Identifier of the user", required: true)]
     public function actionBestSolution(string $id, string $userId)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -738,9 +786,9 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Get the best solutions to an assignment for all students in group.
      * @GET
-     * @param string $id Identifier of the assignment
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionBestSolutions(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -782,11 +830,11 @@ class AssignmentsPresenter extends BasePresenter
     /**
      * Download the best solutions of an assignment for all students in group.
      * @GET
-     * @param string $id Identifier of the assignment
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      * @throws \Nette\Application\BadRequestException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionDownloadBestSolutionsArchive(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);

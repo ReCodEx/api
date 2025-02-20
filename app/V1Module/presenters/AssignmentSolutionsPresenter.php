@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
@@ -142,9 +154,9 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Get information about solutions.
      * @GET
-     * @param string $id Identifier of the solution
      * @throws InternalServerException
      */
+    #[Path("id", new VString(), "Identifier of the solution", required: true)]
     public function actionSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -172,11 +184,11 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Update details about the solution (note, etc...)
      * @POST
-     * @Param(type="post", name="note", validation="string:0..1024", description="A note by the author of the solution")
-     * @param string $id Identifier of the solution
      * @throws NotFoundException
      * @throws InternalServerException
      */
+    #[Post("note", new VString(0, 1024), "A note by the author of the solution")]
+    #[Path("id", new VString(), "Identifier of the solution", required: true)]
     public function actionUpdateSolution(string $id)
     {
         $req = $this->getRequest();
@@ -198,9 +210,9 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Delete assignment solution with given identification.
      * @DELETE
-     * @param string $id identifier of assignment solution
      * @throws ForbiddenRequestException
      */
+    #[Path("id", new VString(), "identifier of assignment solution", required: true)]
     public function actionDeleteSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -236,8 +248,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Get list of all submissions of a solution
      * @GET
-     * @param string $id Identifier of the solution
      */
+    #[Path("id", new VString(), "Identifier of the solution", required: true)]
     public function actionSubmissions(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -271,10 +283,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Get information about the evaluation of a submission
      * @GET
-     * @param string $submissionId Identifier of the submission
      * @throws NotFoundException
      * @throws InternalServerException
      */
+    #[Path("submissionId", new VString(), "Identifier of the submission", required: true)]
     public function actionSubmission(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -301,8 +313,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Remove the submission permanently
      * @DELETE
-     * @param string $submissionId Identifier of the submission
      */
+    #[Path("submissionId", new VString(), "Identifier of the submission", required: true)]
     public function actionDeleteSubmission(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -327,15 +339,13 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * Set new amount of bonus points for a solution (and optionally points override)
      * Returns array of solution entities that has been changed by this.
      * @POST
-     * @Param(type="post", name="bonusPoints", validation="numericint",
-     *        description="New amount of bonus points, can be negative number")
-     * @Param(type="post", name="overriddenPoints", required=false,
-     *        description="Overrides points assigned to solution by the system")
-     * @param string $id Identifier of the solution
      * @throws NotFoundException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
      */
+    #[Post("bonusPoints", new VInt(), "New amount of bonus points, can be negative number")]
+    #[Post("overriddenPoints", new VString(), "Overrides points assigned to solution by the system", required: false)]
+    #[Path("id", new VString(), "Identifier of the solution", required: true)]
     public function actionSetBonusPoints(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -423,14 +433,13 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Set flag of the assignment solution.
      * @POST
-     * @param string $id identifier of the solution
-     * @param string $flag name of the flag which should to be changed
-     * @Param(type="post", name="value", required=true, validation=boolean,
-     *        description="True or false which should be set to given flag name")
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      * @throws \Exception
      */
+    #[Post("value", new VBool(), "True or false which should be set to given flag name", required: true)]
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("flag", new VString(), "name of the flag which should to be changed", required: true)]
     public function actionSetFlag(string $id, string $flag)
     {
         $req = $this->getRequest();
@@ -546,12 +555,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Download archive containing all solution files for particular solution.
      * @GET
-     * @param string $id of assignment solution
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
+    #[Path("id", new VString(), "of assignment solution", required: true)]
     public function actionDownloadSolutionArchive(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -573,10 +582,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Get the list of submitted files of the solution.
      * @GET
-     * @param string $id of assignment solution
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "of assignment solution", required: true)]
     public function actionFiles(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id)->getSolution();
@@ -594,11 +603,11 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Download result archive from backend for particular submission.
      * @GET
-     * @param string $submissionId
      * @throws NotFoundException
      * @throws InternalServerException
      * @throws \Nette\Application\AbortException
      */
+    #[Path("submissionId", new VString(), required: true)]
     public function actionDownloadResultArchive(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -628,10 +637,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Get score configuration associated with given submission evaluation
      * @GET
-     * @param string $submissionId Identifier of the submission
      * @throws NotFoundException
      * @throws InternalServerException
      */
+    #[Path("submissionId", new VString(), "Identifier of the submission", required: true)]
     public function actionEvaluationScoreConfig(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -655,8 +664,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * (is admin/supervisor in corresponding groups).
      * Along with that it returns all assignment entities of the corresponding solutions.
      * @GET
-     * @param string $id of the user whose solutions with requested reviews are listed
      */
+    #[Path("id", new VString(), "of the user whose solutions with requested reviews are listed", required: true)]
     public function actionReviewRequests(string $id)
     {
         $user = $this->users->findOrThrow($id);

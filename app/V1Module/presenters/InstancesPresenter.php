@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Model\Entity\LocalizedGroup;
@@ -106,12 +118,11 @@ class InstancesPresenter extends BasePresenter
     /**
      * Create a new instance
      * @POST
-     * @Param(type="post", name="name", validation="string:2..", description="Name of the instance")
-     * @Param(type="post", name="description", required=false, description="Description of the instance")
-     * @Param(type="post", name="isOpen", validation="bool",
-     *        description="Should the instance be open for registration?")
      * @throws ForbiddenRequestException
      */
+    #[Post("name", new VString(2), "Name of the instance")]
+    #[Post("description", new VString(), "Description of the instance", required: false)]
+    #[Post("isOpen", new VBool(), "Should the instance be open for registration?")]
     public function actionCreateInstance()
     {
         $req = $this->getRequest();
@@ -144,10 +155,9 @@ class InstancesPresenter extends BasePresenter
     /**
      * Update an instance
      * @POST
-     * @Param(type="post", name="isOpen", validation="bool", required=false,
-     *        description="Should the instance be open for registration?")
-     * @param string $id An identifier of the updated instance
      */
+    #[Post("isOpen", new VBool(), "Should the instance be open for registration?", required: false)]
+    #[Path("id", new VString(), "An identifier of the updated instance", required: true)]
     public function actionUpdateInstance(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -174,8 +184,8 @@ class InstancesPresenter extends BasePresenter
     /**
      * Delete an instance
      * @DELETE
-     * @param string $id An identifier of the instance to be deleted
      */
+    #[Path("id", new VString(), "An identifier of the instance to be deleted", required: true)]
     public function actionDeleteInstance(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -204,8 +214,8 @@ class InstancesPresenter extends BasePresenter
     /**
      * Get details of an instance
      * @GET
-     * @param string $id An identifier of the instance
      */
+    #[Path("id", new VString(), "An identifier of the instance", required: true)]
     public function actionDetail(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -223,8 +233,8 @@ class InstancesPresenter extends BasePresenter
     /**
      * Get a list of licenses associated with an instance
      * @GET
-     * @param string $id An identifier of the instance
      */
+    #[Path("id", new VString(), "An identifier of the instance", required: true)]
     public function actionLicences(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -242,10 +252,10 @@ class InstancesPresenter extends BasePresenter
     /**
      * Create a new license for an instance
      * @POST
-     * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
-     * @Param(type="post", name="validUntil", validation="timestamp", description="Expiration date of the license")
-     * @param string $id An identifier of the instance
      */
+    #[Post("note", new VString(2), "A note for users or administrators")]
+    #[Post("validUntil", new VTimestamp(), "Expiration date of the license")]
+    #[Path("id", new VString(), "An identifier of the instance", required: true)]
     public function actionCreateLicence(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -269,15 +279,12 @@ class InstancesPresenter extends BasePresenter
     /**
      * Update an existing license for an instance
      * @POST
-     * @Param(type="post", name="note", validation="string:2..255", required=false,
-     *        description="A note for users or administrators")
-     * @Param(type="post", name="validUntil", validation="string", required=false,
-     *        description="Expiration date of the license")
-     * @Param(type="post", name="isValid", validation="bool", required=false,
-     *        description="Administrator switch to toggle licence validity")
-     * @param string $licenceId Identifier of the licence
      * @throws NotFoundException
      */
+    #[Post("note", new VString(2, 255), "A note for users or administrators", required: false)]
+    #[Post("validUntil", new VString(), "Expiration date of the license", required: false)]
+    #[Post("isValid", new VBool(), "Administrator switch to toggle licence validity", required: false)]
+    #[Path("licenceId", new VString(), "Identifier of the licence", required: true)]
     public function actionUpdateLicence(string $licenceId)
     {
         $licence = $this->licences->findOrThrow($licenceId);
@@ -309,9 +316,9 @@ class InstancesPresenter extends BasePresenter
     /**
      * Remove existing license for an instance
      * @DELETE
-     * @param string $licenceId Identifier of the licence
      * @throws NotFoundException
      */
+    #[Path("licenceId", new VString(), "Identifier of the licence", required: true)]
     public function actionDeleteLicence(string $licenceId)
     {
         $licence = $this->licences->findOrThrow($licenceId);

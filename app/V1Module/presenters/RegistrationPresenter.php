@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
@@ -148,23 +160,18 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Create a user account
      * @POST
-     * @Param(type="post", name="email", validation="email", description="An email that will serve as a login name")
-     * @Param(type="post", name="firstName", validation="string:2..", description="First name")
-     * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
-     * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.",
-     *        description="A password for authentication")
-     * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.",
-     *        description="A password confirmation")
-     * @Param(type="post", name="instanceId", validation="string:1..",
-     *        description="Identifier of the instance to register in")
-     * @Param(type="post", name="titlesBeforeName", required=false, validation="string:1..",
-     *        description="Titles which is placed before user name")
-     * @Param(type="post", name="titlesAfterName", required=false, validation="string:1..",
-     *        description="Titles which is placed after user name")
      * @throws BadRequestException
      * @throws WrongCredentialsException
      * @throws InvalidArgumentException
      */
+    #[Post("email", new VEmail(), "An email that will serve as a login name")]
+    #[Post("firstName", new VString(2), "First name")]
+    #[Post("lastName", new VString(2), "Last name")]
+    #[Post("password", new VString(1), "A password for authentication")]
+    #[Post("passwordConfirm", new VString(1), "A password confirmation")]
+    #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
+    #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
+    #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
     public function actionCreateAccount()
     {
         $req = $this->getRequest();
@@ -230,9 +237,9 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Check if the registered E-mail isn't already used and if the password is strong enough
      * @POST
-     * @Param(type="post", name="email", description="E-mail address (login name)")
-     * @Param(type="post", name="password", required=false, description="Authentication password")
      */
+    #[Post("email", new VString(), "E-mail address (login name)")]
+    #[Post("password", new VString(), "Authentication password", required: false)]
     public function actionValidateRegistrationData()
     {
         $req = $this->getRequest();
@@ -263,22 +270,22 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Create an invitation for a user and send it over via email
      * @POST
-     * @Param(type="post", name="email", validation="email", description="An email that will serve as a login name")
-     * @Param(type="post", name="firstName", required=true, validation="string:2..", description="First name")
-     * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
-     * @Param(type="post", name="instanceId", validation="string:1..",
-     *        description="Identifier of the instance to register in")
-     * @Param(type="post", name="titlesBeforeName", required=false, validation="string:1..",
-     *        description="Titles which is placed before user name")
-     * @Param(type="post", name="titlesAfterName", required=false, validation="string:1..",
-     *        description="Titles which is placed after user name")
-     * @Param(type="post", name="groups", required=false, validation="array",
-     *        description="List of group IDs in which the user is added right after registration")
-     * @Param(type="post", name="locale", required=false, validation="string:2",
-     *        description="Language used in the invitation email (en by default).")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("email", new VEmail(), "An email that will serve as a login name")]
+    #[Post("firstName", new VString(2), "First name", required: true)]
+    #[Post("lastName", new VString(2), "Last name")]
+    #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
+    #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
+    #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
+    #[Post(
+        "groups",
+        new VArray(),
+        "List of group IDs in which the user is added right after registration",
+        required: false,
+    )]
+    #[Post("locale", new VString(2, 2), "Language used in the invitation email (en by default).", required: false)]
     public function actionCreateInvitation()
     {
         $req = $this->getRequest();
@@ -332,15 +339,12 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Accept invitation and create corresponding user account.
      * @POST
-     * @Param(type="post", name="token", validation="string:1..",
-     *        description="Token issued in create invitation process.")
-     * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.",
-     *        description="A password for authentication")
-     * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.",
-     *        description="A password confirmation")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("token", new VString(1), "Token issued in create invitation process.")]
+    #[Post("password", new VString(1), "A password for authentication")]
+    #[Post("passwordConfirm", new VString(1), "A password confirmation")]
     public function actionAcceptInvitation()
     {
         $req = $this->getRequest();

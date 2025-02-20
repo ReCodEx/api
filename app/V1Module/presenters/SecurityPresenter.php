@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\InvalidArgumentException;
 use Exception;
 use Nette\Application\IPresenterFactory;
@@ -25,9 +37,9 @@ class SecurityPresenter extends BasePresenter
 
     /**
      * @POST
-     * @Param(name="url", type="post", required=true, description="URL of the resource that we are checking")
-     * @Param(name="method", type="post", required=true, description="The HTTP method")
      */
+    #[Post("url", new VString(), "URL of the resource that we are checking", required: true)]
+    #[Post("method", new VString(), "The HTTP method", required: true)]
     public function actionCheck()
     {
         $requestParams = $this->router->match(

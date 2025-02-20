@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
@@ -54,8 +66,8 @@ class NotificationsPresenter extends BasePresenter
      * returns only the ones from given groups (and their ancestors) and
      * global ones (without group).
      * @GET
-     * @param array $groupsIds identifications of groups
      */
+    #[Query("groupsIds", new VArray(), "identifications of groups", required: false)]
     public function actionDefault(array $groupsIds)
     {
         $ancestralGroupsIds = $this->groups->groupsIdsAncestralClosure($groupsIds);
@@ -103,21 +115,17 @@ class NotificationsPresenter extends BasePresenter
 
     /**
      * Create notification with given attributes
-     * @Param(type="post", name="groupsIds", validation="array",
-     *        description="Identification of groups")
-     * @Param(type="post", name="visibleFrom", validation="timestamp",
-     *        description="Date from which is notification visible")
-     * @Param(type="post", name="visibleTo", validation="timestamp",
-     *        description="Date to which is notification visible")
-     * @Param(type="post", name="role", validation="string:1..",
-     *        description="Users with this role and its children can see notification")
-     * @Param(type="post", name="type", validation="string", description="Type of the notification (custom)")
-     * @Param(type="post", name="localizedTexts", validation="array", description="Text of notification")
      * @POST
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("groupsIds", new VArray(), "Identification of groups")]
+    #[Post("visibleFrom", new VTimestamp(), "Date from which is notification visible")]
+    #[Post("visibleTo", new VTimestamp(), "Date to which is notification visible")]
+    #[Post("role", new VString(1), "Users with this role and its children can see notification")]
+    #[Post("type", new VString(), "Type of the notification (custom)")]
+    #[Post("localizedTexts", new VArray(), "Text of notification")]
     public function actionCreate()
     {
         $notification = new Notification($this->getCurrentUser());
@@ -220,20 +228,17 @@ class NotificationsPresenter extends BasePresenter
     /**
      * Update notification
      * @POST
-     * @param string $id
-     * @Param(type="post", name="groupsIds", validation="array", description="Identification of groups")
-     * @Param(type="post", name="visibleFrom", validation="timestamp",
-     *        description="Date from which is notification visible")
-     * @Param(type="post", name="visibleTo", validation="timestamp",
-     *        description="Date to which is notification visible")
-     * @Param(type="post", name="role", validation="string:1..",
-     *        description="Users with this role and its children can see notification")
-     * @Param(type="post", name="type", validation="string", description="Type of the notification (custom)")
-     * @Param(type="post", name="localizedTexts", validation="array", description="Text of notification")
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("groupsIds", new VArray(), "Identification of groups")]
+    #[Post("visibleFrom", new VTimestamp(), "Date from which is notification visible")]
+    #[Post("visibleTo", new VTimestamp(), "Date to which is notification visible")]
+    #[Post("role", new VString(1), "Users with this role and its children can see notification")]
+    #[Post("type", new VString(), "Type of the notification (custom)")]
+    #[Post("localizedTexts", new VArray(), "Text of notification")]
+    #[Path("id", new VString(), required: true)]
     public function actionUpdate(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);
@@ -253,9 +258,9 @@ class NotificationsPresenter extends BasePresenter
     /**
      * Delete a notification
      * @DELETE
-     * @param string $id
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), required: true)]
     public function actionRemove(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);

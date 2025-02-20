@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\HttpBasicAuthException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidStateException;
@@ -167,13 +179,13 @@ class BrokerReportsPresenter extends BasePresenter
     /**
      * Update the status of a job (meant to be called by the backend)
      * @POST
-     * @Param(name="status", type="post", description="The new status of the job")
-     * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
-     * @param string $jobId Identifier of the job whose status is being reported
      * @throws InternalServerException
      * @throws NotFoundException
      * @throws InvalidStateException
      */
+    #[Post("status", new VString(), "The new status of the job")]
+    #[Post("message", new VString(), "A textual explanation of the status change", required: false)]
+    #[Path("jobId", new VString(), "Identifier of the job whose status is being reported", required: true)]
     public function actionJobStatus($jobId)
     {
         $status = $this->getRequest()->getPost("status");
@@ -196,9 +208,9 @@ class BrokerReportsPresenter extends BasePresenter
     /**
      * Announce a backend error that is not related to any job (meant to be called by the backend)
      * @POST
-     * @Param(name="message", type="post", description="A textual description of the error")
      * @throws InternalServerException
      */
+    #[Post("message", new VString(), "A textual description of the error")]
     public function actionError()
     {
         $req = $this->getRequest();

@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\WorkerFilesConfig;
 use App\Helpers\FileStorageManager;
@@ -91,9 +103,9 @@ class WorkerFilesPresenter extends BasePresenter
      * Sends over a ZIP file containing submitted files and YAML job config.
      * The ZIP is created if necessary.
      * @GET
-     * @param string $type of the submission job ("reference" or "student")
-     * @param string $id of the submission whose ZIP archive is to be served
      */
+    #[Path("type", new VString(), "of the submission job (\"reference\" or \"student\")", required: true)]
+    #[Path("id", new VString(), "of the submission whose ZIP archive is to be served", required: true)]
     public function actionDownloadSubmissionArchive(string $type, string $id)
     {
         $file = $this->fileStorage->getWorkerSubmissionArchive($type, $id);
@@ -112,8 +124,8 @@ class WorkerFilesPresenter extends BasePresenter
     /**
      * Sends over an exercise supplementary file (a data file required by the tests).
      * @GET
-     * @param string $hash identification of the supplementary file
      */
+    #[Path("hash", new VString(), "identification of the supplementary file", required: true)]
     public function actionDownloadSupplementaryFile(string $hash)
     {
         $file = $this->fileStorage->getSupplementaryFileByHash($hash);
@@ -126,10 +138,10 @@ class WorkerFilesPresenter extends BasePresenter
     /**
      * Uploads a ZIP archive with results and logs (or everything in case of debug evaluations).
      * @PUT
-     * @param string $type of the submission job ("reference" or "student")
-     * @param string $id of the submission whose results archive is being uploaded
      * @throws UploadedFileException
      */
+    #[Path("type", new VString(), "of the submission job (\"reference\" or \"student\")", required: true)]
+    #[Path("id", new VString(), "of the submission whose results archive is being uploaded", required: true)]
     public function actionUploadResultsFile(string $type, string $id)
     {
         try {

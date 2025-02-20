@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Repository\GroupInvitations;
 use App\Model\Repository\Groups;
@@ -51,6 +63,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * Return invitation details including all relevant group entities (so a name can be constructed).
      * @GET
      */
+    #[Path("id", new VString(), required: true)]
     public function actionDefault($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
@@ -72,9 +85,10 @@ class GroupInvitationsPresenter extends BasePresenter
     /**
      * Edit the invitation.
      * @POST
-     * @Param(name="expireAt", type="post", validation="timestamp|null", description="When the invitation expires.")
-     * @Param(name="note", type="post", description="Note for the students who wish to use the invitation link.")
      */
+    #[Post("expireAt", new VTimestamp(), "When the invitation expires.", nullable: true)]
+    #[Post("note", new VString(), "Note for the students who wish to use the invitation link.")]
+    #[Path("id", new VString(), required: true)]
     public function actionUpdate($id)
     {
         $req = $this->getRequest();
@@ -97,6 +111,7 @@ class GroupInvitationsPresenter extends BasePresenter
     /**
      * @DELETE
      */
+    #[Path("id", new VString(), required: true)]
     public function actionRemove($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
@@ -121,6 +136,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * Allow the current user to join the corresponding group using the invitation.
      * @POST
      */
+    #[Path("id", new VString(), required: true)]
     public function actionAccept($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
@@ -145,6 +161,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * List all invitations of a group.
      * @GET
      */
+    #[Path("groupId", new VString(), required: true)]
     public function actionList($groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
@@ -162,9 +179,10 @@ class GroupInvitationsPresenter extends BasePresenter
     /**
      * Create a new invitation for given group.
      * @POST
-     * @Param(name="expireAt", type="post", validation="timestamp|null", description="When the invitation expires.")
-     * @Param(name="note", type="post", description="Note for the students who wish to use the invitation link.")
      */
+    #[Post("expireAt", new VTimestamp(), "When the invitation expires.", nullable: true)]
+    #[Post("note", new VString(), "Note for the students who wish to use the invitation link.")]
+    #[Path("groupId", new VString(), required: true)]
     public function actionCreate($groupId)
     {
         $req = $this->getRequest();

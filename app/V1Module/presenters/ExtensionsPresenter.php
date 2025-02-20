@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use App\Model\Repository\Instances;
@@ -59,9 +71,11 @@ class ExtensionsPresenter extends BasePresenter
     /**
      * Return URL refering to the extension with properly injected temporary JWT token.
      * @GET
-     * @Param(type="query", name="locale", required=false, validation="string:2")
-     * @Param(type="query", name="return", required=false, validation="string")
      */
+    #[Query("locale", new VString(2, 2), required: false)]
+    #[Query("return", new VString(), required: false)]
+    #[Path("extId", new VString(), required: true)]
+    #[Path("instanceId", new VString(), required: true)]
     public function actionUrl(string $extId, string $instanceId, ?string $locale, ?string $return)
     {
         $user = $this->getCurrentUser();
@@ -117,6 +131,7 @@ class ExtensionsPresenter extends BasePresenter
      * (from a temp token passed via URL). It also returns details about authenticated user.
      * @POST
      */
+    #[Path("extId", new VString(), required: true)]
     public function actionToken(string $extId)
     {
         $user = $this->getCurrentUser();

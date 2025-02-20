@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
@@ -110,12 +122,22 @@ class UsersPresenter extends BasePresenter
      * Get a list of all users matching given filters in given pagination rage.
      * The result conforms to pagination protocol.
      * @GET
-     * @param int $offset Index of the first result.
-     * @param int|null $limit Maximal number of results returned.
-     * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
-     * @param array|null $filters Named filters that prune the result.
-     * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
      */
+    #[Query("offset", new VInt(), "Index of the first result.", required: false)]
+    #[Query("limit", new VInt(), "Maximal number of results returned.", required: false)]
+    #[Query(
+        "orderBy",
+        new VString(),
+        "Name of the column (column concept). The '!' prefix indicate descending order.",
+        required: false,
+    )]
+    #[Query("filters", new VArray(), "Named filters that prune the result.", required: false)]
+    #[Query(
+        "locale",
+        new VString(),
+        "Currently set locale (used to augment order by clause if necessary),",
+        required: false,
+    )]
     public function actionDefault(
         int $offset = 0,
         int $limit = null,
@@ -151,8 +173,8 @@ class UsersPresenter extends BasePresenter
     /**
      * Get a list of users based on given ids.
      * @POST
-     * @Param(type="post", name="ids", validation="array", description="Identifications of users")
      */
+    #[Post("ids", new VArray(), "Identifications of users")]
     public function actionListByIds()
     {
         $users = $this->users->findByIds($this->getRequest()->getPost("ids"));
@@ -176,8 +198,8 @@ class UsersPresenter extends BasePresenter
     /**
      * Get details of a user account
      * @GET
-     * @param string $id Identifier of the user
      */
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionDetail(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -195,9 +217,9 @@ class UsersPresenter extends BasePresenter
     /**
      * Delete a user account
      * @DELETE
-     * @param string $id Identifier of the user
      * @throws ForbiddenRequestException
      */
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionDelete(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -218,26 +240,22 @@ class UsersPresenter extends BasePresenter
     /**
      * Update the profile associated with a user account
      * @POST
-     * @param string $id Identifier of the user
      * @throws BadRequestException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
-     * @Param(type="post", name="firstName", required=false, validation="string:2..", description="First name")
-     * @Param(type="post", name="lastName", required=false, validation="string:2..", description="Last name")
-     * @Param(type="post", name="titlesBeforeName", required=false, description="Titles before name")
-     * @Param(type="post", name="titlesAfterName", required=false, description="Titles after name")
-     * @Param(type="post", name="email", validation="email", description="New email address", required=false)
-     * @Param(type="post", name="oldPassword", required=false, validation="string:1..",
-     *        description="Old password of current user")
-     * @Param(type="post", name="password", required=false, validation="string:1..",
-     *        description="New password of current user")
-     * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..",
-     *        description="Confirmation of new password of current user")
-     * @Param(type="post", name="gravatarUrlEnabled", validation="bool", required=false,
-     *        description="Enable or disable gravatar profile image")
      * @throws WrongCredentialsException
      * @throws NotFoundException
      */
+    #[Post("firstName", new VString(2), "First name", required: false)]
+    #[Post("lastName", new VString(2), "Last name", required: false)]
+    #[Post("titlesBeforeName", new VString(), "Titles before name", required: false)]
+    #[Post("titlesAfterName", new VString(), "Titles after name", required: false)]
+    #[Post("email", new VEmail(), "New email address", required: false)]
+    #[Post("oldPassword", new VString(1), "Old password of current user", required: false)]
+    #[Post("password", new VString(1), "New password of current user", required: false)]
+    #[Post("passwordConfirm", new VString(1), "Confirmation of new password of current user", required: false)]
+    #[Post("gravatarUrlEnabled", new VBool(), "Enable or disable gravatar profile image", required: false)]
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionUpdateProfile(string $id)
     {
         $req = $this->getRequest();
@@ -429,33 +447,76 @@ class UsersPresenter extends BasePresenter
     /**
      * Update the profile settings
      * @POST
-     * @param string $id Identifier of the user
-     * @Param(type="post", name="defaultLanguage", validation="string", required=false,
-     *        description="Default language of UI")
-     * @Param(type="post", name="newAssignmentEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to user when new assignment was created")
-     * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to user if assignment deadline is nearby")
-     * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to user when resubmission was evaluated")
-     * @Param(type="post", name="solutionCommentsEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to user when new submission comment is added")
-     * @Param(type="post", name="solutionReviewsEmails", validation="bool", required=false,
-     *        description="Flag enabling review-related email notifications sent to the author of the solution")
-     * @Param(type="post", name="pointsChangedEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to user when the points were awarded for assignment")
-     * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment")
-     * @Param(type="post", name="assignmentSubmitAfterReviewedEmails", validation="bool", required=false,
-     *        description="Flag if email should be sent to group supervisor if a student submits new solution for already reviewed and not accepted assignment")
-     * @Param(type="post", name="exerciseNotificationEmails", validation="bool", required=false,
-     *        description="Flag if notifications sent by authors of exercises should be sent via email.")
-     * @Param(type="post", name="solutionAcceptedEmails", validation="bool", required=false,
-     *        description="Flag if notification should be sent to a student when solution accepted flag is changed.")
-     * @Param(type="post", name="solutionReviewRequestedEmails", validation="bool", required=false,
-     *        description="Flag if notification should be send to a teacher when a solution reviewRequested flag is chagned in a supervised/admined group.")
      * @throws NotFoundException
      */
+    #[Post("defaultLanguage", new VString(), "Default language of UI", required: false)]
+    #[Post(
+        "newAssignmentEmails",
+        new VBool(),
+        "Flag if email should be sent to user when new assignment was created",
+        required: false,
+    )]
+    #[Post(
+        "assignmentDeadlineEmails",
+        new VBool(),
+        "Flag if email should be sent to user if assignment deadline is nearby",
+        required: false,
+    )]
+    #[Post(
+        "submissionEvaluatedEmails",
+        new VBool(),
+        "Flag if email should be sent to user when resubmission was evaluated",
+        required: false,
+    )]
+    #[Post(
+        "solutionCommentsEmails",
+        new VBool(),
+        "Flag if email should be sent to user when new submission comment is added",
+        required: false,
+    )]
+    #[Post(
+        "solutionReviewsEmails",
+        new VBool(),
+        "Flag enabling review-related email notifications sent to the author of the solution",
+        required: false,
+    )]
+    #[Post(
+        "pointsChangedEmails",
+        new VBool(),
+        "Flag if email should be sent to user when the points were awarded for assignment",
+        required: false,
+    )]
+    #[Post(
+        "assignmentSubmitAfterAcceptedEmails",
+        new VBool(),
+        "Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment",
+        required: false,
+    )]
+    #[Post(
+        "assignmentSubmitAfterReviewedEmails",
+        new VBool(),
+        "Flag if email should be sent to group supervisor if a student submits new solution for already reviewed and not accepted assignment",
+        required: false,
+    )]
+    #[Post(
+        "exerciseNotificationEmails",
+        new VBool(),
+        "Flag if notifications sent by authors of exercises should be sent via email.",
+        required: false,
+    )]
+    #[Post(
+        "solutionAcceptedEmails",
+        new VBool(),
+        "Flag if notification should be sent to a student when solution accepted flag is changed.",
+        required: false,
+    )]
+    #[Post(
+        "solutionReviewRequestedEmails",
+        new VBool(),
+        "Flag if notification should be send to a teacher when a solution reviewRequested flag is chagned in a supervised/admined group.",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionUpdateSettings(string $id)
     {
         $req = $this->getRequest();
@@ -505,12 +566,16 @@ class UsersPresenter extends BasePresenter
     /**
      * Update the user-specific structured UI data
      * @POST
-     * @param string $id Identifier of the user
-     * @Param(type="post", name="uiData", validation="array|null", description="Structured user-specific UI data")
-     * @Param(type="post", name="overwrite", validation="bool", required=false,
-     *        description="Flag indicating that uiData should be overwritten completelly (instead of regular merge)")
      * @throws NotFoundException
      */
+    #[Post("uiData", new VArray(), "Structured user-specific UI data", nullable: true)]
+    #[Post(
+        "overwrite",
+        new VBool(),
+        "Flag indicating that uiData should be overwritten completelly (instead of regular merge)",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionUpdateUiData(string $id)
     {
         $req = $this->getRequest();
@@ -564,9 +629,9 @@ class UsersPresenter extends BasePresenter
      * If user is registered externally, add local account as another login method.
      * Created password is empty and has to be changed in order to use it.
      * @POST
-     * @param string $id
      * @throws InvalidArgumentException
      */
+    #[Path("id", new VString(), required: true)]
     public function actionCreateLocalAccount(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -588,8 +653,8 @@ class UsersPresenter extends BasePresenter
     /**
      * Get a list of non-archived groups for a user
      * @GET
-     * @param string $id Identifier of the user
      */
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionGroups(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -631,8 +696,8 @@ class UsersPresenter extends BasePresenter
     /**
      * Get a list of all groups for a user
      * @GET
-     * @param string $id Identifier of the user
      */
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionAllGroups(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -656,9 +721,9 @@ class UsersPresenter extends BasePresenter
     /**
      * Get a list of instances where a user is registered
      * @GET
-     * @param string $id Identifier of the user
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionInstances(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -684,12 +749,11 @@ class UsersPresenter extends BasePresenter
     /**
      * Set a given role to the given user.
      * @POST
-     * @param string $id Identifier of the user
-     * @Param(type="post", name="role", validation="string:1..",
-     *        description="Role which should be assigned to the user")
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
+    #[Post("role", new VString(1), "Role which should be assigned to the user")]
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionSetRole(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -716,10 +780,10 @@ class UsersPresenter extends BasePresenter
     /**
      * Invalidate all existing tokens issued for given user
      * @POST
-     * @param string $id Identifier of the user
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionInvalidateTokens(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -755,12 +819,11 @@ class UsersPresenter extends BasePresenter
     /**
      * Set "isAllowed" flag of the given user. The flag determines whether a user may perform any operation of the API.
      * @POST
-     * @param string $id Identifier of the user
-     * @Param(type="post", name="isAllowed", validation="bool",
-     *        description="Whether the user is allowed (active) or not.")
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
+    #[Post("isAllowed", new VBool(), "Whether the user is allowed (active) or not.")]
+    #[Path("id", new VString(), "Identifier of the user", required: true)]
     public function actionSetAllowed(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -783,11 +846,11 @@ class UsersPresenter extends BasePresenter
     /**
      * Add or update existing external ID of given authentication service.
      * @POST
-     * @param string $id identifier of the user
-     * @param string $service identifier of the authentication service (login type)
-     * @Param(type="post", name="externalId", validation="string:1..128")
      * @throws InvalidArgumentException
      */
+    #[Post("externalId", new VString(1, 128))]
+    #[Path("id", new VString(), "identifier of the user", required: true)]
+    #[Path("service", new VString(), "identifier of the authentication service (login type)", required: true)]
     public function actionUpdateExternalLogin(string $id, string $service)
     {
         $user = $this->users->findOrThrow($id);
@@ -830,9 +893,9 @@ class UsersPresenter extends BasePresenter
     /**
      * Remove external ID of given authentication service.
      * @DELETE
-     * @param string $id identifier of the user
-     * @param string $service identifier of the authentication service (login type)
      */
+    #[Path("id", new VString(), "identifier of the user", required: true)]
+    #[Path("service", new VString(), "identifier of the authentication service (login type)", required: true)]
     public function actionRemoveExternalLogin(string $id, string $service)
     {
         $user = $this->users->findOrThrow($id);

@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Async\Dispatcher;
 use App\Async\Handler\PingAsyncJobHandler;
 use App\Model\Repository\Assignments;
@@ -65,9 +77,9 @@ class AsyncJobsPresenter extends BasePresenter
     /**
      * Retrieves details about particular async job.
      * @GET
-     * @param string $id job identifier
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "job identifier", required: true)]
     public function actionDefault(string $id)
     {
         $asyncJob = $this->asyncJobs->findOrThrow($id);
@@ -84,10 +96,20 @@ class AsyncJobsPresenter extends BasePresenter
     /**
      * Retrieves details about async jobs that are either pending or were recently completed.
      * @GET
-     * @param int|null $ageThreshold Maximal time since completion (in seconds), null = only pending operations
-     * @param bool|null $includeScheduled If true, pending scheduled events will be listed as well
      * @throws BadRequestException
      */
+    #[Query(
+        "ageThreshold",
+        new VInt(),
+        "Maximal time since completion (in seconds), null = only pending operations",
+        required: false,
+    )]
+    #[Query(
+        "includeScheduled",
+        new VBool(),
+        "If true, pending scheduled events will be listed as well",
+        required: false,
+    )]
     public function actionList(?int $ageThreshold, ?bool $includeScheduled)
     {
         if ($ageThreshold && $ageThreshold < 0) {
@@ -134,9 +156,9 @@ class AsyncJobsPresenter extends BasePresenter
     /**
      * Retrieves details about particular async job.
      * @POST
-     * @param string $id job identifier
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "job identifier", required: true)]
     public function actionAbort(string $id)
     {
         $this->asyncJobs->beginTransaction();
@@ -188,6 +210,7 @@ class AsyncJobsPresenter extends BasePresenter
      * Get all pending async jobs related to a particular assignment.
      * @GET
      */
+    #[Path("id", new VString(), required: true)]
     public function actionAssignmentJobs($id)
     {
         $asyncJobs = $this->asyncJobs->findAssignmentJobs($id);

@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -134,12 +146,12 @@ class SisPresenter extends BasePresenter
     /**
      * Register a new term
      * @POST
-     * @Param(name="year", type="post")
-     * @Param(name="term", type="post")
      * @throws InvalidArgumentException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      */
+    #[Post("year", new VString())]
+    #[Post("term", new VString())]
     public function actionRegisterTerm()
     {
         $year = intval($this->getRequest()->getPost("year"));
@@ -170,13 +182,13 @@ class SisPresenter extends BasePresenter
     /**
      * Set details of a term
      * @POST
-     * @Param(name="beginning", type="post", validation="timestamp")
-     * @Param(name="end", type="post", validation="timestamp")
-     * @Param(name="advertiseUntil", type="post", validation="timestamp")
-     * @param string $id
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
+    #[Post("beginning", new VTimestamp())]
+    #[Post("end", new VTimestamp())]
+    #[Post("advertiseUntil", new VTimestamp())]
+    #[Path("id", new VString(), required: true)]
     public function actionEditTerm(string $id)
     {
         $term = $this->sisValidTerms->findOrThrow($id);
@@ -219,9 +231,9 @@ class SisPresenter extends BasePresenter
     /**
      * Delete a term
      * @DELETE
-     * @param string $id
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), required: true)]
     public function actionDeleteTerm(string $id)
     {
         $term = $this->sisValidTerms->findOrThrow($id);
@@ -246,12 +258,12 @@ class SisPresenter extends BasePresenter
      * Each course holds bound group IDs and group objects are returned in a separate array.
      * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
      * @GET
-     * @param string $userId
-     * @param int $year
-     * @param int $term
      * @throws InvalidArgumentException
      * @throws BadRequestException
      */
+    #[Path("userId", new VString(), required: true)]
+    #[Path("year", new VInt(), required: true)]
+    #[Path("term", new VInt(), required: true)]
     public function actionSubscribedCourses($userId, $year, $term)
     {
         $user = $this->users->findOrThrow($userId);
@@ -313,13 +325,13 @@ class SisPresenter extends BasePresenter
      * Each course holds bound group IDs and group objects are returned in a separate array.
      * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
      * @GET
-     * @param string $userId
-     * @param int $year
-     * @param int $term
      * @throws InvalidArgumentException
      * @throws NotFoundException
      * @throws BadRequestException
      */
+    #[Path("userId", new VString(), required: true)]
+    #[Path("year", new VInt(), required: true)]
+    #[Path("term", new VInt(), required: true)]
     public function actionSupervisedCourses($userId, $year, $term)
     {
         $user = $this->users->findOrThrow($userId);
@@ -405,13 +417,13 @@ class SisPresenter extends BasePresenter
     /**
      * Create a new group based on a SIS group
      * @POST
-     * @param string $courseId
      * @throws BadRequestException
-     * @Param(name="parentGroupId", type="post")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws Exception
      */
+    #[Post("parentGroupId", new VString())]
+    #[Path("courseId", new VString(), required: true)]
     public function actionCreateGroup($courseId)
     {
         $user = $this->getCurrentUser();
@@ -479,12 +491,12 @@ class SisPresenter extends BasePresenter
     /**
      * Bind an existing local group to a SIS group
      * @POST
-     * @param string $courseId
      * @throws ApiException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
-     * @Param(name="groupId", type="post")
      */
+    #[Post("groupId", new VString())]
+    #[Path("courseId", new VString(), required: true)]
     public function actionBindGroup($courseId)
     {
         $user = $this->getCurrentUser();
@@ -512,13 +524,13 @@ class SisPresenter extends BasePresenter
     /**
      * Delete a binding between a local group and a SIS group
      * @DELETE
-     * @param string $courseId an identifier of a SIS course
-     * @param string $groupId an identifier of a local group
      * @throws BadRequestException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
+    #[Path("courseId", new VString(), "an identifier of a SIS course", required: true)]
+    #[Path("groupId", new VString(), "an identifier of a local group", required: true)]
     public function actionUnbindGroup($courseId, $groupId)
     {
         $user = $this->getCurrentUser();
@@ -542,11 +554,11 @@ class SisPresenter extends BasePresenter
     /**
      * Find groups that can be chosen as parents of a group created from given SIS group by current user
      * @GET
-     * @param string $courseId
      * @throws ApiException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      */
+    #[Path("courseId", new VString(), required: true)]
     public function actionPossibleParents($courseId)
     {
         $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());

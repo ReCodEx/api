@@ -2,6 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VFloat;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\User;
@@ -116,8 +128,8 @@ class UserCalendarsPresenter extends BasePresenter
     /**
      * Get calendar values in iCal format that correspond to given token.
      * @GET
-     * @param string $id the iCal token
      */
+    #[Path("id", new VString(), "the iCal token", required: true)]
     public function actionDefault(string $id)
     {
         $calendar = $this->userCalendars->findOrThrow($id);
@@ -179,8 +191,8 @@ class UserCalendarsPresenter extends BasePresenter
     /**
      * Get all iCal tokens of one user (including expired ones).
      * @GET
-     * @param string $id of the user
      */
+    #[Path("id", new VString(), "of the user", required: true)]
     public function actionUserCalendars(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -199,8 +211,8 @@ class UserCalendarsPresenter extends BasePresenter
     /**
      * Create new iCal token for a particular user.
      * @POST
-     * @param string $id of the user
      */
+    #[Path("id", new VString(), "of the user", required: true)]
     public function actionCreateCalendar(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -221,8 +233,8 @@ class UserCalendarsPresenter extends BasePresenter
     /**
      * Set given iCal token to expired state. Expired tokens cannot be used to retrieve calendars.
      * @DELETE
-     * @param string $id the iCal token
      */
+    #[Path("id", new VString(), "the iCal token", required: true)]
     public function actionExpireCalendar(string $id)
     {
         $calendar = $this->userCalendars->findOrThrow($id);
