@@ -2,6 +2,7 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
+use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
 use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
@@ -11,7 +12,7 @@ class VBool
 
     public function validate(mixed $value)
     {
-        ///TODO: check if bool
-        return true;
+        // support stringified values as well
+        return MetaFormatHelper::checkType($value, PhpTypes::Bool) || $value == "true" || $value == "false";
     }
 }

@@ -11,5 +11,6 @@ enum PhpTypes: string
   case Double = "double";
   case Object = "object";
   case Null = "NULL";
+  case Bool = "boolean";
 }
 // @codingStandardsIgnoreEnd
