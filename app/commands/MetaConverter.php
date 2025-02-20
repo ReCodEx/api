@@ -3,33 +3,29 @@
 namespace App\Console;
 
 use App\Helpers\MetaFormats\AnnotationConversion\AnnotationToAttributeConverter;
-use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
-use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
-use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
-use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\Swagger\AnnotationHelper;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-///TODO: this command is debug only, delete it
-class MetaTester extends Command
+/**
+ * Scans all Presenters in V1Module and creates a copy of the containing 'presenters' folder, in which all endpoint
+ * parameter annotations are converted into attributes.
+ * The new folder is named 'presenters2'.
+ */
+class MetaConverter extends Command
 {
-    protected static $defaultName = 'meta:test';
+    protected static $defaultName = 'meta:convert';
 
     protected function configure()
     {
         $this->setName(self::$defaultName)->setDescription(
-            'Test the meta views.'
+            'Convert endpoint parameter annotations to attributes..'
         );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->test("a");
+        $this->generatePresenters();
         return Command::SUCCESS;
     }
 
@@ -56,6 +52,7 @@ class MetaTester extends Command
             }
         }
 
+        // copy and convert Presenters
         $filenames = scandir($inDir);
         foreach ($filenames as $filename) {
             if (!str_ends_with($filename, "Presenter.php")) {
@@ -68,34 +65,5 @@ class MetaTester extends Command
             fwrite($newFile, $newContent);
             fclose($newFile);
         }
-    }
-
-    public function test(string $arg)
-    {
-        // $view = new TestView();
-        // $view->endpoint([
-        //     "id" => "0",
-        //     "organizational" => false,
-        // ], "0001");
-        // // $view->get_user_info(0);
-
-        // $format = new GroupFormat();
-        // var_dump($format->checkIfAssignable("primaryAdminsIds", [ "10000000-2000-4000-8000-160000000000", "10000000-2000-4000-8000-160000000000" ]));
-
-        // $format = new UserFormat();
-        // var_dump($format->checkedAssign("email", "a@a.a.a"));
-
-        
-        // $reflection = AnnotationHelper::getMethod("App\V1Module\Presenters\RegistrationPresenter", "actionCreateAccount");
-        // $attrs = MetaFormatHelper::extractRequestParamData($reflection);
-        // var_dump($attrs);
-        
-        $this->generatePresenters();
-
-        // $val = new VArray();
-
-        // $name = get_class($val) . "::DEFAULT_SWAGGER_VALUE";
-        // var_dump($name);
-        // var_dump(defined($name));
     }
 }
