@@ -2,9 +2,9 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
-
+/**
+ * Validates arrays and their nested elements.
+ */
 class VArray
 {
     public const SWAGGER_TYPE = "array";

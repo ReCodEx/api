@@ -2,9 +2,9 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
-
+/**
+ * Validates UUIDv4.
+ */
 class VUuid extends VString
 {
     public function __construct()

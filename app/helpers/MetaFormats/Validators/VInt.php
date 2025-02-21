@@ -2,11 +2,12 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
+/**
+ * Validates integers. Accepts ints as well as their stringified versions.
+ */
 class VInt
 {
     public const SWAGGER_TYPE = "integer";

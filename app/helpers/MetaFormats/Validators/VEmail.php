@@ -2,13 +2,14 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
-
+/**
+ * Validates emails.
+ */
 class VEmail extends VString
 {
     public function __construct()
     {
+        // the email should not be empty
         parent::__construct(1);
     }
 

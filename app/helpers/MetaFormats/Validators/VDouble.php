@@ -4,8 +4,10 @@ namespace App\Helpers\MetaFormats\Validators;
 
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
+/**
+ * Validates doubles. Accepts doubles as well as their stringified versions.
+ */
 class VDouble
 {
     public const SWAGGER_TYPE = "number";

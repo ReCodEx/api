@@ -2,11 +2,10 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\PhpTypes;
-
 /**
+ * Accepts everything.
  * Placeholder validator used for endpoints with no existing validation rules.
+ * New endpoints should never use this validator, instead use a more restrictive one.
  */
 class VMixed
 {

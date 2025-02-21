@@ -4,8 +4,10 @@ namespace App\Helpers\MetaFormats\Validators;
 
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
 
+/**
+ * Validates boolean values. Accepts bools, "true", "false", 0 and 1.
+ */
 class VBool
 {
     public const SWAGGER_TYPE = "boolean";

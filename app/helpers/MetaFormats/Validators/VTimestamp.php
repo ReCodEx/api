@@ -2,11 +2,8 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\PhpTypes;
-use App\Helpers\MetaFormats\PrimitiveFormatValidators;
-
 /**
- * Expects unix timestamps.
+ * Validates unix timestamps.
  */
 class VTimestamp extends VInt
 {
