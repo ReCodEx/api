@@ -277,16 +277,17 @@ class RegistrationPresenter extends BasePresenter
     #[Format(UserFormat::class)]
     public function actionCreateInvitation()
     {
-        $req = $this->getRequest();
+        /** @var UserFormat */
+        $format = $this->getFormatInstance();
 
         // check if the email is free
-        $email = trim($req->getPost("email"));
+        $email = trim($format->email);
         // username is name of column which holds login identifier represented by email
         if ($this->logins->getByUsername($email) !== null) {
             throw new BadRequestException("This email address is already taken.");
         }
 
-        $groupsIds = $req->getPost("groups") ?? [];
+        $groupsIds = $format->groups ?? [];
         foreach ($groupsIds as $id) {
             $group = $this->groups->get($id);
             if (!$group || $group->isOrganizational() || !$this->groupAcl->canInviteStudents($group)) {
@@ -295,23 +296,23 @@ class RegistrationPresenter extends BasePresenter
         }
 
         // gather data
-        $instanceId = $req->getPost("instanceId");
+        $instanceId = $format->instanceId;
         $instance = $this->getInstance($instanceId);
-        $titlesBeforeName = $req->getPost("titlesBeforeName") === null ? "" : $req->getPost("titlesBeforeName");
-        $titlesAfterName = $req->getPost("titlesAfterName") === null ? "" : $req->getPost("titlesAfterName");
+        $titlesBeforeName = $format->titlesBeforeName === null ? "" : $format->titlesBeforeName;
+        $titlesAfterName = $format->titlesAfterName === null ? "" : $format->titlesAfterName;
 
         // create the token and send it via email
         try {
             $this->invitationHelper->invite(
                 $instanceId,
                 $email,
-                $req->getPost("firstName"),
-                $req->getPost("lastName"),
+                $format->firstName,
+                $format->lastName,
                 $titlesBeforeName,
                 $titlesAfterName,
                 $groupsIds,
                 $this->getCurrentUser(),
-                $req->getPost("locale") ?? "en",
+                $format->locale ?? "en",
             );
         } catch (InvalidAccessTokenException $e) {
             throw new BadRequestException(

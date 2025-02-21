@@ -75,8 +75,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     public $logger;
 
-    /** @var mixed Processed parameters from the request (MetaFormat or stdClass) */
-    private mixed $requestFormatInstance;
+    /** @var MetaFormat Instance of the meta format used by the endpoint (null if no format used) */
+    private MetaFormat $requestFormatInstance;
 
     protected function formatPermissionCheckMethod($action)
     {
@@ -204,16 +204,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $identity->isInScope($scope);
     }
 
-    public function getMetaRequest(): MetaRequest | null
+    public function getFormatInstance(): MetaFormat
     {
-        if ($this->requestFormatInstance === null) {
-            throw new InternalServerException(
-                "getMetaRequest() cannot be used without a format class defined for the endpoint."
-            );
-        }
-
-        $request = parent::getRequest();
-        return new MetaRequest($request, $this->requestFormatInstance);
+        return $this->requestFormatInstance;
     }
 
     private function processParams(ReflectionMethod $reflection)
