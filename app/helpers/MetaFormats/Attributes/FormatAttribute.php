@@ -8,7 +8,7 @@ use Attribute;
  * Attribute for format definitions and usings.
  */
 #[Attribute]
-class FormatAttribute
+class Format
 {
     public string $class;
 

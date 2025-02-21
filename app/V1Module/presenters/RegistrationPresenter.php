@@ -34,7 +34,7 @@ use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
-use App\Helpers\MetaFormats\Attributes\FormatAttribute;
+use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use App\Helpers\MetaFormats\Attributes\ParamAttribute;
 use App\Security\Roles;
@@ -274,19 +274,7 @@ class RegistrationPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
-    #[Post("email", new VEmail(), "An email that will serve as a login name")]
-    #[Post("firstName", new VString(2), "First name", required: true)]
-    #[Post("lastName", new VString(2), "Last name")]
-    #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
-    #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
-    #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
-    #[Post(
-        "groups",
-        new VArray(),
-        "List of group IDs in which the user is added right after registration",
-        required: false,
-    )]
-    #[Post("locale", new VString(2, 2), "Language used in the invitation email (en by default).", required: false)]
+    #[Format(UserFormat::class)]
     public function actionCreateInvitation()
     {
         $req = $this->getRequest();

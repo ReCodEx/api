@@ -3,8 +3,11 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
-use App\Helpers\MetaFormats\Attributes\FormatAttribute;
+use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
+use App\Helpers\MetaFormats\Attributes\FPath;
+use App\Helpers\MetaFormats\Attributes\FPost;
+use App\Helpers\MetaFormats\Attributes\FQuery;
 use App\Helpers\MetaFormats\Attributes\Param;
 use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Attributes\Post;
@@ -45,15 +48,15 @@ class MetaFormatHelper
     }
 
     /**
-     * Checks whether an entity contains a FormatAttribute and extracts the format if so.
+     * Checks whether an entity contains a Format attribute and extracts the format if so.
      * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject A reflection
      * object of the entity.
-     * @return ?string Returns the format or null if no FormatAttribute was present.
+     * @return ?string Returns the format or null if no Format attribute was present.
      */
     public static function extractFormatFromAttribute(
-        ReflectionClass|ReflectionProperty|ReflectionMethod $reflectionObject
+        ReflectionClass | ReflectionProperty | ReflectionMethod $reflectionObject
     ): ?string {
-        $formatAttributes = $reflectionObject->getAttributes(FormatAttribute::class);
+        $formatAttributes = $reflectionObject->getAttributes(Format::class);
         if (count($formatAttributes) === 0) {
             return null;
         }
@@ -100,11 +103,33 @@ class MetaFormatHelper
         return $data;
     }
 
-    public static function extractFormatParameterData(ReflectionProperty $reflectionObject): ?RequestParamData
+    /**
+     * Finds the format attribute of the property and extracts its data.
+     * @param \ReflectionProperty $reflectionObject The reflection object of the property.
+     * @throws \App\Exceptions\InternalServerException Thrown when there is not exactly one format attribute.
+     * @return RequestParamData Returns the data from the attribute.
+     */
+    public static function extractFormatParameterData(ReflectionProperty $reflectionObject): RequestParamData
     {
-        $requestAttributes = $reflectionObject->getAttributes(FormatParameterAttribute::class);
-        if (count($requestAttributes) === 0) {
-            return null;
+        // find all property attributes
+        $longAttributes = $reflectionObject->getAttributes(FormatParameterAttribute::class);
+        $pathAttribues = $reflectionObject->getAttributes(FPath::class);
+        $queryAttributes = $reflectionObject->getAttributes(FQuery::class);
+        $postAttributes = $reflectionObject->getAttributes(FPost::class);
+        $requestAttributes = array_merge($longAttributes, $pathAttribues, $queryAttributes, $postAttributes);
+
+        // there should be only one attribute
+        if (count($requestAttributes) == 0) {
+            throw new InternalServerException(
+                "The field {$reflectionObject->name} of "
+                    . "class {$reflectionObject->class} does not have a property attribute."
+            );
+        }
+        if (count($requestAttributes) > 1) {
+            throw new InternalServerException(
+                "The field {$reflectionObject->name} of "
+                    . "class {$reflectionObject->class} has more than one attribute."
+            );
         }
 
         $requestAttribute = $requestAttributes[0]->newInstance();
@@ -142,18 +167,12 @@ class MetaFormatHelper
    */
     public static function createNameToFieldDefinitionsMap(string $className): array
     {
-        $class = new ReflectionClass($className);
+        $class = new ReflectionClass(objectOrClass: $className);
         $fields = get_class_vars($className);
         $formats = [];
         foreach ($fields as $fieldName => $value) {
             $field = $class->getProperty($fieldName);
             $requestParamData = self::extractFormatParameterData($field);
-            if ($requestParamData === null) {
-                throw new InternalServerException(
-                    "The field $fieldName of class $className does not have a RequestAttribute."
-                );
-            }
-
             $formats[$fieldName] = $requestParamData;
         }
 
