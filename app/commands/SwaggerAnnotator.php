@@ -43,10 +43,9 @@ class SwaggerAnnotator extends Command
             $routesMetadata = AnnotationHelper::getRoutesMetadata();
             foreach ($routesMetadata as $route) {
                 // extract data from the existing annotations
-                $annotationData = AnnotationHelper::extractAnnotationData(
+                $annotationData = AnnotationHelper::extractAttributeData(
                     $route["class"],
                     $route['method'],
-                    $route["route"]
                 );
 
                 // add an empty method to the file with the transpiled annotations

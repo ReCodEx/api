@@ -87,7 +87,7 @@ class StandardAnnotationConverter
         $annotationReplacements = [];
         foreach ($endpoints as $endpoint) {
             // get info about endpoint parameters and their types
-            $annotationData = AnnotationHelper::extractAnnotationData(
+            $annotationData = AnnotationHelper::extractStandardAnnotationData(
                 $endpoint["class"],
                 $endpoint["method"],
                 $endpoint["route"]

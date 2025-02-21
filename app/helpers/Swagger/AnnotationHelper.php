@@ -279,26 +279,11 @@ class AnnotationHelper
         return null;
     }
 
-    /**
-     * Extracts the annotation data of an endpoint. The data contains request parameters based on their type
-     * and the HTTP method.
-     * @param string $className The name of the containing class.
-     * @param string $methodName The name of the endpoint method.
-     * @param string $route The route to the method.
-     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
-     * path, query and post)
-     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
-     */
-    public static function extractAnnotationData(string $className, string $methodName, string $route): AnnotationData
-    {
-        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
-
-        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
-        $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
-        $params = array_map(function ($data) {
-            return $data->toAnnotationParameterData();
-        }, $attributeData);
-
+    private static function annotationParameterDataToAnnotationData(
+        HttpMethods $method,
+        array $params,
+        ?string $description
+    ): AnnotationData {
         $pathParams = [];
         $queryParams = [];
         $bodyParams = [];
@@ -315,10 +300,54 @@ class AnnotationHelper
             }
         }
 
+        return new AnnotationData($method, $pathParams, $queryParams, $bodyParams, $description);
+    }
+
+    /**
+     * Extracts standard (@param) annotation data of an endpoint. The data contains request parameters based
+     *  on their type and the HTTP method.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the endpoint method.
+     * @param string $route The route to the method.
+     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
+     * path, query and post)
+     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     */
+    public static function extractStandardAnnotationData(
+        string $className,
+        string $methodName,
+        string $route
+    ): AnnotationData {
+        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+
+        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
+        $params = self::extractStandardAnnotationParams($methodAnnotations, $route);
         $description = self::extractAnnotationDescription($methodAnnotations);
 
-        $data = new AnnotationData($httpMethod, $pathParams, $queryParams, $bodyParams, $description);
-        return $data;
+        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
+    }
+
+    /**
+     * Extracts the attribute data of an endpoint. The data contains request parameters based on their type
+     * and the HTTP method.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the endpoint method.
+     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
+     * path, query and post)
+     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     */
+    public static function extractAttributeData(string $className, string $methodName): AnnotationData
+    {
+        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+
+        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
+        $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
+        $params = array_map(function ($data) {
+            return $data->toAnnotationParameterData();
+        }, $attributeData);
+        $description = self::extractAnnotationDescription($methodAnnotations);
+
+        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
     }
 
     /**
