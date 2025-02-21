@@ -273,10 +273,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
             $value = $this->getValueFromParamData($requestParamData);
 
-            if (!$formatInstance->checkedAssign($fieldName, $value)) {
-                ///TODO: it would be nice to give a more detailed error message here
-                throw new InvalidArgumentException($fieldName);
-            }
+            // this throws if the value is invalid
+            $formatInstance->checkedAssign($fieldName, $value);
         }
 
         // validate structural constraints

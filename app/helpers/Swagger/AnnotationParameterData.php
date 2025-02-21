@@ -102,7 +102,6 @@ class AnnotationParameterData
         $head = "@OA\\Property";
         $body = new ParenthesesBuilder();
 
-        ///TODO: Once the meta-view formats are implemented, add support for property nullability here.
         $body->addKeyValue("property", $this->name);
         $body->addKeyValue("type", $this->swaggerType);
         $body->addKeyValue("nullable", $this->nullable);

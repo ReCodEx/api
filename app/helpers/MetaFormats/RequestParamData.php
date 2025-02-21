@@ -35,10 +35,10 @@ class RequestParamData
     }
 
     /**
-     * Checks whether a value meets this definition.
+     * Checks whether a value meets this definition. If the definition is not met, an exception is thrown.
+     * The method has no return value.
      * @param mixed $value The value to be checked.
      * @throws \App\Exceptions\InvalidArgumentException Thrown when the value does not meet the definition.
-     * @return bool Returns whether the value passed the test.
      */
     public function conformsToDefinition(mixed $value)
     {
@@ -46,7 +46,7 @@ class RequestParamData
         if ($value === null) {
             // optional parameters can be null
             if (!$this->required) {
-                return true;
+                return;
             }
 
             // required parameters can be null only if explicitly nullable
@@ -59,7 +59,7 @@ class RequestParamData
 
             // only non null values should be validated
             // (validators do not expect null)
-            return true;
+            return;
         }
 
         // use every provided validator
@@ -72,8 +72,6 @@ class RequestParamData
                 );
             }
         }
-
-        return true;
     }
 
     private function hasValidators(): bool

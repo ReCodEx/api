@@ -57,7 +57,7 @@ class AnnotationData
             return null;
         }
 
-        ///TODO: The swagger generator only supports JSON due to the hardcoded mediaType below
+        // only json is supported due to the media type
         $head = '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema';
         $body = new ParenthesesBuilder();
 
