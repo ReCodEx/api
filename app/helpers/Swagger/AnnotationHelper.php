@@ -294,12 +294,10 @@ class AnnotationHelper
         $methodAnnotations = self::getMethodAnnotations($className, $methodName);
 
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
-        $standardAnnotationParams = self::extractStandardAnnotationParams($methodAnnotations, $route);
         $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
-        $attributeParams = array_map(function ($data) {
+        $params = array_map(function ($data) {
             return $data->toAnnotationParameterData();
         }, $attributeData);
-        $params = array_merge($standardAnnotationParams, $attributeParams);
 
         $pathParams = [];
         $queryParams = [];
