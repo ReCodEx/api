@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Exceptions\InvalidArgumentException;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\V1Module\Router\MethodRoute;
 use App\V1Module\RouterFactory;
@@ -113,7 +114,7 @@ class AnnotationHelper
             }
 
             if (self::$typeMap[$typename] === null) {
-                throw new \InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
+                throw new InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
             }
 
             $type = self::$typeMap[$typename];
@@ -161,7 +162,7 @@ class AnnotationHelper
                 $swaggerType = self::getSwaggerType($annotationType);
                 $nullable = self::isDatatypeNullable($annotationType);
 
-                ///TODO: how to find out the correct query type?
+                // the array element type cannot be determined from standard @param annotations
                 $nestedArraySwaggerType = null;
 
                 $descriptor = new AnnotationParameterData(

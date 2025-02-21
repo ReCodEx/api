@@ -44,12 +44,12 @@ class RequestParamData
     {
         // check if null
         if ($value === null) {
+            // optional parameters can be null
             if (!$this->required) {
-                ///TODO: what if a required param can be null? Does that mean that required & null is fine? How to check the required constrains then?
-                //throw new InvalidArgumentException($this->name, "The parameter is required and cannot be null.");
                 return true;
             }
 
+            // required parameters can be null only if explicitly nullable
             if (!$this->nullable) {
                 throw new InvalidArgumentException(
                     $this->name,
@@ -92,9 +92,10 @@ class RequestParamData
             );
         }
 
-        $swaggerType = "string";
+        // determine swagger type
         $nestedArraySwaggerType = null;
         $swaggerType = $this->validators[0]::SWAGGER_TYPE;
+        // extract array element type
         if ($this->validators[0] instanceof VArray) {
             $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
         }
@@ -105,7 +106,6 @@ class RequestParamData
             $exampleValue = $this->validators[0]->getExampleValue();
         }
 
-        ///TODO: does not pass null
         return new AnnotationParameterData(
             $swaggerType,
             $this->name,

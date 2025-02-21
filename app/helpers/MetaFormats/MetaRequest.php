@@ -43,7 +43,6 @@ class MetaRequest
      * Returns a variable provided to the presenter via POST.
      * If no key is passed, returns the entire array.
      */
-    ///TODO: how should null be handled?
     public function getPost(?string $key = null): mixed
     {
         if ($key === null) {

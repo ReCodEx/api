@@ -154,7 +154,6 @@ class MetaFormatHelper
                 );
             }
 
-            ///TODO: add base type (PHP type of the field) validators to $requestParamData
             $formats[$fieldName] = $requestParamData;
         }
 
