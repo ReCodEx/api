@@ -19,8 +19,8 @@ class VString
      * Constructs a string validator.
      * @param int $minLength The minimal length of the string.
      * @param int $maxLength The maximal length of the string, or -1 for unlimited length.
-     * @param mixed $regex Regex pattern used for validation. Evaluated with the preg_match function with this argument
-     *  as the pattern.
+     * @param ?string $regex Regex pattern used for validation.
+     *  Evaluated with the preg_match function with this argument as the pattern.
      */
     public function __construct(int $minLength = 0, int $maxLength = -1, ?string $regex = null)
     {
