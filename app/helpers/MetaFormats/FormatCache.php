@@ -4,61 +4,59 @@ namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
 
+/**
+ * Cache for various format related data.
+ * Acts as a singleton storage because all of the cached data is static.
+ */
 class FormatCache
 {
-    private static ?array $formatToClassMap = null;
-    private static ?array $classToFormatMap = null;
+    private static ?array $formatNames = null;
     private static ?array $formatToFieldFormatsMap = null;
 
-    public static function getFormatToClassMap(): array
-    {
-        if (self::$formatToClassMap == null) {
-            self::$formatToClassMap = MetaFormatHelper::createFormatToClassMap();
-        }
-        return self::$formatToClassMap;
-    }
-
-    public static function getClassToFormatMap(): array
-    {
-        if (self::$classToFormatMap == null) {
-            self::$classToFormatMap = [];
-            $formatToClassMap = self::getFormatToClassMap();
-            foreach ($formatToClassMap as $format => $class) {
-                self::$classToFormatMap[$class] = $format;
-            }
-        }
-        return self::$classToFormatMap;
-    }
-
+    /**
+     * @return array Returns a dictionary of dictionaries: [<formatName> => [<fieldName> => RequestParamData, ...], ...]
+     * mapping formats to their fields and field metadata.
+     */
     public static function getFormatToFieldDefinitionsMap(): array
     {
         if (self::$formatToFieldFormatsMap == null) {
             self::$formatToFieldFormatsMap = [];
-            $formatToClassMap = self::getFormatToClassMap();
-            foreach ($formatToClassMap as $format => $class) {
-                self::$formatToFieldFormatsMap[$format] = MetaFormatHelper::createNameToFieldDefinitionsMap($class);
+            $formatNames = self::getFormatNames();
+            foreach ($formatNames as $format) {
+                self::$formatToFieldFormatsMap[$format] = MetaFormatHelper::createNameToFieldDefinitionsMap($format);
             }
         }
         return self::$formatToFieldFormatsMap;
     }
 
-    public static function getFormatFieldNames(string $format): array
+    /**
+     * @return array Returns an array of all defined formats.
+     */
+    public static function getFormatNames(): array
     {
-        $formatToFieldDefinitionsMap = self::getFormatToFieldDefinitionsMap();
-        if (!array_key_exists($format, $formatToFieldDefinitionsMap)) {
-            throw new InternalServerException("The format $format does not have a field format definition.");
+        if (self::$formatNames == null) {
+            self::$formatNames = MetaFormatHelper::createFormatNamesArray();
         }
-        return array_keys($formatToFieldDefinitionsMap[$format]);
+        return self::$formatNames;
     }
 
-    public static function getFieldDefinitions(string $className)
+    public static function formatExists(string $format): bool
     {
-        $classToFormatMap = self::getClassToFormatMap();
-        if (!array_key_exists($className, $classToFormatMap)) {
-            throw new InternalServerException("The class $className does not have a format definition.");
+        return in_array($format, self::getFormatNames());
+    }
+
+    /**
+     * Fetches field metadata for the given format.
+     * @param string $format The name of the format.
+     * @throws \App\Exceptions\InternalServerException Thrown when the format is corrupted.
+     * @return array Returns a dictionary of field names to RequestParamData.
+     */
+    public static function getFieldDefinitions(string $format)
+    {
+        if (!self::formatExists($format)) {
+            throw new InternalServerException("The class $format does not have a format definition.");
         }
 
-        $format = $classToFormatMap[$className];
         $formatToFieldFormatsMap = self::getFormatToFieldDefinitionsMap();
         if (!array_key_exists($format, $formatToFieldFormatsMap)) {
             throw new InternalServerException("The format $format does not have a field format definition.");

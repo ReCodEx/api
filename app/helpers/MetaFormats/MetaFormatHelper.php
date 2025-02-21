@@ -180,9 +180,9 @@ class MetaFormatHelper
     }
 
   /**
-   * Creates a mapping from formats to class names, where the class defines the format.
+   * Finds all defined formats and returns an array of their names.
    */
-    public static function createFormatToClassMap()
+    public static function createFormatNamesArray()
     {
         // scan directory of format definitions
         $formatFiles = scandir(self::$formatDefinitionFolder);
@@ -195,21 +195,8 @@ class MetaFormatHelper
             return self::$formatDefinitionsNamespace . "\\$fileWithoutExtension";
         }, $formatFiles);
 
-        // maps format names to class names
-        $formatClassMap = [];
-
-        foreach ($classes as $className) {
-            // get the format attribute
-            $class = new ReflectionClass($className);
-            $format = self::extractFormatFromAttribute($class);
-            if ($format === null) {
-                throw new InternalServerException("The class {$className} does not have the format attribute.");
-            }
-
-            $formatClassMap[$format] = $className;
-        }
-
-        return $formatClassMap;
+        // formats are just class names
+        return array_values($classes);
     }
 
     /**
@@ -220,13 +207,11 @@ class MetaFormatHelper
      */
     public static function createFormatInstance(string $format): MetaFormat
     {
-        $formatToClassMap = FormatCache::getFormatToClassMap();
-        if (!array_key_exists($format, $formatToClassMap)) {
+        if (!FormatCache::formatExists($format)) {
             throw new InternalServerException("The format $format does not exist.");
         }
 
-        $className = $formatToClassMap[$format];
-        $instance = new $className();
+        $instance = new $format();
         return $instance;
     }
 
