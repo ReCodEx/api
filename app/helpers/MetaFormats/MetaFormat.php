@@ -3,9 +3,6 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
-use App\Helpers\Swagger\AnnotationHelper;
-
-use function Symfony\Component\String\b;
 
 class MetaFormat
 {

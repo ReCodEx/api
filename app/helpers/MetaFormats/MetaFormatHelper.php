@@ -160,11 +160,11 @@ class MetaFormatHelper
         return $data;
     }
 
-  /**
-   * Parses the format attributes of class fields and returns their metadata.
-   * @param string $className The name of the class.
-   * @return array Returns a dictionary with the field name as the key and RequestParamData as the value.
-   */
+    /**
+     * Parses the format attributes of class fields and returns their metadata.
+     * @param string $className The name of the class.
+     * @return array Returns a dictionary with the field name as the key and RequestParamData as the value.
+     */
     public static function createNameToFieldDefinitionsMap(string $className): array
     {
         $class = new ReflectionClass(objectOrClass: $className);
@@ -179,9 +179,9 @@ class MetaFormatHelper
         return $formats;
     }
 
-  /**
-   * Finds all defined formats and returns an array of their names.
-   */
+    /**
+     * Finds all defined formats and returns an array of their names.
+     */
     public static function createFormatNamesArray()
     {
         // scan directory of format definitions

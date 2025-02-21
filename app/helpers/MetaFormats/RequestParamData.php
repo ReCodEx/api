@@ -5,10 +5,12 @@ namespace App\Helpers\MetaFormats;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\Swagger\AnnotationParameterData;
 use Exception;
 
+/**
+ * Data class containing metadata for request parameters.
+ */
 class RequestParamData
 {
     public Type $type;
@@ -23,7 +25,7 @@ class RequestParamData
         string $name,
         string $description,
         bool $required,
-        array $validators = [],
+        array $validators,
         bool $nullable = false,
     ) {
         $this->type = $type;
@@ -82,6 +84,11 @@ class RequestParamData
         return $this->validators !== null;
     }
 
+    /**
+     * Converts the metadata into metadata used for swagger generation.
+     * @throws \App\Exceptions\InternalServerException Thrown when the parameter metadata is corrupted.
+     * @return AnnotationParameterData Return metadata used for swagger generation.
+     */
     public function toAnnotationParameterData()
     {
         if (!$this->hasValidators()) {

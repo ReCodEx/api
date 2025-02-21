@@ -6,6 +6,7 @@ use App\Exceptions\InternalServerException;
 
 /**
  * Contains data of a single annotation parameter.
+ * Used for swagger generation.
  */
 class AnnotationParameterData
 {
