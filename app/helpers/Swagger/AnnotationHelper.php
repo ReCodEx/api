@@ -17,7 +17,6 @@ use Nette\Routing\RouteList;
  */
 class AnnotationHelper
 {
-    ///TODO: the null might be a prefix as well
     private static $nullableSuffix = '|null';
     private static $typeMap = [
       'bool' => 'boolean',
@@ -134,8 +133,7 @@ class AnnotationHelper
     {
         $routeParams = self::getRoutePathParamNames($route);
 
-        ///TODO: there can be unannotated query params as well
-
+        // does not see unannotated query params, but there are not any
         $params = [];
         foreach ($annotations as $annotation) {
             // assumed that all query parameters have a @param annotation
