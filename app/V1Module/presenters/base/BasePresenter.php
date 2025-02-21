@@ -225,8 +225,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     private function processParamsLoose(array $paramData)
     {
-        $formatInstanceArr = [];
-
         // validate each param
         foreach ($paramData as $param) {
             ///TODO: path parameters are not checked yet
@@ -235,14 +233,10 @@ class BasePresenter extends \App\Presenters\BasePresenter
             }
 
             $paramValue = $this->getValueFromParamData($param);
-            $formatInstanceArr[$param->name] = $paramValue;
 
             // this throws when it does not conform
             $param->conformsToDefinition($paramValue);
         }
-
-        // cast to stdClass
-        $this->requestFormatInstance = (object)$formatInstanceArr;
     }
 
     private function processParamsFormat(string $format)
