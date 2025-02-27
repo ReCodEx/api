@@ -37,7 +37,7 @@ class VString
     public function validate(mixed $value): bool
     {
         // do not allow other types
-        if (!MetaFormatHelper::checkType($value, PhpTypes::String)) {
+        if (!is_string($value)) {
             return false;
         }
 
