@@ -134,11 +134,14 @@ class NetteAnnotationConverter
             $stringValidator = Utils::shortenClass(VString::class);
 
             // handle string length constraints, such as "string:1..255"
-            if (strlen($validation) > 6) {
-                if ($validation[6] !== ":") {
+            $prefixLength = strlen("string");
+            if (strlen($validation) > $prefixLength) {
+                // the 'string' prefix needs to be followed with a colon
+                if ($validation[$prefixLength] !== ":") {
                     throw new InternalServerException("Unknown string validation format: $validation");
                 }
-                $suffix = substr($validation, 7);
+                // omit the 'string:' section
+                $suffix = substr($validation, $prefixLength + 1);
 
                 // special case for uuids
                 if ($suffix === "36") {
