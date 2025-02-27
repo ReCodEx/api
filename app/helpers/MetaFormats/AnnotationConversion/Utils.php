@@ -30,17 +30,6 @@ class Utils
     }
 
     /**
-     * Checks whether the validation string ends with the "|null" suffix.
-     * Validation strings contain the "null" qualifier always at the end of the string.
-     * @param string $validation The validation string.
-     * @return bool Returns whether the validation ends with "|null".
-     */
-    public static function checkValidationNullability(string $validation): bool
-    {
-        return str_ends_with($validation, "|null");
-    }
-
-    /**
      * Splits a string into lines.
      * @param string $fileContent The string to be split.
      * @throws \App\Exceptions\InternalServerException Thrown when the string cannot be split.

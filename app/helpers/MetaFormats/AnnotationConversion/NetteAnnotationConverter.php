@@ -226,11 +226,15 @@ class NetteAnnotationConverter
         }
         $validation = $annotationParameters["validation"];
 
-        if (Utils::checkValidationNullability($validation)) {
-            // remove the '|null' from the end of the string
-            $validation = substr($validation, 0, -5);
+        // check nullability
+        // validation strings contain the 'null' qualifier always at the end of the string.
+        $nullabilitySuffix = "|null";
+        if (str_ends_with($validation, $nullabilitySuffix)) {
+            // remove the '|null'
+            $validation = substr($validation, 0, -strlen($nullabilitySuffix));
             $nullable = true;
         }
+
         // this will always produce a single validator (the annotations do not contain multiple validation fields)
         $validator = self::convertAnnotationValidationToValidatorString($validation);
         $parenthesesBuilder->addValue(value: $validator);
