@@ -9,9 +9,13 @@ use ReflectionMethod;
 
 class StandardAnnotationConverter
 {
-    // Metadata about endpoints used to determine what class methods are endpoints and what params
-    // are path and query. Initialized lazily (it cannot be assigned here because it is not a constant expression).
-    private static ?array $routesMetadata = null;
+    /**
+     * Metadata about endpoints used to determine what class methods are endpoints and what params
+     * are path and query. Initialized lazily (it cannot be assigned here because it is not a constant expression).
+     * @var ?array An array of dictionaries with "route", "class", and "method" keys. Each dictionary
+     *  represents an endpoint.
+     */
+    private static array $routesMetadata = null;
 
     /**
      * Converts standard PHP annotations (@param) of a presenter to attributes.
