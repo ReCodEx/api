@@ -10,7 +10,10 @@ use App\Exceptions\InternalServerException;
  */
 class FormatCache
 {
+    // do not access the following three arrays directly, use the getter methods instead
+    // (there is no guarantee that the arrays are initialized)
     private static ?array $formatNames = null;
+    private static ?array $formatNamesHashSet = null;
     private static ?array $formatToFieldFormatsMap = null;
 
     /**
@@ -40,9 +43,24 @@ class FormatCache
         return self::$formatNames;
     }
 
+    /**
+     * @return array Returns a hash set of all defined formats (actually a dictionary with arbitrary values).
+     */
+    public static function getFormatNamesHashSet(): array
+    {
+        if (self::$formatNamesHashSet == null) {
+            $formatNames = self::getFormatNames();
+            self::$formatNamesHashSet = [];
+            foreach ($formatNames as $formatName) {
+                self::$formatNamesHashSet[$formatName] = true;
+            }
+        }
+        return self::$formatNamesHashSet;
+    }
+
     public static function formatExists(string $format): bool
     {
-        return in_array($format, self::getFormatNames());
+        return array_key_exists($format, self::getFormatNamesHashSet());
     }
 
     /**
