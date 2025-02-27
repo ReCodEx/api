@@ -6,7 +6,7 @@ use App\Helpers\MetaFormats\Type;
 use Attribute;
 
 /**
- * Attribute used to annotate individual post or query parameters of endpoints.
+ * Attribute used to annotate individual parameters of endpoints.
  */
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD)]
 class Param extends FormatParameterAttribute
@@ -14,7 +14,7 @@ class Param extends FormatParameterAttribute
     public string $paramName;
 
     /**
-     * @param Type $type The request parameter type (Post or Query).
+     * @param Type $type The request parameter type (Path, Query or Post).
      * @param string $name The name of the request parameter.
      * @param mixed $validators A validator object or an array of validators applied to the request parameter.
      * @param string $description The description of the request parameter.

@@ -6,7 +6,7 @@ use App\Helpers\MetaFormats\Type;
 use Attribute;
 
 /**
- * Attribute used to annotate individual post or query parameters of endpoints.
+ * Attribute used to annotate individual query parameters of endpoints.
  */
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD)]
 class Query extends Param
