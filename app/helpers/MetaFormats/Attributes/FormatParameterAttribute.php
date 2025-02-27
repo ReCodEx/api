@@ -20,7 +20,7 @@ class FormatParameterAttribute
     public bool $nullable;
 
     /**
-     * @param \App\Helpers\MetaFormats\Type $type The request parameter type (Post or Query).
+     * @param Type $type The request parameter type (Post or Query).
      * @param mixed $validators A validator object or an array of validators applied to the request parameter.
      * @param string $description The description of the request parameter.
      * @param bool $required Whether the request parameter is required.

@@ -14,7 +14,7 @@ class Param extends FormatParameterAttribute
     public string $paramName;
 
     /**
-     * @param \App\Helpers\MetaFormats\Type $type The request parameter type (Post or Query).
+     * @param Type $type The request parameter type (Post or Query).
      * @param string $name The name of the request parameter.
      * @param mixed $validators A validator object or an array of validators applied to the request parameter.
      * @param string $description The description of the request parameter.
