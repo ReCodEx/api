@@ -19,8 +19,8 @@ class VInt
 
     public function validate(mixed $value)
     {
-        // check if it is an integer
-        if (MetaFormatHelper::checkType($value, PhpTypes::Int)) {
+        // check if it is an integer (does not handle integer strings)
+        if (is_int($value)) {
             return true;
         }
 
@@ -29,6 +29,7 @@ class VInt
             return false;
         }
 
+        // if it is a numeric string, check if it is an integer or float
         return intval($value) == floatval($value);
     }
 }
