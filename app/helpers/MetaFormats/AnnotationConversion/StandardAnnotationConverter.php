@@ -136,7 +136,7 @@ class StandardAnnotationConverter
                 $paramContinuationRegex = "/\h*\*\h+[^@]/";
                 // find out how long the parameter annotation is
                 for ($i = $lineIdx + 1; $i < count($annotationLines); $i++) {
-                    if (preg_match($paramContinuationRegex, $annotationLines[$i]) == 1) {
+                    if (preg_match($paramContinuationRegex, $annotationLines[$i]) === 1) {
                         $paramAnnotationLength += 1;
                     } else {
                         break;
