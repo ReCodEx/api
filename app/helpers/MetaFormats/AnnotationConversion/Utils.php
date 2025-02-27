@@ -99,6 +99,9 @@ class Utils
         return self::shortenClass($className);
     }
 
+    /**
+     * @return array Returns all parameter attribute class names (including namespace).
+     */
     public static function getParamAttributeClassNames()
     {
         return array_values(self::$paramLocationToAttributeClassDictionary);
