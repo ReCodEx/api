@@ -15,7 +15,7 @@ class StandardAnnotationConverter
      * @var ?array An array of dictionaries with "route", "class", and "method" keys. Each dictionary
      *  represents an endpoint.
      */
-    private static array $routesMetadata = null;
+    private static ?array $routesMetadata = null;
 
     /**
      * Converts standard PHP annotations (@param) of a presenter to attributes.
