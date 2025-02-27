@@ -22,31 +22,6 @@ class MetaFormatHelper
     private static string $formatDefinitionFolder = __DIR__ . '/FormatDefinitions';
     private static string $formatDefinitionsNamespace = "App\\Helpers\\MetaFormats\\FormatDefinitions";
 
-  /**
-   * Checks all @checked_param annotations of a method and returns a map from parameter names to their formats.
-   * @param string $className The name of the containing class.
-   * @param string $methodName The name of the method.
-   * @return array
-   */
-    public static function extractMethodCheckedParams(string $className, string $methodName): array
-    {
-        $annotations = AnnotationHelper::getMethodAnnotations($className, $methodName);
-        $filtered = AnnotationHelper::filterAnnotations($annotations, "@checked_param");
-
-        $formatPrefix = "format:";
-
-        $paramMap = [];
-        foreach ($filtered as $annotation) {
-            // sample: @checked_param format:group group
-            $tokens = explode(" ", $annotation);
-            $format = substr($tokens[1], strlen($formatPrefix));
-            $name = $tokens[2];
-            $paramMap[$name] = $format;
-        }
-
-        return $paramMap;
-    }
-
     /**
      * Checks whether an entity contains a Format attribute and extracts the format if so.
      * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject A reflection
