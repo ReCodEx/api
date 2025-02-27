@@ -119,7 +119,7 @@ class StandardAnnotationConverter
                 $paramLineRegex = "/\\$\\b" . $param->name . "\\b/";
                 $lineIdx = -1;
                 for ($i = 0; $i < count($annotationLines); $i++) {
-                    if (preg_match($paramLineRegex, $annotationLines[$i]) == 1) {
+                    if (preg_match($paramLineRegex, $annotationLines[$i]) === 1) {
                         $lineIdx = $i;
                         break;
                     }
