@@ -10,6 +10,7 @@ use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 
 /**
  * Format definition used by the RegistrationPresenter::actionCreateInvitation endpoint.
@@ -26,7 +27,7 @@ class UserFormat extends MetaFormat
     #[FPost(new VString(2), "Last name")]
     public ?string $lastName;
 
-    #[FPost(new VString(1), "Identifier of the instance to register in")]
+    #[FPost(new VUuid(), "Identifier of the instance to register in")]
     public ?string $instanceId;
 
     #[FPost(new VString(1), "Titles that are placed before user name", required: false)]
