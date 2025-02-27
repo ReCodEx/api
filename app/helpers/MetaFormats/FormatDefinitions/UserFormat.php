@@ -11,6 +11,9 @@ use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VString;
 
+/**
+ * Format definition used by the RegistrationPresenter::actionCreateInvitation endpoint.
+ */
 #[Format(UserFormat::class)]
 class UserFormat extends MetaFormat
 {
