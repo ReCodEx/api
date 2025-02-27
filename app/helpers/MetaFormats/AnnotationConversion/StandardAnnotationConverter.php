@@ -71,7 +71,7 @@ class StandardAnnotationConverter
             $i = $annotationReplacements[$i]["originalAnnotationEndLine"];
         }
 
-        return Utils::linesToFileString($newLines);
+        return implode("\n", $newLines);
     }
 
     /**

@@ -58,6 +58,6 @@ class AnnotationToAttributeConverter
             }
         }
 
-        return Utils::linesToFileString($lines);
+        return implode("\n", $lines);
     }
 }

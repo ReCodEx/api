@@ -49,16 +49,6 @@ class Utils
     }
 
     /**
-     * Joins an array of strings into a single string separated by '\n'.
-     * @param array $lines The lines to be joined.
-     * @return string The joined string.
-     */
-    public static function linesToFileString(array $lines): string
-    {
-        return implode("\n", $lines);
-    }
-
-    /**
      * @return string[] Returns an array of Validator class names (without the namespace).
      */
     public static function getValidatorNames()
