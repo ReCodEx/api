@@ -30,6 +30,22 @@ class NetteAnnotationConverter
     // this text must not be present in the presenter files
     public static string $attributePlaceholder = "<!>#nette#<!>";
 
+    // maps @Param validation fields to validator classes
+    private static array $netteValidationToValidatorClassDictionary = [
+        "email" => VEmail::class,
+        // there is one occurrence of this
+        "email:1.." => VEmail::class,
+        "numericint" => VInt::class,
+        "integer" => VInt::class,
+        "bool" => VBool::class,
+        "boolean" => VBool::class,
+        "array" => VArray::class,
+        "list" => VArray::class,
+        "timestamp" => VTimestamp::class,
+        "numeric" => VDouble::class,
+        "mixed" => VMixed::class,
+    ];
+
 
     /**
      * Replaces "@Param" annotations with placeholders and extracts its data.
@@ -175,37 +191,10 @@ class NetteAnnotationConverter
         }
 
         // non-string validation rules do not have parameters, so they can be converted directly
-        $validatorClass = null;
-        switch ($validation) {
-            case "email":
-            // there is one occurrence of this
-            case "email:1..":
-                $validatorClass = VEmail::class;
-                break;
-            case "numericint":
-            case "integer":
-                $validatorClass = VInt::class;
-                break;
-            case "bool":
-            case "boolean":
-                $validatorClass = VBool::class;
-                break;
-            case "array":
-            case "list":
-                $validatorClass = VArray::class;
-                break;
-            case "timestamp":
-                $validatorClass = VTimestamp::class;
-                break;
-            case "numeric":
-                $validatorClass = VDouble::class;
-                break;
-            case "mixed":
-                $validatorClass = VMixed::class;
-                break;
-            default:
-                throw new InternalServerException("Unknown validation rule: $validation");
+        if (!array_key_exists($validation, self::$netteValidationToValidatorClassDictionary)) {
+            throw new InternalServerException("Unknown validation rule: $validation");
         }
+        $validatorClass = self::$netteValidationToValidatorClassDictionary[$validation];
 
         return "new " . Utils::shortenClass($validatorClass) . "()";
     }
