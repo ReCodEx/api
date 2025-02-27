@@ -15,11 +15,11 @@ class VDouble
     public function validate(mixed $value)
     {
         // check if it is a double
-        if (MetaFormatHelper::checkType($value, PhpTypes::Double)) {
+        if (is_double($value)) {
             return true;
         }
 
-        // the value may be a string containing the number
+        // the value may be a string containing the number, or an integer
         return is_numeric($value);
     }
 }
