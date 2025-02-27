@@ -6,7 +6,7 @@ use App\Helpers\MetaFormats\Type;
 use Attribute;
 
 /**
- * Attribute used to annotate format definition properties.
+ * Attribute used to annotate format definition properties representing path parameters.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class FPath extends FormatParameterAttribute
