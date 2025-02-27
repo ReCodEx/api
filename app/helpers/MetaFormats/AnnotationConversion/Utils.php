@@ -101,10 +101,6 @@ class Utils
 
     public static function getParamAttributeClassNames()
     {
-        return [
-            self::shortenClass(Post::class),
-            self::shortenClass(Query::class),
-            self::shortenClass(Path::class),
-        ];
+        return array_values(self::$paramLocationToAttributeClassDictionary);
     }
 }
