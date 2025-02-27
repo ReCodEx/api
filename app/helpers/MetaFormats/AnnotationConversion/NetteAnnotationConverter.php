@@ -231,13 +231,18 @@ class NetteAnnotationConverter
         }
         $validation = $annotationParameters["validation"];
 
-        // check nullability
+        // check nullability, it is either in the validation string, or set explicitly
         // validation strings contain the 'null' qualifier always at the end of the string.
         $nullabilitySuffix = "|null";
         if (str_ends_with($validation, $nullabilitySuffix)) {
             // remove the '|null'
             $validation = substr($validation, 0, -strlen($nullabilitySuffix));
             $nullable = true;
+        // check for explicit nullability
+        } elseif (array_key_exists("nullable", $annotationParameters)) {
+            // if it is explicitly not nullable but at the same time has to be nullable due to another factor,
+            // make it nullable (the other factor can be missing validation)
+            $nullable |= $annotationParameters["nullable"] === "true";
         }
 
         // this will always produce a single validator (the annotations do not contain multiple validation fields)

@@ -184,7 +184,7 @@ class GroupsPresenter extends BasePresenter
      * Get a list of all non-archived groups a user can see. The return set is filtered by parameters.
      * @GET
      */
-    #[Query("instanceId", new VString(), "Only groups of this instance are returned.", required: false)]
+    #[Query("instanceId", new VString(), "Only groups of this instance are returned.", required: false, nullable: true)]
     #[Query(
         "ancestors",
         new VBool(),
@@ -196,6 +196,7 @@ class GroupsPresenter extends BasePresenter
         new VString(),
         "Search string. Only groups containing this string as a substring of their names are returned.",
         required: false,
+        nullable: true,
     )]
     #[Query("archived", new VBool(), "Include also archived groups in the result.", required: false)]
     #[Query(

@@ -224,7 +224,7 @@ class SubmitPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VString(), "Identifier of the assignment", required: true)]
-    #[Query("userId", new VString(), "Identification of the user", required: false)]
+    #[Query("userId", new VString(), "Identification of the user", required: false, nullable: true)]
     public function actionCanSubmit(string $id, string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -452,7 +452,7 @@ class SubmitPresenter extends BasePresenter
      */
     #[Post("files", new VArray())]
     #[Path("id", new VString(), "identifier of assignment", required: true)]
-    #[Query("userId", new VString(), "Identifier of the submission author", required: false)]
+    #[Query("userId", new VString(), "Identifier of the submission author", required: false, nullable: true)]
     public function actionPreSubmit(string $id, string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);

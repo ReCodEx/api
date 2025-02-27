@@ -125,19 +125,21 @@ class UsersPresenter extends BasePresenter
      * @GET
      */
     #[Query("offset", new VInt(), "Index of the first result.", required: false)]
-    #[Query("limit", new VInt(), "Maximal number of results returned.", required: false)]
+    #[Query("limit", new VInt(), "Maximal number of results returned.", required: false, nullable: true)]
     #[Query(
         "orderBy",
         new VString(),
         "Name of the column (column concept). The '!' prefix indicate descending order.",
         required: false,
+        nullable: true,
     )]
-    #[Query("filters", new VArray(), "Named filters that prune the result.", required: false)]
+    #[Query("filters", new VArray(), "Named filters that prune the result.", required: false, nullable: true)]
     #[Query(
         "locale",
         new VString(),
         "Currently set locale (used to augment order by clause if necessary),",
         required: false,
+        nullable: true,
     )]
     public function actionDefault(
         int $offset = 0,

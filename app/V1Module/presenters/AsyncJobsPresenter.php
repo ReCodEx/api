@@ -104,12 +104,14 @@ class AsyncJobsPresenter extends BasePresenter
         new VInt(),
         "Maximal time since completion (in seconds), null = only pending operations",
         required: false,
+        nullable: true,
     )]
     #[Query(
         "includeScheduled",
         new VBool(),
         "If true, pending scheduled events will be listed as well",
         required: false,
+        nullable: true,
     )]
     public function actionList(?int $ageThreshold, ?bool $includeScheduled)
     {
