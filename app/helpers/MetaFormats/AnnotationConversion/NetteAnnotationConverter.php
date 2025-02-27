@@ -26,11 +26,16 @@ class NetteAnnotationConverter
      */
     private static string $paramRegex = "/\*\s*@Param\((?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?(?:([a-z]+?=.+?),?\s*\*?\s*)?([a-z]+?=.+)\)/";
 
-    // placeholder for detected nette annotations (prefixed with "@Param")
-    // this text must not be present in the presenter files
+    /**
+     * Placeholder for detected nette annotations (prefixed with "@Param"),
+     * this text must not be present in the presenter files.
+     * @var string A unique string pattern.
+     */
     public static string $attributePlaceholder = "<!>#nette#<!>";
 
-    // maps @Param validation fields to validator classes
+    /**
+     * @var array Maps @Param validation fields to validator classes.
+     */
     private static array $netteValidationToValidatorClassDictionary = [
         "email" => VEmail::class,
         // there is one occurrence of this
