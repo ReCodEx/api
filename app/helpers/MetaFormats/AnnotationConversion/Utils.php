@@ -10,6 +10,13 @@ use App\V1Module\Presenters\BasePresenter;
 
 class Utils
 {
+    // links all @Param location types to corresponding attribute classes.
+    private static array $paramLocationToAttributeClassDictionary = [
+        "post" => Post::class,
+        "query" => Query::class,
+        "path" => Path::class,
+    ];
+
     /**
      * Converts a fully qualified class name to a class name without namespace prefixes.
      * @param string $className Fully qualified class name, such
@@ -76,16 +83,20 @@ class Utils
         return $namespace;
     }
 
+    /**
+     * Returns the attribute class name (without namespace) matching the input parameter location string.
+     * @param string $type The location type of the parameter (path, query, post).
+     * @throws \App\Exceptions\InternalServerException Thrown when an unexpected type is provided.
+     * @return string Returns the attribute class name matching the parameter location type.
+     */
     public static function getAttributeClassFromString(string $type)
     {
-        switch ($type) {
-            case "post":
-                return self::shortenClass(Post::class);
-            case "query":
-                return self::shortenClass(Query::class);
-            case "path":
-                return self::shortenClass(Path::class);
+        if (!array_key_exists($type, self::$paramLocationToAttributeClassDictionary)) {
+            throw new InternalServerException("Unsupported parameter location: $type");
         }
+
+        $className = self::$paramLocationToAttributeClassDictionary[$type];
+        return self::shortenClass($className);
     }
 
     public static function getParamAttributeClassNames()
