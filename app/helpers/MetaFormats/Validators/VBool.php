@@ -2,9 +2,6 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\PhpTypes;
-
 /**
  * Validates boolean values. Accepts only boolean true and false.
  */

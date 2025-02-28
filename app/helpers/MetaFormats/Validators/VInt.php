@@ -2,9 +2,6 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\PhpTypes;
-
 /**
  * Validates integers. Accepts ints as well as their stringified versions.
  */
@@ -12,7 +9,7 @@ class VInt
 {
     public const SWAGGER_TYPE = "integer";
 
-    public function getExampleValue()
+    public function getExampleValue(): int|string
     {
         return "0";
     }

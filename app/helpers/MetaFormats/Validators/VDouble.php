@@ -2,9 +2,6 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
-use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\PhpTypes;
-
 /**
  * Validates doubles. Accepts doubles as well as their stringified versions.
  */

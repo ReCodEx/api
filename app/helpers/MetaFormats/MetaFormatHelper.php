@@ -189,15 +189,4 @@ class MetaFormatHelper
         $instance = new $format();
         return $instance;
     }
-
-    /**
-     * Checks whether a value is of a given type.
-     * @param mixed $value The value to be tested.
-     * @param \App\Helpers\MetaFormats\PhpTypes $type The desired type of the value.
-     * @return bool Returns whether the value is of the given type.
-     */
-    public static function checkType($value, PhpTypes $type): bool
-    {
-        return gettype($value) === $type->value;
-    }
 }
