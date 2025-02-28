@@ -121,7 +121,7 @@ class TestInstancesPresenter extends Tester\TestCase
             'V1:Instances',
             'POST',
             ['action' => 'updateInstance', 'id' => $instance->getId()],
-            ['isOpen' => false]
+            ['isOpen' => 'false']
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);

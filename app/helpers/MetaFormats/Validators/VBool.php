@@ -11,6 +11,6 @@ class VBool
 
     public function validate(mixed $value)
     {
-        return $value === true || $value === false;
+        return $value === true || $value === false || $value === 'false';
     }
 }
