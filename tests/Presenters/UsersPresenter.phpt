@@ -830,7 +830,7 @@ class TestUsersPresenter extends Tester\TestCase
             $this->presenterPath,
             'POST',
             ['action' => 'setAllowed', 'id' => $user->getId()],
-            ['isAllowed' => 0]
+            ['isAllowed' => false]
         );
 
         Assert::same($user->getId(), $payload['id']);
