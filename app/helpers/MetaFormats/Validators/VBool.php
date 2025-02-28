@@ -6,7 +6,7 @@ use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\PhpTypes;
 
 /**
- * Validates boolean values. Accepts bools, "true", "false", 0 and 1.
+ * Validates boolean values. Accepts only boolean true and false.
  */
 class VBool
 {
@@ -14,11 +14,6 @@ class VBool
 
     public function validate(mixed $value)
     {
-        // support stringified values as well as 0 and 1
-        return MetaFormatHelper::checkType($value, PhpTypes::Bool)
-        || $value == 0
-        || $value == 1
-        || $value == "true"
-        || $value == "false";
+        return $value === true || $value === false;
     }
 }
