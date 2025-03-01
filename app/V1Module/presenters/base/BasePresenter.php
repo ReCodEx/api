@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\Pagination;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
@@ -20,6 +21,11 @@ use App\Helpers\UserActions;
 use App\Helpers\Validators;
 use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\AnnotationsParser;
+use App\Helpers\MetaFormats\FormatCache;
+use App\Helpers\MetaFormats\MetaFormat;
+use App\Helpers\MetaFormats\MetaRequest;
+use App\Helpers\MetaFormats\RequestParamData;
+use App\Helpers\MetaFormats\Type;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
@@ -69,8 +75,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
      */
     public $logger;
 
-    /** @var object Processed parameters from annotations */
-    protected $parameters;
+    /** @var MetaFormat Instance of the meta format used by the endpoint (null if no format used) */
+    private MetaFormat $requestFormatInstance;
 
     protected function formatPermissionCheckMethod($action)
     {
@@ -105,7 +111,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
     {
         parent::startup();
         $this->application->errorPresenter = "V1:ApiError";
-        $this->parameters = new \stdClass();
 
         try {
             $presenterReflection = new ReflectionClass($this);
@@ -199,35 +204,89 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $identity->isInScope($scope);
     }
 
+    public function getFormatInstance(): MetaFormat
+    {
+        return $this->requestFormatInstance;
+    }
+
     private function processParams(ReflectionMethod $reflection)
     {
-        $annotations = AnnotationsParser::getAll($reflection);
-        $requiredFields = Arrays::get($annotations, "Param", []);
+        // use a method specialized for formats if there is a format available
+        $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
+        if ($format !== null) {
+            $this->processParamsFormat($format);
+            return;
+        }
 
-        foreach ($requiredFields as $field) {
-            $type = strtolower($field->type);
-            $name = $field->name;
-            $validationRule = isset($field->validation) ? $field->validation : null;
-            $msg = isset($field->msg) ? $field->msg : null;
-            $required = isset($field->required) ? $field->required : true;
+        // otherwise use a method for loose parameters
+        $paramData = MetaFormatHelper::extractRequestParamData($reflection);
+        $this->processParamsLoose($paramData);
+    }
 
-            $value = null;
-            switch ($type) {
-                case "post":
-                    $value = $this->getPostField($name, $required);
-                    break;
-                case "query":
-                    $value = $this->getQueryField($name, $required);
-                    break;
-                default:
-                    throw new InternalServerException("Unknown parameter type '$type'");
+    private function processParamsLoose(array $paramData)
+    {
+        // validate each param
+        foreach ($paramData as $param) {
+            ///TODO: path parameters are not checked yet
+            if ($param->type == Type::Path) {
+                continue;
             }
 
-            if ($validationRule !== null && $value !== null) {
-                $value = $this->validateValue($name, $value, $validationRule, $msg);
+            $paramValue = $this->getValueFromParamData($param);
+
+            // this throws when it does not conform
+            $param->conformsToDefinition($paramValue);
+        }
+    }
+
+    private function processParamsFormat(string $format)
+    {
+        // get the parsed attribute data from the format fields
+        $formatToFieldDefinitionsMap = FormatCache::getFormatToFieldDefinitionsMap();
+        if (!array_key_exists($format, $formatToFieldDefinitionsMap)) {
+            throw new InternalServerException("The format $format is not defined.");
+        }
+
+        // maps field names to their attribute data
+        $nameToFieldDefinitionsMap = $formatToFieldDefinitionsMap[$format];
+
+        ///TODO: handle nested MetaFormat creation
+        $formatInstance = MetaFormatHelper::createFormatInstance($format);
+        foreach ($nameToFieldDefinitionsMap as $fieldName => $requestParamData) {
+            ///TODO: path parameters are not checked yet
+            if ($requestParamData->type == Type::Path) {
+                continue;
             }
 
-            $this->parameters->$name = $value;
+            $value = $this->getValueFromParamData($requestParamData);
+
+            // this throws if the value is invalid
+            $formatInstance->checkedAssign($fieldName, $value);
+        }
+
+        // validate structural constraints
+        if (!$formatInstance->validateStructure()) {
+            throw new BadRequestException("All request fields are valid but additional structural constraints failed.");
+        }
+
+        $this->requestFormatInstance = $formatInstance;
+    }
+
+    /**
+     * Calls either getPostField or getQueryField based on the provided metadata.
+     * @param \App\Helpers\MetaFormats\RequestParamData $paramData Metadata of the request parameter.
+     * @throws \App\Exceptions\InternalServerException Thrown when an unexpected parameter location was set.
+     * @return mixed Returns the value from the request.
+     */
+    private function getValueFromParamData(RequestParamData $paramData): mixed
+    {
+        switch ($paramData->type) {
+            case Type::Post:
+                return $this->getPostField($paramData->name, required: $paramData->required);
+            case Type::Query:
+                return $this->getQueryField($paramData->name, required: $paramData->required);
+            default:
+                throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
         }
     }
 
@@ -265,26 +324,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
         if ($value === null && $required) {
             throw new BadRequestException("Missing required query field $param");
         }
-        return $value;
-    }
-
-    private function validateValue($param, $value, $validationRule, $msg = null)
-    {
-        foreach (["int", "integer"] as $rule) {
-            if ($validationRule === $rule || str_starts_with($validationRule, $rule . ":")) {
-                throw new LogicException("Validation rule '$validationRule' will not work for request parameters");
-            }
-        }
-
-        $value = Validators::preprocessValue($value, $validationRule);
-        if (Validators::is($value, $validationRule) === false) {
-            throw new InvalidArgumentException(
-                $param,
-                $msg ?? "The value '$value' does not match validation rule '$validationRule'"
-                    . " - for more information check the documentation of Nette\\Utils\\Validators"
-            );
-        }
-
         return $value;
     }
 

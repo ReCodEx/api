@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\ParseException;
@@ -85,11 +98,19 @@ class PlagiarismPresenter extends BasePresenter
     /**
      * Get a list of all batches, optionally filtered by query params.
      * @GET
-     * @Param(type="query", name="detectionTool", required=false, validation="string:1..255",
-     *        description="Requests only batches created by a particular detection tool.")
-     * @Param(type="query", name="solutionId", required=false, validation="string:36",
-     *        description="Requests only batches where particular solution has detected similarities.")
      */
+    #[Query(
+        "detectionTool",
+        new VString(1, 255),
+        "Requests only batches created by a particular detection tool.",
+        required: false,
+    )]
+    #[Query(
+        "solutionId",
+        new VUuid(),
+        "Requests only batches where particular solution has detected similarities.",
+        required: false,
+    )]
     public function actionListBatches(?string $detectionTool, ?string $solutionId): void
     {
         $solution = $solutionId ? $this->assignmentSolutions->findOrThrow($solutionId) : null;
@@ -108,6 +129,7 @@ class PlagiarismPresenter extends BasePresenter
      * Fetch a detail of a particular batch record.
      * @GET
      */
+    #[Path("id", new VString(), required: true)]
     public function actionBatchDetail(string $id): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
@@ -124,11 +146,14 @@ class PlagiarismPresenter extends BasePresenter
     /**
      * Create new detection batch record
      * @POST
-     * @Param(type="post", name="detectionTool", validation="string:1..255",
-     *   description="Identifier of the external tool used to detect similarities.")
-     * @Param(type="post", name="detectionToolParams", validation="string:0..255", required="false"
-     *   description="Tool-specific parameters (e.g., CLI args) used for this particular batch.")
      */
+    #[Post("detectionTool", new VString(1, 255), "Identifier of the external tool used to detect similarities.")]
+    #[Post(
+        "detectionToolParams",
+        new VString(0, 255),
+        "Tool-specific parameters (e.g., CLI args) used for this particular batch.",
+        required: false,
+    )]
     public function actionCreateBatch(): void
     {
         $req = $this->getRequest();
@@ -150,9 +175,9 @@ class PlagiarismPresenter extends BasePresenter
     /**
      * Update dectection bath record. At the momeny, only the uploadCompletedAt can be changed.
      * @POST
-     * @Param(type="post", name="uploadCompleted", validation="bool",
-     *   description="Whether the upload of the batch data is completed or not.")
      */
+    #[Post("uploadCompleted", new VBool(), "Whether the upload of the batch data is completed or not.")]
+    #[Path("id", new VString(), required: true)]
     public function actionUpdateBatch(string $id): void
     {
         $req = $this->getRequest();
@@ -176,6 +201,8 @@ class PlagiarismPresenter extends BasePresenter
      * Returns a list of detected similarities entities (similar file records are nested within).
      * @GET
      */
+    #[Path("id", new VString(), required: true)]
+    #[Path("solutionId", new VString(), required: true)]
     public function actionGetSimilarities(string $id, string $solutionId): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
@@ -199,17 +226,19 @@ class PlagiarismPresenter extends BasePresenter
      * Appends one detected similarity record (similarities associated with one file and one other author)
      * into a detected batch. This division was selected to make the appends relatively small and managable.
      * @POST
-     * @Param(type="post", name="solutionFileId", validation="string:36",
-     *   description="Id of the uploaded solution file.")
-     * @Param(type="post", name="fileEntry", validation="string:0..255", required=false,
-     *   description="Entry (relative path) within a ZIP package (if the uploaded file is a ZIP).")
-     * @Param(type="post", name="authorId", validation="string:36",
-     *   description="Id of the author of the similar solutions/files.")
-     * @Param(type="post", name="similarity", validation="numeric",
-     *   description="Relative similarity of the records associated with selected author [0-1].")
-     * @Param(type="post", name="files", validation="array",
-     *   description="List of similar files and their records.")
      */
+    #[Post("solutionFileId", new VUuid(), "Id of the uploaded solution file.")]
+    #[Post(
+        "fileEntry",
+        new VString(0, 255),
+        "Entry (relative path) within a ZIP package (if the uploaded file is a ZIP).",
+        required: false,
+    )]
+    #[Post("authorId", new VUuid(), "Id of the author of the similar solutions/files.")]
+    #[Post("similarity", new VDouble(), "Relative similarity of the records associated with selected author [0-1].")]
+    #[Post("files", new VArray(), "List of similar files and their records.")]
+    #[Path("id", new VString(), required: true)]
+    #[Path("solutionId", new VString(), required: true)]
     public function actionAddSimilarities(string $id, string $solutionId): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);

@@ -979,7 +979,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'V1:Exercises',
             'POST',
             ['action' => 'setArchived', 'id' => $exercise->getId()],
-            ['archived' => 'true']
+            ['archived' => true]
         );
 
         $this->presenter->exercises->refresh($exercise);
@@ -1002,7 +1002,7 @@ class TestExercisesPresenter extends Tester\TestCase
                     'V1:Exercises',
                     'POST',
                     ['action' => 'setArchived', 'id' => $exercise->getId()],
-                    ['archived' => 'true']
+                    ['archived' => true]
                 );
             },
             ForbiddenRequestException::class
@@ -1022,7 +1022,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'V1:Exercises',
             'POST',
             ['action' => 'setArchived', 'id' => $exercise->getId()],
-            ['archived' => 'false']
+            ['archived' => false]
         );
 
         $this->presenter->exercises->refresh($exercise);

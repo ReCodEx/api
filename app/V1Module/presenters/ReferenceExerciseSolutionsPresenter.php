@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
@@ -170,8 +183,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Get reference solutions for an exercise
      * @GET
-     * @param string $exerciseId Identifier of the exercise
      */
+    #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionSolutions(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -200,9 +213,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Get details of a reference solution
      * @GET
-     * @param string $solutionId An identifier of the solution
      * @throws NotFoundException
      */
+    #[Path("solutionId", new VString(), "An identifier of the solution", required: true)]
     public function actionDetail(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -220,12 +233,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Update details about the ref. solution (note, etc...)
      * @POST
-     * @Param(type="post", name="note", validation="string:0..65535",
-     *        description="A description by the author of the solution")
-     * @param string $solutionId Identifier of the solution
      * @throws NotFoundException
      * @throws InternalServerException
      */
+    #[Post("note", new VString(0, 65535), "A description by the author of the solution")]
+    #[Path("solutionId", new VString(), "Identifier of the solution", required: true)]
     public function actionUpdate(string $solutionId)
     {
         $req = $this->getRequest();
@@ -247,8 +259,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Delete reference solution with given identification.
      * @DELETE
-     * @param string $solutionId identifier of reference solution
      */
+    #[Path("solutionId", new VString(), "identifier of reference solution", required: true)]
     public function actionDeleteReferenceSolution(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -281,9 +293,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Get a list of submissions for given reference solution.
      * @GET
-     * @param string $solutionId identifier of the reference exercise solution
      * @throws InternalServerException
      */
+    #[Path("solutionId", new VString(), "identifier of the reference exercise solution", required: true)]
     public function actionSubmissions(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -308,10 +320,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Get reference solution evaluation (i.e., submission) for an exercise solution.
      * @GET
-     * @param string $submissionId identifier of the reference exercise submission
      * @throws NotFoundException
      * @throws InternalServerException
      */
+    #[Path("submissionId", new VString(), "identifier of the reference exercise submission", required: true)]
     public function actionSubmission(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -334,8 +346,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Remove reference solution evaluation (submission) permanently.
      * @DELETE
-     * @param string $submissionId Identifier of the reference solution submission
      */
+    #[Path("submissionId", new VString(), "Identifier of the reference solution submission", required: true)]
     public function actionDeleteSubmission(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -361,13 +373,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * environments for the exercise. Also it can be further used for entry
      * points and other important things that should be provided by user during submit.
      * @POST
-     * @param string $exerciseId identifier of exercise
-     * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
      * @throws NotFoundException
      * @throws InvalidArgumentException
      * @throws ExerciseConfigException
      * @throws BadRequestException
      */
+    #[Post("files", new VArray())]
+    #[Path("exerciseId", new VString(), "identifier of exercise", required: true)]
     public function actionPreSubmit(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -413,18 +425,17 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Add new reference solution to an exercise
      * @POST
-     * @Param(type="post", name="note", validation="string",
-     *        description="Description of this particular reference solution, for example used algorithm")
-     * @Param(type="post", name="files", description="Files of the reference solution")
-     * @Param(type="post", name="runtimeEnvironmentId", description="ID of runtime for this solution")
-     * @Param(type="post", name="solutionParams", required=false, description="Solution parameters")
-     * @param string $exerciseId Identifier of the exercise
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws SubmissionEvaluationFailedException
      * @throws ParseException
      * @throws BadRequestException
      */
+    #[Post("note", new VString(), "Description of this particular reference solution, for example used algorithm")]
+    #[Post("files", new VMixed(), "Files of the reference solution", nullable: true)]
+    #[Post("runtimeEnvironmentId", new VMixed(), "ID of runtime for this solution", nullable: true)]
+    #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
+    #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionSubmit(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -465,13 +476,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Evaluate a single reference exercise solution for all configured hardware groups
      * @POST
-     * @param string $id Identifier of the reference solution
-     * @Param(type="post", name="debug", validation="bool", required=false,
-     *        description="Debugging evaluation with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws ParseException
      * @throws BadRequestException
      */
+    #[Post("debug", new VBool(), "Debugging evaluation with all logs and outputs", required: false)]
+    #[Path("id", new VString(), "Identifier of the reference solution", required: true)]
     public function actionResubmit(string $id)
     {
         $req = $this->getRequest();
@@ -511,14 +521,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Evaluate all reference solutions for an exercise (and for all configured hardware groups).
      * @POST
-     * @param string $exerciseId Identifier of the exercise
-     * @Param(type="post", name="debug", validation="bool", required=false,
-     *        description="Debugging evaluation with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws ParseException
      * @throws BadRequestException
      * @throws NotFoundException
      */
+    #[Post("debug", new VBool(), "Debugging evaluation with all logs and outputs", required: false)]
+    #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionResubmitAll($exerciseId)
     {
         $req = $this->getRequest();
@@ -610,11 +619,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Download archive containing all solution files for particular reference solution.
      * @GET
-     * @param string $solutionId of reference solution
      * @throws NotFoundException
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
+    #[Path("solutionId", new VString(), "of reference solution", required: true)]
     public function actionDownloadSolutionArchive(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -636,10 +645,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Get the list of submitted files of the solution.
      * @GET
-     * @param string $id of reference solution
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "of reference solution", required: true)]
     public function actionFiles(string $id)
     {
         $solution = $this->referenceSolutions->findOrThrow($id)->getSolution();
@@ -660,13 +669,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Download result archive from backend for a reference solution evaluation
      * @GET
-     * @param string $submissionId
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws NotReadyException
      * @throws InternalServerException
      * @throws \Nette\Application\AbortException
      */
+    #[Path("submissionId", new VString(), required: true)]
     public function actionDownloadResultArchive(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -695,10 +704,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Get score configuration associated with given submission evaluation
      * @GET
-     * @param string $submissionId identifier of the reference exercise submission
      * @throws NotFoundException
      * @throws InternalServerException
      */
+    #[Path("submissionId", new VString(), "identifier of the reference exercise submission", required: true)]
     public function actionEvaluationScoreConfig(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -720,13 +729,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Set visibility of given reference solution.
      * @POST
-     * @param string $solutionId of reference solution
-     * @Param(type="post", name="visibility", required=true, validation="numericint",
-     *        description="New visibility level.")
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      */
+    #[Post("visibility", new VInt(), "New visibility level.", required: true)]
+    #[Path("solutionId", new VString(), "of reference solution", required: true)]
     public function actionSetVisibility(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);

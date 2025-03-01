@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -122,8 +135,8 @@ class UploadedFilesPresenter extends BasePresenter
      * Get details of a file
      * @GET
      * @LoggedIn
-     * @param string $id Identifier of the uploaded file
      */
+    #[Path("id", new VString(), "Identifier of the uploaded file", required: true)]
     public function actionDetail(string $id)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
@@ -164,15 +177,22 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Download a file
      * @GET
-     * @param string $id Identifier of the file
-     * @Param(type="query", name="entry", required=false, validation="string:1..",
-     *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
-     * @Param(type="query", name="similarSolutionId", required=false, validation="string:36",
-     *        description="Id of an assignment solution which has detected possible plagiarism in this file.
-     *                     This is basically a shortcut (hint) for ACLs.")
      * @throws \Nette\Application\AbortException
      * @throws \Nette\Application\BadRequestException
      */
+    #[Query(
+        "entry",
+        new VString(1),
+        "Name of the entry in the ZIP archive (if the target file is ZIP)",
+        required: false,
+    )]
+    #[Query(
+        "similarSolutionId",
+        new VUuid(),
+        "Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the file", required: true)]
     public function actionDownload(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -206,13 +226,20 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Get the contents of a file
      * @GET
-     * @param string $id Identifier of the file
-     * @Param(type="query", name="entry", required=false, validation="string:1..",
-     *        description="Name of the entry in the ZIP archive (if the target file is ZIP)")
-     * @Param(type="query", name="similarSolutionId", required=false, validation="string:36",
-     *        description="Id of an assignment solution which has detected possible plagiarism in this file.
-     *                     This is basically a shortcut (hint) for ACLs.")
      */
+    #[Query(
+        "entry",
+        new VString(1),
+        "Name of the entry in the ZIP archive (if the target file is ZIP)",
+        required: false,
+    )]
+    #[Query(
+        "similarSolutionId",
+        new VUuid(),
+        "Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the file", required: true)]
     public function actionContent(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -266,8 +293,8 @@ class UploadedFilesPresenter extends BasePresenter
      * Compute a digest using a hashing algorithm. This feature is intended for upload checksums only.
      * In the future, we might want to add algorithm selection via query parameter (default is SHA1).
      * @GET
-     * @param string $id Identifier of the file
      */
+    #[Path("id", new VString(), "Identifier of the file", required: true)]
     public function actionDigest(string $id)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -362,10 +389,9 @@ class UploadedFilesPresenter extends BasePresenter
      * each one carrying a chunk of data. Once all the chunks are in place, the complete request assembles
      * them together in one file and transforms UploadPartialFile into UploadFile entity.
      * @POST
-     * @Param(type="post", name="name", required=true, validation="string:1..255",
-     *        description="Name of the uploaded file.")
-     * @Param(type="post", name="size", required=true, validation="numericint", description="Total size in bytes.")
      */
+    #[Post("name", new VString(1, 255), "Name of the uploaded file.", required: true)]
+    #[Post("size", new VInt(), "Total size in bytes.", required: true)]
     public function actionStartPartial()
     {
         $user = $this->getCurrentUser();
@@ -410,15 +436,14 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Add another chunk to partial upload.
      * @PUT
-     * @param string $id Identifier of the file
-     * @Param(type="query", name="offset", required="true", validation="numericint",
-     *        description="Offset of the chunk for verification")
      * @throws InvalidArgumentException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws CannotReceiveUploadedFileException
      * @throws InternalServerException
      */
+    #[Query("offset", new VInt(), "Offset of the chunk for verification", required: true)]
+    #[Path("id", new VString(), "Identifier of the file", required: true)]
     public function actionAppendPartial(string $id, int $offset)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -463,6 +488,7 @@ class UploadedFilesPresenter extends BasePresenter
      * Cancel partial upload and remove all uploaded chunks.
      * @DELETE
      */
+    #[Path("id", new VString(), required: true)]
     public function actionCancelPartial(string $id)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -506,6 +532,7 @@ class UploadedFilesPresenter extends BasePresenter
      * All data chunks are extracted from the store, assembled into one file, and is moved back into the store.
      * @POST
      */
+    #[Path("id", new VString(), required: true)]
     public function actionCompletePartial(string $id)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -567,11 +594,11 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Download supplementary file
      * @GET
-     * @param string $id Identifier of the file
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      */
+    #[Path("id", new VString(), "Identifier of the file", required: true)]
     public function actionDownloadSupplementaryFile(string $id)
     {
         $fileEntity = $this->supplementaryFiles->findOrThrow($id);

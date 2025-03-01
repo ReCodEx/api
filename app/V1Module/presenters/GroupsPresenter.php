@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\BadRequestException;
@@ -170,14 +183,28 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of all non-archived groups a user can see. The return set is filtered by parameters.
      * @GET
-     * @param string|null $instanceId Only groups of this instance are returned.
-     * @param bool $ancestors If true, returns an ancestral closure of the initial result set.
-     *  Included ancestral groups do not respect other filters (archived, search, ...).
-     * @param string|null $search Search string. Only groups containing this string as
-     *  a substring of their names are returned.
-     * @param bool $archived Include also archived groups in the result.
-     * @param bool $onlyArchived Automatically implies $archived flag and returns only archived groups.
      */
+    #[Query("instanceId", new VString(), "Only groups of this instance are returned.", required: false, nullable: true)]
+    #[Query(
+        "ancestors",
+        new VBool(),
+        "If true, returns an ancestral closure of the initial result set. Included ancestral groups do not respect other filters (archived, search, ...).",
+        required: false,
+    )]
+    #[Query(
+        "search",
+        new VString(),
+        "Search string. Only groups containing this string as a substring of their names are returned.",
+        required: false,
+        nullable: true,
+    )]
+    #[Query("archived", new VBool(), "Include also archived groups in the result.", required: false)]
+    #[Query(
+        "onlyArchived",
+        new VBool(),
+        "Automatically implies \$archived flag and returns only archived groups.",
+        required: false,
+    )]
     public function actionDefault(
         string $instanceId = null,
         bool $ancestors = false,
@@ -226,33 +253,42 @@ class GroupsPresenter extends BasePresenter
     /**
      * Create a new group
      * @POST
-     * @Param(type="post", name="instanceId", validation="string:36",
-     *        description="An identifier of the instance where the group should be created")
-     * @Param(type="post", name="externalId", required=false,
-     *        description="An informative, human readable identifier of the group")
-     * @Param(type="post", name="parentGroupId", validation="string:36", required=false,
-     *        description="Identifier of the parent group (if none is given, a top-level group is created)")
-     * @Param(type="post", name="publicStats", validation="bool", required=false,
-     *        description="Should students be able to see each other's results?")
-     * @Param(type="post", name="detaining", validation="bool", required=false,
-     *        description="Are students prevented from leaving the group on their own?")
-     * @Param(type="post", name="isPublic", validation="bool", required=false,
-     *        description="Should the group be visible to all student?")
-     * @Param(type="post", name="isOrganizational", validation="bool", required=false,
-     *        description="Whether the group is organizational (no assignments nor students).")
-     * @Param(type="post", name="isExam", validation="bool", required=false,
-     *        description="Whether the group is an exam group.")
-     * @Param(type="post", name="localizedTexts", validation="array", required=false,
-     *        description="Localized names and descriptions")
-     * @Param(type="post", name="threshold", validation="numericint", required=false,
-     *        description="A minimum percentage of points needed to pass the course")
-     * @Param(type="post", name="pointsLimit", validation="numericint", required=false,
-     *        description="A minimum of (absolute) points needed to pass the course")
-     * @Param(type="post", name="noAdmin", validation="bool", required=false,
-     *        description="If true, no admin is assigned to group (current user is assigned as admin by default.")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("instanceId", new VUuid(), "An identifier of the instance where the group should be created")]
+    #[Post(
+        "externalId",
+        new VMixed(),
+        "An informative, human readable identifier of the group",
+        required: false,
+        nullable: true,
+    )]
+    #[Post(
+        "parentGroupId",
+        new VUuid(),
+        "Identifier of the parent group (if none is given, a top-level group is created)",
+        required: false,
+    )]
+    #[Post("publicStats", new VBool(), "Should students be able to see each other's results?", required: false)]
+    #[Post("detaining", new VBool(), "Are students prevented from leaving the group on their own?", required: false)]
+    #[Post("isPublic", new VBool(), "Should the group be visible to all student?", required: false)]
+    #[Post(
+        "isOrganizational",
+        new VBool(),
+        "Whether the group is organizational (no assignments nor students).",
+        required: false,
+    )]
+    #[Post("isExam", new VBool(), "Whether the group is an exam group.", required: false)]
+    #[Post("localizedTexts", new VArray(), "Localized names and descriptions", required: false)]
+    #[Post("threshold", new VInt(), "A minimum percentage of points needed to pass the course", required: false)]
+    #[Post("pointsLimit", new VInt(), "A minimum of (absolute) points needed to pass the course", required: false)]
+    #[Post(
+        "noAdmin",
+        new VBool(),
+        "If true, no admin is assigned to group (current user is assigned as admin by default.",
+        required: false,
+    )]
     public function actionAddGroup()
     {
         $req = $this->getRequest();
@@ -308,12 +344,12 @@ class GroupsPresenter extends BasePresenter
     /**
      * Validate group creation data
      * @POST
-     * @Param(name="name", type="post", description="Name of the group")
-     * @Param(name="locale", type="post", description="The locale of the name")
-     * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
-     * @Param(name="parentGroupId", type="post", required=false, description="Identifier of the parent group")
      * @throws ForbiddenRequestException
      */
+    #[Post("name", new VMixed(), "Name of the group", nullable: true)]
+    #[Post("locale", new VMixed(), "The locale of the name", nullable: true)]
+    #[Post("instanceId", new VMixed(), "Identifier of the instance where the group belongs", nullable: true)]
+    #[Post("parentGroupId", new VMixed(), "Identifier of the parent group", required: false, nullable: true)]
     public function actionValidateAddGroupData()
     {
         $req = $this->getRequest();
@@ -345,22 +381,22 @@ class GroupsPresenter extends BasePresenter
     /**
      * Update group info
      * @POST
-     * @Param(type="post", name="externalId", required=false,
-     *        description="An informative, human readable indentifier of the group")
-     * @Param(type="post", name="publicStats", validation="bool",
-     *        description="Should students be able to see each other's results?")
-     * @Param(type="post", name="detaining", validation="bool",
-     *        required=false, description="Are students prevented from leaving the group on their own?")
-     * @Param(type="post", name="isPublic", validation="bool",
-     *        description="Should the group be visible to all student?")
-     * @Param(type="post", name="threshold", validation="numericint", required=false,
-     *        description="A minimum percentage of points needed to pass the course")
-     * @Param(type="post", name="pointsLimit", validation="numericint", required=false,
-     *        description="A minimum of (absolute) points needed to pass the course")
-     * @Param(type="post", name="localizedTexts", validation="array", description="Localized names and descriptions")
-     * @param string $id An identifier of the updated group
      * @throws InvalidArgumentException
      */
+    #[Post(
+        "externalId",
+        new VMixed(),
+        "An informative, human readable indentifier of the group",
+        required: false,
+        nullable: true,
+    )]
+    #[Post("publicStats", new VBool(), "Should students be able to see each other's results?")]
+    #[Post("detaining", new VBool(), "Are students prevented from leaving the group on their own?", required: false)]
+    #[Post("isPublic", new VBool(), "Should the group be visible to all student?")]
+    #[Post("threshold", new VInt(), "A minimum percentage of points needed to pass the course", required: false)]
+    #[Post("pointsLimit", new VInt(), "A minimum of (absolute) points needed to pass the course", required: false)]
+    #[Post("localizedTexts", new VArray(), "Localized names and descriptions")]
+    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
     public function actionUpdateGroup(string $id)
     {
         $req = $this->getRequest();
@@ -397,11 +433,11 @@ class GroupsPresenter extends BasePresenter
     /**
      * Set the 'isOrganizational' flag for a group
      * @POST
-     * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
-     * @param string $id An identifier of the updated group
      * @throws BadRequestException
      * @throws NotFoundException
      */
+    #[Post("value", new VBool(), "The value of the flag", required: true)]
+    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
     public function actionSetOrganizational(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -434,10 +470,10 @@ class GroupsPresenter extends BasePresenter
     /**
      * Set the 'isArchived' flag for a group
      * @POST
-     * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
-     * @param string $id An identifier of the updated group
      * @throws NotFoundException
      */
+    #[Post("value", new VBool(), "The value of the flag", required: true)]
+    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
     public function actionSetArchived(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -515,11 +551,11 @@ class GroupsPresenter extends BasePresenter
      * Change the group "exam" indicator. If denotes that the group should be listed in exam groups instead of
      * regular groups and the assignments should have "isExam" flag set by default.
      * @POST
-     * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
-     * @param string $id An identifier of the updated group
      * @throws BadRequestException
      * @throws NotFoundException
      */
+    #[Post("value", new VBool(), "The value of the flag", required: true)]
+    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
     public function actionSetExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -543,15 +579,23 @@ class GroupsPresenter extends BasePresenter
      * This endpoint is also used to update already planned exam period, but only dates in the future
      * can be editted (e.g., once an exam begins, the beginning may no longer be updated).
      * @POST
-     * @Param(type="post", name="begin", validation="timestamp|null", required=false,
-     *        description="When the exam begins (unix ts in the future, optional if update is performed).")
-     * @Param(type="post", name="end", validation="timestamp", required=true,
-     *        description="When the exam ends (unix ts in the future, no more than a day after 'begin').")
-     * @Param(type="post", name="strict", validation="bool", required=false,
-     *        description="Whether locked users are prevented from accessing other groups.")
-     * @param string $id An identifier of the updated group
      * @throws NotFoundException
      */
+    #[Post(
+        "begin",
+        new VTimestamp(),
+        "When the exam begins (unix ts in the future, optional if update is performed).",
+        required: false,
+        nullable: true,
+    )]
+    #[Post(
+        "end",
+        new VTimestamp(),
+        "When the exam ends (unix ts in the future, no more than a day after 'begin').",
+        required: true,
+    )]
+    #[Post("strict", new VBool(), "Whether locked users are prevented from accessing other groups.", required: false)]
+    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
     public function actionSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -662,9 +706,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Change the group back to regular group (remove information about an exam).
      * @DELETE
-     * @param string $id An identifier of the updated group
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
     public function actionRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -712,9 +756,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Retrieve a list of locks for given exam
      * @GET
-     * @param string $id An identifier of the related group
-     * @param string $examId An identifier of the exam
      */
+    #[Path("id", new VString(), "An identifier of the related group", required: true)]
+    #[Path("examId", new VString(), "An identifier of the exam", required: true)]
     public function actionGetExamLocks(string $id, string $examId)
     {
         $group = $this->groups->findOrThrow($id);
@@ -726,11 +770,11 @@ class GroupsPresenter extends BasePresenter
     /**
      * Relocate the group under a different parent.
      * @POST
-     * @param string $id An identifier of the relocated group
-     * @param string $newParentId An identifier of the new parent group
      * @throws NotFoundException
      * @throws BadRequestException
      */
+    #[Path("id", new VString(), "An identifier of the relocated group", required: true)]
+    #[Path("newParentId", new VString(), "An identifier of the new parent group", required: true)]
     public function actionRelocate(string $id, string $newParentId)
     {
         $group = $this->groups->findOrThrow($id);
@@ -786,8 +830,8 @@ class GroupsPresenter extends BasePresenter
     /**
      * Delete a group
      * @DELETE
-     * @param string $id Identifier of the group
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionRemoveGroup(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -809,8 +853,8 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get details of a group
      * @GET
-     * @param string $id Identifier of the group
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionDetail(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -830,9 +874,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of subgroups of a group
      * @GET
-     * @param string $id Identifier of the group
      * @DEPRECTATED Subgroup list is part of group view.
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionSubgroups(string $id)
     {
         /** @var Group $group */
@@ -861,9 +905,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of members of a group
      * @GET
-     * @param string $id Identifier of the group
      * @DEPRECATED Members are listed in group view.
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -895,11 +939,10 @@ class GroupsPresenter extends BasePresenter
     /**
      * Add/update a membership (other than student) for given user
      * @POST
-     * @Param(type="post", name="type", validation="string:1..", required=true,
-     *        description="Identifier of membership type (admin, supervisor, ...)")
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the supervisor
      */
+    #[Post("type", new VString(1), "Identifier of membership type (admin, supervisor, ...)", required: true)]
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
     public function actionAddMember(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -942,9 +985,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Remove a member (other than student) from a group
      * @DELETE
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the supervisor
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
     public function actionRemoveMember(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -980,8 +1023,8 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get all exercise assignments for a group
      * @GET
-     * @param string $id Identifier of the group
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionAssignments(string $id)
     {
         /** @var Group $group */
@@ -1014,8 +1057,8 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get all shadow assignments for a group
      * @GET
-     * @param string $id Identifier of the group
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionShadowAssignments(string $id)
     {
         /** @var Group $group */
@@ -1052,9 +1095,9 @@ class GroupsPresenter extends BasePresenter
      * Get statistics of a group. If the user does not have the rights to view all of these, try to at least
      * return their statistics.
      * @GET
-     * @param string $id Identifier of the group
      * @throws ForbiddenRequestException
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
     public function actionStats(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -1081,10 +1124,10 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get statistics of a single student in a group
      * @GET
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the student
      * @throws BadRequestException
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionStudentsStats(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1111,10 +1154,10 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get all solutions of a single student from all assignments in a group
      * @GET
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the student
      * @throws BadRequestException
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionStudentsSolutions(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1159,9 +1202,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Add a student to a group
      * @POST
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the student
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionAddStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1190,9 +1233,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Remove a student from a group
      * @DELETE
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the student
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionRemoveStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1222,9 +1265,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Lock student in a group and with an IP from which the request was made.
      * @POST
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the student
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionLockStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1262,9 +1305,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Unlock a student currently locked in a group.
      * @DELETE
-     * @param string $id Identifier of the group
-     * @param string $userId Identifier of the student
      */
+    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionUnlockStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);

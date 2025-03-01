@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
@@ -21,11 +34,15 @@ use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
+use App\Helpers\MetaFormats\Attributes\Format;
+use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
+use App\Helpers\MetaFormats\Attributes\ParamAttribute;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Nette\Http\IResponse;
 use Nette\Security\Passwords;
+use Tracy\ILogger;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -144,23 +161,18 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Create a user account
      * @POST
-     * @Param(type="post", name="email", validation="email", description="An email that will serve as a login name")
-     * @Param(type="post", name="firstName", validation="string:2..", description="First name")
-     * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
-     * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.",
-     *        description="A password for authentication")
-     * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.",
-     *        description="A password confirmation")
-     * @Param(type="post", name="instanceId", validation="string:1..",
-     *        description="Identifier of the instance to register in")
-     * @Param(type="post", name="titlesBeforeName", required=false, validation="string:1..",
-     *        description="Titles which is placed before user name")
-     * @Param(type="post", name="titlesAfterName", required=false, validation="string:1..",
-     *        description="Titles which is placed after user name")
      * @throws BadRequestException
      * @throws WrongCredentialsException
      * @throws InvalidArgumentException
      */
+    #[Post("email", new VEmail(), "An email that will serve as a login name")]
+    #[Post("firstName", new VString(2), "First name")]
+    #[Post("lastName", new VString(2), "Last name")]
+    #[Post("password", new VString(1), "A password for authentication")]
+    #[Post("passwordConfirm", new VString(1), "A password confirmation")]
+    #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
+    #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
+    #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
     public function actionCreateAccount()
     {
         $req = $this->getRequest();
@@ -226,9 +238,9 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Check if the registered E-mail isn't already used and if the password is strong enough
      * @POST
-     * @Param(type="post", name="email", description="E-mail address (login name)")
-     * @Param(type="post", name="password", required=false, description="Authentication password")
      */
+    #[Post("email", new VMixed(), "E-mail address (login name)", nullable: true)]
+    #[Post("password", new VMixed(), "Authentication password", required: false, nullable: true)]
     public function actionValidateRegistrationData()
     {
         $req = $this->getRequest();
@@ -259,34 +271,23 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Create an invitation for a user and send it over via email
      * @POST
-     * @Param(type="post", name="email", validation="email", description="An email that will serve as a login name")
-     * @Param(type="post", name="firstName", required=true, validation="string:2..", description="First name")
-     * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
-     * @Param(type="post", name="instanceId", validation="string:1..",
-     *        description="Identifier of the instance to register in")
-     * @Param(type="post", name="titlesBeforeName", required=false, validation="string:1..",
-     *        description="Titles which is placed before user name")
-     * @Param(type="post", name="titlesAfterName", required=false, validation="string:1..",
-     *        description="Titles which is placed after user name")
-     * @Param(type="post", name="groups", required=false, validation="array",
-     *        description="List of group IDs in which the user is added right after registration")
-     * @Param(type="post", name="locale", required=false, validation="string:2",
-     *        description="Language used in the invitation email (en by default).")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
+    #[Format(UserFormat::class)]
     public function actionCreateInvitation()
     {
-        $req = $this->getRequest();
+        /** @var UserFormat */
+        $format = $this->getFormatInstance();
 
         // check if the email is free
-        $email = trim($req->getPost("email"));
+        $email = trim($format->email);
         // username is name of column which holds login identifier represented by email
         if ($this->logins->getByUsername($email) !== null) {
             throw new BadRequestException("This email address is already taken.");
         }
 
-        $groupsIds = $req->getPost("groups") ?? [];
+        $groupsIds = $format->groups ?? [];
         foreach ($groupsIds as $id) {
             $group = $this->groups->get($id);
             if (!$group || $group->isOrganizational() || !$this->groupAcl->canInviteStudents($group)) {
@@ -295,23 +296,23 @@ class RegistrationPresenter extends BasePresenter
         }
 
         // gather data
-        $instanceId = $req->getPost("instanceId");
+        $instanceId = $format->instanceId;
         $instance = $this->getInstance($instanceId);
-        $titlesBeforeName = $req->getPost("titlesBeforeName") === null ? "" : $req->getPost("titlesBeforeName");
-        $titlesAfterName = $req->getPost("titlesAfterName") === null ? "" : $req->getPost("titlesAfterName");
+        $titlesBeforeName = $format->titlesBeforeName === null ? "" : $format->titlesBeforeName;
+        $titlesAfterName = $format->titlesAfterName === null ? "" : $format->titlesAfterName;
 
         // create the token and send it via email
         try {
             $this->invitationHelper->invite(
                 $instanceId,
                 $email,
-                $req->getPost("firstName"),
-                $req->getPost("lastName"),
+                $format->firstName,
+                $format->lastName,
                 $titlesBeforeName,
                 $titlesAfterName,
                 $groupsIds,
                 $this->getCurrentUser(),
-                $req->getPost("locale") ?? "en",
+                $format->locale ?? "en",
             );
         } catch (InvalidAccessTokenException $e) {
             throw new BadRequestException(
@@ -328,15 +329,12 @@ class RegistrationPresenter extends BasePresenter
     /**
      * Accept invitation and create corresponding user account.
      * @POST
-     * @Param(type="post", name="token", validation="string:1..",
-     *        description="Token issued in create invitation process.")
-     * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.",
-     *        description="A password for authentication")
-     * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.",
-     *        description="A password confirmation")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("token", new VString(1), "Token issued in create invitation process.")]
+    #[Post("password", new VString(1), "A password for authentication")]
+    #[Post("passwordConfirm", new VString(1), "A password confirmation")]
     public function actionAcceptInvitation()
     {
         $req = $this->getRequest();

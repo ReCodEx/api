@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
@@ -207,11 +220,11 @@ class SubmitPresenter extends BasePresenter
     /**
      * Check if the given user can submit solutions to the assignment
      * @GET
-     * @param string $id Identifier of the assignment
-     * @param string|null $userId Identification of the user
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Query("userId", new VString(), "Identification of the user", required: false, nullable: true)]
     public function actionCanSubmit(string $id, string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -231,19 +244,22 @@ class SubmitPresenter extends BasePresenter
     /**
      * Submit a solution of an assignment
      * @POST
-     * @Param(type="post", name="note", validation="string:0..1024",
-     *        description="A note by the author of the solution")
-     * @Param(type="post", name="userId", required=false, description="Author of the submission")
-     * @Param(type="post", name="files", description="Submitted files")
-     * @Param(type="post", name="runtimeEnvironmentId",
-     *        description="Identifier of the runtime environment used for evaluation")
-     * @Param(type="post", name="solutionParams", required=false, description="Solution parameters")
-     * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
      * @throws ParseException
      */
+    #[Post("note", new VString(0, 1024), "A note by the author of the solution")]
+    #[Post("userId", new VMixed(), "Author of the submission", required: false, nullable: true)]
+    #[Post("files", new VMixed(), "Submitted files", nullable: true)]
+    #[Post(
+        "runtimeEnvironmentId",
+        new VMixed(),
+        "Identifier of the runtime environment used for evaluation",
+        nullable: true,
+    )]
+    #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionSubmit(string $id)
     {
         $this->assignments->beginTransaction();
@@ -340,14 +356,13 @@ class SubmitPresenter extends BasePresenter
     /**
      * Resubmit a solution (i.e., create a new submission)
      * @POST
-     * @param string $id Identifier of the solution
-     * @Param(type="post", name="debug", validation="bool", required=false,
-     *        "Debugging resubmit with all logs and outputs")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
      * @throws ParseException
      */
+    #[Post("debug", new VBool(), "Debugging resubmit with all logs and outputs", required: false)]
+    #[Path("id", new VString(), "Identifier of the solution", required: true)]
     public function actionResubmit(string $id)
     {
         $req = $this->getRequest();
@@ -369,10 +384,10 @@ class SubmitPresenter extends BasePresenter
      * Return a list of all pending resubmit async jobs associated with given assignment.
      * Under normal circumstances, the list shoul be either empty, or contian only one job.
      * @GET
-     * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionResubmitAllAsyncJobStatus(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -394,10 +409,10 @@ class SubmitPresenter extends BasePresenter
      * No job is started when there are pending resubmit jobs for the selected assignment.
      * Returns list of pending async jobs (same as GET call)
      * @POST
-     * @param string $id Identifier of the assignment
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionResubmitAll(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -431,13 +446,13 @@ class SubmitPresenter extends BasePresenter
      * points and other important things that should be provided by user during
      * submit.
      * @POST
-     * @param string $id identifier of assignment
-     * @param string|null $userId Identifier of the submission author
      * @throws ExerciseConfigException
      * @throws InvalidArgumentException
      * @throws NotFoundException
-     * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
      */
+    #[Post("files", new VArray())]
+    #[Path("id", new VString(), "identifier of assignment", required: true)]
+    #[Query("userId", new VString(), "Identifier of the submission author", required: false, nullable: true)]
     public function actionPreSubmit(string $id, string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);

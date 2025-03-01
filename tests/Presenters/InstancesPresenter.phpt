@@ -97,7 +97,7 @@ class TestInstancesPresenter extends Tester\TestCase
             'V1:Instances',
             'POST',
             ['action' => 'createInstance'],
-            ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => 'true']
+            ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => true]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -143,7 +143,7 @@ class TestInstancesPresenter extends Tester\TestCase
             'V1:Instances',
             'POST',
             ['action' => 'createInstance'],
-            ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => 'true']
+            ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => true]
         );
         $response = $this->presenter->run($request);
         $newInstanceId = $response->getPayload()['payload']['id'];
@@ -225,7 +225,7 @@ class TestInstancesPresenter extends Tester\TestCase
             'V1:Instances',
             'POST',
             ['action' => 'updateLicence', 'licenceId' => $newLicence->getId()],
-            ['note' => 'Changed description', 'validUntil' => '2020-01-01 13:02:56', 'isValid' => 'false']
+            ['note' => 'Changed description', 'validUntil' => '2020-01-01 13:02:56', 'isValid' => false]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
