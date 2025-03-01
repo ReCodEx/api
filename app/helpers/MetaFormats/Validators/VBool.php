@@ -11,6 +11,7 @@ class VBool
 
     public function validate(mixed $value)
     {
+        ///TODO: remove 'false' once the testUpdateInstance test issue is fixed.
         return $value === true || $value === false || $value === 'false';
     }
 }
