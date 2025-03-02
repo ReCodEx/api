@@ -5,6 +5,7 @@ namespace App\Helpers\MetaFormats;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VFormat;
 use App\Helpers\Swagger\AnnotationParameterData;
 use Exception;
 
@@ -74,6 +75,23 @@ class RequestParamData
                 );
             }
         }
+    }
+
+    /**
+     * Returns the format name if the parameter should be interpreted as a format and not as a primitive type.
+     * @return ?string Returns the format name or null if the param represents a primitive type.
+     */
+    public function getFormatName(): ?string
+    {
+        // all format params have to have a VFormat validator
+        foreach ($this->validators as $validator) {
+            if ($validator instanceof VFormat) {
+                return $validator->format;
+            }
+        }
+
+        // return null for primitive types
+        return null;
     }
 
     private function hasValidators(): bool
