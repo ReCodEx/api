@@ -25,12 +25,6 @@ class VFormat
         }
     }
 
-    public function getExampleValue()
-    {
-        ///TODO
-        return "0";
-    }
-
     public function validate(mixed $value)
     {
         // fine-grained checking is done in the properties

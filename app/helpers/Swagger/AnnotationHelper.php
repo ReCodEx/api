@@ -3,6 +3,7 @@
 namespace App\Helpers\Swagger;
 
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\V1Module\Router\MethodRoute;
 use App\V1Module\RouterFactory;
@@ -339,7 +340,17 @@ class AnnotationHelper
         $methodAnnotations = self::getMethodAnnotations($className, $methodName);
 
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
-        $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
+        $reflectionMethod = self::getMethod($className, $methodName);
+
+        $format = MetaFormatHelper::extractFormatFromAttribute($reflectionMethod);
+        // if the endpoint is linked to a format, use the format class
+        if ($format !== null) {
+            $attributeData = FormatCache::getFieldDefinitions($format);
+        // otherwise use loose param attributes
+        } else {
+            $attributeData = MetaFormatHelper::extractRequestParamData($reflectionMethod);
+        }
+
         $params = array_map(function ($data) {
             return $data->toAnnotationParameterData();
         }, $attributeData);

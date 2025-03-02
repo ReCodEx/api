@@ -129,6 +129,16 @@ class RequestParamData
             $exampleValue = $this->validators[0]->getExampleValue();
         }
 
+        // add nested parameter data if this is an object
+        $format = $this->getFormatName();
+        $nestedObjectParameterData = null;
+        if ($format !== null) {
+            $nestedRequestParmData = FormatCache::getFieldDefinitions($format);
+            $nestedObjectParameterData = array_map(function (RequestParamData $data) {
+                return $data->toAnnotationParameterData();
+            }, $nestedRequestParmData);
+        }
+
         return new AnnotationParameterData(
             $swaggerType,
             $this->name,
@@ -138,6 +148,7 @@ class RequestParamData
             $this->nullable,
             $exampleValue,
             $nestedArraySwaggerType,
+            $nestedObjectParameterData,
         );
     }
 }
