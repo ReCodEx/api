@@ -214,7 +214,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         // use a method specialized for formats if there is a format available
         $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
         if ($format !== null) {
-            $this->processParamsFormat($format);
+            $this->requestFormatInstance = $this->processParamsFormat($format, null);
             return;
         }
 
@@ -239,7 +239,18 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
     }
 
-    private function processParamsFormat(string $format)
+    /**
+     * Processes parameters defined by a format. Request parameters are validated and a format instance with
+     *  parameter values created.
+     * @param string $format The format defining the parameters.
+     * @param ?array $valueDictionary If not null, a nested format instance will be created. The values will be taken
+     *  from here instead of the request object. Format validation ignores parameter type (path, query or post).
+     *  A top-level format will be created if null.
+     * @throws \App\Exceptions\InternalServerException Thrown when the format definition is corrupted/absent.
+     * @throws \App\Exceptions\BadRequestException Thrown when the request parameter values do not conform to the definition.
+     * @return MetaFormat Returns a format instance with values filled from the request object.
+     */
+    private function processParamsFormat(string $format, ?array $valueDictionary): MetaFormat
     {
         // get the parsed attribute data from the format fields
         $formatToFieldDefinitionsMap = FormatCache::getFormatToFieldDefinitionsMap();
@@ -250,15 +261,34 @@ class BasePresenter extends \App\Presenters\BasePresenter
         // maps field names to their attribute data
         $nameToFieldDefinitionsMap = $formatToFieldDefinitionsMap[$format];
 
-        ///TODO: handle nested MetaFormat creation
         $formatInstance = MetaFormatHelper::createFormatInstance($format);
         foreach ($nameToFieldDefinitionsMap as $fieldName => $requestParamData) {
-            ///TODO: path parameters are not checked yet
-            if ($requestParamData->type == Type::Path) {
-                continue;
+            $value = null;
+            // top-level format
+            if ($valueDictionary === null) {
+                ///TODO: path parameters are not checked yet
+                if ($requestParamData->type == Type::Path) {
+                    continue;
+                }
+
+                $value = $this->getValueFromParamData($requestParamData);
+            // nested format
+            } else {
+                // Instead of retrieving the values with the getRequest call, use the provided $valueDictionary.
+                // This makes the nested format ignore the parameter type (path, query, post) which is intended.
+                // The data for this nested format cannot be spread across multiple param types, but it could be
+                // if this was not a nested format but the top level format.
+                if (array_key_exists($requestParamData->name, $valueDictionary)) {
+                    $value = $valueDictionary[$requestParamData->name];
+                }
             }
 
-            $value = $this->getValueFromParamData($requestParamData);
+            // handle nested format creation
+            // replace the value dictionary stored in $value with a format instance
+            $nestedFormatName = $requestParamData->getFormatName();
+            if ($nestedFormatName !== null) {
+                $value = $this->processParamsFormat($nestedFormatName, $value);
+            }
 
             // this throws if the value is invalid
             $formatInstance->checkedAssign($fieldName, $value);
@@ -269,7 +299,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             throw new BadRequestException("All request fields are valid but additional structural constraints failed.");
         }
 
-        $this->requestFormatInstance = $formatInstance;
+        return $formatInstance;
     }
 
     /**
