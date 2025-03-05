@@ -279,7 +279,9 @@ class AnnotationHelper
     }
 
     private static function annotationParameterDataToAnnotationData(
-        HttpMethods $method,
+        string $className,
+        string $methodName,
+        HttpMethods $httpMethod,
         array $params,
         ?string $description
     ): AnnotationData {
@@ -299,7 +301,15 @@ class AnnotationHelper
             }
         }
 
-        return new AnnotationData($method, $pathParams, $queryParams, $bodyParams, $description);
+        return new AnnotationData(
+            $className,
+            $methodName,
+            $httpMethod,
+            $pathParams,
+            $queryParams,
+            $bodyParams,
+            $description
+        );
     }
 
     /**
@@ -323,7 +333,13 @@ class AnnotationHelper
         $params = self::extractStandardAnnotationParams($methodAnnotations, $route);
         $description = self::extractAnnotationDescription($methodAnnotations);
 
-        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
+        return self::annotationParameterDataToAnnotationData(
+            $className,
+            $methodName,
+            $httpMethod,
+            $params,
+            $description
+        );
     }
 
     /**
@@ -356,7 +372,13 @@ class AnnotationHelper
         }, $attributeData);
         $description = self::extractAnnotationDescription($methodAnnotations);
 
-        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
+        return self::annotationParameterDataToAnnotationData(
+            $className,
+            $methodName,
+            $httpMethod,
+            $params,
+            $description
+        );
     }
 
     /**
