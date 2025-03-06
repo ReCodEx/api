@@ -873,9 +873,8 @@ class ExercisesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      */
-    #[Query("name", new VString(1, 32), "Name of the newly added tag to given exercise")]
     #[Path("id", new VString(), required: true)]
-    #[Path("name", new VString(), required: true)]
+    #[Path("name", new VString(1, 32), "Name of the newly added tag to given exercise", required: true)]
     public function actionAddTag(string $id, string $name)
     {
         if (!$this->exerciseTags->verifyTagName($name)) {
