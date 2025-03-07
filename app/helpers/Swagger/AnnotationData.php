@@ -12,17 +12,25 @@ class AnnotationData
     public array $pathParams;
     public array $queryParams;
     public array $bodyParams;
+    public ?string $endpointDescription;
 
     public function __construct(
         HttpMethods $httpMethod,
         array $pathParams,
         array $queryParams,
-        array $bodyParams
+        array $bodyParams,
+        string $endpointDescription = null,
     ) {
         $this->httpMethod = $httpMethod;
         $this->pathParams = $pathParams;
         $this->queryParams = $queryParams;
         $this->bodyParams = $bodyParams;
+        $this->endpointDescription = $endpointDescription;
+    }
+
+    public function getAllParams(): array
+    {
+        return array_merge($this->pathParams, $this->queryParams, $this->bodyParams);
     }
 
     /**
@@ -49,7 +57,7 @@ class AnnotationData
             return null;
         }
 
-        ///TODO: The swagger generator only supports JSON due to the hardcoded mediaType below
+        // only json is supported due to the media type
         $head = '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema';
         $body = new ParenthesesBuilder();
 
@@ -70,6 +78,12 @@ class AnnotationData
         $httpMethodAnnotation = $this->getHttpMethodAnnotation();
         $body = new ParenthesesBuilder();
         $body->addKeyValue("path", $route);
+
+        // add the endpoint description when provided
+        if ($this->endpointDescription !== null) {
+            $body->addKeyValue("summary", $this->endpointDescription);
+            $body->addKeyValue("description", $this->endpointDescription);
+        }
 
         foreach ($this->pathParams as $pathParam) {
             $body->addValue($pathParam->toParameterAnnotation());

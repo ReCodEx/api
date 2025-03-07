@@ -110,7 +110,7 @@ class TestCommentsPresenter extends Tester\TestCase
             'V1:Comments',
             'POST',
             ['action' => 'addComment', 'id' => '6b89a6df-f7e8-4c2c-a216-1b7cb4391647'], // mainThread
-            ['text' => 'some comment text', 'isPrivate' => 'false']
+            ['text' => 'some comment text', 'isPrivate' => false]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -141,7 +141,7 @@ class TestCommentsPresenter extends Tester\TestCase
             'V1:Comments',
             'POST',
             ['action' => 'addComment', 'id' => $assignmentSolution->getId()],
-            ['text' => 'some comment text', 'isPrivate' => 'false']
+            ['text' => 'some comment text', 'isPrivate' => false]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -172,7 +172,7 @@ class TestCommentsPresenter extends Tester\TestCase
             'V1:Comments',
             'POST',
             ['action' => 'addComment', 'id' => $referenceSolution->getId()],
-            ['text' => 'some comment text', 'isPrivate' => 'false']
+            ['text' => 'some comment text', 'isPrivate' => false]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -202,7 +202,7 @@ class TestCommentsPresenter extends Tester\TestCase
             'V1:Comments',
             'POST',
             ['action' => 'addComment', 'id' => $assignment->getId()],
-            ['text' => 'some comment text', 'isPrivate' => 'false']
+            ['text' => 'some comment text', 'isPrivate' => false]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -226,7 +226,7 @@ class TestCommentsPresenter extends Tester\TestCase
             'V1:Comments',
             'POST',
             ['action' => 'addComment', 'id' => '5d45dcd0-50e7-4b2a-a291-cfe4b5fb5cbb'], // dummy thread (nonexist)
-            ['text' => 'some comment text', 'isPrivate' => 'false']
+            ['text' => 'some comment text', 'isPrivate' => false]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);

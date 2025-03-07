@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
@@ -159,9 +172,9 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Get runtime configurations for exercise.
      * @GET
-     * @param string $id Identifier of the exercise
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionGetEnvironmentConfigs(string $id)
     {
         /** @var Exercise $exercise */
@@ -183,14 +196,13 @@ class ExercisesConfigPresenter extends BasePresenter
      * Change runtime configuration of exercise.
      * Configurations can be added or deleted here, based on what is provided in arguments.
      * @POST
-     * @param string $id identification of exercise
-     * @Param(type="post", name="environmentConfigs", validation="array",
-     *        description="Environment configurations for the exercise")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws ExerciseConfigException
      * @throws NotFoundException
      */
+    #[Post("environmentConfigs", new VArray(), "Environment configurations for the exercise")]
+    #[Path("id", new VString(), "identification of exercise", required: true)]
     public function actionUpdateEnvironmentConfigs(string $id)
     {
         /** @var Exercise $exercise */
@@ -269,10 +281,10 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Get a basic exercise high level configuration.
      * @GET
-     * @param string $id Identifier of the exercise
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionGetConfiguration(string $id)
     {
         /** @var Exercise $exercise */
@@ -302,15 +314,14 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Set basic exercise configuration
      * @POST
-     * @Param(type="post", name="config", validation="array",
-     *        description="A list of basic high level exercise configuration")
-     * @param string $id Identifier of the exercise
      * @throws ExerciseConfigException
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws ApiException
      * @throws ParseException
      */
+    #[Post("config", new VArray(), "A list of basic high level exercise configuration")]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionSetConfiguration(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -359,14 +370,12 @@ class ExercisesConfigPresenter extends BasePresenter
      * Get variables for exercise configuration which are derived from given
      * pipelines and runtime environment.
      * @POST
-     * @param string $id Identifier of the exercise
-     * @Param(type="post", name="runtimeEnvironmentId", validation="string:1..", required=false,
-     *        description="Environment identifier")
-     * @Param(type="post", name="pipelinesIds", validation="array",
-     *        description="Identifiers of selected pipelines for one test")
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
+    #[Post("runtimeEnvironmentId", new VString(1), "Environment identifier", required: false)]
+    #[Post("pipelinesIds", new VArray(), "Identifiers of selected pipelines for one test")]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionGetVariablesForExerciseConfig(string $id)
     {
         // get request data
@@ -406,13 +415,13 @@ class ExercisesConfigPresenter extends BasePresenter
      * Get a description of resource limits for an exercise for given hwgroup.
      * @DEPRECATED
      * @GET
-     * @param string $id Identifier of the exercise
-     * @param string $runtimeEnvironmentId
-     * @param string $hwGroupId
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("runtimeEnvironmentId", new VString(), required: true)]
+    #[Path("hwGroupId", new VString(), required: true)]
     public function actionGetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
     {
         /** @var Exercise $exercise */
@@ -451,11 +460,6 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set resource limits for an exercise for given hwgroup.
      * @DEPRECATED
      * @POST
-     * @Param(type="post", name="limits", validation="array",
-     *        description="A list of resource limits for the given environment and hardware group")
-     * @param string $id Identifier of the exercise
-     * @param string $runtimeEnvironmentId
-     * @param string $hwGroupId
      * @throws ApiException
      * @throws ExerciseConfigException
      * @throws ForbiddenRequestException
@@ -463,6 +467,10 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ParseException
      * @throws ExerciseCompilationException
      */
+    #[Post("limits", new VArray(), "A list of resource limits for the given environment and hardware group")]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("runtimeEnvironmentId", new VString(), required: true)]
+    #[Path("hwGroupId", new VString(), required: true)]
     public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
     {
         /** @var Exercise $exercise */
@@ -522,11 +530,11 @@ class ExercisesConfigPresenter extends BasePresenter
      * Remove resource limits of given hwgroup from an exercise.
      * @DEPRECATED
      * @DELETE
-     * @param string $id Identifier of the exercise
-     * @param string $runtimeEnvironmentId
-     * @param string $hwGroupId
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("runtimeEnvironmentId", new VString(), required: true)]
+    #[Path("hwGroupId", new VString(), required: true)]
     public function actionRemoveHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
     {
         /** @var Exercise $exercise */
@@ -565,10 +573,10 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Get a description of resource limits for given exercise (all hwgroups all environments).
      * @GET
-     * @param string $id Identifier of the exercise
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionGetLimits(string $id)
     {
         /** @var Exercise $exercise */
@@ -605,13 +613,12 @@ class ExercisesConfigPresenter extends BasePresenter
      * If limits for particular hwGroup or environment are not posted, no change occurs.
      * If limits for particular hwGroup or environment are posted as null, they are removed.
      * @POST
-     * @Param(type="post", name="limits", validation="array",
-     *        description="A list of resource limits in the same format as getLimits endpoint yields.")
-     * @param string $id Identifier of the exercise
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
+    #[Post("limits", new VArray(), "A list of resource limits in the same format as getLimits endpoint yields.")]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionSetLimits(string $id)
     {
         /** @var Exercise $exercise */
@@ -669,8 +676,8 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Get score configuration for exercise based on given identification.
      * @GET
-     * @param string $id Identifier of the exercise
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionGetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -690,12 +697,16 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Set score configuration for exercise.
      * @POST
-     * @Param(type="post", name="scoreCalculator", validation="string", description="ID of the score calculator")
-     * @Param(type="post", name="scoreConfig",
-     *        description="A configuration of the score calculator (the format depends on the calculator type)")
-     * @param string $id Identifier of the exercise
      * @throws ExerciseConfigException
      */
+    #[Post("scoreCalculator", new VString(), "ID of the score calculator")]
+    #[Post(
+        "scoreConfig",
+        new VMixed(),
+        "A configuration of the score calculator (the format depends on the calculator type)",
+        nullable: true,
+    )]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionSetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -733,8 +744,8 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Get tests for exercise based on given identification.
      * @GET
-     * @param string $id Identifier of the exercise
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionGetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -754,13 +765,12 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Set tests for exercise based on given identification.
      * @POST
-     * @param string $id Identifier of the exercise
-     * @Param(type="post", name="tests", validation="array",
-     *        description="An array of tests which will belong to exercise")
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      * @throws ExerciseConfigException
      */
+    #[Post("tests", new VArray(), "An array of tests which will belong to exercise")]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionSetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);

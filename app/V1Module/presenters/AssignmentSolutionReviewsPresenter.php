@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
@@ -88,9 +101,9 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Get detail of the solution and a list of review comments.
      * @GET
-     * @param string $id identifier of the solution
      * @throws InternalServerException
      */
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
     public function actionDefault(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -111,11 +124,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Update the state of the review process of the solution.
      * @POST
-     * @Param(type="post", name="close", validation="bool"
-     *        description="If true, the review is closed. If false, the review is (re)opened.")
-     * @param string $id identifier of the solution
      * @throws InternalServerException
      */
+    #[Post("close", new VBool(), "If true, the review is closed. If false, the review is (re)opened.")]
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
     public function actionUpdate(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -182,9 +194,9 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Update the state of the review process of the solution.
      * @DELETE
-     * @param string $id identifier of the solution
      * @throws InternalServerException
      */
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
     public function actionRemove(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -251,18 +263,29 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Create a new comment within a review.
      * @POST
-     * @Param(type="post", name="text", validation="string:1..65535", required=true, description="The comment itself.")
-     * @Param(type="post", name="file", validation="string:0..256", required=true,
-     *        description="Identification of the file to which the comment is related to.")
-     * @Param(type="post", name="line", validation="numericint", required=true,
-     *        description="Line in the designated file to which the comment is related to.")
-     * @Param(type="post", name="issue", validation="bool", required=false,
-     *        description="Whether the comment is an issue (expected to be resolved by the student)")
-     * @Param(type="post", name="suppressNotification", validation="bool", required=false,
-     *        description="If true, no email notification will be sent (only applies when the review has been closed)")
-     * @param string $id identifier of the solution
      * @throws InternalServerException
      */
+    #[Post("text", new VString(1, 65535), "The comment itself.", required: true)]
+    #[Post(
+        "file",
+        new VString(0, 256),
+        "Identification of the file to which the comment is related to.",
+        required: true,
+    )]
+    #[Post("line", new VInt(), "Line in the designated file to which the comment is related to.", required: true)]
+    #[Post(
+        "issue",
+        new VBool(),
+        "Whether the comment is an issue (expected to be resolved by the student)",
+        required: false,
+    )]
+    #[Post(
+        "suppressNotification",
+        new VBool(),
+        "If true, no email notification will be sent (only applies when the review has been closed)",
+        required: false,
+    )]
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
     public function actionNewComment(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -320,15 +343,23 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Update existing comment within a review.
      * @POST
-     * @Param(type="post", name="text", validation="string:1..65535", required=true, description="The comment itself.")
-     * @Param(type="post", name="issue", validation="bool", required=false,
-     *        description="Whether the comment is an issue (expected to be resolved by the student)")
-     * @Param(type="post", name="suppressNotification", validation="bool", required=false,
-     *        description="If true, no email notification will be sent (only applies when the review has been closed)")
-     * @param string $id identifier of the solution
-     * @param string $commentId identifier of the review comment
      * @throws InternalServerException
      */
+    #[Post("text", new VString(1, 65535), "The comment itself.", required: true)]
+    #[Post(
+        "issue",
+        new VBool(),
+        "Whether the comment is an issue (expected to be resolved by the student)",
+        required: false,
+    )]
+    #[Post(
+        "suppressNotification",
+        new VBool(),
+        "If true, no email notification will be sent (only applies when the review has been closed)",
+        required: false,
+    )]
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("commentId", new VString(), "identifier of the review comment", required: true)]
     public function actionEditComment(string $id, string $commentId)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -386,9 +417,9 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     /**
      * Remove one comment from a review.
      * @DELETE
-     * @param string $id identifier of the solution
-     * @param string $commentId identifier of the review comment
      */
+    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("commentId", new VString(), "identifier of the review comment", required: true)]
     public function actionDeleteComment(string $id, string $commentId)
     {
         $comment = $this->reviewComments->findOrThrow($commentId);
@@ -422,8 +453,8 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * Return all solutions with pending reviews that given user teaches (is admin/supervisor in corresponding groups).
      * Along with that it returns all assignment entities of the corresponding solutions.
      * @GET
-     * @param string $id of the user whose pending reviews are listed
      */
+    #[Path("id", new VString(), "of the user whose pending reviews are listed", required: true)]
     public function actionPending(string $id)
     {
         $user = $this->users->findOrThrow($id);

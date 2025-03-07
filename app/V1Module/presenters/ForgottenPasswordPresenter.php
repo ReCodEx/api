@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ForgottenPasswordHelper;
@@ -47,10 +60,9 @@ class ForgottenPasswordPresenter extends BasePresenter
     /**
      * Request a password reset (user will receive an e-mail that prompts them to reset their password)
      * @POST
-     * @Param(type="post", name="username", validation="string:2..",
-     *        description="An identifier of the user whose password should be reset")
      * @throws NotFoundException
      */
+    #[Post("username", new VString(2), "An identifier of the user whose password should be reset")]
     public function actionDefault()
     {
         $req = $this->getHttpRequest();
@@ -66,10 +78,10 @@ class ForgottenPasswordPresenter extends BasePresenter
     /**
      * Change the user's password
      * @POST
-     * @Param(type="post", name="password", validation="string:2..", description="The new password")
      * @LoggedIn
      * @throws ForbiddenRequestException
      */
+    #[Post("password", new VString(2), "The new password")]
     public function actionChange()
     {
         if (!$this->isInScope(TokenScope::CHANGE_PASSWORD)) {
@@ -98,8 +110,8 @@ class ForgottenPasswordPresenter extends BasePresenter
     /**
      * Check if a password is strong enough
      * @POST
-     * @Param(type="post", name="password", description="The password to be checked")
      */
+    #[Post("password", new VMixed(), "The password to be checked", nullable: true)]
     public function actionValidatePasswordStrength()
     {
         $password = $this->getRequest()->getPost("password");

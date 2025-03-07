@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
@@ -141,12 +154,24 @@ class PipelinesPresenter extends BasePresenter
      * Get a list of pipelines with an optional filter, ordering, and pagination pruning.
      * The result conforms to pagination protocol.
      * @GET
-     * @param int $offset Index of the first result.
-     * @param int|null $limit Maximal number of results returned.
-     * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
-     * @param array|null $filters Named filters that prune the result.
-     * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
      */
+    #[Query("offset", new VInt(), "Index of the first result.", required: false)]
+    #[Query("limit", new VInt(), "Maximal number of results returned.", required: false, nullable: true)]
+    #[Query(
+        "orderBy",
+        new VString(),
+        "Name of the column (column concept). The '!' prefix indicate descending order.",
+        required: false,
+        nullable: true,
+    )]
+    #[Query("filters", new VArray(), "Named filters that prune the result.", required: false, nullable: true)]
+    #[Query(
+        "locale",
+        new VString(),
+        "Currently set locale (used to augment order by clause if necessary),",
+        required: false,
+        nullable: true,
+    )]
     public function actionDefault(
         int $offset = 0,
         int $limit = null,
@@ -177,11 +202,15 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Create a brand new pipeline.
      * @POST
-     * @Param(type="post", name="global", validation="bool", required=false,
-     *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Post(
+        "global",
+        new VBool(),
+        "Whether the pipeline is global (has no author, is used in generic runtimes)",
+        required: false,
+    )]
     public function actionCreatePipeline()
     {
         $req = $this->getRequest();
@@ -205,12 +234,16 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Create a complete copy of given pipeline.
      * @POST
-     * @param string $id identification of pipeline to be copied
-     * @Param(type="post", name="global", validation="bool", required=false,
-     *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Post(
+        "global",
+        new VBool(),
+        "Whether the pipeline is global (has no author, is used in generic runtimes)",
+        required: false,
+    )]
+    #[Path("id", new VString(), "identification of pipeline to be copied", required: true)]
     public function actionForkPipeline(string $id)
     {
         $req = $this->getRequest();
@@ -243,9 +276,9 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Delete an pipeline
      * @DELETE
-     * @param string $id
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), required: true)]
     public function actionRemovePipeline(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -265,9 +298,9 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Get pipeline based on given identification.
      * @GET
-     * @param string $id Identifier of the pipeline
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
     public function actionGetPipeline(string $id)
     {
         /** @var Pipeline $pipeline */
@@ -287,20 +320,24 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Update pipeline with given data.
      * @POST
-     * @param string $id Identifier of the pipeline
-     * @Param(type="post", name="name", validation="string:2..", description="Name of the pipeline")
-     * @Param(type="post", name="version", validation="numericint", description="Version of the edited pipeline")
-     * @Param(type="post", name="description", description="Human readable description of pipeline")
-     * @Param(type="post", name="pipeline", description="Pipeline configuration", required=false)
-     * @Param(type="post", name="parameters", validation="array", description="A set of parameters", required=false)
-     * @Param(type="post", name="global", validation="bool", required=false,
-     *        description="Whether the pipeline is global (has no author, is used in generic runtimes)")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws BadRequestException
      * @throws ExerciseConfigException
      * @throws InvalidArgumentException
      */
+    #[Post("name", new VString(2), "Name of the pipeline")]
+    #[Post("version", new VInt(), "Version of the edited pipeline")]
+    #[Post("description", new VMixed(), "Human readable description of pipeline", nullable: true)]
+    #[Post("pipeline", new VMixed(), "Pipeline configuration", required: false, nullable: true)]
+    #[Post("parameters", new VArray(), "A set of parameters", required: false)]
+    #[Post(
+        "global",
+        new VBool(),
+        "Whether the pipeline is global (has no author, is used in generic runtimes)",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
     public function actionUpdatePipeline(string $id)
     {
         /** @var Pipeline $pipeline */
@@ -375,11 +412,11 @@ class PipelinesPresenter extends BasePresenter
 
     /**
      * Set runtime environments associated with given pipeline.
-     * @param string $id Identifier of the pipeline
      * @POST
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
     public function actionUpdateRuntimeEnvironments(string $id)
     {
         /** @var Pipeline $pipeline */
@@ -398,11 +435,11 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Check if the version of the pipeline is up-to-date.
      * @POST
-     * @Param(type="post", name="version", validation="numericint", description="Version of the pipeline.")
-     * @param string $id Identifier of the pipeline
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Post("version", new VInt(), "Version of the pipeline.")]
+    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
     public function actionValidatePipeline(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -432,12 +469,12 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Associate supplementary files with a pipeline and upload them to remote file server
      * @POST
-     * @Param(type="post", name="files", description="Identifiers of supplementary files")
-     * @param string $id identification of pipeline
      * @throws ForbiddenRequestException
      * @throws SubmissionFailedException
      * @throws NotFoundException
      */
+    #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
+    #[Path("id", new VString(), "identification of pipeline", required: true)]
     public function actionUploadSupplementaryFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -488,9 +525,9 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Get list of all supplementary files for a pipeline
      * @GET
-     * @param string $id identification of pipeline
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "identification of pipeline", required: true)]
     public function actionGetSupplementaryFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -508,10 +545,10 @@ class PipelinesPresenter extends BasePresenter
     /**
      * Delete supplementary pipeline file with given id
      * @DELETE
-     * @param string $id identification of pipeline
-     * @param string $fileId identification of file
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "identification of pipeline", required: true)]
+    #[Path("fileId", new VString(), "identification of file", required: true)]
     public function actionDeleteSupplementaryFile(string $id, string $fileId)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -538,9 +575,9 @@ class PipelinesPresenter extends BasePresenter
      * Get all exercises that use given pipeline.
      * Only bare minimum is retrieved for each exercise (localized name and author).
      * @GET
-     * @param string $id Identifier of the pipeline
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
     public function actionGetPipelineExercises(string $id)
     {
         $exercises = $this->exercises->getPipelineExercises($id);

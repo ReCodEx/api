@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\Assignments;
@@ -92,11 +105,15 @@ class AssignmentSolversPresenter extends BasePresenter
      * Get a list of assignment solvers based on given parameters (assignment/group and solver user).
      * Either assignment or group ID must be set (group is ignored if assignment is set), user ID is optional.
      * @GET
-     * @Param(type="query", name="assignmentId", required=false, validation="string:36")
-     * @Param(type="query", name="groupId", required=false, validation="string:36",
-     *        description="An alternative for assignment ID, selects all assignments from a group.")
-     * @Param(type="query", name="userId", required=false, validation="string:36")
      */
+    #[Query("assignmentId", new VUuid(), required: false)]
+    #[Query(
+        "groupId",
+        new VUuid(),
+        "An alternative for assignment ID, selects all assignments from a group.",
+        required: false,
+    )]
+    #[Query("userId", new VUuid(), required: false)]
     public function actionDefault(?string $assignmentId, ?string $groupId, ?string $userId): void
     {
         $user = $userId ? $this->users->findOrThrow($userId) : null;

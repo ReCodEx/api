@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -184,12 +197,24 @@ class ExercisesPresenter extends BasePresenter
      * Get a list of all exercises matching given filters in given pagination rage.
      * The result conforms to pagination protocol.
      * @GET
-     * @param int $offset Index of the first result.
-     * @param int|null $limit Maximal number of results returned.
-     * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
-     * @param array|null $filters Named filters that prune the result.
-     * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
      */
+    #[Query("offset", new VInt(), "Index of the first result.", required: false)]
+    #[Query("limit", new VInt(), "Maximal number of results returned.", required: false, nullable: true)]
+    #[Query(
+        "orderBy",
+        new VString(),
+        "Name of the column (column concept). The '!' prefix indicate descending order.",
+        required: false,
+        nullable: true,
+    )]
+    #[Query("filters", new VArray(), "Named filters that prune the result.", required: false, nullable: true)]
+    #[Query(
+        "locale",
+        new VString(),
+        "Currently set locale (used to augment order by clause if necessary),",
+        required: false,
+        nullable: true,
+    )]
     public function actionDefault(
         int $offset = 0,
         int $limit = null,
@@ -238,9 +263,15 @@ class ExercisesPresenter extends BasePresenter
     /**
      * List authors of all exercises, possibly filtered by a group in which the exercises appear.
      * @GET
-     * @param string $instanceId Id of an instance from which the authors are listed.
-     * @param string|null $groupId A group where the relevant exercises can be seen (assigned).
      */
+    #[Query("instanceId", new VString(), "Id of an instance from which the authors are listed.", required: false)]
+    #[Query(
+        "groupId",
+        new VString(),
+        "A group where the relevant exercises can be seen (assigned).",
+        required: false,
+        nullable: true,
+    )]
     public function actionAuthors(string $instanceId = null, string $groupId = null)
     {
         $authors = $this->exercises->getAuthors($instanceId, $groupId, $this->groups);
@@ -257,8 +288,8 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Get a list of exercises based on given ids.
      * @POST
-     * @Param(type="post", name="ids", validation="array", description="Identifications of exercises")
      */
+    #[Post("ids", new VArray(), "Identifications of exercises")]
     public function actionListByIds()
     {
         $exercises = $this->exercises->findByIds($this->getRequest()->getPost("ids"));
@@ -283,8 +314,8 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Get details of an exercise
      * @GET
-     * @param string $id identification of exercise
      */
+    #[Path("id", new VString(), "identification of exercise", required: true)]
     public function actionDetail(string $id)
     {
         /** @var Exercise $exercise */
@@ -304,29 +335,42 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Update detail of an exercise
      * @POST
-     * @param string $id identification of exercise
      * @throws BadRequestException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
-     * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
-     * @Param(type="post", name="difficulty",
-     *   description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
-     * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
-     * @Param(type="post", name="isPublic", validation="bool", required=false,
-     *   description="Exercise can be public or private")
-     * @Param(type="post", name="isLocked", validation="bool", required=false,
-     *   description="If true, the exercise cannot be assigned")
-     * @Param(type="post", name="configurationType", validation="string", required=false,
-     *   description="Identifies the way the evaluation of the exercise is configured")
-     * @Param(type="post", name="solutionFilesLimit", validation="numericint|null",
-     *   description="Maximal number of files in a solution being submitted (default for assignments)")
-     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
-     *   description="Maximal size (bytes) of all files in a solution being submitted (default for assignments)")
-     * @Param(type="post", name="mergeJudgeLogs", validation="bool",
-     *   description="If true, judge stderr will be merged into stdout (default for assignments)")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("version", new VInt(), "Version of the edited exercise")]
+    #[Post(
+        "difficulty",
+        new VMixed(),
+        "Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'",
+        nullable: true,
+    )]
+    #[Post("localizedTexts", new VArray(), "A description of the exercise")]
+    #[Post("isPublic", new VBool(), "Exercise can be public or private", required: false)]
+    #[Post("isLocked", new VBool(), "If true, the exercise cannot be assigned", required: false)]
+    #[Post(
+        "configurationType",
+        new VString(),
+        "Identifies the way the evaluation of the exercise is configured",
+        required: false,
+    )]
+    #[Post(
+        "solutionFilesLimit",
+        new VInt(),
+        "Maximal number of files in a solution being submitted (default for assignments)",
+        nullable: true,
+    )]
+    #[Post(
+        "solutionSizeLimit",
+        new VInt(),
+        "Maximal size (bytes) of all files in a solution being submitted (default for assignments)",
+        nullable: true,
+    )]
+    #[Post("mergeJudgeLogs", new VBool(), "If true, judge stderr will be merged into stdout (default for assignments)")]
+    #[Path("id", new VString(), "identification of exercise", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $req = $this->getRequest();
@@ -441,9 +485,9 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Check if the version of the exercise is up-to-date.
      * @POST
-     * @Param(type="post", name="version", validation="numericint", description="Version of the exercise.")
-     * @param string $id Identifier of the exercise
      */
+    #[Post("version", new VInt(), "Version of the exercise.")]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionValidate($id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -470,10 +514,10 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Get all non-archived assignments created from this exercise.
      * @GET
-     * @param string $id Identifier of the exercise
-     * @param bool $archived Include also archived groups in the result
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Query("archived", new VBool(), "Include also archived groups in the result", required: false)]
     public function actionAssignments(string $id, bool $archived = false)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -491,12 +535,12 @@ class ExercisesPresenter extends BasePresenter
      * Create exercise with all default values.
      * Exercise detail can be then changed in appropriate endpoint.
      * @POST
-     * @Param(type="post", name="groupId", description="Identifier of the group to which exercise belongs to")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws ApiException
      * @throws ParseException
      */
+    #[Post("groupId", new VMixed(), "Identifier of the group to which exercise belongs to", nullable: true)]
     public function actionCreate()
     {
         $user = $this->getCurrentUser();
@@ -545,12 +589,11 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Set hardware groups which are associated with exercise.
      * @POST
-     * @param string $id identifier of exercise
-     * @Param(type="post", name="hwGroups", validation="array",
-     *        description="List of hardware groups identifications to which exercise belongs to")
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Post("hwGroups", new VArray(), "List of hardware groups identifications to which exercise belongs to")]
+    #[Path("id", new VString(), "identifier of exercise", required: true)]
     public function actionHardwareGroups(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -593,8 +636,8 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Delete an exercise
      * @DELETE
-     * @param string $id
      */
+    #[Path("id", new VString(), required: true)]
     public function actionRemove(string $id)
     {
         /** @var Exercise $exercise */
@@ -607,13 +650,13 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Fork exercise from given one into the completely new one.
      * @POST
-     * @param string $id Identifier of the exercise
-     * @Param(type="post", name="groupId", description="Identifier of the group to which exercise will be forked")
      * @throws ApiException
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws ParseException
      */
+    #[Post("groupId", new VMixed(), "Identifier of the group to which exercise will be forked", nullable: true)]
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
     public function actionForkFrom(string $id)
     {
         $user = $this->getCurrentUser();
@@ -652,10 +695,10 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Attach exercise to group with given identification.
      * @POST
-     * @param string $id Identifier of the exercise
-     * @param string $groupId Identifier of the group to which exercise should be attached
      * @throws InvalidArgumentException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("groupId", new VString(), "Identifier of the group to which exercise should be attached", required: true)]
     public function actionAttachGroup(string $id, string $groupId)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -686,10 +729,10 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Detach exercise from given group.
      * @DELETE
-     * @param string $id Identifier of the exercise
-     * @param string $groupId Identifier of the group which should be detached from exercise
      * @throws InvalidArgumentException
      */
+    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("groupId", new VString(), "Identifier of the group which should be detached from exercise", required: true)]
     public function actionDetachGroup(string $id, string $groupId)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -753,13 +796,15 @@ class ExercisesPresenter extends BasePresenter
      * Update the tag globally. At the moment, the only 'update' function is 'rename'.
      * Other types of updates may be implemented in the future.
      * @POST
-     * @param string $tag Tag to be updated
-     * @Param(type="query", name="renameTo", validation="string:1..32", required=false,
-     *        description="New name of the tag")
-     * @Param(type="query", name="force", validation="bool", required=false,
-     *        description="If true, the rename will be allowed even if the new tag name exists (tags will be merged).
-     *                     Otherwise, name collisions will result in error.")
      */
+    #[Query("renameTo", new VString(1, 32), "New name of the tag", required: false)]
+    #[Query(
+        "force",
+        new VBool(),
+        "If true, the rename will be allowed even if the new tag name exists (tags will be merged). Otherwise, name collisions will result in error.",
+        required: false,
+    )]
+    #[Path("tag", new VString(), "Tag to be updated", required: true)]
     public function actionTagsUpdateGlobal(string $tag, string $renameTo = null, bool $force = false)
     {
         // Check whether at least one modification action is present (so far, we have only renameTo)
@@ -799,8 +844,8 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Remove a tag from all exercises.
      * @POST
-     * @param string $tag Tag to be removed
      */
+    #[Path("tag", new VString(), "Tag to be removed", required: true)]
     public function actionTagsRemoveGlobal(string $tag)
     {
         $removeCount = $this->exerciseTags->removeTag($tag);
@@ -823,15 +868,13 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Add tag with given name to the exercise.
      * @POST
-     * @param string $id
-     * @param string $name
-     * @Param(type="query", name="name", validation="string:1..32",
-     *        description="Name of the newly added tag to given exercise")
      * @throws BadRequestException
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      */
+    #[Path("id", new VString(), required: true)]
+    #[Path("name", new VString(1, 32), "Name of the newly added tag to given exercise", required: true)]
     public function actionAddTag(string $id, string $name)
     {
         if (!$this->exerciseTags->verifyTagName($name)) {
@@ -861,10 +904,10 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Remove tag with given name from exercise.
      * @DELETE
-     * @param string $id
-     * @param string $name
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), required: true)]
+    #[Path("name", new VString(), required: true)]
     public function actionRemoveTag(string $id, string $name)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -889,11 +932,10 @@ class ExercisesPresenter extends BasePresenter
     /**
      * (Un)mark the exercise as archived. Nothing happens if the exercise is already in the requested state.
      * @POST
-     * @param string $id identifier of the exercise
-     * @Param(type="post", name="archived", required=true, validation=boolean,
-     *        description="Whether the exercise should be marked or unmarked")
      * @throws NotFoundException
      */
+    #[Post("archived", new VBool(), "Whether the exercise should be marked or unmarked", required: true)]
+    #[Path("id", new VString(), "identifier of the exercise", required: true)]
     public function actionSetArchived(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -919,12 +961,11 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Change the author of the exercise. This is a very special operation reserved for powerful users.
      * @POST
-     * @param string $id identifier of the exercise
-     * @Param(type="post", name="author", required=true, validation="string:36",
-     *        description="Id of the new author of the exercise.")
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      */
+    #[Post("author", new VUuid(), "Id of the new author of the exercise.", required: true)]
+    #[Path("id", new VString(), "identifier of the exercise", required: true)]
     public function actionSetAuthor(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -958,10 +999,10 @@ class ExercisesPresenter extends BasePresenter
      * Change who the admins of an exercise are (all users on the list are added,
      * prior admins not on the list are removed).
      * @POST
-     * @param string $id identifier of the exercise
-     * @Param(type="post", name="admins", required=true, validation=array, description="List of user IDs.")
      * @throws NotFoundException
      */
+    #[Post("admins", new VArray(), "List of user IDs.", required: true)]
+    #[Path("id", new VString(), "identifier of the exercise", required: true)]
     public function actionSetAdmins(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -1018,9 +1059,9 @@ class ExercisesPresenter extends BasePresenter
      * or the exercise is modified significantly.
      * The response is number of emails sent (number of notified users).
      * @POST
-     * @param string $id identifier of the exercise
-     * @Param(type="post", name="message", validation=string, description="Message sent to notified users.")
      */
+    #[Post("message", new VString(), "Message sent to notified users.")]
+    #[Path("id", new VString(), "identifier of the exercise", required: true)]
     public function actionSendNotification(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);

@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\FrontendErrorMappings;
@@ -107,13 +120,13 @@ class LoginPresenter extends BasePresenter
     /**
      * Log in using user credentials
      * @POST
-     * @Param(type="post", name="username", validation="email:1..", description="User's E-mail")
-     * @Param(type="post", name="password", validation="string:1..", description="Password")
      * @throws AuthenticationException
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      * @throws WrongCredentialsException
      */
+    #[Post("username", new VEmail(), "User's E-mail")]
+    #[Post("password", new VString(1), "Password")]
     public function actionDefault()
     {
         $req = $this->getRequest();
@@ -134,14 +147,14 @@ class LoginPresenter extends BasePresenter
     /**
      * Log in using an external authentication service
      * @POST
-     * @Param(type="post", name="token", validation="string:1..", description="JWT external authentication token")
-     * @param string $authenticatorName Identifier of the external authenticator
      * @throws AuthenticationException
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      * @throws WrongCredentialsException
      * @throws BadRequestException
      */
+    #[Post("token", new VString(1), "JWT external authentication token")]
+    #[Path("authenticatorName", new VString(), "Identifier of the external authenticator", required: true)]
     public function actionExternal($authenticatorName)
     {
         $req = $this->getRequest();
@@ -168,11 +181,11 @@ class LoginPresenter extends BasePresenter
      * Takeover user account with specified user identification.
      * @POST
      * @LoggedIn
-     * @param string $userId
      * @throws AuthenticationException
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      */
+    #[Path("userId", new VString(), required: true)]
     public function actionTakeOver($userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -235,15 +248,13 @@ class LoginPresenter extends BasePresenter
      * Issue a new access token with a restricted set of scopes
      * @POST
      * @LoggedIn
-     * @Param(type="post", name="effectiveRole", required=false, validation="string",
-     *        description="Effective user role contained within issued token")
-     * @Param(type="post", name="scopes", validation="list", description="A list of requested scopes")
-     * @Param(type="post", required=false, name="expiration", validation="numericint",
-     *        description="How long should the token be valid (in seconds)")
      * @throws BadRequestException
      * @throws ForbiddenRequestException
      * @throws InvalidArgumentException
      */
+    #[Post("effectiveRole", new VString(), "Effective user role contained within issued token", required: false)]
+    #[Post("scopes", new VArray(), "A list of requested scopes")]
+    #[Post("expiration", new VInt(), "How long should the token be valid (in seconds)", required: false)]
     public function actionIssueRestrictedToken()
     {
         $request = $this->getRequest();

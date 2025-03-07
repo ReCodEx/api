@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EmailHelper;
@@ -55,10 +68,9 @@ class EmailsPresenter extends BasePresenter
     /**
      * Sends an email with provided subject and message to all ReCodEx users.
      * @POST
-     * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..",
-     *        description="Message which will be sent, can be html code")
      */
+    #[Post("subject", new VString(1), "Subject for the soon to be sent email")]
+    #[Post("message", new VString(1), "Message which will be sent, can be html code")]
     public function actionDefault()
     {
         $users = $this->users->findAll();
@@ -86,10 +98,9 @@ class EmailsPresenter extends BasePresenter
     /**
      * Sends an email with provided subject and message to all supervisors and superadmins.
      * @POST
-     * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..",
-     *        description="Message which will be sent, can be html code")
      */
+    #[Post("subject", new VString(1), "Subject for the soon to be sent email")]
+    #[Post("message", new VString(1), "Message which will be sent, can be html code")]
     public function actionSendToSupervisors()
     {
         $supervisors = $this->users->findByRoles(
@@ -123,10 +134,9 @@ class EmailsPresenter extends BasePresenter
     /**
      * Sends an email with provided subject and message to all regular users.
      * @POST
-     * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..",
-     *        description="Message which will be sent, can be html code")
      */
+    #[Post("subject", new VString(1), "Subject for the soon to be sent email")]
+    #[Post("message", new VString(1), "Message which will be sent, can be html code")]
     public function actionSendToRegularUsers()
     {
         $users = $this->users->findByRoles(Roles::STUDENT_ROLE, Roles::SUPERVISOR_STUDENT_ROLE);
@@ -156,20 +166,16 @@ class EmailsPresenter extends BasePresenter
      * Sends an email with provided subject and message to regular members of
      * given group and optionally to supervisors and admins.
      * @POST
-     * @param string $groupId
-     * @Param(type="post", name="toSupervisors", validation="bool", required=false,
-     *        description="If true, then the mail will be sent to supervisors")
-     * @Param(type="post", name="toAdmins", validation="bool", required=false,
-     *        description="If the mail should be sent also to primary admins")
-     * @Param(type="post", name="toObservers", validation="bool", required=false,
-     *        description="If the mail should be sent also to observers")
-     * @Param(type="post", name="toMe", validation="bool", description="User wants to also receive an email")
-     * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
-     * @Param(type="post", name="message", validation="string:1..",
-     *        description="Message which will be sent, can be html code")
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      */
+    #[Post("toSupervisors", new VBool(), "If true, then the mail will be sent to supervisors", required: false)]
+    #[Post("toAdmins", new VBool(), "If the mail should be sent also to primary admins", required: false)]
+    #[Post("toObservers", new VBool(), "If the mail should be sent also to observers", required: false)]
+    #[Post("toMe", new VBool(), "User wants to also receive an email")]
+    #[Post("subject", new VString(1), "Subject for the soon to be sent email")]
+    #[Post("message", new VString(1), "Message which will be sent, can be html code")]
+    #[Path("groupId", new VString(), required: true)]
     public function actionSendToGroupMembers(string $groupId)
     {
         $user = $this->getCurrentUser();

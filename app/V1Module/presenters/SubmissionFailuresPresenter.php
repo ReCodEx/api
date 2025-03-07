@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\Notifications\FailureResolutionEmailsSender;
@@ -84,8 +97,8 @@ class SubmissionFailuresPresenter extends BasePresenter
     /**
      * Get details of a failure
      * @GET
-     * @param string $id An identifier of the failure
      */
+    #[Path("id", new VString(), "An identifier of the failure", required: true)]
     public function actionDetail(string $id)
     {
         $failure = $this->submissionFailures->findOrThrow($id);
@@ -103,12 +116,10 @@ class SubmissionFailuresPresenter extends BasePresenter
     /**
      * Mark a submission failure as resolved
      * @POST
-     * @param string $id An identifier of the failure
-     * @Param(name="note", type="post", validation="string:0..255", required=false,
-     *   description="Brief description of how the failure was resolved")
-     * @Param(name="sendEmail", type="post", validation="bool",
-     *        description="True if email should be sent to the author of submission")
      */
+    #[Post("note", new VString(0, 255), "Brief description of how the failure was resolved", required: false)]
+    #[Post("sendEmail", new VBool(), "True if email should be sent to the author of submission")]
+    #[Path("id", new VString(), "An identifier of the failure", required: true)]
     public function actionResolve(string $id)
     {
         $failure = $this->submissionFailures->findOrThrow($id);

@@ -2,22 +2,55 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Exceptions\InvalidArgumentException;
+use App\Helpers\MetaFormats\MetaFormatHelper;
+use App\V1Module\Router\MethodRoute;
+use App\V1Module\RouterFactory;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use Exception;
+use Nette\Routing\RouteList;
 
 /**
  * Parser that can parse the annotations of existing recodex endpoints.
  */
 class AnnotationHelper
 {
+    private static $nullableSuffix = '|null';
+    private static $typeMap = [
+      'bool' => 'boolean',
+      'boolean' => 'boolean',
+      'array' => 'array',
+      'int' => 'integer',
+      'integer' => 'integer',
+      'float' => 'number',
+      'number' => 'number',
+      'numeric' => 'number',
+      'numericint' => 'integer',
+      'timestamp' => 'integer',
+      'string' => 'string',
+      'unicode' => 'string',
+      'email' => 'string',
+      'url' => 'string',
+      'uri' => 'string',
+      'pattern' => null,
+      'alnum' => 'string',
+      'alpha' => 'string',
+      'digit' => 'string',
+      'lower' => 'string',
+      'upper' => 'string',
+    ];
+
+    private static $presenterNamespace = 'App\V1Module\Presenters\\';
+
     /**
      * Returns a ReflectionMethod object matching the name of the method and containing class.
      * @param string $className The name of the containing class.
      * @param string $methodName The name of the method.
      * @return \ReflectionMethod Returns the ReflectionMethod object.
      */
-    private static function getMethod(string $className, string $methodName): ReflectionMethod
+    public static function getMethod(string $className, string $methodName): ReflectionMethod
     {
         $class = new ReflectionClass($className);
         return $class->getMethod($methodName);
@@ -39,12 +72,53 @@ class AnnotationHelper
 
         // check if the annotations have an http method
         foreach ($methods as $methodString => $methodEnum) {
-            if (in_array($methodString, $annotations)) {
-                return $methodEnum;
+            foreach ($annotations as $annotation) {
+                if (str_starts_with($annotation, $methodString)) {
+                    return $methodEnum;
+                }
             }
         }
 
         return null;
+    }
+
+    private static function isDatatypeNullable(mixed $annotationType): bool
+    {
+        // if the dataType is not specified (it is null), it means that the annotation is not
+        // complete and defaults to a non nullable string
+        if ($annotationType === null) {
+            return false;
+        }
+
+        // assumes that the typename contains 'null'
+        if (str_contains($annotationType, "null")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the swagger type associated with the annotation data type.
+     * @return string Returns the name of the swagger type.
+     */
+    private static function getSwaggerType(string $annotationType): string
+    {
+        // if the type is not specified, default to a string
+        $type = 'string';
+        $typename = $annotationType;
+        if ($typename !== null) {
+            if (self::isDatatypeNullable($annotationType)) {
+                $typename = substr($typename, 0, -strlen(self::$nullableSuffix));
+            }
+
+            if (self::$typeMap[$typename] === null) {
+                throw new InvalidArgumentException("Error in getSwaggerType: Unknown typename: {$typename}");
+            }
+
+            $type = self::$typeMap[$typename];
+        }
+        return $type;
     }
 
     /**
@@ -59,90 +133,75 @@ class AnnotationHelper
     {
         $routeParams = self::getRoutePathParamNames($route);
 
+        // does not see unannotated query params, but there are not any
         $params = [];
         foreach ($annotations as $annotation) {
             // assumed that all query parameters have a @param annotation
             if (str_starts_with($annotation, "@param")) {
                 // sample: @param string $id Identifier of the user
                 $tokens = explode(" ", $annotation);
-                $type = $tokens[1];
+                $annotationType = $tokens[1];
                 // assumed that all names start with $
                 $name = substr($tokens[2], 1);
                 $description = implode(" ", array_slice($tokens, 3));
 
+                // path params have to be required
+                $isPathParam = false;
                 // figure out where the parameter is located
                 $location = 'query';
                 if (in_array($name, $routeParams)) {
                     $location = 'path';
+                    $isPathParam = true;
+                    // remove the path param from the path param list to detect parameters left behind
+                    // (this happens when the path param does not have an annotation line)
+                    unset($routeParams[array_search($name, $routeParams)]);
                 }
 
-                $descriptor = new AnnotationParameterData($type, $name, $description, $location);
+                $swaggerType = self::getSwaggerType($annotationType);
+                $nullable = self::isDatatypeNullable($annotationType);
+
+                // the array element type cannot be determined from standard @param annotations
+                $nestedArraySwaggerType = null;
+
+                $descriptor = new AnnotationParameterData(
+                    $swaggerType,
+                    $name,
+                    $description,
+                    $location,
+                    $isPathParam,
+                    $nullable,
+                    nestedArraySwaggerType: $nestedArraySwaggerType,
+                );
                 $params[] = $descriptor;
             }
         }
+
+        // handle path params without annotations
+        foreach ($routeParams as $pathParam) {
+            $descriptor = new AnnotationParameterData(
+                // some type needs to be assigned and string seems reasonable for a param without any info
+                "string",
+                $pathParam,
+                null,
+                "path",
+                true,
+                false,
+            );
+            $params[] = $descriptor;
+        }
+
         return $params;
     }
 
     /**
-     * Converts an array of assignment string to an associative array.
-     * @param array $expressions An array containing values in the following format: 'key="value"'.
-     * @return array Returns an associative array made from the string array.
-     */
-    private static function stringArrayToAssociativeArray(array $expressions): array
-    {
-        $dict = [];
-        //sample: [ 'name="uiData"', 'validation="array|null"' ]
-        foreach ($expressions as $expression) {
-            $tokens = explode('="', $expression);
-            $name = $tokens[0];
-            // remove the '"' at the end
-            $value = substr($tokens[1], 0, -1);
-            $dict[$name] = $value;
-        }
-        return $dict;
-    }
-
-    /**
-     * Extracts annotation parameter data from Nette annotations starting with the '@Param' prefix.
-     * @param array $annotations An array of annotations.
-     * @return array Returns an array of AnnotationParameterData objects describing the parameters.
-     */
-    private static function extractNetteAnnotationParams(array $annotations): array
-    {
-        $bodyParams = [];
-        $prefix = "@Param";
-        foreach ($annotations as $annotation) {
-            // assumed that all body parameters have a @Param annotation
-            if (str_starts_with($annotation, $prefix)) {
-                // sample: @Param(type="post", name="uiData", validation="array|null",
-                //      description="Structured user-specific UI data")
-                // remove '@Param(' from the start and ')' from the end
-                $body = substr($annotation, strlen($prefix) + 1, -1);
-                $tokens = explode(", ", $body);
-                $values = self::stringArrayToAssociativeArray($tokens);
-                $descriptor = new AnnotationParameterData(
-                    $values["validation"],
-                    $values["name"],
-                    $values["description"],
-                    $values["type"]
-                );
-                $bodyParams[] = $descriptor;
-            }
-        }
-        return $bodyParams;
-    }
-
-    /**
-     * Returns all method annotation lines as an array.
+     * Parses an annotation string and returns the lines as an array.
      * Lines not starting with '@' are assumed to be continuations of a parent line starting with @ (or the initial
      * line not starting with '@') and are merged into a single line.
-     * @param string $className The name of the containing class.
-     * @param string $methodName The name of the method.
+     * @param string $annotations The annotation string.
      * @return array Returns an array of the annotation lines.
      */
-    private static function getMethodAnnotations(string $className, string $methodName): array
+    public static function getAnnotationLines(string $annotations): array
     {
-        $annotations = self::getMethod($className, $methodName)->getDocComment();
         $lines = preg_split("/\r\n|\n|\r/", $annotations);
 
         // trims whitespace and asterisks
@@ -162,7 +221,8 @@ class AnnotationHelper
             $line = $lines[$i];
 
             // skip lines not starting with '@'
-            if ($line[0] !== "@") {
+            // also do not skip the first description line
+            if ($i != 0 && $line[0] !== "@") {
                 continue;
             }
 
@@ -179,6 +239,20 @@ class AnnotationHelper
     }
 
     /**
+     * Returns all method annotation lines as an array.
+     * Lines not starting with '@' are assumed to be continuations of a parent line starting with @ (or the initial
+     * line not starting with '@') and are merged into a single line.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the method.
+     * @return array Returns an array of the annotation lines.
+     */
+    public static function getMethodAnnotations(string $className, string $methodName): array
+    {
+        $annotations = self::getMethod($className, $methodName)->getDocComment();
+        return self::getAnnotationLines($annotations);
+    }
+
+    /**
      * Extracts strings enclosed by curly brackets.
      * @param string $route The source string.
      * @return array Returns the tokens extracted from the brackets.
@@ -191,24 +265,23 @@ class AnnotationHelper
     }
 
     /**
-     * Extracts the annotation data of an endpoint. The data contains request parameters based on their type
-     * and the HTTP method.
-     * @param string $className The name of the containing class.
-     * @param string $methodName The name of the endpoint method.
-     * @param string $route The route to the method.
-     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
-     * path, query and post)
-     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     * Extracts the annotation description line.
+     * @param array $annotations The array of annotations.
      */
-    public static function extractAnnotationData(string $className, string $methodName, string $route): AnnotationData
+    private static function extractAnnotationDescription(array $annotations): ?string
     {
-        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+        // it is either the first line (already merged if multiline), or none at all
+        if (!str_starts_with($annotations[0], "@")) {
+            return $annotations[0];
+        }
+        return null;
+    }
 
-        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
-        $standardAnnotationParams = self::extractStandardAnnotationParams($methodAnnotations, $route);
-        $netteAnnotationParams = self::extractNetteAnnotationParams($methodAnnotations);
-        $params = array_merge($standardAnnotationParams, $netteAnnotationParams);
-
+    private static function annotationParameterDataToAnnotationData(
+        HttpMethods $method,
+        array $params,
+        ?string $description
+    ): AnnotationData {
         $pathParams = [];
         $queryParams = [];
         $bodyParams = [];
@@ -225,9 +298,54 @@ class AnnotationHelper
             }
         }
 
+        return new AnnotationData($method, $pathParams, $queryParams, $bodyParams, $description);
+    }
 
-        $data = new AnnotationData($httpMethod, $pathParams, $queryParams, $bodyParams);
-        return $data;
+    /**
+     * Extracts standard (@param) annotation data of an endpoint. The data contains request parameters based
+     *  on their type and the HTTP method.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the endpoint method.
+     * @param string $route The route to the method.
+     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
+     * path, query and post)
+     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     */
+    public static function extractStandardAnnotationData(
+        string $className,
+        string $methodName,
+        string $route
+    ): AnnotationData {
+        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+
+        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
+        $params = self::extractStandardAnnotationParams($methodAnnotations, $route);
+        $description = self::extractAnnotationDescription($methodAnnotations);
+
+        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
+    }
+
+    /**
+     * Extracts the attribute data of an endpoint. The data contains request parameters based on their type
+     * and the HTTP method.
+     * @param string $className The name of the containing class.
+     * @param string $methodName The name of the endpoint method.
+     * @throws Exception Thrown when the parser encounters an unknown parameter location (known locations are
+     * path, query and post)
+     * @return \App\Helpers\Swagger\AnnotationData Returns a data object containing the parameters and HTTP method.
+     */
+    public static function extractAttributeData(string $className, string $methodName): AnnotationData
+    {
+        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+
+        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
+        $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
+        $params = array_map(function ($data) {
+            return $data->toAnnotationParameterData();
+        }, $attributeData);
+        $description = self::extractAnnotationDescription($methodAnnotations);
+
+        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
     }
 
     /**
@@ -245,5 +363,114 @@ class AnnotationHelper
             }
         }
         return $rows;
+    }
+
+    /**
+     * Finds all route objects of the API and returns their metadata.
+     * @return array Returns an array of dictionaries with the keys "route", "class", and "method".
+     */
+    public static function getRoutesMetadata(): array
+    {
+        $router = RouterFactory::createRouter();
+
+        // find all route object using a queue
+        $queue = [$router];
+        $routes = [];
+        while (count($queue) != 0) {
+            $cursor = array_shift($queue);
+
+            if ($cursor instanceof RouteList) {
+                foreach ($cursor->getRouters() as $item) {
+                    // lists contain routes or nested lists
+                    if ($item instanceof RouteList) {
+                        array_push($queue, $item);
+                    } else {
+                        // the first route is special and holds no useful information for annotation
+                        if (get_parent_class($item) !== MethodRoute::class) {
+                            continue;
+                        }
+
+                        $routes[] = self::getPropertyValue($item, "route");
+                    }
+                }
+            }
+        }
+
+
+        $routeMetadata = [];
+        foreach ($routes as $routeObj) {
+            // extract class and method names of the endpoint
+            $metadata = self::extractMetadata($routeObj);
+            $route = self::extractRoute($routeObj);
+            $className = self::$presenterNamespace . $metadata['class'];
+            $methodName = $metadata['method'];
+
+            $routeMetadata[] = [
+                "route" => $route,
+                "class" => $className,
+                "method" => $methodName,
+            ];
+        }
+
+        return $routeMetadata;
+    }
+
+    /**
+     * Helper function that can extract a property value from an arbitrary object where
+     * the property can be private.
+     * @param mixed $object The object to extract from.
+     * @param string $propertyName The name of the property.
+     * @return mixed Returns the value of the property.
+     */
+    public static function getPropertyValue(mixed $object, string $propertyName): mixed
+    {
+        $class = new ReflectionClass($object);
+
+        do {
+            try {
+                $property = $class->getProperty($propertyName);
+            } catch (ReflectionException $exception) {
+                $class = $class->getParentClass();
+                $property = null;
+            }
+        } while ($property === null && $class !== null);
+
+        $property->setAccessible(true);
+        return $property->getValue($object);
+    }
+
+        /**
+     * Extracts the route string from a route object. Replaces '<..>' in the route with '{...}'.
+     * @param mixed $routeObj
+     */
+    private static function extractRoute($routeObj): string
+    {
+        $mask = AnnotationHelper::getPropertyValue($routeObj, "mask");
+
+        // sample: replaces '/users/<id>' with '/users/{id}'
+        $mask = str_replace(["<", ">"], ["{", "}"], $mask);
+        return "/" . $mask;
+    }
+
+    /**
+     * Extracts the class and method names of the endpoint handler.
+     * @param mixed $routeObj The route object representing the endpoint.
+     * @return string[] Returns a dictionary [ "class" => ..., "method" => ...]
+     */
+    private static function extractMetadata($routeObj)
+    {
+        $metadata = AnnotationHelper::getPropertyValue($routeObj, "metadata");
+        $presenter = $metadata["presenter"]["value"];
+        $action = $metadata["action"]["value"];
+
+        // if the name is empty, the method will be called 'actionDefault'
+        if ($action === null) {
+            $action = "default";
+        }
+
+        return [
+            "class" => $presenter . "Presenter",
+            "method" => "action" . ucfirst($action),
+        ];
     }
 }

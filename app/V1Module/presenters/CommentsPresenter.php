@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Notifications\SolutionCommentsEmailsSender;
@@ -95,9 +108,9 @@ class CommentsPresenter extends BasePresenter
     /**
      * Get a comment thread
      * @GET
-     * @param string $id Identifier of the comment thread
      * @throws ForbiddenRequestException
      */
+    #[Path("id", new VString(), "Identifier of the comment thread", required: true)]
     public function actionDefault($id)
     {
         $thread = $this->findThreadOrCreateIt($id);
@@ -123,12 +136,11 @@ class CommentsPresenter extends BasePresenter
     /**
      * Add a comment to a thread
      * @POST
-     * @Param(type="post", name="text", validation="string:1..65535", description="Text of the comment")
-     * @Param(type="post", name="isPrivate", validation="bool", required=false,
-     *        description="True if the comment is private")
-     * @param string $id Identifier of the comment thread
      * @throws ForbiddenRequestException
      */
+    #[Post("text", new VString(1, 65535), "Text of the comment")]
+    #[Post("isPrivate", new VBool(), "True if the comment is private", required: false)]
+    #[Path("id", new VString(), "Identifier of the comment thread", required: true)]
     public function actionAddComment(string $id)
     {
         $thread = $this->findThreadOrCreateIt($id);
@@ -178,10 +190,10 @@ class CommentsPresenter extends BasePresenter
      * Make a private comment public or vice versa
      * @DEPRECATED
      * @POST
-     * @param string $threadId Identifier of the comment thread
-     * @param string $commentId Identifier of the comment
      * @throws NotFoundException
      */
+    #[Path("threadId", new VString(), "Identifier of the comment thread", required: true)]
+    #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
     public function actionTogglePrivate(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
@@ -211,11 +223,11 @@ class CommentsPresenter extends BasePresenter
     /**
      * Set the private flag of a comment
      * @POST
-     * @param string $threadId Identifier of the comment thread
-     * @param string $commentId Identifier of the comment
-     * @Param(type="post", name="isPrivate", validation="bool", description="True if the comment is private")
      * @throws NotFoundException
      */
+    #[Post("isPrivate", new VBool(), "True if the comment is private")]
+    #[Path("threadId", new VString(), "Identifier of the comment thread", required: true)]
+    #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
     public function actionSetPrivate(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
@@ -248,11 +260,11 @@ class CommentsPresenter extends BasePresenter
     /**
      * Delete a comment
      * @DELETE
-     * @param string $threadId Identifier of the comment thread
-     * @param string $commentId Identifier of the comment
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
+    #[Path("threadId", new VString(), "Identifier of the comment thread", required: true)]
+    #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
     public function actionDelete(string $threadId, string $commentId)
     {
         /** @var Comment $comment */

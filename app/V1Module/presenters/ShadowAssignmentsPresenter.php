@@ -2,6 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VEmail;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
@@ -90,9 +103,9 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Get details of a shadow assignment
      * @GET
-     * @param string $id Identifier of the assignment
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
     public function actionDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -110,10 +123,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Check if the version of the shadow assignment is up-to-date.
      * @POST
-     * @Param(type="post", name="version", validation="numericint", description="Version of the shadow assignment.")
-     * @param string $id Identifier of the shadow assignment
      * @throws ForbiddenRequestException
      */
+    #[Post("version", new VInt(), "Version of the shadow assignment.")]
+    #[Path("id", new VString(), "Identifier of the shadow assignment", required: true)]
     public function actionValidate($id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -136,25 +149,28 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Update details of an shadow assignment
      * @POST
-     * @param string $id Identifier of the updated assignment
-     * @Param(type="post", name="version", validation="numericint",
-     *        description="Version of the edited assignment")
-     * @Param(type="post", name="isPublic", validation="bool",
-     *        description="Is the assignment ready to be displayed to students?")
-     * @Param(type="post", name="isBonus", validation="bool",
-     *        description="If true, the points from this exercise will not be included in overall score of group")
-     * @Param(type="post", name="localizedTexts", validation="array",
-     *        description="A description of the assignment")
-     * @Param(type="post", name="maxPoints", validation="numericint",
-     *        description="A maximum of points that user can be awarded")
-     * @Param(type="post", name="sendNotification", required=false, validation="bool",
-     *        description="If email notification should be sent")
-     * @Param(type="post", name="deadline", validation="timestamp|null", required=false,
-     *        description="Deadline (only for visualization), missing value meas no deadline (same as null)")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
+    #[Post("version", new VInt(), "Version of the edited assignment")]
+    #[Post("isPublic", new VBool(), "Is the assignment ready to be displayed to students?")]
+    #[Post(
+        "isBonus",
+        new VBool(),
+        "If true, the points from this exercise will not be included in overall score of group",
+    )]
+    #[Post("localizedTexts", new VArray(), "A description of the assignment")]
+    #[Post("maxPoints", new VInt(), "A maximum of points that user can be awarded")]
+    #[Post("sendNotification", new VBool(), "If email notification should be sent", required: false)]
+    #[Post(
+        "deadline",
+        new VTimestamp(),
+        "Deadline (only for visualization), missing value meas no deadline (same as null)",
+        required: false,
+        nullable: true,
+    )]
+    #[Path("id", new VString(), "Identifier of the updated assignment", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -242,11 +258,11 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Create new shadow assignment in given group.
      * @POST
-     * @Param(type="post", name="groupId", description="Identifier of the group")
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws NotFoundException
      */
+    #[Post("groupId", new VMixed(), "Identifier of the group", nullable: true)]
     public function actionCreate()
     {
         $req = $this->getRequest();
@@ -277,9 +293,9 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Delete shadow assignment
      * @DELETE
-     * @param string $id Identifier of the assignment to be removed
      * @throws NotFoundException
      */
+    #[Path("id", new VString(), "Identifier of the assignment to be removed", required: true)]
     public function actionRemove(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -298,18 +314,21 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Create new points for shadow assignment and user.
      * @POST
-     * @param string $id Identifier of the shadow assignment
-     * @Param(type="post", name="userId", validation="string",
-     *        description="Identifier of the user which is marked as awardee for points")
-     * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
-     * @Param(type="post", name="note", validation="string", description="Note about newly created points")
-     * @Param(type="post", name="awardedAt", validation="timestamp", required=false,
-     *        description="Datetime when the points were awarded, whatever that means")
      * @throws NotFoundException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws InvalidStateException
      */
+    #[Post("userId", new VString(), "Identifier of the user which is marked as awardee for points")]
+    #[Post("points", new VInt(), "Number of points assigned to the user")]
+    #[Post("note", new VString(), "Note about newly created points")]
+    #[Post(
+        "awardedAt",
+        new VTimestamp(),
+        "Datetime when the points were awarded, whatever that means",
+        required: false,
+    )]
+    #[Path("id", new VString(), "Identifier of the shadow assignment", required: true)]
     public function actionCreatePoints(string $id)
     {
         $req = $this->getRequest();
@@ -362,14 +381,18 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Update detail of shadow assignment points.
      * @POST
-     * @param string $pointsId Identifier of the shadow assignment points
-     * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
-     * @Param(type="post", name="note", validation="string:0..1024", description="Note about newly created points")
-     * @Param(type="post", name="awardedAt", validation="timestamp", required=false,
-     *        description="Datetime when the points were awarded, whatever that means")
      * @throws NotFoundException
      * @throws InvalidStateException
      */
+    #[Post("points", new VInt(), "Number of points assigned to the user")]
+    #[Post("note", new VString(0, 1024), "Note about newly created points")]
+    #[Post(
+        "awardedAt",
+        new VTimestamp(),
+        "Datetime when the points were awarded, whatever that means",
+        required: false,
+    )]
+    #[Path("pointsId", new VString(), "Identifier of the shadow assignment points", required: true)]
     public function actionUpdatePoints(string $pointsId)
     {
         $pointsEntity = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
@@ -408,9 +431,9 @@ class ShadowAssignmentsPresenter extends BasePresenter
     /**
      * Remove points of shadow assignment.
      * @DELETE
-     * @param string $pointsId Identifier of the shadow assignment points
      * @throws NotFoundException
      */
+    #[Path("pointsId", new VString(), "Identifier of the shadow assignment points", required: true)]
     public function actionRemovePoints(string $pointsId)
     {
         $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
