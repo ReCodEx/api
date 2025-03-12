@@ -10,7 +10,7 @@ use App\Helpers\MetaFormats\MetaFormat;
  * Validates formats. Accepts any format derived of the base MetaFormat.
  * Format fields are validated by validators added to the fields.
  */
-class VFormat extends BaseValidator
+class VObject extends BaseValidator
 {
     public const SWAGGER_TYPE = "object";
     public string $format;
