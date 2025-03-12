@@ -6,7 +6,7 @@ use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\MetaFormats\Validators\BaseValidator;
 use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VFormat;
+use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\Swagger\AnnotationParameterData;
 use Exception;
 
@@ -87,9 +87,9 @@ class RequestParamData
      */
     public function getFormatName(): ?string
     {
-        // all format params have to have a VFormat validator
+        // all format params have to have a VObject validator
         foreach ($this->validators as $validator) {
-            if ($validator instanceof VFormat) {
+            if ($validator instanceof VObject) {
                 return $validator->format;
             }
         }
