@@ -18,7 +18,12 @@ class VEmail extends VString
         return "name@domain.tld";
     }
 
-    public function validate(mixed $value): bool
+    public function validateText(mixed $value): bool
+    {
+        return $this->validateJson($value);
+    }
+
+    public function validateJson(mixed $value): bool
     {
         if (!parent::validate($value)) {
             return false;

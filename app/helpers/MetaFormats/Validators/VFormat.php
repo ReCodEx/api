@@ -10,7 +10,7 @@ use App\Helpers\MetaFormats\MetaFormat;
  * Validates formats. Accepts any format derived of the base MetaFormat.
  * Format fields are validated by validators added to the fields.
  */
-class VFormat
+class VFormat extends BaseValidator
 {
     public const SWAGGER_TYPE = "object";
     public string $format;
@@ -19,13 +19,18 @@ class VFormat
     {
         $this->format = $format;
 
-        // throw immediatelly if the format does not exist
+        // throw immediately if the format does not exist
         if (!FormatCache::formatExists($format)) {
             throw new InternalServerException("Format $format does not exist.");
         }
     }
 
-    public function validate(mixed $value)
+    public function validateText(mixed $value): bool
+    {
+        return $this->validateJson($value);
+    }
+
+    public function validateJson(mixed $value): bool
     {
         // fine-grained checking is done in the properties
         return $value instanceof MetaFormat;
