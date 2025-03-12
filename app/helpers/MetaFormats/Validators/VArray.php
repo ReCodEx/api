@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 /**
  * Validates arrays and their nested elements.
  */
-class VArray
+class VArray extends BaseValidator
 {
     public const SWAGGER_TYPE = "array";
 
@@ -24,7 +24,7 @@ class VArray
 
     public function getExampleValue()
     {
-        if ($this->nestedValidator !== null && method_exists(get_class($this->nestedValidator), "getExampleValue")) {
+        if ($this->nestedValidator !== null) {
             return $this->nestedValidator->getExampleValue();
         }
 
@@ -43,7 +43,12 @@ class VArray
         return $this->nestedValidator::SWAGGER_TYPE;
     }
 
-    public function validate(mixed $value)
+    public function validateText(mixed $value): bool
+    {
+        return $this->validateJson($value);
+    }
+
+    public function validateJson(mixed $value): bool
     {
         if (!is_array($value)) {
             return false;

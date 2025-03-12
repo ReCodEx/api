@@ -5,7 +5,7 @@ namespace App\Helpers\MetaFormats\Validators;
 /**
  * Validates strings.
  */
-class VString
+class VString extends BaseValidator
 {
     public const SWAGGER_TYPE = "string";
     private int $minLength;
@@ -31,7 +31,12 @@ class VString
         return "text";
     }
 
-    public function validate(mixed $value): bool
+    public function validateText(mixed $value): bool
+    {
+        return $this->validateJson($value);
+    }
+
+    public function validateJson(mixed $value): bool
     {
         // do not allow other types
         if (!is_string($value)) {

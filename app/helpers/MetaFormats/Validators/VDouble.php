@@ -5,11 +5,21 @@ namespace App\Helpers\MetaFormats\Validators;
 /**
  * Validates doubles. Accepts doubles as well as their stringified versions.
  */
-class VDouble
+class VDouble extends BaseValidator
 {
     public const SWAGGER_TYPE = "number";
 
-    public function validate(mixed $value)
+    public function getExampleValue(): string
+    {
+        return "0.1";
+    }
+
+    public function validateText(mixed $value): bool
+    {
+        return $this->validateJson($value);
+    }
+
+    public function validateJson(mixed $value): bool
     {
         // check if it is a double
         if (is_double($value)) {

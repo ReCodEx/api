@@ -17,7 +17,12 @@ class VUuid extends VString
         return "10000000-2000-4000-8000-160000000000";
     }
 
-    public function validate(mixed $value): bool
+    public function validateText(mixed $value): bool
+    {
+        return $this->validateJson($value);
+    }
+
+    public function validateJson(mixed $value): bool
     {
         return parent::validate($value);
     }
