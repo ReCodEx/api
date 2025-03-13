@@ -26,5 +26,7 @@ class Path extends Param
         bool $nullable = false,
     ) {
         parent::__construct(Type::Path, $name, $validators, $description, $required, $nullable);
+        // do not use json validation for path params
+        $this->disableJsonValidation();
     }
 }
