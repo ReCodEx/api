@@ -25,7 +25,7 @@ class VEmail extends VString
 
     public function validateJson(mixed $value): bool
     {
-        if (!parent::validate($value)) {
+        if (!parent::validateJson($value)) {
             return false;
         }
 
