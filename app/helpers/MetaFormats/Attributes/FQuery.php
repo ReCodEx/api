@@ -24,5 +24,7 @@ class FQuery extends FormatParameterAttribute
         bool $nullable = false,
     ) {
         parent::__construct(Type::Query, $validators, $description, $required, $nullable);
+        // do not use json validation for query params
+        $this->disableJsonValidation();
     }
 }
