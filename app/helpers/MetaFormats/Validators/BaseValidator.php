@@ -21,10 +21,11 @@ class BaseValidator
     /**
      * @return string Returns a sample expected value to be validated by the validator.
      *  This value will be used in generated swagger documents.
+     *  Can return null, signalling to the swagger generator to omit the example field.
      */
-    public function getExampleValue()
+    public function getExampleValue(): string | null
     {
-        return "No example provided.";
+        return null;
     }
 
     /**

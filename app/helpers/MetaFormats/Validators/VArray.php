@@ -22,7 +22,7 @@ class VArray extends BaseValidator
         $this->nestedValidator = $nestedValidator;
     }
 
-    public function getExampleValue()
+    public function getExampleValue(): string | null
     {
         if ($this->nestedValidator !== null) {
             return $this->nestedValidator->getExampleValue();

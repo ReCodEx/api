@@ -26,7 +26,7 @@ class VString extends BaseValidator
         $this->regex = $regex;
     }
 
-    public function getExampleValue()
+    public function getExampleValue(): string
     {
         return "text";
     }

@@ -13,7 +13,7 @@ class VEmail extends VString
         parent::__construct(1);
     }
 
-    public function getExampleValue()
+    public function getExampleValue(): string
     {
         return "name@domain.tld";
     }
