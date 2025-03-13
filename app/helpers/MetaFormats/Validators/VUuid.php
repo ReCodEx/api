@@ -24,6 +24,6 @@ class VUuid extends VString
 
     public function validateJson(mixed $value): bool
     {
-        return parent::validate($value);
+        return parent::validateJson($value);
     }
 }
