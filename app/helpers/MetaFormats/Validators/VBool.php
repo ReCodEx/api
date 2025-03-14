@@ -16,8 +16,16 @@ class VBool extends BaseValidator
 
     public function validateText(mixed $value): bool
     {
-        // additionally allow 0 and 1
-        return $value === 0 || $value === 1 || $this->validateJson($value);
+        // FILTER_VALIDATE_BOOL is not used because it additionally allows "on", "yes", "off", "no" and ""
+
+        // urlencoded params are strings
+        return $value === "0"
+            || $value === "1"
+            || $value === "true"
+            || $value === "false"
+            || $value === 0
+            || $value === 1
+            || $this->validateJson($value);
     }
 
     public function validateJson(mixed $value): bool
