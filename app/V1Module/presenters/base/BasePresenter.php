@@ -226,11 +226,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
     {
         // validate each param
         foreach ($paramData as $param) {
-            ///TODO: path parameters are not checked yet
-            if ($param->type == Type::Path) {
-                continue;
-            }
-
             $paramValue = $this->getValueFromParamData($param);
 
             // this throws when it does not conform
@@ -265,11 +260,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
             $value = null;
             // top-level format
             if ($valueDictionary === null) {
-                ///TODO: path parameters are not checked yet
-                if ($requestParamData->type == Type::Path) {
-                    continue;
-                }
-
                 $value = $this->getValueFromParamData($requestParamData);
             // nested format
             } else {
@@ -302,7 +292,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     }
 
     /**
-     * Calls either getPostField or getQueryField based on the provided metadata.
+     * Calls either getPostField, getQueryField or getPathField based on the provided metadata.
      * @param \App\Helpers\MetaFormats\RequestParamData $paramData Metadata of the request parameter.
      * @throws \App\Exceptions\InternalServerException Thrown when an unexpected parameter location was set.
      * @return mixed Returns the value from the request.
@@ -314,6 +304,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 return $this->getPostField($paramData->name, required: $paramData->required);
             case Type::Query:
                 return $this->getQueryField($paramData->name, required: $paramData->required);
+            case Type::Path:
+                return $this->getPathField($paramData->name);
             default:
                 throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
         }
@@ -352,6 +344,15 @@ class BasePresenter extends \App\Presenters\BasePresenter
         $value = $this->getRequest()->getParameter($param);
         if ($value === null && $required) {
             throw new BadRequestException("Missing required query field $param");
+        }
+        return $value;
+    }
+
+    private function getPathField($param)
+    {
+        $value = $this->getParameter($param);
+        if ($value === null) {
+            throw new BadRequestException("Missing required path field $param");
         }
         return $value;
     }
