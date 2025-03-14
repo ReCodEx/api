@@ -215,10 +215,9 @@ class BasePresenter extends \App\Presenters\BasePresenter
         $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
         if ($format !== null) {
             $this->requestFormatInstance = $this->processParamsFormat($format, null);
-            return;
         }
 
-        // otherwise use a method for loose parameters
+        // handle loose parameters
         $paramData = MetaFormatHelper::extractRequestParamData($reflection);
         $this->processParamsLoose($paramData);
     }
