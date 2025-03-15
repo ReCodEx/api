@@ -222,6 +222,10 @@ class BasePresenter extends \App\Presenters\BasePresenter
         $this->processParamsLoose($paramData);
     }
 
+    /**
+     * Processes loose parameters. Request parameters are validated, no new data is created.
+     * @param array $paramData Parameter data to be validated.
+     */
     private function processParamsLoose(array $paramData)
     {
         // validate each param
