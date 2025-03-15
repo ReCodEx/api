@@ -4,6 +4,7 @@ namespace App\Helpers\MetaFormats\Attributes;
 
 use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\BaseValidator;
 use Attribute;
 
 /**
@@ -13,10 +14,12 @@ use Attribute;
 class FormatParameterAttribute
 {
     public Type $type;
+    /**
+     * @var BaseValidator[]
+     */
     public array $validators;
     public string $description;
     public bool $required;
-    // there is not an easy way to check whether a property has the nullability flag set
     public bool $nullable;
 
     /**
@@ -49,6 +52,16 @@ class FormatParameterAttribute
                 throw new InternalServerException("Parameter Attribute validators are mandatory.");
             }
             $this->validators = $validators;
+        }
+    }
+
+    /**
+     * Disables JSON validation for all validators.
+     */
+    protected function disableJsonValidation()
+    {
+        foreach ($this->validators as $validator) {
+            $validator->useJsonValidation = false;
         }
     }
 }

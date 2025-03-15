@@ -4,7 +4,9 @@ namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\MetaFormats\Validators\BaseValidator;
 use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\Swagger\AnnotationParameterData;
 use Exception;
 
@@ -17,6 +19,9 @@ class RequestParamData
     public string $name;
     public string $description;
     public bool $required;
+    /**
+     * @var BaseValidator[]
+     */
     public array $validators;
     public bool $nullable;
 
@@ -76,12 +81,21 @@ class RequestParamData
         }
     }
 
-    private function hasValidators(): bool
+    /**
+     * Returns the format name if the parameter should be interpreted as a format and not as a primitive type.
+     * @return ?string Returns the format name or null if the param represents a primitive type.
+     */
+    public function getFormatName(): ?string
     {
-        if (is_array($this->validators)) {
-            return count($this->validators) > 0;
+        // all format params have to have a VObject validator
+        foreach ($this->validators as $validator) {
+            if ($validator instanceof VObject) {
+                return $validator->format;
+            }
         }
-        return $this->validators !== null;
+
+        // return null for primitive types
+        return null;
     }
 
     /**
@@ -91,7 +105,7 @@ class RequestParamData
      */
     public function toAnnotationParameterData()
     {
-        if (!$this->hasValidators()) {
+        if (count($this->validators) === 0) {
             throw new InternalServerException(
                 "No validator found for parameter {$this->name}, description: {$this->description}."
             );
@@ -105,10 +119,17 @@ class RequestParamData
             $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
         }
 
-        // retrieve the example value from the getExampleValue method if present
-        $exampleValue = null;
-        if (method_exists(get_class($this->validators[0]), "getExampleValue")) {
-            $exampleValue = $this->validators[0]->getExampleValue();
+        // get example value from the first validator
+        $exampleValue = $this->validators[0]->getExampleValue();
+
+        // add nested parameter data if this is an object
+        $format = $this->getFormatName();
+        $nestedObjectParameterData = null;
+        if ($format !== null) {
+            $nestedRequestParmData = FormatCache::getFieldDefinitions($format);
+            $nestedObjectParameterData = array_map(function (RequestParamData $data) {
+                return $data->toAnnotationParameterData();
+            }, $nestedRequestParmData);
         }
 
         return new AnnotationParameterData(
@@ -120,6 +141,7 @@ class RequestParamData
             $this->nullable,
             $exampleValue,
             $nestedArraySwaggerType,
+            $nestedObjectParameterData,
         );
     }
 }

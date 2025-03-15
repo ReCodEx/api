@@ -2,6 +2,8 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Helpers\MetaFormats\AnnotationConversion\Utils;
+
 /**
  * A data structure for endpoint signatures that can produce annotations parsable by a swagger generator.
  */
@@ -9,18 +11,24 @@ class AnnotationData
 {
     public HttpMethods $httpMethod;
 
+    public string $className;
+    public string $methodName;
     public array $pathParams;
     public array $queryParams;
     public array $bodyParams;
     public ?string $endpointDescription;
 
     public function __construct(
+        string $className,
+        string $methodName,
         HttpMethods $httpMethod,
         array $pathParams,
         array $queryParams,
         array $bodyParams,
-        string $endpointDescription = null,
+        ?string $endpointDescription = null,
     ) {
+        $this->className = $className;
+        $this->methodName = $methodName;
         $this->httpMethod = $httpMethod;
         $this->pathParams = $pathParams;
         $this->queryParams = $queryParams;
@@ -68,16 +76,31 @@ class AnnotationData
         return $head . $body->toString() . "))";
     }
 
-  /**
-   * Converts the extracted annotation data to a string parsable by the Swagger-PHP library.
-   * @param string $route The route of the handler this set of data represents.
-   * @return string Returns the transpiled annotations on a single line.
-   */
+    /**
+     * Constructs an operation ID used to identify the endpoint.
+     * The operation ID is composed of the presenter class name and the endpoint method name with the 'action' prefix.
+     * @return string Returns the operation ID.
+     */
+    private function constructOperationId()
+    {
+        // remove the namespace prefix of the class and make the first letter lowercase
+        $className = lcfirst(Utils::shortenClass($this->className));
+        // remove the 'action' prefix
+        $endpoint = substr($this->methodName, strlen("action"));
+        return $className . $endpoint;
+    }
+
+    /**
+     * Converts the extracted annotation data to a string parsable by the Swagger-PHP library.
+     * @param string $route The route of the handler this set of data represents.
+     * @return string Returns the transpiled annotations on a single line.
+     */
     public function toSwaggerAnnotations(string $route)
     {
         $httpMethodAnnotation = $this->getHttpMethodAnnotation();
         $body = new ParenthesesBuilder();
         $body->addKeyValue("path", $route);
+        $body->addKeyValue("operationId", $this->constructOperationId());
 
         // add the endpoint description when provided
         if ($this->endpointDescription !== null) {

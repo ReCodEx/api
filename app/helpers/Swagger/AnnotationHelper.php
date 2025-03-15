@@ -3,6 +3,7 @@
 namespace App\Helpers\Swagger;
 
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\V1Module\Router\MethodRoute;
 use App\V1Module\RouterFactory;
@@ -278,7 +279,9 @@ class AnnotationHelper
     }
 
     private static function annotationParameterDataToAnnotationData(
-        HttpMethods $method,
+        string $className,
+        string $methodName,
+        HttpMethods $httpMethod,
         array $params,
         ?string $description
     ): AnnotationData {
@@ -298,7 +301,15 @@ class AnnotationHelper
             }
         }
 
-        return new AnnotationData($method, $pathParams, $queryParams, $bodyParams, $description);
+        return new AnnotationData(
+            $className,
+            $methodName,
+            $httpMethod,
+            $pathParams,
+            $queryParams,
+            $bodyParams,
+            $description
+        );
     }
 
     /**
@@ -322,7 +333,13 @@ class AnnotationHelper
         $params = self::extractStandardAnnotationParams($methodAnnotations, $route);
         $description = self::extractAnnotationDescription($methodAnnotations);
 
-        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
+        return self::annotationParameterDataToAnnotationData(
+            $className,
+            $methodName,
+            $httpMethod,
+            $params,
+            $description
+        );
     }
 
     /**
@@ -339,13 +356,29 @@ class AnnotationHelper
         $methodAnnotations = self::getMethodAnnotations($className, $methodName);
 
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
-        $attributeData = MetaFormatHelper::extractRequestParamData(self::getMethod($className, $methodName));
+        $reflectionMethod = self::getMethod($className, $methodName);
+
+        $format = MetaFormatHelper::extractFormatFromAttribute($reflectionMethod);
+        // if the endpoint is linked to a format, use the format class
+        if ($format !== null) {
+            $attributeData = FormatCache::getFieldDefinitions($format);
+        // otherwise use loose param attributes
+        } else {
+            $attributeData = MetaFormatHelper::extractRequestParamData($reflectionMethod);
+        }
+
         $params = array_map(function ($data) {
             return $data->toAnnotationParameterData();
         }, $attributeData);
         $description = self::extractAnnotationDescription($methodAnnotations);
 
-        return self::annotationParameterDataToAnnotationData($httpMethod, $params, $description);
+        return self::annotationParameterDataToAnnotationData(
+            $className,
+            $methodName,
+            $httpMethod,
+            $params,
+            $description
+        );
     }
 
     /**

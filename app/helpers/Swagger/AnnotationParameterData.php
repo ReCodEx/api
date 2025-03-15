@@ -18,6 +18,7 @@ class AnnotationParameterData
     public bool $nullable;
     public ?string $example;
     public ?string $nestedArraySwaggerType;
+    public ?array $nestedObjectParameterData;
 
     public function __construct(
         string $swaggerType,
@@ -28,6 +29,7 @@ class AnnotationParameterData
         bool $nullable,
         string $example = null,
         string $nestedArraySwaggerType = null,
+        ?array $nestedObjectParameterData = null,
     ) {
         $this->swaggerType = $swaggerType;
         $this->name = $name;
@@ -37,24 +39,39 @@ class AnnotationParameterData
         $this->nullable = $nullable;
         $this->example = $example;
         $this->nestedArraySwaggerType = $nestedArraySwaggerType;
+        $this->nestedObjectParameterData = $nestedObjectParameterData;
     }
 
-    private function addArrayItemsIfArray(string $swaggerType, ParenthesesBuilder $container)
+    private function addArrayItemsIfArray(ParenthesesBuilder $container)
     {
-        if ($swaggerType === "array") {
-            $itemsHead = "@OA\\Items";
-            $items = new ParenthesesBuilder();
+        if ($this->swaggerType !== "array") {
+            return;
+        }
 
-            if ($this->nestedArraySwaggerType !== null) {
-                $items->addKeyValue("type", $this->nestedArraySwaggerType);
-            }
+        $itemsHead = "@OA\\Items";
+        $items = new ParenthesesBuilder();
 
-            // add example value
-            if ($this->example != null) {
-                $items->addKeyValue("example", $this->example);
-            }
+        if ($this->nestedArraySwaggerType !== null) {
+            $items->addKeyValue("type", $this->nestedArraySwaggerType);
+        }
 
-            $container->addValue($itemsHead . $items->toString());
+        // add example value
+        if ($this->example != null) {
+            $items->addKeyValue("example", $this->example);
+        }
+
+        $container->addValue($itemsHead . $items->toString());
+    }
+
+    private function addObjectParamsIfObject(ParenthesesBuilder $container)
+    {
+        if ($this->nestedObjectParameterData === null) {
+            return;
+        }
+
+        foreach ($this->nestedObjectParameterData as $paramData) {
+            $annotation = $paramData->toPropertyAnnotation();
+            $container->addValue($annotation);
         }
     }
 
@@ -68,7 +85,7 @@ class AnnotationParameterData
         $body = new ParenthesesBuilder();
 
         $body->addKeyValue("type", $this->swaggerType);
-        $this->addArrayItemsIfArray($this->swaggerType, $body);
+        $this->addArrayItemsIfArray($body);
 
         return $head . $body->toString();
     }
@@ -112,10 +129,13 @@ class AnnotationParameterData
         }
 
         // handle arrays
-        $this->addArrayItemsIfArray($this->swaggerType, $body);
+        $this->addArrayItemsIfArray($body);
+
+        // handle objects
+        $this->addObjectParamsIfObject($body);
 
         // add example value
-        if ($this->swaggerType !== "array") {
+        if ($this->swaggerType !== "array" && $this->swaggerType !== "object") {
             if ($this->example != null) {
                 $body->addKeyValue("example", $this->example);
             }

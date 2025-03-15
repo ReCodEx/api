@@ -758,7 +758,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      */
     #[Path("id", new VString(), "An identifier of the related group", required: true)]
-    #[Path("examId", new VString(), "An identifier of the exam", required: true)]
+    #[Path("examId", new VInt(), "An identifier of the exam", required: true)]
     public function actionGetExamLocks(string $id, string $examId)
     {
         $group = $this->groups->findOrThrow($id);

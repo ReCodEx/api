@@ -7,16 +7,16 @@ namespace App\Helpers\MetaFormats\Validators;
  * Placeholder validator used for endpoints with no existing validation rules.
  * New endpoints should never use this validator, instead use a more restrictive one.
  */
-class VMixed
+class VMixed extends BaseValidator
 {
     public const SWAGGER_TYPE = "string";
 
-    public function getExampleValue()
+    public function validateText(mixed $value): bool
     {
-        return "value";
+        return true;
     }
 
-    public function validate(mixed $value): bool
+    public function validateJson(mixed $value): bool
     {
         return true;
     }
