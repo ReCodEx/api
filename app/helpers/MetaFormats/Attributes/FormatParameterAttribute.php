@@ -53,15 +53,12 @@ class FormatParameterAttribute
             }
             $this->validators = $validators;
         }
-    }
 
-    /**
-     * Disables JSON validation for all validators.
-     */
-    protected function disableJsonValidation()
-    {
-        foreach ($this->validators as $validator) {
-            $validator->useJsonValidation = false;
+        // remove strict type checking for query and path parameters
+        if ($type === Type::Path || $type === Type::Query) {
+            foreach ($this->validators as $validator) {
+                $validator->setStrict(false);
+            }
         }
     }
 }

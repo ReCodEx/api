@@ -10,15 +10,16 @@ class VArray extends BaseValidator
     public const SWAGGER_TYPE = "array";
 
     // validator used for elements
-    private mixed $nestedValidator;
+    private ?BaseValidator $nestedValidator;
 
     /**
      * Creates an array validator.
-     * @param mixed $nestedValidator A validator that will be applied on all elements
+     * @param ?BaseValidator $nestedValidator A validator that will be applied on all elements
      *  (validator arrays are not supported).
      */
-    public function __construct(mixed $nestedValidator = null)
+    public function __construct(?BaseValidator $nestedValidator = null, bool $strict = true)
     {
+        parent::__construct($strict);
         $this->nestedValidator = $nestedValidator;
     }
 
@@ -43,12 +44,19 @@ class VArray extends BaseValidator
         return $this->nestedValidator::SWAGGER_TYPE;
     }
 
-    public function validateText(mixed $value): bool
+    /**
+     * Sets the strict flag for this validator and the element validator if present.
+     * Expected to be changed by Attributes containing validators to change their behavior based on the Attribute type.
+     * @param bool $strict Whether validation type checking should be done.
+     *  When false, the validation step will no longer enforce the correct type of the value.
+     */
+    public function setStrict(bool $strict)
     {
-        return $this->validateJson($value);
+        parent::setStrict($strict);
+        $this->nestedValidator?->setStrict($strict);
     }
 
-    public function validateJson(mixed $value): bool
+    public function validate(mixed $value): bool
     {
         if (!is_array($value)) {
             return false;

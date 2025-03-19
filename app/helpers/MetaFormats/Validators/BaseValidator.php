@@ -7,16 +7,31 @@ namespace App\Helpers\MetaFormats\Validators;
  */
 class BaseValidator
 {
+    public function __construct(bool $strict = true)
+    {
+        $this->strict = $strict;
+    }
+
     /**
      * @var string One of the valid swagger types (https://swagger.io/docs/specification/v3_0/data-models/data-types/).
      */
     public const SWAGGER_TYPE = "invalid";
 
     /**
-     * @var bool If true, the validateJson method will be used instead of the validateText one for validation.
-     *  Intended to be changed by Attributes containing validators to change their behavior based on the Attribute type.
+     * @var bool Whether strict type checking is done in validation.
      */
-    public bool $useJsonValidation = true;
+    protected bool $strict;
+
+    /**
+     * Sets the strict flag.
+     * Expected to be changed by Attributes containing validators to change their behavior based on the Attribute type.
+     * @param bool $strict Whether validation type checking should be done.
+     *  When false, the validation step will no longer enforce the correct type of the value.
+     */
+    public function setStrict(bool $strict)
+    {
+        $this->strict = $strict;
+    }
 
     /**
      * @return string Returns a sample expected value to be validated by the validator.
@@ -29,37 +44,13 @@ class BaseValidator
     }
 
     /**
-     * Validates a value retrieved from unstructured data sources, such as query parameters.
-     * @param mixed $value The value to be validated.
-     * @return bool Whether the value passed the test.
-     */
-    public function validateText(mixed $value): bool
-    {
-        // return false by default to enforce overriding in derived types
-        return false;
-    }
-
-    /**
-     * Validates a value retrieved from json files (usually request bodies).
-     * @param mixed $value The value to be validated.
-     * @return bool Whether the value passed the test.
-     */
-    public function validateJson(mixed $value): bool
-    {
-        // return false by default to enforce overriding in derived types
-        return false;
-    }
-
-    /**
-     * Validates a value with the configured validator method.
+     * Validates a value with the configured validation strictness.
      * @param mixed $value The value to be validated.
      * @return bool Whether the value passed the test.
      */
     public function validate(mixed $value): bool
     {
-        if ($this->useJsonValidation) {
-            return $this->validateJson($value);
-        }
-        return $this->validateText($value);
+        // return false by default to enforce overriding in derived types
+        return false;
     }
 }
