@@ -26,7 +26,5 @@ class Query extends Param
         bool $nullable = false,
     ) {
         parent::__construct(Type::Query, $name, $validators, $description, $required, $nullable);
-        // do not use json validation for query params
-        $this->disableJsonValidation();
     }
 }

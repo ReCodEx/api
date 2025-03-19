@@ -14,16 +14,15 @@ class VInt extends BaseValidator
         return "0";
     }
 
-    public function validateText(mixed $value): bool
-    {
-        return $this->validateJson($value);
-    }
-
-    public function validateJson(mixed $value): bool
+    public function validate(mixed $value): bool
     {
         // check if it is an integer (does not handle integer strings)
         if (is_int($value)) {
             return true;
+        }
+
+        if ($this->strict) {
+            return false;
         }
 
         // the value may be a string containing the integer

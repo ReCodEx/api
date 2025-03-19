@@ -11,12 +11,7 @@ class VMixed extends BaseValidator
 {
     public const SWAGGER_TYPE = "string";
 
-    public function validateText(mixed $value): bool
-    {
-        return true;
-    }
-
-    public function validateJson(mixed $value): bool
+    public function validate(mixed $value): bool
     {
         return true;
     }

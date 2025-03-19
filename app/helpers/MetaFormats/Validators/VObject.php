@@ -15,8 +15,9 @@ class VObject extends BaseValidator
     public const SWAGGER_TYPE = "object";
     public string $format;
 
-    public function __construct(string $format)
+    public function __construct(string $format, bool $strict = true)
     {
+        parent::__construct($strict);
         $this->format = $format;
 
         // throw immediately if the format does not exist
@@ -25,12 +26,7 @@ class VObject extends BaseValidator
         }
     }
 
-    public function validateText(mixed $value): bool
-    {
-        return $this->validateJson($value);
-    }
-
-    public function validateJson(mixed $value): bool
+    public function validate(mixed $value): bool
     {
         // fine-grained checking is done in the properties
         return $value instanceof MetaFormat;

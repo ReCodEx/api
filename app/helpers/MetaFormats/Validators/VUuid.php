@@ -7,23 +7,13 @@ namespace App\Helpers\MetaFormats\Validators;
  */
 class VUuid extends VString
 {
-    public function __construct()
+    public function __construct(bool $strict = true)
     {
-        parent::__construct(regex: "/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/");
+        parent::__construct(regex: "/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/", strict: $strict);
     }
 
     public function getExampleValue(): string
     {
         return "10000000-2000-4000-8000-160000000000";
-    }
-
-    public function validateText(mixed $value): bool
-    {
-        return $this->validateJson($value);
-    }
-
-    public function validateJson(mixed $value): bool
-    {
-        return parent::validateJson($value);
     }
 }
