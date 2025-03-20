@@ -296,7 +296,7 @@ class TestLoginPresenter extends Tester\TestCase
             "V1:Login",
             "POST",
             ["action" => "issueRestrictedToken"],
-            ["scopes" => [TokenScope::REFRESH, "read-all"], "expiration" => "3000"]
+            ["scopes" => [TokenScope::REFRESH, "read-all"], "expiration" => 3000]
         );
         $response = $this->presenter->run($request);
         Assert::type(JsonResponse::class, $response);

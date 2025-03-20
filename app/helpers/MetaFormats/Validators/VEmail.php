@@ -7,10 +7,10 @@ namespace App\Helpers\MetaFormats\Validators;
  */
 class VEmail extends VString
 {
-    public function __construct()
+    public function __construct(bool $strict = true)
     {
         // the email should not be empty
-        parent::__construct(1);
+        parent::__construct(1, strict: $strict);
     }
 
     public function getExampleValue(): string
@@ -18,14 +18,9 @@ class VEmail extends VString
         return "name@domain.tld";
     }
 
-    public function validateText(mixed $value): bool
+    public function validate(mixed $value): bool
     {
-        return $this->validateJson($value);
-    }
-
-    public function validateJson(mixed $value): bool
-    {
-        if (!parent::validateJson($value)) {
+        if (!parent::validate($value)) {
             return false;
         }
 

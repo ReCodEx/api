@@ -14,16 +14,15 @@ class VDouble extends BaseValidator
         return "0.1";
     }
 
-    public function validateText(mixed $value): bool
+    public function validate(mixed $value): bool
     {
-        return $this->validateJson($value);
-    }
-
-    public function validateJson(mixed $value): bool
-    {
-        // check if it is a double
-        if (is_double($value)) {
+        // check if it is a double or a whole number (is_double(0) returns false)
+        if (is_double($value) || is_int($value)) {
             return true;
+        }
+
+        if ($this->strict) {
+            return false;
         }
 
         // the value may be a string containing the number, or an integer

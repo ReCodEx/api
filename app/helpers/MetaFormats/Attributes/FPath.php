@@ -24,7 +24,5 @@ class FPath extends FormatParameterAttribute
         bool $nullable = false,
     ) {
         parent::__construct(Type::Path, $validators, $description, $required, $nullable);
-        // do not use json validation for path params
-        $this->disableJsonValidation();
     }
 }
