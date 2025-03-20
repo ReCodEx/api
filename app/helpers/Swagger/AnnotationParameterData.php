@@ -19,6 +19,7 @@ class AnnotationParameterData
     public ?string $example;
     public ?string $nestedArraySwaggerType;
     public ?array $nestedObjectParameterData;
+    public ?ParameterConstraints $constraints;
 
     public function __construct(
         string $swaggerType,
@@ -27,9 +28,10 @@ class AnnotationParameterData
         string $location,
         bool $required,
         bool $nullable,
-        string $example = null,
-        string $nestedArraySwaggerType = null,
+        ?string $example = null,
+        ?string $nestedArraySwaggerType = null,
         ?array $nestedObjectParameterData = null,
+        ?ParameterConstraints $constraints = null,
     ) {
         $this->swaggerType = $swaggerType;
         $this->name = $name;
@@ -40,10 +42,12 @@ class AnnotationParameterData
         $this->example = $example;
         $this->nestedArraySwaggerType = $nestedArraySwaggerType;
         $this->nestedObjectParameterData = $nestedObjectParameterData;
+        $this->constraints = $constraints;
     }
 
     private function addArrayItemsIfArray(ParenthesesBuilder $container)
     {
+        ///TODO: nested constraints should be added here
         if ($this->swaggerType !== "array") {
             return;
         }
@@ -127,6 +131,9 @@ class AnnotationParameterData
         if ($this->description !== null) {
             $body->addKeyValue("description", $this->description);
         }
+
+        // handle param constraints
+        $this->constraints?->addConstraints($body);
 
         // handle arrays
         $this->addArrayItemsIfArray($body);

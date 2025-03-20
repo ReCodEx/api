@@ -2,6 +2,8 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
+use App\Helpers\Swagger\ParameterConstraints;
+
 /**
  * Base class for all validators.
  */
@@ -40,6 +42,16 @@ class BaseValidator
      */
     public function getExampleValue(): string | null
     {
+        return null;
+    }
+
+    /**
+     * @return ParameterConstraints Returns all parameter constrains that will be written into the generated
+     *  swagger document. Returns null if there are no constraints.
+     */
+    public function getConstraints(): ?ParameterConstraints
+    {
+        // there are no default constraints
         return null;
     }
 

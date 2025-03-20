@@ -122,6 +122,16 @@ class RequestParamData
         // get example value from the first validator
         $exampleValue = $this->validators[0]->getExampleValue();
 
+        // get constraints from validators
+        $constraints = null;
+        foreach ($this->validators as $validator) {
+            $constraints = $validator->getConstraints();
+            // it is assumed that at most one validator defines constraints
+            if ($constraints !== null) {
+                break;
+            }
+        }
+
         // add nested parameter data if this is an object
         $format = $this->getFormatName();
         $nestedObjectParameterData = null;
@@ -142,6 +152,7 @@ class RequestParamData
             $exampleValue,
             $nestedArraySwaggerType,
             $nestedObjectParameterData,
+            $constraints,
         );
     }
 }
