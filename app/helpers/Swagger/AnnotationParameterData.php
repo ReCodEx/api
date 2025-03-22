@@ -128,7 +128,6 @@ class AnnotationParameterData
         $body->addKeyValue("property", $this->name);
         $body->addKeyValue("type", $this->swaggerType);
         $body->addKeyValue("nullable", $this->nullable);
-        $body->addKeyValue("required", $this->required);
 
         if ($this->description !== null) {
             $body->addKeyValue("description", $this->description);
