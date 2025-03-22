@@ -89,6 +89,7 @@ class AnnotationParameterData
         $body = new ParenthesesBuilder();
 
         $body->addKeyValue("type", $this->swaggerType);
+        $body->addKeyValue("nullable", $this->nullable);
         $this->addArrayItemsIfArray($body);
 
         return $head . $body->toString();
@@ -127,6 +128,7 @@ class AnnotationParameterData
         $body->addKeyValue("property", $this->name);
         $body->addKeyValue("type", $this->swaggerType);
         $body->addKeyValue("nullable", $this->nullable);
+        $body->addKeyValue("required", $this->required);
 
         if ($this->description !== null) {
             $body->addKeyValue("description", $this->description);
