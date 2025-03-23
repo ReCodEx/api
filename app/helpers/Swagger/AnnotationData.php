@@ -111,7 +111,9 @@ class AnnotationData
     {
         // remove the namespace prefix of the class and make the first letter lowercase
         $className = lcfirst(Utils::shortenClass($this->className));
-        return $className . $this->methodName;
+        // make the 'a' in the action prefix uppercase to match the camel-case notation
+        $endpoint = ucfirst($this->methodName);
+        return $className . $endpoint;
     }
 
     /**
