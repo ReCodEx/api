@@ -111,12 +111,7 @@ class AnnotationData
     {
         // remove the namespace prefix of the class and make the first letter lowercase
         $className = lcfirst(Utils::shortenClass($this->className));
-        // remove the 'Presenter' suffix
-        $className = substr($className, 0, strlen($className) - strlen("Presenter"));
-
-        // remove the 'action' prefix
-        $endpoint = substr($this->methodName, strlen("action"));
-        return $className . $endpoint;
+        return $className . $this->methodName;
     }
 
     /**

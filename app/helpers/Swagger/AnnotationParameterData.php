@@ -95,9 +95,9 @@ class AnnotationParameterData
         return $head . $body->toString();
     }
 
-  /**
-   * Converts the object to a @OA\Parameter(...) annotation string
-   */
+    /**
+     * Converts the object to a @OA\Parameter(...) annotation string
+     */
     public function toParameterAnnotation(): string
     {
         $head = "@OA\\Parameter";
