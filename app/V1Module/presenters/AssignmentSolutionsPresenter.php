@@ -17,7 +17,7 @@ use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
@@ -341,7 +341,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * Returns array of solution entities that has been changed by this.
      * @POST
      * @throws NotFoundException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws InvalidStateException
      */
     #[Post("bonusPoints", new VInt(), "New amount of bonus points, can be negative number")]
@@ -381,8 +381,8 @@ class AssignmentSolutionsPresenter extends BasePresenter
             if (empty($overriddenPoints)) {
                 $solution->setOverriddenPoints(null);
             } else {
-                throw new InvalidArgumentException(
-                    "overridenPoints",
+                throw new InvalidApiArgumentException(
+                    'overridenPoints',
                     "The value '$overriddenPoints' is not null|numericint"
                 );
             }
@@ -524,7 +524,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
             throw new NotFoundException("Group for assignment '$id' was not found");
         }
 
-        $resSolutions = [ $id => $this->assignmentSolutionViewFactory->getSolutionData($solution) ];
+        $resSolutions = [$id => $this->assignmentSolutionViewFactory->getSolutionData($solution)];
         if ($resetedSolution) {
             $resSolutions[$resetedSolution->getId()] =
                 $this->assignmentSolutionViewFactory->getSolutionData($resetedSolution);

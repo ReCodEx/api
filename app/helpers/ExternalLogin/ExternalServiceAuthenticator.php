@@ -6,7 +6,6 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\InvalidExternalTokenException;
-use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
@@ -23,6 +22,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DomainException;
 use UnexpectedValueException;
+use InvalidArgumentException;
 
 /**
  * Mapper of service identification to object instance

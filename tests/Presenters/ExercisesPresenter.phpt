@@ -4,12 +4,11 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
-use App\Model\Entity\Pipeline;
 use App\Model\Entity\Group;
 use App\Model\Repository\Users;
 use App\Helpers\Notifications\ExerciseNotificationSender;
@@ -153,7 +152,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', [
             'action' => 'default',
-            'filters' => [ 'archived' => 'all' ]
+            'filters' => ['archived' => 'all']
         ]);
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -185,7 +184,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
         $request = new Nette\Application\Request('V1:Exercises', 'GET', [
             'action' => 'default',
-            'filters' => [ 'archived' => 'only' ]
+            'filters' => ['archived' => 'only']
         ]);
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -867,7 +866,7 @@ class TestExercisesPresenter extends Tester\TestCase
                     ['action' => 'tagsUpdateGlobal', 'tag' => 'tag3', 'renameTo' => 'tag2']
                 );
             },
-            InvalidArgumentException::class
+            InvalidApiArgumentException::class
         );
     }
 
@@ -1089,7 +1088,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'V1:Exercises',
             'POST',
             ['action' => 'setAdmins', 'id' => $exercise->getId()],
-            ['admins' => [ $anotherSupervisor->getId() ]]
+            ['admins' => [$anotherSupervisor->getId()]]
         );
 
         $this->presenter->exercises->refresh($exercise);

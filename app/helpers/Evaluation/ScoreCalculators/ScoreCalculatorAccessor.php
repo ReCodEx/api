@@ -2,10 +2,10 @@
 
 namespace App\Helpers\Evaluation;
 
-use App\Exceptions\InvalidArgumentException;
 use App\Helpers\Evaluation\IScoreCalculator;
 use Nette;
 use Nette\Utils\Arrays;
+use InvalidArgumentException;
 
 /**
  * Provides access to different implementations of score calculation

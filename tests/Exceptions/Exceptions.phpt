@@ -10,7 +10,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\HttpBasicAuthException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\InvalidMembershipException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\JobConfigLoadingException;
@@ -139,18 +139,18 @@ class TestExceptions extends Tester\TestCase
         );
     }
 
-    public function testInvalidArgumentException()
+    public function testInvalidApiArgumentException()
     {
         Assert::exception(
             function () {
                 try {
-                    throw new InvalidArgumentException("message");
+                    throw new InvalidApiArgumentException("message");
                 } catch (Exception $e) {
                     Assert::true(strlen($e->getMessage()) > 0);
                     throw $e;
                 }
             },
-            InvalidArgumentException::class
+            InvalidApiArgumentException::class
         );
     }
 

@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use Nette\Utils\Strings;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\InternalServerException;
 
 /**
@@ -57,15 +57,15 @@ class Pagination
      *                             identifier is prefixed with '!', DESC ordering is used instead of ASC.
      * @param array $filters Array of filters and their values. Filters are endpoint-specific.
      * @param array|null $knownFilters Array of known filter names. If present, unknown filters will trigger exception.
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     public function __construct(
         int $offset = 0,
-        int $limit = null,
-        string $locale = null,
-        string $orderBy = null,
+        ?int $limit = null,
+        ?string $locale = null,
+        ?string $orderBy = null,
         array $filters = [],
-        array $knownFilters = null
+        ?array $knownFilters = null
     ) {
         $this->offset = $offset < 0 ? 0 : $offset;
         $this->limit = $limit < 0 ? null : $limit;
@@ -78,7 +78,7 @@ class Pagination
             $knownFilters = array_flip($knownFilters);
             foreach ($filters as $name => $unused) {
                 if (!array_key_exists($name, $knownFilters)) {
-                    throw new InvalidArgumentException("filter", "unknown filter '$name'");
+                    throw new InvalidApiArgumentException('filter', "unknown filter '$name'");
                 }
             }
         }

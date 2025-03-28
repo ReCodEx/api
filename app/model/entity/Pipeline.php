@@ -2,7 +2,7 @@
 
 namespace App\Model\Entity;
 
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Helpers\ExerciseConfig\Pipeline as ExerciseConfigPipeline;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -265,7 +265,7 @@ class Pipeline
     {
         foreach ($parameters as $name => $value) {
             if (!array_key_exists($name, static::DEFAULT_PARAMETERS)) {
-                throw new InvalidArgumentException(sprintf("Unknown parameter %s", $name));
+                throw new InvalidApiArgumentException($name, "Unknown parameter");
             }
 
             if ($this->parameters->containsKey($name)) {
@@ -279,7 +279,7 @@ class Pipeline
                     if (is_string($default)) {
                         $parameter = new StringPipelineParameter($this, $name);
                     } else {
-                        throw new InvalidArgumentException(sprintf("Unsupported value type for parameter %s", $name));
+                        throw new InvalidApiArgumentException($name, "Unsupported value type");
                     }
                 }
 

@@ -3,23 +3,15 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ParseException;
 use App\Helpers\ExerciseConfig\Helper;
@@ -197,7 +189,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Configurations can be added or deleted here, based on what is provided in arguments.
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ExerciseConfigException
      * @throws NotFoundException
      */
@@ -214,7 +206,7 @@ class ExercisesConfigPresenter extends BasePresenter
 
         // configurations cannot be empty
         if (count($environmentConfigs) == 0) {
-            throw new InvalidArgumentException("No entry for runtime configurations given.");
+            throw new InvalidApiArgumentException('environmentConfigs', "No entry for runtime configurations given.");
         }
 
         $runtimeEnvironments = new ArrayCollection();
@@ -228,7 +220,10 @@ class ExercisesConfigPresenter extends BasePresenter
 
             // check for duplicate environments
             if (array_key_exists($environmentId, $configs)) {
-                throw new InvalidArgumentException("Duplicate entry for configuration '$environmentId''");
+                throw new InvalidApiArgumentException(
+                    'environmentConfigs',
+                    "Duplicate entry for configuration '$environmentId''"
+                );
             }
 
             // load variables table for this runtime configuration
@@ -593,8 +588,8 @@ class ExercisesConfigPresenter extends BasePresenter
 
         // fill existing limits into result structure
         foreach ($exercise->getExerciseLimits() as $limit) {
-            $limits[$limit->getHardwareGroup()->getId()][$limit->getRuntimeEnvironment()->getId(
-            )] = $limit->getParsedLimits();
+            $limits[$limit->getHardwareGroup()->getId()][$limit->getRuntimeEnvironment()->getId()]
+                = $limit->getParsedLimits();
         }
         $this->sendSuccessResponse($limits);
     }
@@ -766,7 +761,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set tests for exercise based on given identification.
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ExerciseConfigException
      */
     #[Post("tests", new VArray(), "An array of tests which will belong to exercise")]
@@ -792,18 +787,18 @@ class ExercisesConfigPresenter extends BasePresenter
         foreach ($tests as $test) {
             // Perform checks on the test name...
             if (!array_key_exists("name", $test)) {
-                throw new InvalidArgumentException("tests", "name item not found in particular test");
+                throw new InvalidApiArgumentException('tests', "name item not found in particular test");
             }
 
             $name = trim($test["name"]);
             if (!preg_match('/^[-a-zA-Z0-9_()\[\].! ]+$/', $name)) {
-                throw new InvalidArgumentException("tests", "test name contains illicit characters");
+                throw new InvalidApiArgumentException('tests', "test name contains illicit characters");
             }
             if (strlen($name) > 64) {
-                throw new InvalidArgumentException("tests", "test name too long (exceeds 64 characters)");
+                throw new InvalidApiArgumentException('tests', "test name too long (exceeds 64 characters)");
             }
             if (array_key_exists($name, $newTests)) {
-                throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
+                throw new InvalidApiArgumentException('tests', "two tests with the same name '$name' were specified");
             }
 
             $id = Arrays::get($test, "id", null);
@@ -816,7 +811,7 @@ class ExercisesConfigPresenter extends BasePresenter
                 $testsModified = true;
 
                 if ($exercise->getExerciseTestByName($name)) {
-                    throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
+                    throw new InvalidApiArgumentException('tests', "given test name '$name' is already taken");
                 }
 
                 $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
@@ -841,8 +836,8 @@ class ExercisesConfigPresenter extends BasePresenter
 
         $testCountLimit = $this->exerciseRestrictionsConfig->getTestCountLimit();
         if (count($newTests) > $testCountLimit) {
-            throw new InvalidArgumentException(
-                "tests",
+            throw new InvalidApiArgumentException(
+                'tests',
                 "The number of tests exceeds the configured limit ($testCountLimit)"
             );
         }

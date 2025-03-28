@@ -5,21 +5,14 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InternalServerException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\FileStorage\FileStorageException;
@@ -155,7 +148,7 @@ class UploadedFilesPresenter extends BasePresenter
             // similar solution refers to anoter solution which has detected similarities in this file
             // (so whoever can see plagiarisms of the original solution may see this file)
             $similarSolution = $this->assignmentSolutions->findOrThrow($similarSolutionId);
-            $fileSolution = $this->assignmentSolutions->findOneBy([ 'solution' => $file->getSolution() ]);
+            $fileSolution = $this->assignmentSolutions->findOneBy(['solution' => $file->getSolution()]);
 
             if (
                 $fileSolution &&
@@ -189,7 +182,8 @@ class UploadedFilesPresenter extends BasePresenter
     #[Query(
         "similarSolutionId",
         new VUuid(),
-        "Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.",
+        "Id of an assignment solution which has detected possible plagiarism in this file. "
+            . "This is basically a shortcut (hint) for ACLs.",
         required: false,
     )]
     #[Path("id", new VString(), "Identifier of the file", required: true)]
@@ -204,7 +198,7 @@ class UploadedFilesPresenter extends BasePresenter
                 throw new NotFoundException(
                     "File not found in the storage",
                     FrontendErrorMappings::E404_000__NOT_FOUND,
-                    [ 'entry' => $entry ],
+                    ['entry' => $entry],
                     $ex
                 );
             }
@@ -236,7 +230,8 @@ class UploadedFilesPresenter extends BasePresenter
     #[Query(
         "similarSolutionId",
         new VUuid(),
-        "Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.",
+        "Id of an assignment solution which has detected possible plagiarism in this file. "
+            . "This is basically a shortcut (hint) for ACLs.",
         required: false,
     )]
     #[Path("id", new VString(), "Identifier of the file", required: true)]
@@ -251,7 +246,7 @@ class UploadedFilesPresenter extends BasePresenter
                 throw new NotFoundException(
                     "File not found in the storage",
                     FrontendErrorMappings::E404_000__NOT_FOUND,
-                    [ 'entry' => $entry ],
+                    ['entry' => $entry],
                     $ex
                 );
             }
@@ -319,7 +314,7 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Upload a file
      * @POST
-     * @throws InvalidArgumentException for files with invalid names
+     * @throws InvalidApiArgumentException for files with invalid names
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws CannotReceiveUploadedFileException
@@ -436,7 +431,7 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Add another chunk to partial upload.
      * @PUT
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws CannotReceiveUploadedFileException
@@ -449,7 +444,7 @@ class UploadedFilesPresenter extends BasePresenter
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
 
         if ($partialFile->getUploadedSize() !== $offset) {
-            throw new InvalidArgumentException(
+            throw new InvalidApiArgumentException(
                 'offset',
                 "The offset must corresponds with the actual upload size of the partial file."
             );

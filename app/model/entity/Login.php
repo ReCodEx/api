@@ -3,7 +3,7 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use Nette\Security\Passwords;
 use Nette\Utils\Validators;
 
@@ -127,12 +127,12 @@ class Login
      * @return Login
      * @param Passwords|null $passwordsService injection of a service (we do not want to inject directly into entities)
      *                       if null, the service is constructed inplace (special case to make fixtures work)
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
-    public static function createLogin(User $user, string $email, string $password, Passwords $passwordsService = null)
+    public static function createLogin(User $user, string $email, string $password, ?Passwords $passwordsService = null)
     {
         if (Validators::isEmail($email) === false) {
-            throw new InvalidArgumentException("email", "Username must be a valid email address.");
+            throw new InvalidApiArgumentException('email', "Username must be a valid email address.");
         }
 
         if ($passwordsService === null) {

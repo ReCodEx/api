@@ -2,10 +2,12 @@
 
 namespace App\Helpers;
 
-use App\Exceptions\InvalidArgumentException;
+use InvalidArgumentException;
 use Generator;
 use Nette;
-use GuzzleHttp;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Nette\Utils\Json;
 
 class SisHelper
@@ -24,9 +26,9 @@ class SisHelper
      * @param string $apiBase
      * @param string $faculty
      * @param string $secret
-     * @param GuzzleHttp\HandlerStack|null $handler An optional HTTP handler (mainly for unit testing purposes)
+     * @param HandlerStack|null $handler An optional HTTP handler (mainly for unit testing purposes)
      */
-    public function __construct($apiBase, $faculty, $secret, GuzzleHttp\HandlerStack $handler = null)
+    public function __construct($apiBase, $faculty, $secret, ?HandlerStack $handler = null)
     {
         $this->apiBase = $apiBase;
         $this->faculty = $faculty;
@@ -44,7 +46,7 @@ class SisHelper
             $options['handler'] = $handler;
         }
 
-        $this->client = new GuzzleHttp\Client($options);
+        $this->client = new Client($options);
     }
 
     /**
@@ -73,11 +75,11 @@ class SisHelper
 
         try {
             $response = $this->client->get('', ['query' => $params]);
-        } catch (GuzzleHttp\Exception\ClientException $e) {
-            throw new InvalidArgumentException("Invalid year or semester number");
+        } catch (ClientException $e) {
+            throw new InvalidArgumentException("Invalid year or semester number", 0, $e);
         }
 
-        $data = Json::decode($response->getBody()->getContents(), Json::FORCE_ARRAY);
+        $data = Json::decode($response->getBody()->getContents(), true);
 
         foreach ($data["events"] as $course) {
             yield SisCourseRecord::fromArray($sisUserId, $course);

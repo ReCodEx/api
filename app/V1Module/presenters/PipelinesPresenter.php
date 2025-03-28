@@ -5,20 +5,15 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\FrontendErrorMappings;
@@ -39,7 +34,6 @@ use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
 use App\Model\Entity\Pipeline;
 use App\Helpers\ExerciseConfig\Validator as ConfigValidator;
-use Exception;
 
 /**
  * Endpoints for pipelines manipulation
@@ -324,7 +318,7 @@ class PipelinesPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws BadRequestException
      * @throws ExerciseConfigException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("name", new VString(2), "Name of the pipeline")]
     #[Post("version", new VInt(), "Version of the edited pipeline")]

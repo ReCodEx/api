@@ -3,6 +3,7 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
+use App\Exceptions\InvalidApiArgumentException;
 
 class MetaFormat
 {
@@ -11,8 +12,8 @@ class MetaFormat
      * The method has no return value.
      * @param string $fieldName The name of the field.
      * @param mixed $value The value to be assigned.
-     * @throws \App\Exceptions\InternalServerException Thrown when the field was not found.
-     * @throws \App\Exceptions\InvalidArgumentException Thrown when the value is not assignable.
+     * @throws InternalServerException Thrown when the field was not found.
+     * @throws InvalidApiArgumentException Thrown when the value is not assignable.
      */
     public function checkIfAssignable(string $fieldName, mixed $value)
     {
@@ -30,8 +31,8 @@ class MetaFormat
      *  The exception details why the value does not conform to the format.
      * @param string $fieldName The name of the field.
      * @param mixed $value The value to be assigned.
-     * @throws \App\Exceptions\InternalServerException Thrown when the field was not found.
-     * @throws \App\Exceptions\InvalidArgumentException Thrown when the value is not assignable.
+     * @throws InternalServerException Thrown when the field was not found.
+     * @throws InvalidApiArgumentException Thrown when the value is not assignable.
      */
     public function checkedAssign(string $fieldName, mixed $value)
     {
