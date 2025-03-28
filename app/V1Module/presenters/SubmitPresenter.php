@@ -5,40 +5,25 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
-use App\Exceptions\ExerciseCompilationException;
-use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\ParseException;
-use App\Exceptions\SubmissionFailedException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
-use App\Helpers\FileStorage\FileStorageException;
 use App\Helpers\FileStorageManager;
 use App\Helpers\EntityMetadata\Solution\SolutionParams;
-use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FailureHelper;
 use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
-use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\Solution;
-use App\Model\Entity\SolutionFile;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\AssignmentSolver;
-use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use App\Model\Repository\Assignments;
@@ -56,7 +41,6 @@ use App\Security\ACL\IAssignmentPermissions;
 use App\Async\Dispatcher;
 use App\Async\Handler\ResubmitAllAsyncJobHandler;
 use Exception;
-use Nette\Http\IResponse;
 
 /**
  * Endpoints for submitting an assignment
@@ -245,7 +229,7 @@ class SubmitPresenter extends BasePresenter
      * Submit a solution of an assignment
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      * @throws ParseException
      */
@@ -317,13 +301,13 @@ class SubmitPresenter extends BasePresenter
      * @param bool $isDebug
      * @return array The response that can be sent to the client
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ParseException
      * @throws Exception
      */
     private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false)
     {
-        [ $submission, $jobConfig ] = $this->submissionHelper->submit($solution, $this->getCurrentUser(), $isDebug);
+        [$submission, $jobConfig] = $this->submissionHelper->submit($solution, $this->getCurrentUser(), $isDebug);
 
         // The solution needs to reload submissions (it is tedious and error prone to update them manually)
         $this->solutions->refresh($solution);
@@ -357,7 +341,7 @@ class SubmitPresenter extends BasePresenter
      * Resubmit a solution (i.e., create a new submission)
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      * @throws ParseException
      */
@@ -393,7 +377,7 @@ class SubmitPresenter extends BasePresenter
         $assignment = $this->assignments->findOrThrow($id);
         $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
         $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
-        $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);
+        $this->sendSuccessResponse(['pending' => $asyncJobs, 'failed' => $failedJobs]);
     }
 
     public function checkResubmitAll(string $id)
@@ -425,9 +409,9 @@ class SubmitPresenter extends BasePresenter
                 $this->getCurrentUser(),
                 $assignment
             );
-            $asyncJobs = [ $asyncJob ];
+            $asyncJobs = [$asyncJob];
         }
-        $this->sendSuccessResponse([ 'pending' => $asyncJobs, 'failed' => $failedJobs ]);
+        $this->sendSuccessResponse(['pending' => $asyncJobs, 'failed' => $failedJobs]);
     }
 
     public function checkPreSubmit(string $id, string $userId = null)
@@ -447,7 +431,7 @@ class SubmitPresenter extends BasePresenter
      * submit.
      * @POST
      * @throws ExerciseConfigException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
     #[Post("files", new VArray())]

@@ -384,7 +384,7 @@ class TestUsersPresenter extends Tester\TestCase
             function () use ($request) {
                 $this->presenter->run($request);
             },
-            App\Exceptions\InvalidArgumentException::class
+            App\Exceptions\InvalidApiArgumentException::class
         );
     }
 
@@ -412,7 +412,7 @@ class TestUsersPresenter extends Tester\TestCase
             function () use ($request) {
                 $this->presenter->run($request);
             },
-            App\Exceptions\InvalidArgumentException::class
+            App\Exceptions\InvalidApiArgumentException::class
         );
     }
 

@@ -122,8 +122,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                 "V1:ExerciseFiles",
                 "POST",
                 [
-                "action" => 'uploadSupplementaryFiles',
-                'id' => $exercise->getId()
+                    "action" => 'uploadSupplementaryFiles',
+                    'id' => $exercise->getId()
                 ],
                 [
                     'files' => $files
@@ -184,8 +184,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                         "V1:ExerciseFiles",
                         "POST",
                         [
-                        "action" => 'uploadSupplementaryFiles',
-                        'id' => $exercise->getId()
+                            "action" => 'uploadSupplementaryFiles',
+                            'id' => $exercise->getId()
                         ],
                         [
                             'files' => $files
@@ -193,7 +193,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                     )
                 );
             },
-            \App\Exceptions\InvalidArgumentException::class
+            \App\Exceptions\InvalidApiArgumentException::class
         );
     }
 
@@ -240,8 +240,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                         "V1:ExerciseFiles",
                         "POST",
                         [
-                        "action" => 'uploadSupplementaryFiles',
-                        'id' => $exercise->getId()
+                            "action" => 'uploadSupplementaryFiles',
+                            'id' => $exercise->getId()
                         ],
                         [
                             'files' => $files
@@ -249,7 +249,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                     )
                 );
             },
-            \App\Exceptions\InvalidArgumentException::class
+            \App\Exceptions\InvalidApiArgumentException::class
         );
     }
 
@@ -499,10 +499,10 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                 "V1:ExerciseFiles",
                 "POST",
                 [
-                "action" => 'uploadAttachmentFiles',
-                'id' => $exercise->getId()
+                    "action" => 'uploadAttachmentFiles',
+                    'id' => $exercise->getId()
                 ],
-                [ 'files' => $files ]
+                ['files' => $files]
             )
         );
 

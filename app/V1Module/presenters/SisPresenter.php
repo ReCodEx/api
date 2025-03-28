@@ -3,22 +3,15 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\SisCourseRecord;
 use App\Helpers\SisHelper;
@@ -147,7 +140,7 @@ class SisPresenter extends BasePresenter
     /**
      * Register a new term
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      */
@@ -162,7 +155,7 @@ class SisPresenter extends BasePresenter
             $this->sendSuccessResponse("OK");
         }
 
-        // Throws InvalidArgumentException when given term is invalid
+        // Throws InvalidApiArgumentException when given term is invalid
         $this->sisHelper->getCourses($this->getSisUserIdOrThrow($this->getCurrentUser()), $year, $term);
 
         $termEntity = new SisValidTerm($year, $term);
@@ -183,7 +176,7 @@ class SisPresenter extends BasePresenter
     /**
      * Set details of a term
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
     #[Post("beginning", new VTimestamp())]
@@ -203,12 +196,12 @@ class SisPresenter extends BasePresenter
         }
 
         if ($beginning > $end) {
-            throw new InvalidArgumentException("beginning", "The beginning must precede the end");
+            throw new InvalidApiArgumentException('beginning', "The beginning must precede the end");
         }
 
         if ($advertiseUntil !== null && ($advertiseUntil > $end || $advertiseUntil < $beginning)) {
-            throw new InvalidArgumentException(
-                "advertiseUntil",
+            throw new InvalidApiArgumentException(
+                'advertiseUntil',
                 "The 'advertiseUntil' timestamp must be within the semester"
             );
         }
@@ -259,7 +252,7 @@ class SisPresenter extends BasePresenter
      * Each course holds bound group IDs and group objects are returned in a separate array.
      * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
      * @GET
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws BadRequestException
      */
     #[Path("userId", new VString(), required: true)]
@@ -287,8 +280,8 @@ class SisPresenter extends BasePresenter
                     $group = $binding->getGroup();
 
                     if (
-                        !array_key_exists($group->getId(), $groups) && !$group->isOrganizational(
-                        ) && !$group->isArchived()
+                        !array_key_exists($group->getId(), $groups)
+                        && !$group->isOrganizational() && !$group->isArchived()
                     ) {
                         $groups[$group->getId()] = $group;
                         $courseGroupIds[] = $group->getId();
@@ -326,7 +319,7 @@ class SisPresenter extends BasePresenter
      * Each course holds bound group IDs and group objects are returned in a separate array.
      * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
      * @GET
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      * @throws BadRequestException
      */
@@ -420,7 +413,7 @@ class SisPresenter extends BasePresenter
      * @POST
      * @throws BadRequestException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws Exception
      */
     #[Post("parentGroupId", new VMixed(), nullable: true)]
@@ -434,7 +427,10 @@ class SisPresenter extends BasePresenter
         $parentGroup = $this->groups->findOrThrow($parentGroupId);
 
         if ($parentGroup->isArchived()) {
-            throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+            throw new InvalidApiArgumentException(
+                'parentGroupId',
+                "It is not permitted to create subgroups in archived groups"
+            );
         }
 
         $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
@@ -506,7 +502,10 @@ class SisPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
 
         if ($group->isArchived()) {
-            throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+            throw new InvalidApiArgumentException(
+                'groupId',
+                "It is not permitted to create subgroups in archived groups"
+            );
         }
 
         if (!$this->sisAcl->canBindGroup($group, $remoteCourse)) {
@@ -527,7 +526,7 @@ class SisPresenter extends BasePresenter
      * @DELETE
      * @throws BadRequestException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
     #[Path("courseId", new VString(), "an identifier of a SIS course", required: true)]
@@ -598,7 +597,7 @@ class SisPresenter extends BasePresenter
      * @param string $sisUserId
      * @return SisCourseRecord|mixed
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     private function findRemoteCourseOrThrow($remoteGroupId, $sisUserId)
     {

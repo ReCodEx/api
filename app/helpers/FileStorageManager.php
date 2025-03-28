@@ -8,16 +8,13 @@ use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\FileStorage\FileStorageException;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Solution;
-use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
 use App\Model\Entity\AttachmentFile;
 use App\Helpers\TmpFilesHelper;
-use App\Exceptions\InvalidArgumentException;
-use Nette\Utils\Arrays;
+use App\Exceptions\InvalidApiArgumentException;
 use Nette\Http\FileUpload;
 use Nette;
 use DateTime;
@@ -192,14 +189,14 @@ class FileStorageManager
      * Store uploaded file data for associated UploadedFile db record.
      * @param UploadedFile $fileRecord database entity that corresponds to the uploaded file
      * @param FileUpload $fileData wrapper of the actual uploaded file to be saved
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws FileStorageException
      */
     public function storeUploadedFile(UploadedFile $fileRecord, FileUpload $fileData)
     {
         $path = $this->getUploadedFilePath($fileRecord);
         if (!$fileData->isOk()) {
-            throw new InvalidArgumentException("fileData", "File was not uploaded successfully");
+            throw new InvalidApiArgumentException('fileData', "File was not uploaded successfully");
         }
 
         // copy (moving may not be safe), no overwrite

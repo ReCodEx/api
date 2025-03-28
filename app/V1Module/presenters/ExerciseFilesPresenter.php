@@ -3,20 +3,11 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
@@ -99,7 +90,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * Associate supplementary files with an exercise and upload them to remote file server
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws SubmissionFailedException
      */
     #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
@@ -140,16 +131,16 @@ class ExerciseFilesPresenter extends BasePresenter
 
         $fileCountLimit = $this->restrictionsConfig->getSupplementaryFileCountLimit();
         if ($totalFileCount > $fileCountLimit) {
-            throw new InvalidArgumentException(
-                "files",
+            throw new InvalidApiArgumentException(
+                'files',
                 "The number of files would exceed the configured limit ($fileCountLimit)"
             );
         }
 
         $sizeLimit = $this->restrictionsConfig->getSupplementaryFileSizeLimit();
         if ($totalFileSize > $sizeLimit) {
-            throw new InvalidArgumentException(
-                "files",
+            throw new InvalidApiArgumentException(
+                'files',
                 "The total size of files would exceed the configured limit ($sizeLimit)"
             );
         }

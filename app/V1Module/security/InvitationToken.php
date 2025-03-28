@@ -3,7 +3,6 @@
 namespace App\Security;
 
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
 use Firebase\JWT\JWT;
 use DateTime;
 
@@ -39,7 +38,7 @@ class InvitationToken
             "eml" => $email,
             "iat" => time(),
             "exp" => time() + $expirationTime,
-            "usr" => [ $titlesBefore, $firstName, $lastName, $titlesAfter ],
+            "usr" => [$titlesBefore, $firstName, $lastName, $titlesAfter],
             "grp" => $groupsIds,
         ]);
     }
@@ -51,7 +50,7 @@ class InvitationToken
      */
     public function __construct(array $payload)
     {
-        $props = [ "iid" => "string", "eml" => "string", "iat" => "integer", "exp" => "integer", "usr" => "array"];
+        $props = ["iid" => "string", "eml" => "string", "iat" => "integer", "exp" => "integer", "usr" => "array"];
         foreach ($props as $name => $type) {
             if (!array_key_exists($name, $payload) || gettype($payload[$name]) !== $type) {
                 throw new InvalidAccessTokenException(
@@ -118,7 +117,7 @@ class InvitationToken
     public function getUserData(): array
     {
         list($titlesBefore, $firstName, $lastName, $titlesAfter) = $this->payload["usr"];
-        return [ $this->payload["eml"], $firstName, $lastName, $titlesBefore, $titlesAfter ];
+        return [$this->payload["eml"], $firstName, $lastName, $titlesBefore, $titlesAfter];
     }
 
     /**

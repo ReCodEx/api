@@ -3,12 +3,11 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Helpers\MetaFormats\Validators\BaseValidator;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\Swagger\AnnotationParameterData;
-use Exception;
 
 /**
  * Data class containing metadata for request parameters.
@@ -45,7 +44,7 @@ class RequestParamData
      * Checks whether a value meets this definition. If the definition is not met, an exception is thrown.
      * The method has no return value.
      * @param mixed $value The value to be checked.
-     * @throws \App\Exceptions\InvalidArgumentException Thrown when the value does not meet the definition.
+     * @throws InvalidApiArgumentException Thrown when the value does not meet the definition.
      */
     public function conformsToDefinition(mixed $value)
     {
@@ -58,7 +57,7 @@ class RequestParamData
 
             // required parameters can be null only if explicitly nullable
             if (!$this->nullable) {
-                throw new InvalidArgumentException(
+                throw new InvalidApiArgumentException(
                     $this->name,
                     "The parameter is not nullable and thus cannot be null."
                 );
@@ -73,7 +72,7 @@ class RequestParamData
         foreach ($this->validators as $validator) {
             if (!$validator->validate($value)) {
                 $type = $validator::SWAGGER_TYPE;
-                throw new InvalidArgumentException(
+                throw new InvalidApiArgumentException(
                     $this->name,
                     "The provided value did not pass the validation of type '{$type}'."
                 );

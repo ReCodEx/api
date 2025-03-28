@@ -3,20 +3,11 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
-use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\FrontendErrorMappings;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
@@ -36,13 +27,11 @@ use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
-use App\Helpers\MetaFormats\Attributes\ParamAttribute;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Nette\Http\IResponse;
 use Nette\Security\Passwords;
-use Tracy\ILogger;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -163,7 +152,7 @@ class RegistrationPresenter extends BasePresenter
      * @POST
      * @throws BadRequestException
      * @throws WrongCredentialsException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("email", new VEmail(), "An email that will serve as a login name")]
     #[Post("firstName", new VString(2), "First name")]
@@ -272,7 +261,7 @@ class RegistrationPresenter extends BasePresenter
      * Create an invitation for a user and send it over via email
      * @POST
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Format(UserFormat::class)]
     public function actionCreateInvitation()
@@ -330,7 +319,7 @@ class RegistrationPresenter extends BasePresenter
      * Accept invitation and create corresponding user account.
      * @POST
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("token", new VString(1), "Token issued in create invitation process.")]
     #[Post("password", new VString(1), "A password for authentication")]

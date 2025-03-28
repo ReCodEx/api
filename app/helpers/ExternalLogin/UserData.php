@@ -2,9 +2,9 @@
 
 namespace App\Helpers\ExternalLogin;
 
-use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
+use InvalidArgumentException;
 
 /**
  * Common data about user every identity provider should know.
@@ -52,7 +52,7 @@ final class UserData
      * @param array|object $data from decoded token
      * @param string|null $defaultRole role set if no role is available in the data
      */
-    public function __construct($data, string $defaultRole = null)
+    public function __construct($data, ?string $defaultRole = null)
     {
         $data = (array)$data;
 

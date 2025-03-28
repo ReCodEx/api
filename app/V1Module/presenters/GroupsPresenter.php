@@ -5,17 +5,14 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -188,7 +185,8 @@ class GroupsPresenter extends BasePresenter
     #[Query(
         "ancestors",
         new VBool(),
-        "If true, returns an ancestral closure of the initial result set. Included ancestral groups do not respect other filters (archived, search, ...).",
+        "If true, returns an ancestral closure of the initial result set. "
+            . "Included ancestral groups do not respect other filters (archived, search, ...).",
         required: false,
     )]
     #[Query(
@@ -206,9 +204,9 @@ class GroupsPresenter extends BasePresenter
         required: false,
     )]
     public function actionDefault(
-        string $instanceId = null,
+        ?string $instanceId = null,
         bool $ancestors = false,
-        string $search = null,
+        ?string $search = null,
         bool $archived = false,
         bool $onlyArchived = false
     ) {
@@ -230,11 +228,14 @@ class GroupsPresenter extends BasePresenter
         $threshold = $req->getPost("threshold");
         $pointsLimit = $req->getPost("pointsLimit");
         if ($threshold !== null && $pointsLimit !== null) {
-            throw new InvalidArgumentException("A group may have either a threshold or points limit, not both.");
+            throw new InvalidApiArgumentException(
+                'threshold',
+                "A group may have either a threshold or points limit, not both."
+            );
         }
         if ($threshold !== null) {
             if ($threshold <= 0 || $threshold > 100) {
-                throw new InvalidArgumentException("A threshold must be in the (0, 100] (%) range.");
+                throw new InvalidApiArgumentException('threshold', "A threshold must be in the (0, 100] (%) range.");
             }
             $group->setThreshold($threshold / 100);
         } else {
@@ -242,7 +243,7 @@ class GroupsPresenter extends BasePresenter
         }
         if ($pointsLimit !== null) {
             if ($pointsLimit <= 0) {
-                throw new InvalidArgumentException("A points limit must be a positive number.");
+                throw new InvalidApiArgumentException('pointsLimit', "A points limit must be a positive number.");
             }
             $group->setPointsLimit($pointsLimit);
         } else {
@@ -254,7 +255,7 @@ class GroupsPresenter extends BasePresenter
      * Create a new group
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("instanceId", new VUuid(), "An identifier of the instance where the group should be created")]
     #[Post(
@@ -301,7 +302,10 @@ class GroupsPresenter extends BasePresenter
         $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
 
         if ($parentGroup->isArchived()) {
-            throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+            throw new InvalidApiArgumentException(
+                'parentGroupId',
+                "It is not permitted to create subgroups in archived groups"
+            );
         }
 
         if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
@@ -317,7 +321,10 @@ class GroupsPresenter extends BasePresenter
         $noAdmin = filter_var($req->getPost("noAdmin"), FILTER_VALIDATE_BOOLEAN);
 
         if ($isOrganizational && $isExam) {
-            throw new InvalidArgumentException("A group cannot be both organizational and exam.");
+            throw new InvalidApiArgumentException(
+                'isOrganizational, isExam',
+                "A group cannot be both organizational and exam."
+            );
         }
 
         $group = new Group(
@@ -381,7 +388,7 @@ class GroupsPresenter extends BasePresenter
     /**
      * Update group info
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post(
         "externalId",
@@ -820,8 +827,8 @@ class GroupsPresenter extends BasePresenter
             if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
                 throw new ForbiddenRequestException(
                     "Group '$id' is the root group of instance '"
-                    . $group->getInstance()->getId()
-                    . "' and root groups cannot be deleted."
+                        . $group->getInstance()->getId()
+                        . "' and root groups cannot be deleted."
                 );
             }
         }
@@ -950,14 +957,15 @@ class GroupsPresenter extends BasePresenter
 
         $type = $this->getRequest()->getPost("type");
         if ($type === GroupMembership::TYPE_STUDENT || !in_array($type, GroupMembership::KNOWN_TYPES)) {
-            throw new InvalidArgumentException("Unknown membership type '$type'");
+            throw new InvalidApiArgumentException('type', "Unknown membership type '$type'");
         }
 
         $membership = $group->getMembershipOfUser($user);
         if ($membership) {
             // update type of existing membership (if it is not a student)
             if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
-                throw new InvalidArgumentException(
+                throw new InvalidApiArgumentException(
+                    'userId',
                     "The user is a student of the group and students cannot be made also members"
                 );
             }
@@ -995,10 +1003,11 @@ class GroupsPresenter extends BasePresenter
 
         $membership = $group->getMembershipOfUser($user);
         if (!$membership) {
-            throw new InvalidArgumentException("The user is not a member of the group");
+            throw new InvalidApiArgumentException('userId', "The user is not a member of the group");
         }
         if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
-            throw new InvalidArgumentException(
+            throw new InvalidApiArgumentException(
+                'userId',
                 "The user is a student of the group and students must be removed by separate endpoint"
             );
         }
@@ -1195,7 +1204,7 @@ class GroupsPresenter extends BasePresenter
         }
 
         if ($group->isOrganizational()) {
-            throw new InvalidArgumentException("It is forbidden to add students to organizational groups");
+            throw new InvalidApiArgumentException('id', "It is forbidden to add students to organizational groups");
         }
     }
 
@@ -1294,7 +1303,7 @@ class GroupsPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($id);
         $user = $this->users->findOrThrow($userId);
         if ($user->getGroupLock()?->getId() !== $group->getId()) {
-            throw new InvalidArgumentException("The user is not locked in given group.");
+            throw new InvalidApiArgumentException('userId', "The user is not locked in given group.");
         }
 
         if (!$this->groupAcl->canUnlockStudent($group, $user)) {
@@ -1329,7 +1338,7 @@ class GroupsPresenter extends BasePresenter
     /**
      * @param Request $req
      * @param Group $group
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     private function updateLocalizations(Request $req, Group $group): void
     {
@@ -1349,14 +1358,18 @@ class GroupsPresenter extends BasePresenter
 
                 foreach ($otherGroups as $otherGroup) {
                     if ($otherGroup !== $group) {
-                        throw new InvalidArgumentException(
+                        throw new InvalidApiArgumentException(
+                            'name',
                             "There is already a group of this name, please choose a different one."
                         );
                     }
                 }
 
                 if (array_key_exists($lang, $localizations)) {
-                    throw new InvalidArgumentException(sprintf("Duplicate entry for locale %s", $lang));
+                    throw new InvalidApiArgumentException(
+                        'localizedTexts',
+                        sprintf("Duplicate entry for locale %s", $lang)
+                    );
                 }
 
                 $name = $item["name"] ?: "";

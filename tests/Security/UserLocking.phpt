@@ -316,7 +316,7 @@ class UserLocking extends Tester\TestCase
                     ['action' => 'unlockStudent', 'id' => $group->getId(), 'userId' => $student->getId()]
                 );
             },
-            App\Exceptions\InvalidArgumentException::class
+            App\Exceptions\InvalidApiArgumentException::class
         );
     }
 

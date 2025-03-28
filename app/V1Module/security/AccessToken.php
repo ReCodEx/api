@@ -3,9 +3,9 @@
 namespace App\Security;
 
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
 use Firebase\JWT\JWT;
 use stdClass;
+use InvalidArgumentException;
 
 class AccessToken
 {

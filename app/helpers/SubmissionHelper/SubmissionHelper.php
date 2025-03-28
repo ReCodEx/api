@@ -6,7 +6,7 @@ use App\Exceptions\InvalidStateException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\ParseException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
@@ -199,10 +199,10 @@ class SubmissionHelper
     /**
      * Retrieve uploaded files and verify, they can be used for submission.
      * @param string[] $ids
-     * @param string $reqArgumentName arg name for InvalidArgumentException if the IDs are not valid
+     * @param string $reqArgumentName arg name for InvalidApiArgumentException if the IDs are not valid
      *                                (so we do not have to catch and re-throw an exception)
      * @return UploadedFile[]
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ForbiddenRequestException
      */
     public function getUploadedFiles(
@@ -214,7 +214,7 @@ class SubmissionHelper
         // retrieve and check uploaded files
         $files = $this->uploadedFiles->findAllById($ids);
         if (count($files) === 0) {
-            throw new InvalidArgumentException($reqArgumentName, "No files were uploaded");
+            throw new InvalidApiArgumentException($reqArgumentName, "No files were uploaded");
         }
 
         // preform basic checks on uploaded files
@@ -228,11 +228,14 @@ class SubmissionHelper
 
         // perform size/count limits checks on submitted files
         if ($countLimit !== null && count($files) > $countLimit) {
-            throw new InvalidArgumentException($reqArgumentName, "Number of uploaded files exceeds assignment limits");
+            throw new InvalidApiArgumentException(
+                $reqArgumentName,
+                "Number of uploaded files exceeds assignment limits"
+            );
         }
 
         if ($sizeLimit !== null && $this->getFilesSize($files) > $sizeLimit) {
-            throw new InvalidArgumentException(
+            throw new InvalidApiArgumentException(
                 $reqArgumentName,
                 "Total size of uploaded files exceeds assignment limits"
             );
@@ -294,7 +297,7 @@ class SubmissionHelper
      * @param bool $isDebug
      * @return array tuple containing created entities [ AssignmentSolutionSubmission, JobConfig ]
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ParseException
      * @throws Exception
      */
@@ -305,7 +308,7 @@ class SubmissionHelper
         }
 
         if ($solution->getId() === null) {
-            throw new InvalidArgumentException("The solution object is missing an id");
+            throw new InvalidApiArgumentException('solution', "The solution object is missing an id");
         }
 
         // check for the license of instance of user
@@ -313,7 +316,7 @@ class SubmissionHelper
         if ($assignment->getGroup() && $assignment->getGroup()->hasValidLicence() === false) {
             throw new ForbiddenRequestException(
                 "Your institution does not have a valid licence and you cannot submit solutions for any assignment " .
-                "in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
+                    "in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
                 IResponse::S402_PAYMENT_REQUIRED
             );
         }
@@ -363,7 +366,7 @@ class SubmissionHelper
 
         // If the submission was accepted we now have the URL where to look for the results later -> persist it
         $this->assignmentSubmissions->persist($submission);
-        return [ $submission, $jobConfig ];
+        return [$submission, $jobConfig];
     }
 
     /**
@@ -443,6 +446,6 @@ class SubmissionHelper
         }
 
         $this->referenceSubmissions->flush();
-        return [ $submission, $jobConfig ];
+        return [$submission, $jobConfig];
     }
 }

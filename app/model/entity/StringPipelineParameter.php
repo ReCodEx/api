@@ -2,7 +2,7 @@
 
 namespace App\Model\Entity;
 
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -23,7 +23,7 @@ class StringPipelineParameter extends PipelineParameter
     public function setValue($value)
     {
         if (!is_string($value)) {
-            throw new InvalidArgumentException(sprintf("Invalid value for parameter %s", $this->name));
+            throw new InvalidApiArgumentException($this->name, "String value expected");
         }
 
         $this->stringValue = $value;

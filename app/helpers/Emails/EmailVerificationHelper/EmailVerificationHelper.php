@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
@@ -103,7 +103,7 @@ class EmailVerificationHelper
      * @return bool
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     public function verify(User $user, AccessToken $token)
     {
