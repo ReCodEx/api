@@ -3,18 +3,11 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Model\Entity\LocalizedGroup;
@@ -164,12 +157,10 @@ class InstancesPresenter extends BasePresenter
         $instance = $this->instances->findOrThrow($id);
 
         $req = $this->getRequest();
-        $isOpen = $req->getPost("isOpen") ? filter_var(
-            $req->getPost("isOpen"),
-            FILTER_VALIDATE_BOOLEAN
-        ) : $instance->isOpen();
-
-        $instance->setIsOpen($isOpen);
+        $isOpen = $req->getPost("isOpen");
+        if ($isOpen !== null) {
+            $instance->setIsOpen($isOpen);
+        }
         $this->instances->persist($instance);
         $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $this->getCurrentUser()));
     }
