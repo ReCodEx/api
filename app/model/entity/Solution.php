@@ -16,7 +16,7 @@ use App\Helpers\Yaml;
  */
 class Solution
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

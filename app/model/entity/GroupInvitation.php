@@ -12,7 +12,7 @@ use JsonSerializable;
  */
 class GroupInvitation implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id
@@ -23,7 +23,7 @@ class GroupInvitation implements JsonSerializable
      */
     protected $id;
 
-   /**
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
      */

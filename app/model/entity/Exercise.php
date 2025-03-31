@@ -20,9 +20,9 @@ use App\Helpers\ExercisesConfig;
 class Exercise implements IExercise
 {
     use ExerciseData;
-    use CreateableEntity;
-    use UpdateableEntity;
-    use DeleteableEntity;
+    use CreatableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
     use VersionableEntity;
 
     /**

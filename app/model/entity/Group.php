@@ -24,7 +24,7 @@ use InvalidArgumentException;
  */
 class Group
 {
-    use DeleteableEntity;
+    use DeletableEntity;
 
     public function __construct(
         string $externalId,
@@ -227,7 +227,7 @@ class Group
      */
     protected $isExam = false;
 
-     /**
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      * When an exam in this groups begins. In the exam period, a user must lock in a group to be allowed
      * submitting solutions. This is completely independent of the isExam flag.
@@ -632,7 +632,7 @@ class Group
         $admins = []; // key is user ID, value is true
         while ($group !== null) {
             // getMembershipsInternal inherited flag goes: true = only inherited, false = only direct, null = all
-            $directAdmins = $group->getMembershipsInternal([ GroupMembership::TYPE_ADMIN ], $inherited ? null : false);
+            $directAdmins = $group->getMembershipsInternal([GroupMembership::TYPE_ADMIN], $inherited ? null : false);
             foreach ($directAdmins as $membership) {
                 $admins[$membership->getUser()->getId()] = true;
             }

@@ -13,7 +13,7 @@ use JsonSerializable;
  */
 class ExerciseScoreConfig implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

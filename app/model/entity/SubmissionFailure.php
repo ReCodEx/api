@@ -11,7 +11,7 @@ use JsonSerializable;
  */
 class SubmissionFailure implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * Broker rejected the submission. This happens when there is no worker who can evaluate it.

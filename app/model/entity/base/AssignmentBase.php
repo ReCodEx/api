@@ -10,10 +10,10 @@ use Doctrine\Common\Collections\Collection;
  */
 abstract class AssignmentBase
 {
-    use CreateableEntity;
+    use CreatableEntity;
     use VersionableEntity;
-    use UpdateableEntity;
-    use DeleteableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
 
     abstract public function getGroup(): ?Group;
 

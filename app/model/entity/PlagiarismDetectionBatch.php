@@ -13,7 +13,7 @@ use DateTime;
  */
 class PlagiarismDetectionBatch implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

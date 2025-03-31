@@ -15,7 +15,7 @@ use JsonSerializable;
  */
 class GroupExternalAttribute implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id
