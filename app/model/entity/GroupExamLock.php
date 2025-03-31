@@ -14,7 +14,7 @@ use JsonSerializable;
  */
 class GroupExamLock implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

@@ -14,9 +14,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Instance
 {
-    use UpdateableEntity;
-    use DeleteableEntity;
-    use CreateableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

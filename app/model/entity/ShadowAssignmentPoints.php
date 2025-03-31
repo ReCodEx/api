@@ -11,8 +11,8 @@ use DateTime;
  */
 class ShadowAssignmentPoints
 {
-    use CreateableEntity;
-    use UpdateableEntity;
+    use CreatableEntity;
+    use UpdatableEntity;
 
     public function __construct(
         int $points,

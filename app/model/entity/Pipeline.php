@@ -17,9 +17,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Pipeline
 {
-    use CreateableEntity;
-    use UpdateableEntity;
-    use DeleteableEntity;
+    use CreatableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
     use VersionableEntity;
 
     /**

@@ -13,7 +13,7 @@ use JsonSerializable;
  */
 class SecurityEvent implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     public const TYPE_LOGIN = 'login';
     public const TYPE_LOGIN_EXTERNAL = 'loginext';

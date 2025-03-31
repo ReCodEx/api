@@ -5,9 +5,8 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-trait UpdateableEntity
+trait UpdatableEntity
 {
-
     /**
      * @ORM\Column(type="datetime")
      * @var DateTime

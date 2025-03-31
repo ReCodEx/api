@@ -5,7 +5,7 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-trait CreateableEntity
+trait CreatableEntity
 {
     /**
      * @ORM\Column(type="datetime")

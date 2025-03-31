@@ -20,8 +20,8 @@ use DateTimeImmutable;
  */
 class User
 {
-    use CreateableEntity;
-    use DeleteableEntity;
+    use CreatableEntity;
+    use DeletableEntity;
 
     public function __construct(
         string $email,

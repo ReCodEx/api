@@ -12,7 +12,7 @@ use JsonSerializable;
  */
 class UserCalendar implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

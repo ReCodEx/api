@@ -5,9 +5,8 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-trait DeleteableEntity
+trait DeletableEntity
 {
-
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
