@@ -22,7 +22,7 @@ class SubmissionFailedException extends ApiException
     ) {
         parent::__construct(
             "Submission Failed - $msg",
-            IResponse::S500_INTERNAL_SERVER_ERROR,
+            IResponse::S500_InternalServerError,
             $frontendErrorCode,
             $frontendErrorParams
         );

@@ -22,7 +22,7 @@ class InvalidMembershipException extends ApiException
     ) {
         parent::__construct(
             "Invalid Membership Request - $msg",
-            IResponse::S400_BAD_REQUEST,
+            IResponse::S400_BadRequest,
             $frontendErrorCode,
             $frontendErrorParams
         );

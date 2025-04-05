@@ -5,7 +5,7 @@ namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 /**
- * Actually not used for debbuging purposes but used in production and thrown
+ * Actually not used for debugging purposes but used in production and thrown
  * if user requested non-existing application route.
  */
 class NotImplementedException extends ApiException
@@ -16,8 +16,8 @@ class NotImplementedException extends ApiException
     public function __construct()
     {
         parent::__construct(
-            "This feature is not implemented. Contact the authors of the API for more information about the status of the API.",
-            IResponse::S501_NOT_IMPLEMENTED,
+            "This feature is not implemented. Contact the authors of the API for more information.",
+            IResponse::S501_NotImplemented,
             FrontendErrorMappings::E501_000__NOT_IMPLEMENTED
         );
     }

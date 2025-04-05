@@ -90,7 +90,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             if (!$remoteAddr || !$user->verifyIpLock($remoteAddr)) {
                 throw new ForbiddenRequestException(
                     "Forbidden Request - User is not allowed access from IP '$remoteAddr'.",
-                    IResponse::S403_FORBIDDEN,
+                    IResponse::S403_Forbidden,
                     FrontendErrorMappings::E403_003__USER_IP_LOCKED,
                     [
                         'remoteAddress' => $remoteAddr,
@@ -361,7 +361,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         if ($this->getUser()->isLoggedIn()) {
             $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
             $params = $this->getRequest()->getParameters();
-            unset($params[self::ACTION_KEY]);
+            unset($params[self::ActionKey]);
             $this->userActions->log($this->getAction(true), $remoteAddr, $params, $code);
         }
     }
@@ -394,7 +394,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         array $items,
         Pagination $pagination,
         bool $sliceItems = false,
-        int $totalCount = null,
+        ?int $totalCount = null,
         $code = IResponse::S200_OK
     ) {
         $this->sendSuccessResponse(
@@ -431,7 +431,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     protected function sendStorageFileResponse(
         IImmutableFile $file,
         string $name,
-        string $contentType = null,
+        ?string $contentType = null,
         bool $forceDownload = true
     ) {
         $this->logUserAction(200);
@@ -445,7 +445,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
      * @param string|null $name
      * @param bool $forceDownload
      */
-    protected function sendZipFilesResponse(array $files, string $name = null, bool $forceDownload = true)
+    protected function sendZipFilesResponse(array $files, ?string $name = null, bool $forceDownload = true)
     {
         $this->logUserAction(200);
         $this->sendResponse(new ZipFilesResponse($files, $name, $forceDownload));

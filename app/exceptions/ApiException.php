@@ -13,7 +13,6 @@ use Nette\Http\IResponse;
  */
 class ApiException extends Exception
 {
-
     /** @var string */
     private $frontendErrorCode;
     /** @var array|null */
@@ -29,7 +28,7 @@ class ApiException extends Exception
      */
     public function __construct(
         $msg = "Unexpected API error",
-        $code = IResponse::S500_INTERNAL_SERVER_ERROR,
+        $code = IResponse::S500_InternalServerError,
         $frontendErrorCode = FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
         $frontendErrorParams = null,
         $previous = null

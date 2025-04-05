@@ -334,7 +334,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!$file->isOk()) {
             throw new CannotReceiveUploadedFileException(
                 sprintf("Cannot receive uploaded file '%s' due to '%d'", $file->getName(), $file->getError()),
-                IResponse::S500_INTERNAL_SERVER_ERROR,
+                IResponse::S500_InternalServerError,
                 FrontendErrorMappings::E500_001__CANNOT_RECEIVE_FILE,
                 ["filename" => $file->getName(), "errorCode" => $file->getError()]
             );
@@ -343,7 +343,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!Strings::match($file->getName(), self::FILENAME_PATTERN)) {
             throw new CannotReceiveUploadedFileException(
                 sprintf("File name '%s' contains invalid characters", $file->getName()),
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
                 ["filename" => $file->getName(), "pattern" => self::FILENAME_PATTERN]
             );
@@ -396,7 +396,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!Strings::match($name, self::FILENAME_PATTERN)) {
             throw new CannotReceiveUploadedFileException(
                 "File name '$name' contains invalid characters",
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
                 ["filename" => $name, "pattern" => self::FILENAME_PATTERN]
             );
@@ -407,7 +407,7 @@ class UploadedFilesPresenter extends BasePresenter
             // TODO: in the future, we might want to employ more sophisticated quota checking
             throw new CannotReceiveUploadedFileException(
                 "Invalid declared file size ($size) for per-partes upload",
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_004__UPLOADED_FILE_INVALID_SIZE,
                 ["size" => $size, "maximum" => $maxSize]
             );
@@ -534,7 +534,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!$partialFile->isUploadComplete()) {
             throw new CannotReceiveUploadedFileException(
                 "Unable to finalize incomplete per-partes upload.",
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_005__UPLOADED_FILE_PARTIAL,
                 [
                     "chunks" => $partialFile->getChunks(),

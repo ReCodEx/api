@@ -21,7 +21,7 @@ class WrongCredentialsException extends ApiException
         string $frontendErrorCode = FrontendErrorMappings::E400_100__WRONG_CREDENTIALS,
         $frontendErrorParams = null
     ) {
-        parent::__construct($msg, IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);
+        parent::__construct($msg, IResponse::S400_BadRequest, $frontendErrorCode, $frontendErrorParams);
     }
 
     public function getAdditionalHttpHeaders()

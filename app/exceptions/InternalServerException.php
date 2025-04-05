@@ -26,7 +26,7 @@ class InternalServerException extends ApiException
     ) {
         parent::__construct(
             "Internal Server Error - $details",
-            IResponse::S500_INTERNAL_SERVER_ERROR,
+            IResponse::S500_InternalServerError,
             $frontendErrorCode,
             $frontendErrorParams,
             $previous

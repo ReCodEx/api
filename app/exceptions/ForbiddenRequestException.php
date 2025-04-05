@@ -20,7 +20,7 @@ class ForbiddenRequestException extends ApiException
      */
     public function __construct(
         string $msg = "Forbidden Request - Access denied",
-        $code = IResponse::S403_FORBIDDEN,
+        $code = IResponse::S403_Forbidden,
         string $frontendErrorCode = FrontendErrorMappings::E403_000__FORBIDDEN,
         $frontendErrorParams = null
     ) {

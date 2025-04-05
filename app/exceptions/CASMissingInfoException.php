@@ -20,6 +20,6 @@ class CASMissingInfoException extends ApiException
         string $frontendErrorCode = FrontendErrorMappings::E409_000__CONFLICT,
         $frontendErrorParams = null
     ) {
-        parent::__construct($msg, IResponse::S409_CONFLICT, $frontendErrorCode, $frontendErrorParams);
+        parent::__construct($msg, IResponse::S409_Conflict, $frontendErrorCode, $frontendErrorParams);
     }
 }

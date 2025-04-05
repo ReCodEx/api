@@ -51,10 +51,10 @@ class ApiErrorPresenter extends BasePresenter
                 FrontendErrorMappings::E400_000__BAD_REQUEST
             );
         } elseif ($exception instanceof ConnectionException) {
-            $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Database is offline");
+            $this->sendErrorResponse(IResponse::S500_InternalServerError, "Database is offline");
         } else {
             $type = get_class($exception);
-            $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Unexpected Error {$type}");
+            $this->sendErrorResponse(IResponse::S500_InternalServerError, "Unexpected Error {$type}");
         }
     }
 

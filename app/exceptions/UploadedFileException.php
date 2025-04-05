@@ -25,7 +25,7 @@ class UploadedFileException extends ApiException
     ) {
         parent::__construct(
             "Uploaded files error - $msg",
-            IResponse::S500_INTERNAL_SERVER_ERROR,
+            IResponse::S500_InternalServerError,
             $frontendErrorCode,
             $frontendErrorParams,
             $previous

@@ -20,7 +20,7 @@ class ExerciseCompilationException extends ApiException
      */
     public function __construct(
         string $msg = 'Please, check the exercise instructions',
-        $code = IResponse::S500_INTERNAL_SERVER_ERROR,
+        $code = IResponse::S500_InternalServerError,
         string $frontendErrorCode = FrontendErrorMappings::E500_300__EXERCISE_COMPILATION,
         $frontendErrorParams = null
     ) {
