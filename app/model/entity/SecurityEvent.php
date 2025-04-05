@@ -128,7 +128,7 @@ class SecurityEvent implements JsonSerializable
      * @param User $user involved in the action
      * @return SecurityEvent
      */
-    public static function createChangePasswoedEvent(string $remoteAddr, User $user): SecurityEvent
+    public static function createChangePasswordEvent(string $remoteAddr, User $user): SecurityEvent
     {
         return new self(self::TYPE_CHANGE_PASSWORD, $remoteAddr, $user);
     }

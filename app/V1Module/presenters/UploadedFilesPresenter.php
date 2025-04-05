@@ -129,7 +129,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @GET
      * @LoggedIn
      */
-    #[Path("id", new VString(), "Identifier of the uploaded file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the uploaded file", required: true)]
     public function actionDetail(string $id)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
@@ -145,7 +145,7 @@ class UploadedFilesPresenter extends BasePresenter
 
         if ($file instanceof SolutionFile && $similarSolutionId) {
             // special check using similar solution hint
-            // similar solution refers to anoter solution which has detected similarities in this file
+            // similar solution refers to another solution which has detected similarities in this file
             // (so whoever can see plagiarisms of the original solution may see this file)
             $similarSolution = $this->assignmentSolutions->findOrThrow($similarSolutionId);
             $fileSolution = $this->assignmentSolutions->findOneBy(['solution' => $file->getSolution()]);
@@ -186,7 +186,7 @@ class UploadedFilesPresenter extends BasePresenter
             . "This is basically a shortcut (hint) for ACLs.",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionDownload(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -234,7 +234,7 @@ class UploadedFilesPresenter extends BasePresenter
             . "This is basically a shortcut (hint) for ACLs.",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionContent(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -289,7 +289,7 @@ class UploadedFilesPresenter extends BasePresenter
      * In the future, we might want to add algorithm selection via query parameter (default is SHA1).
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionDigest(string $id)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -438,7 +438,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @throws InternalServerException
      */
     #[Query("offset", new VInt(), "Offset of the chunk for verification", required: true)]
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
     public function actionAppendPartial(string $id, int $offset)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -483,7 +483,7 @@ class UploadedFilesPresenter extends BasePresenter
      * Cancel partial upload and remove all uploaded chunks.
      * @DELETE
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
     public function actionCancelPartial(string $id)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -527,7 +527,7 @@ class UploadedFilesPresenter extends BasePresenter
      * All data chunks are extracted from the store, assembled into one file, and is moved back into the store.
      * @POST
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
     public function actionCompletePartial(string $id)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -593,7 +593,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionDownloadSupplementaryFile(string $id)
     {
         $fileEntity = $this->supplementaryFiles->findOrThrow($id);

@@ -3,17 +3,8 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -34,7 +25,6 @@ use Eluceo\iCal\Domain\Entity\Event;
 use Eluceo\iCal\Domain\Entity\Calendar;
 use Eluceo\iCal\Presentation\Factory\CalendarFactory;
 use Eluceo\iCal\Domain\ValueObject;
-use DateTime;
 
 /**
  * User iCal management endpoints
@@ -83,7 +73,7 @@ class UserCalendarsPresenter extends BasePresenter
      * @param string $lang identifier
      * @return mixed
      */
-    private static function getBestLoale(array $texts, string $lang): mixed
+    private static function getBestLocale(array $texts, string $lang): mixed
     {
         return !empty($texts[$lang]) ? $texts[$lang] : (!empty($texts['en']) ? $texts['en'] : reset($texts));
     }
@@ -97,7 +87,7 @@ class UserCalendarsPresenter extends BasePresenter
      */
     private function createDeadlineEvent(User $user, Assignment $assignment, string $lang): Event
     {
-        $id = [ 'recodex', $user->getId(), $assignment->getId() ];
+        $id = ['recodex', $user->getId(), $assignment->getId()];
         $event = new Event(new ValueObject\UniqueIdentifier(join('/', $id)));
 
         // time
@@ -105,7 +95,7 @@ class UserCalendarsPresenter extends BasePresenter
         $event->setOccurrence(new ValueObject\TimeSpan($deadline, $deadline));
 
         // capion
-        $texts = self::getBestLoale($assignment->getLocalizedTextsAssocArray(), $lang);
+        $texts = self::getBestLocale($assignment->getLocalizedTextsAssocArray(), $lang);
         if ($texts) {
             $event->setSummary('ReCodEx deadline: ' . $texts->getName());
         }
@@ -117,7 +107,7 @@ class UserCalendarsPresenter extends BasePresenter
         // location
         $group = $assignment->getGroup();
         if ($group) {
-            $groupTexts = self::getBestLoale($group->getLocalizedTextsAssocArray(), $lang);
+            $groupTexts = self::getBestLocale($group->getLocalizedTextsAssocArray(), $lang);
             if ($groupTexts) {
                 $location = new ValueObject\Location($groupTexts->getName());
                 $event->setLocation($location);
@@ -193,11 +183,11 @@ class UserCalendarsPresenter extends BasePresenter
      * Get all iCal tokens of one user (including expired ones).
      * @GET
      */
-    #[Path("id", new VString(), "of the user", required: true)]
+    #[Path("id", new VUuid(), "of the user", required: true)]
     public function actionUserCalendars(string $id)
     {
         $user = $this->users->findOrThrow($id);
-        $calendars = $this->userCalendars->findBy([ 'user' => $user ], [ 'createdAt' => 'DESC' ]);
+        $calendars = $this->userCalendars->findBy(['user' => $user], ['createdAt' => 'DESC']);
         $this->sendSuccessResponse($calendars);
     }
 
@@ -213,7 +203,7 @@ class UserCalendarsPresenter extends BasePresenter
      * Create new iCal token for a particular user.
      * @POST
      */
-    #[Path("id", new VString(), "of the user", required: true)]
+    #[Path("id", new VUuid(), "of the user", required: true)]
     public function actionCreateCalendar(string $id)
     {
         $user = $this->users->findOrThrow($id);

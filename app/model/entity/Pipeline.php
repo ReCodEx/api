@@ -135,7 +135,7 @@ class Pipeline
         Collection $supplementaryEvaluationFiles,
         ?User $author = null,
         ?Pipeline $createdFrom = null,
-        Collection $runtimeEnvironments = null
+        ?Collection $runtimeEnvironments = null
     ) {
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
@@ -211,7 +211,7 @@ class Pipeline
 
     /**
      * Set completely new associations with runtime environments.
-     * @param RuntimeEnvironment[] $environments list of runtime environments to override current associatons
+     * @param RuntimeEnvironment[] $environments list of runtime environments to override current associations
      */
     public function setRuntimeEnvironments(array $environments): void
     {

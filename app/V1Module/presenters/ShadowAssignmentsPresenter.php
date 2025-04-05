@@ -10,6 +10,7 @@ use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidApiArgumentException;
@@ -100,7 +101,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -121,7 +122,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("version", new VInt(), "Version of the shadow assignment.")]
-    #[Path("id", new VString(), "Identifier of the shadow assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the shadow assignment", required: true)]
     public function actionValidate($id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -165,7 +166,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    #[Path("id", new VString(), "Identifier of the updated assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the updated assignment", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -293,7 +294,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment to be removed", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment to be removed", required: true)]
     public function actionRemove(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -326,7 +327,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
         "Datetime when the points were awarded, whatever that means",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the shadow assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the shadow assignment", required: true)]
     public function actionCreatePoints(string $id)
     {
         $req = $this->getRequest();

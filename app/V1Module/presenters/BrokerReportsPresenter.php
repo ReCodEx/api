@@ -3,18 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\HttpBasicAuthException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidStateException;
@@ -131,7 +122,7 @@ class BrokerReportsPresenter extends BasePresenter
         if (!$submissionRepository) {
             return;
         }
-        
+
         $failureReport = SubmissionFailure::create(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message);
 
         $submission = $submissionRepository->findOrThrow($job->getId());
@@ -155,7 +146,8 @@ class BrokerReportsPresenter extends BasePresenter
 
         $submission = $submissionRepository->findOrThrow($job->getId());
         if (!$this->evaluationLoadingHelper->loadEvaluation($submission)) {
-            $reportMessage = "Broker reports job {$job->getId()} (type: '{$job->getType()}') completion, but job results file is missing.";
+            $reportMessage = "Broker reports job {$job->getId()} (type: '{$job->getType()}')"
+                . " completion, but job results file is missing.";
             $this->reportFailure($job, $reportMessage);
             return;
         }
@@ -173,7 +165,7 @@ class BrokerReportsPresenter extends BasePresenter
     private function processJobFailure(JobId $job)
     {
         $message = $this->getRequest()->getPost("message") ?: "";
-        $reportMessage = "Broker reports job {$job->getId()} (type: '{$job->getType()}') processing failure: $message";
+        $message = "Broker reports job {$job->getId()} (type: '{$job->getType()}') processing failure: $message";
         $this->reportFailure($job, $message);
     }
 

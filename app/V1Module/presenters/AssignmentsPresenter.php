@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidApiArgumentException;
@@ -187,7 +188,7 @@ class AssignmentsPresenter extends BasePresenter
      * Get details of an assignment
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionDetail(string $id)
     {
         $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($this->assignments->findOrThrow($id)));
@@ -283,10 +284,10 @@ class AssignmentsPresenter extends BasePresenter
     #[Post(
         "isExam",
         new VBool(),
-        "This assignemnt is dedicated for an exam (should be solved in exam mode)",
+        "This assignment is dedicated for an exam (should be solved in exam mode)",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the updated assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the updated assignment", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -352,7 +353,6 @@ class AssignmentsPresenter extends BasePresenter
         $allowSecondDeadline = filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN);
         $secondDeadlineTimestamp = (int)$req->getPost("secondDeadline") ?: 0;
         $oldVisibleFrom = $assignment->getVisibleFrom();
-        $oldVisibleFromTimestamp = $oldVisibleFrom ? $oldVisibleFrom->getTimestamp() : null;
         $visibleFromTimestamp = (int)$req->getPost("visibleFrom");
         $visibleFrom = $visibleFromTimestamp ? DateTime::createFromFormat('U', $visibleFromTimestamp) : null;
         $maxPointsDeadlineInterpolation = filter_var(
@@ -366,7 +366,7 @@ class AssignmentsPresenter extends BasePresenter
         $sendNotification = $sendNotification !== null ? filter_var($sendNotification, FILTER_VALIDATE_BOOLEAN) : true;
         $sendNotification = $sendNotification && !$isExam; // exam assignments don't send notifications
 
-        // basic constrain checks and sanitizations
+        // basic constrain checks and sanitization
         if (!$allowSecondDeadline) {
             $secondDeadlineTimestamp = 0;
         }
@@ -520,7 +520,7 @@ class AssignmentsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("version", new VInt(), "Version of the assignment.")]
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionValidate($id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -623,7 +623,7 @@ class AssignmentsPresenter extends BasePresenter
      * Delete an assignment
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the assignment to be removed", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment to be removed", required: true)]
     public function actionRemove(string $id)
     {
         $this->assignments->remove($this->assignments->findOrThrow($id));
@@ -644,7 +644,7 @@ class AssignmentsPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment that should be synchronized", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment that should be synchronized", required: true)]
     public function actionSyncWithExercise($id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -679,7 +679,7 @@ class AssignmentsPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionSolutions(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -712,7 +712,7 @@ class AssignmentsPresenter extends BasePresenter
      * Get a list of solutions created by a user of an assignment
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     #[Path("userId", new VString(), "Identifier of the user", required: true)]
     public function actionUserSolutions(string $id, string $userId)
     {
@@ -756,7 +756,7 @@ class AssignmentsPresenter extends BasePresenter
      * @GET
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     #[Path("userId", new VString(), "Identifier of the user", required: true)]
     public function actionBestSolution(string $id, string $userId)
     {
@@ -786,7 +786,7 @@ class AssignmentsPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionBestSolutions(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -832,7 +832,7 @@ class AssignmentsPresenter extends BasePresenter
      * @throws \Nette\Application\AbortException
      * @throws \Nette\Application\BadRequestException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionDownloadBestSolutionsArchive(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);

@@ -238,7 +238,7 @@ class GroupViewFactory
                 "observers" => $group->getObserversIds(),
                 "students" => $this->groupAcl->canViewStudents($group) ? $group->getStudentsIds() : [],
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
-                "hasValidLicence" => $group->hasValidLicence(),
+                "hasValidLicence" => $group->hasValidLicense(),
                 "assignments" => $group->getAssignments()->filter(
                     function (Assignment $assignment) {
                         return $this->assignmentAcl->canViewDetail($assignment);

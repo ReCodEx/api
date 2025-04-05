@@ -2,9 +2,7 @@
 
 namespace App\Model\Repository;
 
-use App\Model\Entity\Group;
 use App\Model\Entity\GroupExternalAttribute;
-use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
@@ -20,7 +18,7 @@ class GroupExternalAttributes extends BaseRepository
     }
 
     /**
-     * Helper function that constructs AND expression representing a filter clause for fiven query builder.
+     * Helper function that constructs AND expression representing a filter clause for find query builder.
      * @param QueryBuilder $qb
      * @param int $counter used for generating unique parameter identifiers
      * @param array $clause represented as associative array
@@ -59,7 +57,7 @@ class GroupExternalAttributes extends BaseRepository
     public function findByFilter(array $filter): array
     {
         if (!$filter) {
-            throw new InvalidArgumentException("Arument filter is empty.");
+            throw new InvalidArgumentException("Argument filter is empty.");
         }
 
         $qb = $this->createQueryBuilder('ea')->join('ea.group', 'g');

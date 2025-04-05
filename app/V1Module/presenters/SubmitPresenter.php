@@ -9,6 +9,7 @@ use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\ParseException;
@@ -168,12 +169,12 @@ class SubmitPresenter extends BasePresenter
      * @param User|null $user
      * @return bool
      */
-    private function canReceiveSubmissions(Assignment $assignment, User $user = null)
+    private function canReceiveSubmissions(Assignment $assignment, ?User $user = null)
     {
         return $this->assignmentAcl->canSubmit($assignment, $user) &&
             $assignment->isVisibleToStudents() &&
             $assignment->getGroup() &&
-            $assignment->getGroup()->hasValidLicence() &&
+            $assignment->getGroup()->hasValidLicense() &&
             $user !== null &&
             count(
                 $this->assignmentSolutions->findValidSolutions($assignment, $user)
@@ -192,7 +193,7 @@ class SubmitPresenter extends BasePresenter
         return $userId !== null ? $this->users->findOrThrow($userId) : $this->getCurrentUser();
     }
 
-    public function checkCanSubmit(string $id, string $userId = null)
+    public function checkCanSubmit(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
 
@@ -207,9 +208,9 @@ class SubmitPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     #[Query("userId", new VString(), "Identification of the user", required: false, nullable: true)]
-    public function actionCanSubmit(string $id, string $userId = null)
+    public function actionCanSubmit(string $id, ?string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);
         $user = $this->getUserOrCurrent($userId);
@@ -243,7 +244,7 @@ class SubmitPresenter extends BasePresenter
         nullable: true,
     )]
     #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionSubmit(string $id)
     {
         $this->assignments->beginTransaction();
@@ -346,7 +347,7 @@ class SubmitPresenter extends BasePresenter
      * @throws ParseException
      */
     #[Post("debug", new VBool(), "Debugging resubmit with all logs and outputs", required: false)]
-    #[Path("id", new VString(), "Identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the solution", required: true)]
     public function actionResubmit(string $id)
     {
         $req = $this->getRequest();
@@ -366,12 +367,12 @@ class SubmitPresenter extends BasePresenter
 
     /**
      * Return a list of all pending resubmit async jobs associated with given assignment.
-     * Under normal circumstances, the list shoul be either empty, or contian only one job.
+     * Under normal circumstances, the list should be either empty, or contain only one job.
      * @GET
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionResubmitAllAsyncJobStatus(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -396,7 +397,7 @@ class SubmitPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionResubmitAll(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -414,7 +415,7 @@ class SubmitPresenter extends BasePresenter
         $this->sendSuccessResponse(['pending' => $asyncJobs, 'failed' => $failedJobs]);
     }
 
-    public function checkPreSubmit(string $id, string $userId = null)
+    public function checkPreSubmit(string $id, ?string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);
         $user = $this->getUserOrCurrent($userId);
@@ -435,7 +436,7 @@ class SubmitPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("files", new VArray())]
-    #[Path("id", new VString(), "identifier of assignment", required: true)]
+    #[Path("id", new VUuid(), "identifier of assignment", required: true)]
     #[Query("userId", new VString(), "Identifier of the submission author", required: false, nullable: true)]
     public function actionPreSubmit(string $id, string $userId = null)
     {

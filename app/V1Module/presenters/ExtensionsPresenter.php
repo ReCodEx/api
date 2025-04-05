@@ -5,16 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use App\Model\Repository\Instances;
@@ -70,7 +61,7 @@ class ExtensionsPresenter extends BasePresenter
     }
 
     /**
-     * Return URL refering to the extension with properly injected temporary JWT token.
+     * Return URL referring to the extension with properly injected temporary JWT token.
      * @GET
      */
     #[Query("locale", new VString(2, 2), required: false)]
@@ -100,7 +91,7 @@ class ExtensionsPresenter extends BasePresenter
     public function checkToken(string $extId)
     {
         /*
-         * This checker does not employ traditional ACLs for permission checks since it is trvial and it is better
+         * This checker does not employ traditional ACLs for permission checks since it is trivial and it is better
          * to keep everything here (in one place). However, this may change in the future should the presenter get
          * more complex.
          * This action expects to be authenticated by temporary token generated in 'url' action.

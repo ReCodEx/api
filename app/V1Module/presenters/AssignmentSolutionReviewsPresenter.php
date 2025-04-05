@@ -7,6 +7,7 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\ForbiddenRequestException;
@@ -90,7 +91,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @GET
      * @throws InternalServerException
      */
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     public function actionDefault(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -114,7 +115,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @throws InternalServerException
      */
     #[Post("close", new VBool(), "If true, the review is closed. If false, the review is (re)opened.")]
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     public function actionUpdate(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -183,7 +184,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @DELETE
      * @throws InternalServerException
      */
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     public function actionRemove(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -272,7 +273,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         "If true, no email notification will be sent (only applies when the review has been closed)",
         required: false,
     )]
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     public function actionNewComment(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -299,7 +300,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         $this->reviewComments->persist($comment);
 
         if ($solution->getReviewedAt() !== null) {
-            // review is already closed, this needs special treatement
+            // review is already closed, this needs special treatment
             if ($issue) {
                 $solution->setIssuesCount($solution->getIssuesCount() + 1);
                 $this->assignmentSolutions->persist($solution);
@@ -345,7 +346,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         "If true, no email notification will be sent (only applies when the review has been closed)",
         required: false,
     )]
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     #[Path("commentId", new VString(), "identifier of the review comment", required: true)]
     public function actionEditComment(string $id, string $commentId)
     {
@@ -372,7 +373,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
             $this->reviewComments->persist($comment);
 
             if ($solution->getReviewedAt() !== null) {
-                // review is already closed, this needs special treatement
+                // review is already closed, this needs special treatment
                 if ($issueChanged) {
                     $solution->setIssuesCount($solution->getIssuesCount() + ($issue ? 1 : -1));
                     $this->assignmentSolutions->persist($solution);
@@ -405,7 +406,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * Remove one comment from a review.
      * @DELETE
      */
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     #[Path("commentId", new VString(), "identifier of the review comment", required: true)]
     public function actionDeleteComment(string $id, string $commentId)
     {
@@ -415,7 +416,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
 
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if ($solution->getReviewedAt() !== null) {
-            // review is already closed, this needs special treatement
+            // review is already closed, this needs special treatment
             if ($isIssue) {
                 $solution->setIssuesCount($solution->getIssuesCount() - 1);
                 $this->assignmentSolutions->persist($solution);
@@ -441,7 +442,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * Along with that it returns all assignment entities of the corresponding solutions.
      * @GET
      */
-    #[Path("id", new VString(), "of the user whose pending reviews are listed", required: true)]
+    #[Path("id", new VUuid(), "of the user whose pending reviews are listed", required: true)]
     public function actionPending(string $id)
     {
         $user = $this->users->findOrThrow($id);

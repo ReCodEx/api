@@ -6,6 +6,7 @@ use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
@@ -94,7 +95,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws SubmissionFailedException
      */
     #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUploadSupplementaryFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -175,7 +176,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * Get list of all supplementary files for an exercise
      * @GET
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionGetSupplementaryFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -195,7 +196,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @DELETE
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
     public function actionDeleteSupplementaryFile(string $id, string $fileId)
     {
@@ -228,7 +229,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "of exercise", required: true)]
+    #[Path("id", new VUuid(), "of exercise", required: true)]
     public function actionDownloadSupplementaryFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -255,7 +256,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("files", new VMixed(), "Identifiers of attachment files", nullable: true)]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUploadAttachmentFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -310,7 +311,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @GET
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionGetAttachmentFiles(string $id)
     {
         /** @var Exercise $exercise */
@@ -333,7 +334,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
     public function actionDeleteAttachmentFile(string $id, string $fileId)
     {
@@ -364,7 +365,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "of exercise", required: true)]
+    #[Path("id", new VUuid(), "of exercise", required: true)]
     public function actionDownloadAttachmentFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);

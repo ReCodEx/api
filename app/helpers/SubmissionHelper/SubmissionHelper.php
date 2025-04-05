@@ -313,7 +313,7 @@ class SubmissionHelper
 
         // check for the license of instance of user
         $assignment = $solution->getAssignment();
-        if ($assignment->getGroup() && $assignment->getGroup()->hasValidLicence() === false) {
+        if ($assignment->getGroup() && $assignment->getGroup()->hasValidLicense() === false) {
             throw new ForbiddenRequestException(
                 "Your institution does not have a valid licence and you cannot submit solutions for any assignment " .
                     "in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",

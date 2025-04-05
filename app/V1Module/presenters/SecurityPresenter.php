@@ -58,7 +58,7 @@ class SecurityPresenter extends BasePresenter
             return;
         }
 
-        $action = $requestParams["action"] ?? Presenter::DEFAULT_ACTION;
+        $action = $requestParams["action"] ?? Presenter::DefaultAction;
         $methodName = $presenter->formatPermissionCheckMethod($action);
         if (!method_exists($presenter, $methodName)) {
             $this->checkFailed();

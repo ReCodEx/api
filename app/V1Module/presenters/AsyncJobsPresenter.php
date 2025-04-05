@@ -5,22 +5,13 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
-use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Async\Dispatcher;
 use App\Async\Handler\PingAsyncJobHandler;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AsyncJobs;
-use App\Model\Entity\Assignment;
-use App\Model\Entity\AsyncJob;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAsyncJobPermissions;
 use App\Exceptions\NotFoundException;
@@ -80,7 +71,7 @@ class AsyncJobsPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "job identifier", required: true)]
+    #[Path("id", new VUuid(), "job identifier", required: true)]
     public function actionDefault(string $id)
     {
         $asyncJob = $this->asyncJobs->findOrThrow($id);
@@ -119,7 +110,7 @@ class AsyncJobsPresenter extends BasePresenter
             throw new BadRequestException("Age threshold must not be negative.");
         }
 
-        // criterium for termination (either pending or within threshold)
+        // criteria for termination (either pending or within threshold)
         $finishedAt = Criteria::expr()->eq('finishedAt', null);
         if ($ageThreshold) {
             $thresholdDate = new DateTime();
@@ -138,7 +129,7 @@ class AsyncJobsPresenter extends BasePresenter
                     Criteria::expr()->eq('scheduledAt', null)
                 )
         );
-        $criteria->orderBy([ 'createdAt' => 'ASC' ]);
+        $criteria->orderBy(['createdAt' => 'ASC']);
         $jobs = $this->asyncJobs->matching($criteria)->toArray();
 
         $jobs = array_filter($jobs, function ($job) {
@@ -161,7 +152,7 @@ class AsyncJobsPresenter extends BasePresenter
      * @POST
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "job identifier", required: true)]
+    #[Path("id", new VUuid(), "job identifier", required: true)]
     public function actionAbort(string $id)
     {
         $this->asyncJobs->beginTransaction();
@@ -213,7 +204,7 @@ class AsyncJobsPresenter extends BasePresenter
      * Get all pending async jobs related to a particular assignment.
      * @GET
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), required: true)]
     public function actionAssignmentJobs($id)
     {
         $asyncJobs = $this->asyncJobs->findAssignmentJobs($id);

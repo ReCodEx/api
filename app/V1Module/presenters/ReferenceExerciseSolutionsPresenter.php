@@ -9,6 +9,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
@@ -468,7 +469,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("debug", new VBool(), "Debugging evaluation with all logs and outputs", required: false)]
-    #[Path("id", new VString(), "Identifier of the reference solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the reference solution", required: true)]
     public function actionResubmit(string $id)
     {
         $req = $this->getRequest();
@@ -635,7 +636,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "of reference solution", required: true)]
+    #[Path("id", new VUuid(), "of reference solution", required: true)]
     public function actionFiles(string $id)
     {
         $solution = $this->referenceSolutions->findOrThrow($id)->getSolution();

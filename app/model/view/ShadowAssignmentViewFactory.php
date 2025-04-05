@@ -12,7 +12,6 @@ use App\Security\Identity;
 
 class ShadowAssignmentViewFactory
 {
-
     /** @var IShadowAssignmentPermissions */
     public $shadowAssignmentAcl;
 
