@@ -317,7 +317,7 @@ class SubmissionHelper
             throw new ForbiddenRequestException(
                 "Your institution does not have a valid licence and you cannot submit solutions for any assignment " .
                     "in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
-                IResponse::S402_PAYMENT_REQUIRED
+                IResponse::S402_PaymentRequired
             );
         }
 

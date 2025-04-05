@@ -135,7 +135,7 @@ class InstancesPresenter extends BasePresenter
         $this->instances->persist($instance->getRootGroup(), false);
         $this->instances->persist($localizedRootGroup, false);
         $this->instances->persist($instance);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $user), IResponse::S201_CREATED);
+        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $user), IResponse::S201_Created);
     }
 
     public function checkUpdateInstance(string $id)

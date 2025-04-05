@@ -23,7 +23,7 @@ class FileStorageException extends Exception
         string $path = null,
         $previous = null
     ) {
-        parent::__construct($msg, IResponse::S500_INTERNAL_SERVER_ERROR, $previous);
+        parent::__construct($msg, IResponse::S500_InternalServerError, $previous);
         $this->path = $path;
     }
 }

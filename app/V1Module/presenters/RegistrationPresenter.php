@@ -220,7 +220,7 @@ class RegistrationPresenter extends BasePresenter
                 "user" => $this->userViewFactory->getFullUser($user),
                 "accessToken" => $this->accessManager->issueToken($user)
             ],
-            IResponse::S201_CREATED
+            IResponse::S201_Created
         );
     }
 
@@ -398,7 +398,7 @@ class RegistrationPresenter extends BasePresenter
                 "user" => $this->userViewFactory->getFullUser($user),
                 "accessToken" => $this->accessManager->issueToken($user),
             ],
-            IResponse::S201_CREATED
+            IResponse::S201_Created
         );
     }
 }

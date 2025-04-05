@@ -23,7 +23,7 @@ class ExerciseConfigException extends ApiException
     ) {
         parent::__construct(
             "Exercise configuration error - $msg",
-            IResponse::S400_BAD_REQUEST,
+            IResponse::S400_BadRequest,
             $frontendErrorCode,
             $frontendErrorParams
         );

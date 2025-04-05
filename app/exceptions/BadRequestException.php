@@ -23,11 +23,11 @@ class BadRequestException extends ApiException
         string $msg = 'one or more parameters are missing',
         string $frontendErrorCode = FrontendErrorMappings::E400_000__BAD_REQUEST,
         $frontendErrorParams = null,
-        Exception $previous = null
+        ?Exception $previous = null
     ) {
         parent::__construct(
             "Bad Request - $msg",
-            IResponse::S400_BAD_REQUEST,
+            IResponse::S400_BadRequest,
             $frontendErrorCode,
             $frontendErrorParams,
             $previous

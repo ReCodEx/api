@@ -23,7 +23,7 @@ class InvalidApiArgumentException extends ApiException
     ) {
         parent::__construct(
             "Invalid Argument '$argument' - $msg",
-            IResponse::S400_BAD_REQUEST,
+            IResponse::S400_BadRequest,
             $frontendErrorCode,
             ["argument" => $argument]
         );

@@ -22,7 +22,7 @@ class InvalidStateException extends ApiException
     ) {
         parent::__construct(
             "Invalid State - $msg",
-            IResponse::S500_INTERNAL_SERVER_ERROR,
+            IResponse::S500_InternalServerError,
             $frontendErrorCode,
             $frontendErrorParams
         );

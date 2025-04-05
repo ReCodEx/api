@@ -22,6 +22,6 @@ class ExerciseCompilationSoftException extends ExerciseCompilationException
         string $frontendErrorCode = FrontendErrorMappings::E400_400__EXERCISE_COMPILATION,
         $frontendErrorParams = null
     ) {
-        parent::__construct($msg, IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);
+        parent::__construct($msg, IResponse::S400_BadRequest, $frontendErrorCode, $frontendErrorParams);
     }
 }

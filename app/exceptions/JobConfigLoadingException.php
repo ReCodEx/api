@@ -23,7 +23,7 @@ class JobConfigLoadingException extends ApiException
     ) {
         parent::__construct(
             "Job configuration file cannot be opened or parsed - $msg",
-            IResponse::S400_BAD_REQUEST,
+            IResponse::S400_BadRequest,
             $frontendErrorCode,
             $frontendErrorParams
         );
