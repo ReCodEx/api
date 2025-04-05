@@ -4,11 +4,6 @@ namespace App\Model\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
-use Gedmo\Mapping\Annotation as Gedmo;
-use App\Exceptions\ApiException;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
 use InvalidArgumentException;
 use LogicException;
 use JsonSerializable;
@@ -128,7 +123,7 @@ class AsyncJob implements JsonSerializable
     /**
      * @ORM\Column(type="string", nullable=true)
      * @var string
-     * ID of a worker who took this task. Once a task is assigned to a worker, it may not be rellocated to another one.
+     * ID of a worker who took this task. Once a task is assigned to a worker, it may not be relocated to another one.
      */
     protected $workerId = null;
 
@@ -138,7 +133,7 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * Allocate this job for patricular worker. If the job is allocated, the worker IDs must match.
+     * Allocate this job for particular worker. If the job is allocated, the worker IDs must match.
      * The retry counter is incremented.
      * @param string $workerId
      * @throws LogicException
@@ -257,8 +252,12 @@ class AsyncJob implements JsonSerializable
      * @param array $arguments for the job execution
      * @param Assignment|null $assignment associated with the job
      */
-    public function __construct(?User $createdBy, string $command, array $arguments = [], Assignment $assignment = null)
-    {
+    public function __construct(
+        ?User $createdBy,
+        string $command,
+        array $arguments = [],
+        ?Assignment $assignment = null
+    ) {
         $this->createdBy = $createdBy;
         $this->createdAt = new DateTime();
         $this->command = $command;

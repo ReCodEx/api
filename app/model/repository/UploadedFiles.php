@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class UploadedFiles extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, UploadedFile::class);
@@ -44,7 +43,7 @@ class UploadedFiles extends BaseRepository
             FROM App\Model\Entity\AssignmentSolution sub
             WHERE IDENTITY(sub.solution) = :solutionId
         ");
-        $query->setParameters([ 'solutionId' => $file->getSolution()->getId() ]);
+        $query->setParameters(['solutionId' => $file->getSolution()->getId()]);
 
         $result = $query->getResult();
         if (count($result) === 0) {
@@ -71,7 +70,7 @@ class UploadedFiles extends BaseRepository
             FROM App\Model\Entity\ReferenceExerciseSolution ref
             WHERE IDENTITY(ref.solution) = :solutionId
         ");
-        $query->setParameters([ 'solutionId' => $file->getSolution()->getId() ]);
+        $query->setParameters(['solutionId' => $file->getSolution()->getId()]);
 
         $result = $query->getResult();
         if (count($result) === 0) {
@@ -101,7 +100,7 @@ class UploadedFiles extends BaseRepository
             WHERE TYPE(f) = 'uploadedfile'
             AND f.uploadedAt < :threshold
         ");
-        $query->setParameters([ "threshold" => $thresholdDate ]);
+        $query->setParameters(["threshold" => $thresholdDate]);
 
         return $query->getResult();
     }

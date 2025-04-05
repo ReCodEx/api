@@ -84,14 +84,14 @@ class SubmissionFailure implements JsonSerializable
      * @param string $description
      * @param DateTime|null $createdAt
      */
-    private function __construct(string $type, string $description, DateTime $createdAt = null)
+    private function __construct(string $type, string $description, ?DateTime $createdAt = null)
     {
         $this->type = $type;
         $this->description = $description;
         $this->createdAt = $createdAt ?: new DateTime();
     }
 
-    public static function create(string $type, string $description, DateTime $createdAt = null)
+    public static function create(string $type, string $description, ?DateTime $createdAt = null)
     {
         return new SubmissionFailure($type, $description, $createdAt);
     }
@@ -100,7 +100,7 @@ class SubmissionFailure implements JsonSerializable
      * Accessors
      */
 
-    public function resolve(string $note, DateTime $resolvedAt = null)
+    public function resolve(string $note, ?DateTime $resolvedAt = null)
     {
         $this->resolvedAt = $resolvedAt ?: new DateTime();
         $this->resolutionNote = $note;

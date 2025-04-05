@@ -2,8 +2,6 @@
 
 namespace App\Model\Entity;
 
-use App\Helpers\FileStorageManager;
-use App\Helpers\FileStorage\IImmutableFile;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;

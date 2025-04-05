@@ -393,7 +393,7 @@ class GroupsPresenter extends BasePresenter
     #[Post(
         "externalId",
         new VMixed(),
-        "An informative, human readable indentifier of the group",
+        "An informative, human readable identifier of the group",
         required: false,
         nullable: true,
     )]
@@ -403,7 +403,7 @@ class GroupsPresenter extends BasePresenter
     #[Post("threshold", new VInt(), "A minimum percentage of points needed to pass the course", required: false)]
     #[Post("pointsLimit", new VInt(), "A minimum of (absolute) points needed to pass the course", required: false)]
     #[Post("localizedTexts", new VArray(), "Localized names and descriptions")]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionUpdateGroup(string $id)
     {
         $req = $this->getRequest();
@@ -444,7 +444,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetOrganizational(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -480,7 +480,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetArchived(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -492,7 +492,7 @@ class GroupsPresenter extends BasePresenter
             // snapshot the inherited membership-relations
             $typePriorities = array_flip(GroupMembership::INHERITABLE_TYPES);
 
-            // this is actually a hack for PHP Stan (can be removed when there will be more than 1 interitable type)
+            // this is actually a hack for PHP Stan (can be removed when there will be more than 1 inheritable type)
             $typePriorities[''] = -1; // adding a fake priority for fake type
 
             $membershipsToInherit = []; // aggregated memberships from all ancestors, key is user ID
@@ -562,7 +562,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -584,7 +584,7 @@ class GroupsPresenter extends BasePresenter
      * Set an examination period (in the future) when the group will be secured for submitting.
      * Only locked students may submit solutions in the group during this period.
      * This endpoint is also used to update already planned exam period, but only dates in the future
-     * can be editted (e.g., once an exam begins, the beginning may no longer be updated).
+     * can be edited (e.g., once an exam begins, the beginning may no longer be updated).
      * @POST
      * @throws NotFoundException
      */
@@ -602,7 +602,7 @@ class GroupsPresenter extends BasePresenter
         required: true,
     )]
     #[Post("strict", new VBool(), "Whether locked users are prevented from accessing other groups.", required: false)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -715,7 +715,7 @@ class GroupsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -764,7 +764,7 @@ class GroupsPresenter extends BasePresenter
      * Retrieve a list of locks for given exam
      * @GET
      */
-    #[Path("id", new VString(), "An identifier of the related group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the related group", required: true)]
     #[Path("examId", new VInt(), "An identifier of the exam", required: true)]
     public function actionGetExamLocks(string $id, string $examId)
     {
@@ -780,7 +780,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws BadRequestException
      */
-    #[Path("id", new VString(), "An identifier of the relocated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the relocated group", required: true)]
     #[Path("newParentId", new VString(), "An identifier of the new parent group", required: true)]
     public function actionRelocate(string $id, string $newParentId)
     {
@@ -838,7 +838,7 @@ class GroupsPresenter extends BasePresenter
      * Delete a group
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionRemoveGroup(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -861,7 +861,7 @@ class GroupsPresenter extends BasePresenter
      * Get details of a group
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionDetail(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -881,9 +881,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of subgroups of a group
      * @GET
-     * @DEPRECTATED Subgroup list is part of group view.
+     * @DEPRECATED Subgroup list is part of group view.
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionSubgroups(string $id)
     {
         /** @var Group $group */
@@ -914,7 +914,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @DEPRECATED Members are listed in group view.
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -948,7 +948,7 @@ class GroupsPresenter extends BasePresenter
      * @POST
      */
     #[Post("type", new VString(1), "Identifier of membership type (admin, supervisor, ...)", required: true)]
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
     public function actionAddMember(string $id, string $userId)
     {
@@ -994,7 +994,7 @@ class GroupsPresenter extends BasePresenter
      * Remove a member (other than student) from a group
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
     public function actionRemoveMember(string $id, string $userId)
     {
@@ -1033,7 +1033,7 @@ class GroupsPresenter extends BasePresenter
      * Get all exercise assignments for a group
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionAssignments(string $id)
     {
         /** @var Group $group */
@@ -1067,7 +1067,7 @@ class GroupsPresenter extends BasePresenter
      * Get all shadow assignments for a group
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionShadowAssignments(string $id)
     {
         /** @var Group $group */
@@ -1106,7 +1106,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionStats(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -1135,7 +1135,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @throws BadRequestException
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionStudentsStats(string $id, string $userId)
     {
@@ -1165,7 +1165,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @throws BadRequestException
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionStudentsSolutions(string $id, string $userId)
     {
@@ -1212,7 +1212,7 @@ class GroupsPresenter extends BasePresenter
      * Add a student to a group
      * @POST
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionAddStudent(string $id, string $userId)
     {
@@ -1243,7 +1243,7 @@ class GroupsPresenter extends BasePresenter
      * Remove a student from a group
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionRemoveStudent(string $id, string $userId)
     {
@@ -1275,7 +1275,7 @@ class GroupsPresenter extends BasePresenter
      * Lock student in a group and with an IP from which the request was made.
      * @POST
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionLockStudent(string $id, string $userId)
     {
@@ -1315,7 +1315,7 @@ class GroupsPresenter extends BasePresenter
      * Unlock a student currently locked in a group.
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionUnlockStudent(string $id, string $userId)
     {

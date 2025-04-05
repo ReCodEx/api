@@ -7,6 +7,7 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
@@ -166,7 +167,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetEnvironmentConfigs(string $id)
     {
         /** @var Exercise $exercise */
@@ -194,7 +195,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("environmentConfigs", new VArray(), "Environment configurations for the exercise")]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUpdateEnvironmentConfigs(string $id)
     {
         /** @var Exercise $exercise */
@@ -279,7 +280,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetConfiguration(string $id)
     {
         /** @var Exercise $exercise */
@@ -316,7 +317,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ParseException
      */
     #[Post("config", new VArray(), "A list of basic high level exercise configuration")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetConfiguration(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -370,7 +371,7 @@ class ExercisesConfigPresenter extends BasePresenter
      */
     #[Post("runtimeEnvironmentId", new VString(1), "Environment identifier", required: false)]
     #[Post("pipelinesIds", new VArray(), "Identifiers of selected pipelines for one test")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetVariablesForExerciseConfig(string $id)
     {
         // get request data
@@ -414,7 +415,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("runtimeEnvironmentId", new VString(), required: true)]
     #[Path("hwGroupId", new VString(), required: true)]
     public function actionGetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
@@ -463,7 +464,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ExerciseCompilationException
      */
     #[Post("limits", new VArray(), "A list of resource limits for the given environment and hardware group")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("runtimeEnvironmentId", new VString(), required: true)]
     #[Path("hwGroupId", new VString(), required: true)]
     public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
@@ -527,7 +528,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("runtimeEnvironmentId", new VString(), required: true)]
     #[Path("hwGroupId", new VString(), required: true)]
     public function actionRemoveHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
@@ -571,7 +572,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetLimits(string $id)
     {
         /** @var Exercise $exercise */
@@ -613,7 +614,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ExerciseConfigException
      */
     #[Post("limits", new VArray(), "A list of resource limits in the same format as getLimits endpoint yields.")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetLimits(string $id)
     {
         /** @var Exercise $exercise */
@@ -672,7 +673,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Get score configuration for exercise based on given identification.
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -701,7 +702,7 @@ class ExercisesConfigPresenter extends BasePresenter
         "A configuration of the score calculator (the format depends on the calculator type)",
         nullable: true,
     )]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -740,7 +741,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Get tests for exercise based on given identification.
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -765,7 +766,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ExerciseConfigException
      */
     #[Post("tests", new VArray(), "An array of tests which will belong to exercise")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);

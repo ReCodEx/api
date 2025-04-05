@@ -3,8 +3,6 @@
 namespace App\Model\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Nette;
-use DateTime;
 use Doctrine\Common\Collections\Criteria;
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
@@ -36,7 +34,7 @@ class Comments extends BaseRepository
      * the authorship of comments directly as a performance optimization (we need only the count, not all entities).
      * @param CommentThread $thread
      * @param User $user
-     * @param bool $allVisible True = all coments visible for the user, false = comments made by the user.
+     * @param bool $allVisible True = all comments visible for the user, false = comments made by the user.
      * @return int
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException

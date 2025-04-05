@@ -86,7 +86,7 @@ class Instance
         );
     }
 
-    public function hasValidLicence()
+    public function hasValidLicense()
     {
         return $this->needsLicence === false || $this->getValidLicences()->count() > 0;
     }

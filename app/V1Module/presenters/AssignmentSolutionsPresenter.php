@@ -3,17 +3,11 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
@@ -157,7 +151,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @GET
      * @throws InternalServerException
      */
-    #[Path("id", new VString(), "Identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the solution", required: true)]
     public function actionSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -189,7 +183,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws InternalServerException
      */
     #[Post("note", new VString(0, 1024), "A note by the author of the solution")]
-    #[Path("id", new VString(), "Identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the solution", required: true)]
     public function actionUpdateSolution(string $id)
     {
         $req = $this->getRequest();
@@ -213,7 +207,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @DELETE
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "identifier of assignment solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of assignment solution", required: true)]
     public function actionDeleteSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -250,7 +244,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * Get list of all submissions of a solution
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the solution", required: true)]
     public function actionSubmissions(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -352,28 +346,28 @@ class AssignmentSolutionsPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    #[Path("id", new VString(), "Identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the solution", required: true)]
     public function actionSetBonusPoints(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         $assignment = $solution->getAssignment();
         $author = $solution->getSolution()->getAuthor();
         $oldBonusPoints = $solution->getBonusPoints();
-        $oldOverridenPoints = $solution->getOverriddenPoints();
+        $oldOverriddenPoints = $solution->getOverriddenPoints();
 
         $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
         $overriddenPoints = $this->getRequest()->getPost("overriddenPoints");
 
         // remember, who was the best in case the new points will change that
         $oldBest = null;
-        if ($assignment && ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints)) {
+        if ($assignment && ($oldBonusPoints !== $newBonusPoints || $oldOverriddenPoints !== $overriddenPoints)) {
             $oldBest = $this->assignmentSolutions->findBestSolution($assignment, $author);
         }
 
         $solution->setBonusPoints($newBonusPoints);
 
-        // TODO: validations 'null|numericint' for overridenPoints cannot be used, because null is converted to empty
-        // TODO: string which immediately breaks stated validation... in the future, this behaviour has to change
+        // TODO: validations 'null|numericint' for overriddenPoints cannot be used, because null is converted to empty
+        // TODO: string which immediately breaks stated validation... in the future, this behavior has to change
         // TODO: lucky third TODO
         if (Validators::isNumericInt($overriddenPoints)) {
             $solution->setOverriddenPoints($overriddenPoints);
@@ -382,7 +376,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
                 $solution->setOverriddenPoints(null);
             } else {
                 throw new InvalidApiArgumentException(
-                    'overridenPoints',
+                    'overriddenPoints',
                     "The value '$overriddenPoints' is not null|numericint"
                 );
             }
@@ -391,7 +385,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
         $this->assignmentSolutions->flush();
 
         $changedSolutions = []; // list of changed solutions reported back in payload
-        if ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints) {
+        if ($oldBonusPoints !== $newBonusPoints || $oldOverriddenPoints !== $overriddenPoints) {
             $this->pointsChangedEmailsSender->solutionPointsUpdated($solution);
             $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($solution);
             if ($assignment) {
@@ -445,7 +439,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws \Exception
      */
     #[Post("value", new VBool(), "True or false which should be set to given flag name", required: true)]
-    #[Path("id", new VString(), "identifier of the solution", required: true)]
+    #[Path("id", new VUuid(), "identifier of the solution", required: true)]
     #[Path("flag", new VString(), "name of the flag which should to be changed", required: true)]
     public function actionSetFlag(string $id, string $flag)
     {
@@ -484,7 +478,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
         );
 
         // handle unique flags
-        $resetedSolution = null; // remeber original holder of a unique flag (for an email notification)
+        $previousHolder = null; // remember original holder of a unique flag (for an email notification)
         /* @phpstan-ignore-next-line */
         if ($unique && $value) {
             // flag has to be set to false for all other solutions of a user
@@ -494,7 +488,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
             );
             foreach ($assignmentSolutions as $assignmentSolution) {
                 if ($assignmentSolution->getFlag($flag)) {
-                    $resetedSolution = $assignmentSolution;
+                    $previousHolder = $assignmentSolution;
                 }
                 $assignmentSolution->setFlag($flag, false);
             }
@@ -513,11 +507,11 @@ class AssignmentSolutionsPresenter extends BasePresenter
                 $this->getCurrentUser(),
                 $solution,
                 $value,
-                $resetedSolution
+                $previousHolder
             );
         }
 
-        // assemble response (all entites and stats that may have changed)
+        // assemble response (all entities and stats that may have changed)
         $assignmentId = $solution->getAssignment()->getId();
         $groupOfSolution = $solution->getAssignment()->getGroup();
         if ($groupOfSolution === null) {
@@ -525,9 +519,9 @@ class AssignmentSolutionsPresenter extends BasePresenter
         }
 
         $resSolutions = [$id => $this->assignmentSolutionViewFactory->getSolutionData($solution)];
-        if ($resetedSolution) {
-            $resSolutions[$resetedSolution->getId()] =
-                $this->assignmentSolutionViewFactory->getSolutionData($resetedSolution);
+        if ($previousHolder) {
+            $resSolutions[$previousHolder->getId()] =
+                $this->assignmentSolutionViewFactory->getSolutionData($previousHolder);
         }
 
         $bestSolution = $this->assignmentSolutions->findBestSolution(
@@ -567,7 +561,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "of assignment solution", required: true)]
+    #[Path("id", new VUuid(), "of assignment solution", required: true)]
     public function actionDownloadSolutionArchive(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -592,7 +586,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "of assignment solution", required: true)]
+    #[Path("id", new VUuid(), "of assignment solution", required: true)]
     public function actionFiles(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id)->getSolution();
@@ -672,7 +666,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * Along with that it returns all assignment entities of the corresponding solutions.
      * @GET
      */
-    #[Path("id", new VString(), "of the user whose solutions with requested reviews are listed", required: true)]
+    #[Path("id", new VUuid(), "of the user whose solutions with requested reviews are listed", required: true)]
     public function actionReviewRequests(string $id)
     {
         $user = $this->users->findOrThrow($id);

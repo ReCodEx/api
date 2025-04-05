@@ -3,17 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
@@ -110,7 +102,7 @@ class CommentsPresenter extends BasePresenter
      * @GET
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "Identifier of the comment thread", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the comment thread", required: true)]
     public function actionDefault($id)
     {
         $thread = $this->findThreadOrCreateIt($id);
@@ -140,7 +132,7 @@ class CommentsPresenter extends BasePresenter
      */
     #[Post("text", new VString(1, 65535), "Text of the comment")]
     #[Post("isPrivate", new VBool(), "True if the comment is private", required: false)]
-    #[Path("id", new VString(), "Identifier of the comment thread", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the comment thread", required: true)]
     public function actionAddComment(string $id)
     {
         $thread = $this->findThreadOrCreateIt($id);

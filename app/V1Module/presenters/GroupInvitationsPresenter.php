@@ -3,14 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
@@ -64,11 +57,11 @@ class GroupInvitationsPresenter extends BasePresenter
      * Return invitation details including all relevant group entities (so a name can be constructed).
      * @GET
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group invitation", required: true)]
     public function actionDefault($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
-        $groups = $this->groups->groupsAncestralClosure([ $invitation->getGroup() ]);
+        $groups = $this->groups->groupsAncestralClosure([$invitation->getGroup()]);
         $this->sendSuccessResponse([
             "invitation" => $invitation,
             "groups" => $this->groupViewFactory->getGroups($groups),
@@ -89,7 +82,7 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     #[Post("expireAt", new VTimestamp(), "When the invitation expires.", nullable: true)]
     #[Post("note", new VMixed(), "Note for the students who wish to use the invitation link.", nullable: true)]
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group invitation", required: true)]
     public function actionUpdate($id)
     {
         $req = $this->getRequest();
@@ -112,7 +105,7 @@ class GroupInvitationsPresenter extends BasePresenter
     /**
      * @DELETE
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group invitation", required: true)]
     public function actionRemove($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
@@ -137,7 +130,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * Allow the current user to join the corresponding group using the invitation.
      * @POST
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group invitation", required: true)]
     public function actionAccept($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);

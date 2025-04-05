@@ -8,6 +8,7 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
@@ -232,7 +233,7 @@ class NotificationsPresenter extends BasePresenter
     #[Post("role", new VString(1), "Users with this role and its children can see notification")]
     #[Post("type", new VString(), "Type of the notification (custom)")]
     #[Post("localizedTexts", new VArray(), "Text of notification")]
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), required: true)]
     public function actionUpdate(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);
@@ -254,7 +255,7 @@ class NotificationsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), required: true)]
     public function actionRemove(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);

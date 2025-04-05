@@ -5,15 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
@@ -22,11 +14,10 @@ use App\Model\Repository\Groups;
 use App\Model\Entity\GroupExternalAttribute;
 use App\Model\View\GroupViewFactory;
 use App\Security\ACL\IGroupPermissions;
-use DateTime;
 use InvalidArgumentException;
 
 /**
- * Additional attributes used by 3rd parties to keep relations between groups and entites in external systems.
+ * Additional attributes used by 3rd parties to keep relations between groups and entities in external systems.
  * In case of a university, the attributes may hold things like course/semester/student-group identifiers.
  */
 class GroupExternalAttributesPresenter extends BasePresenter
@@ -66,10 +57,10 @@ class GroupExternalAttributesPresenter extends BasePresenter
      * Return all attributes that correspond to given filtering parameters.
      * @GET
      *
-     * The filter is encocded as array of objects (logically represented as disjunction of clauses)
+     * The filter is encoded as array of objects (logically represented as disjunction of clauses)
      * -- i.e., [clause1 OR clause2 ...]. Each clause is an object with the following keys:
      * "group", "service", "key", "value" that match properties of GroupExternalAttribute entity.
-     * The values are expected values matched with == in the search. Any of the keys may be ommitted or null
+     * The values are expected values matched with == in the search. Any of the keys may be omitted or null
      * which indicate it should not be matched in the particular clause.
      * A clause must contain at least one of the four keys.
      *
@@ -142,7 +133,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
      * Remove selected attribute
      * @DELETE
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the external attribute.", required: true)]
     public function actionRemove(string $id)
     {
         $attribute = $this->groupExternalAttributes->findOrThrow($id);

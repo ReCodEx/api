@@ -140,7 +140,7 @@ class RegistrationPresenter extends BasePresenter
     public function checkCreateAccount()
     {
         if (!$this->registrationConfig->isEnabled()) {
-            // If the registration is not enabled in general, creator must be logged in and have priviledges.
+            // If the registration is not enabled in general, creator must be logged in and have privileges.
             if (!$this->userAcl->canCreate()) {
                 throw new ForbiddenRequestException();
             }

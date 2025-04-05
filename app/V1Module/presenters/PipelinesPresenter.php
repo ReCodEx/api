@@ -10,6 +10,7 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
@@ -168,10 +169,10 @@ class PipelinesPresenter extends BasePresenter
     )]
     public function actionDefault(
         int $offset = 0,
-        int $limit = null,
-        string $orderBy = null,
-        array $filters = null,
-        string $locale = null
+        ?int $limit = null,
+        ?string $orderBy = null,
+        ?array $filters = null,
+        ?string $locale = null
     ) {
         $pagination = $this->getPagination(
             $offset,
@@ -237,7 +238,7 @@ class PipelinesPresenter extends BasePresenter
         "Whether the pipeline is global (has no author, is used in generic runtimes)",
         required: false,
     )]
-    #[Path("id", new VString(), "identification of pipeline to be copied", required: true)]
+    #[Path("id", new VUuid(), "identification of pipeline to be copied", required: true)]
     public function actionForkPipeline(string $id)
     {
         $req = $this->getRequest();
@@ -272,7 +273,7 @@ class PipelinesPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the pipeline", required: true)]
     public function actionRemovePipeline(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -294,7 +295,7 @@ class PipelinesPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the pipeline", required: true)]
     public function actionGetPipeline(string $id)
     {
         /** @var Pipeline $pipeline */
@@ -331,7 +332,7 @@ class PipelinesPresenter extends BasePresenter
         "Whether the pipeline is global (has no author, is used in generic runtimes)",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the pipeline", required: true)]
     public function actionUpdatePipeline(string $id)
     {
         /** @var Pipeline $pipeline */
@@ -410,7 +411,7 @@ class PipelinesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the pipeline", required: true)]
     public function actionUpdateRuntimeEnvironments(string $id)
     {
         /** @var Pipeline $pipeline */
@@ -433,7 +434,7 @@ class PipelinesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("version", new VInt(), "Version of the pipeline.")]
-    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the pipeline", required: true)]
     public function actionValidatePipeline(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -468,7 +469,7 @@ class PipelinesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
-    #[Path("id", new VString(), "identification of pipeline", required: true)]
+    #[Path("id", new VUuid(), "identification of pipeline", required: true)]
     public function actionUploadSupplementaryFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -521,7 +522,7 @@ class PipelinesPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "identification of pipeline", required: true)]
+    #[Path("id", new VUuid(), "identification of pipeline", required: true)]
     public function actionGetSupplementaryFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -541,7 +542,7 @@ class PipelinesPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "identification of pipeline", required: true)]
+    #[Path("id", new VUuid(), "identification of pipeline", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
     public function actionDeleteSupplementaryFile(string $id, string $fileId)
     {
@@ -571,7 +572,7 @@ class PipelinesPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the pipeline", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the pipeline", required: true)]
     public function actionGetPipelineExercises(string $id)
     {
         $exercises = $this->exercises->getPipelineExercises($id);
