@@ -120,14 +120,14 @@ class Groups extends BaseSoftDeleteRepository
 
     /**
      * Fetch all groups in which the given user has membership (all relations except admin).
-     * @param User $user The user whos memberships are considered.
+     * @param User $user The user whose memberships are considered.
      * @param array $allowed List of allowed membership types (empty list = no restrictions)
      * @param array $denied List of denied membership types (empty list = no restrictions)
      * @return Group[] Array indexed by group IDs.
      */
     public function findGroupsByMembership(User $user, array $allowed = [], array $denied = []): array
     {
-        $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('g'); // takes care of soft delete cases
         $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");
         $sub->andWhere($sub->expr()->eq('gm.group', 'g'));
         $sub->andWhere($sub->expr()->eq('gm.user', $sub->expr()->literal($user->getId())));
@@ -160,7 +160,7 @@ class Groups extends BaseSoftDeleteRepository
         if (!$parentsIds) {
             return [];
         }
-        $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('g'); // takes care of soft delete cases
         $qb->andWhere($qb->expr()->in("g.parentGroup", $parentsIds));
         return $qb->getQuery()->getResult();
     }
@@ -175,7 +175,7 @@ class Groups extends BaseSoftDeleteRepository
         $res = [];
 
         // Add groups where user is admin or inherits admin privileges.
-        $admined = $this->findGroupsByMembership($user, [ GroupMembership::TYPE_ADMIN ]);
+        $admined = $this->findGroupsByMembership($user, [GroupMembership::TYPE_ADMIN]);
         while ($admined) {
             $parents = []; // groups that become parents of next iteration
             foreach ($admined as $group) {
@@ -188,7 +188,7 @@ class Groups extends BaseSoftDeleteRepository
         }
 
         // Add groups where user is direct supervisor.
-        $supervised = $this->findGroupsByMembership($user, [ GroupMembership::TYPE_SUPERVISOR ]);
+        $supervised = $this->findGroupsByMembership($user, [GroupMembership::TYPE_SUPERVISOR]);
         foreach ($supervised as $group) {
             $res[$group->getId()] = $group;
         }
@@ -200,14 +200,14 @@ class Groups extends BaseSoftDeleteRepository
     /**
      * Filter list of groups so that only groups affiliated to given user
      * (by direct membership or by admin rights) and public groups remain in the result.
-     * @param User $user User whos affiliation is considered.
+     * @param User $user User whose affiliation is considered.
      * @param Group[] $groups List of groups to be filtered.
      * @return Group[]
      */
     private function filterGroupsByUser(User $user, array $groups): array
     {
-        $memberOf = $this->findGroupsByMembership($user, [], [ GroupMembership::TYPE_ADMIN ]); // not admins
-        $adminOf = $this->findGroupsByMembership($user, [ GroupMembership::TYPE_ADMIN ]); // only admins
+        $memberOf = $this->findGroupsByMembership($user, [], [GroupMembership::TYPE_ADMIN]); // not admins
+        $adminOf = $this->findGroupsByMembership($user, [GroupMembership::TYPE_ADMIN]); // only admins
 
         return array_filter(
             $groups,
@@ -246,13 +246,13 @@ class Groups extends BaseSoftDeleteRepository
      * @return Group[]
      */
     public function findFiltered(
-        User $user = null,
-        string $instanceId = null,
-        string $search = null,
+        ?User $user = null,
+        ?string $instanceId = null,
+        ?string $search = null,
         bool $archived = false,
         bool $onlyArchived = false
     ): array {
-        $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('g'); // takes care of soft delete cases
 
         // Filter by instance ID...
         $instanceId = trim($instanceId ?? "");
@@ -354,7 +354,7 @@ class Groups extends BaseSoftDeleteRepository
 
     /**
      * Retrieve all groups that where at least one exercise resides.
-     * @param Exercises $exercises repository (used for subselect)
+     * @param Exercises $exercises repository (used for sub-select)
      * @param bool $onlyIds whether to retrieve only groupIDs or all entities
      * @param bool $archived if true, archived groups are also returned
      * @return array (either string[] if onlyIds is set, or Group[] otherwise)

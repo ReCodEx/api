@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class PlagiarismDetectedSimilarFiles extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, PlagiarismDetectedSimilarFile::class);
@@ -25,7 +24,7 @@ class PlagiarismDetectedSimilarFiles extends BaseRepository
      * @param AssignmentSolution $testedSolution a related similarity detection record must exist
      * @param AssignmentSolution $solution similar solution to be found
      * @param SolutionFile|null $file reference to the similar file to be found
-     * @param string|null $fileEntry a file entry or referene to an external source to be found
+     * @param string|null $fileEntry a file entry or reference to an external source to be found
      * @return PlagiarismDetectedSimilarFile[]
      */
     public function findByTestedAndSimilarSolution(

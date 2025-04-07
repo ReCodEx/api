@@ -27,7 +27,7 @@ class AssignmentSolvers extends BaseRepository
      */
     public function findInAssignment(Assignment $assignment, ?User $solver = null): array
     {
-        $constraints = [ "assignment" => $assignment ];
+        $constraints = ["assignment" => $assignment];
         if ($solver) {
             $constraints["solver"] = $solver;
         }
@@ -49,7 +49,7 @@ class AssignmentSolvers extends BaseRepository
 
         if ($solver) {
             $qb->andWhere($qb->expr()->eq("s.solver", ':solver'))
-            ->setParameter("solver", $solver->getId());
+                ->setParameter("solver", $solver->getId());
         }
 
         return $qb->getQuery()->getResult();
@@ -65,7 +65,7 @@ class AssignmentSolvers extends BaseRepository
      */
     public function getNextAttemptIndex(Assignment $assignment, User $solver): int
     {
-        $candidates = $this->findBy([ "assignment" => $assignment, "solver" => $solver ]);
+        $candidates = $this->findBy(["assignment" => $assignment, "solver" => $solver]);
         if (count($candidates) > 1) {
             // ooops, something is very wrong since unique index should prevent that
             throw new InternalServerException("Database integrity constraints have failed.");
@@ -77,7 +77,7 @@ class AssignmentSolvers extends BaseRepository
             $assignmentSolver = new AssignmentSolver($assignment, $solver);
         }
 
-        // increment the index and retur new value
+        // increment the index and return new value
         $index = $assignmentSolver->incrementLastAttemptIndex();
         $this->persist($assignmentSolver);
         return $index;
@@ -96,7 +96,7 @@ class AssignmentSolvers extends BaseRepository
             SET s.evaluationsCount = s.evaluationsCount + 1
             WHERE IDENTITY(s.assignment) = :assignmentId AND IDENTITY(s.solver) = :solverId
         ");
-        $query->setParameters([ "assignmentId" => $assignment->getId(), "solverId" => $solver->getId() ]);
+        $query->setParameters(["assignmentId" => $assignment->getId(), "solverId" => $solver->getId()]);
         $query->execute();
     }
 
