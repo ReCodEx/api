@@ -65,7 +65,7 @@ class PipelineConfig
     public function __construct(
         string $pipeline,
         ?User $author,
-        PipelineConfig $createdFrom = null
+        ?PipelineConfig $createdFrom = null
     ) {
         $this->createdAt = new DateTime();
         $this->pipelines = new ArrayCollection();

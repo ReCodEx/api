@@ -9,7 +9,7 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="event_created_at_idx", columns={"created_at"})})
- * A logged security event such as user loggin or token refresh.
+ * A logged security event such as user login or token refresh.
  */
 class SecurityEvent implements JsonSerializable
 {

@@ -5,8 +5,6 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use JsonSerializable;
-use DateTime;
 
 /**
  * @ORM\Entity
@@ -15,7 +13,7 @@ use DateTime;
  * })})
  * A record (node) representing a similarity detected between a file and a set of files of a particular user.
  * This entity holds the tested file and a reference to the author of similar files (possible sources of plagiarism).
- * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarty
+ * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarity
  * (i.e., all possible sources of plagiarism of one author).
  */
 class PlagiarismDetectedSimilarity
