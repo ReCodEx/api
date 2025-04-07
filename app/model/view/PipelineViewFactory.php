@@ -9,7 +9,6 @@ use App\Security\ACL\IPipelinePermissions;
 
 class PipelineViewFactory
 {
-
     /** @var IPipelinePermissions */
     private $pipelineAcl;
 

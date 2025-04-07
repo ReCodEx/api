@@ -51,7 +51,7 @@ class UserViewFactory
             }
             $filter = array_keys($this->loggedInUser->getConsolidatedExternalLogins());
         } else {
-            $filter = null; // no filterings
+            $filter = null; // no filtering
         }
         return $user->getConsolidatedExternalLogins($filter);
     }

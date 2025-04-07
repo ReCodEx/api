@@ -3,14 +3,13 @@
 namespace App\V1Module\Router;
 
 use Nette\Http\IRequest;
-use Nette\Application\Request;
 use Nette\Application\Routers\Route;
 use Nette\Http\UrlScript;
 use Nette\Routing\Router;
 
 /**
  * Base class of all module routes which construct URLs. And also does all
- * checkings of HTTP request method against the one given during construction.
+ * checking of HTTP request method against the one given during construction.
  */
 class MethodRoute implements Router
 {
