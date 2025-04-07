@@ -3,6 +3,7 @@
 namespace DoctrineExtensions\Query\Functions;
 
 use Doctrine\ORM\Query\Lexer;
+use Doctrine\ORM\Query\TokenType;
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 
 /**
@@ -38,21 +39,21 @@ class CoalesceSubselectsFunction extends FunctionNode
      */
     public function parse(\Doctrine\ORM\Query\Parser $parser)
     {
-        $parser->match(Lexer::T_IDENTIFIER);
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);
+        $parser->match(TokenType::T_IDENTIFIER);
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);
 
-        $parser->match(Lexer::T_OPEN_PARENTHESIS);
+        $parser->match(TokenType::T_OPEN_PARENTHESIS);
         $this->subselectExpressions[] = $parser->Subselect();
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);
 
-        while ($parser->getLexer()->isNextToken(Lexer::T_COMMA)) {
-            $parser->match(Lexer::T_COMMA);
+        while ($parser->getLexer()->isNextToken(TokenType::T_COMMA)) {
+            $parser->match(TokenType::T_COMMA);
 
-            $parser->match(Lexer::T_OPEN_PARENTHESIS);
+            $parser->match(TokenType::T_OPEN_PARENTHESIS);
             $this->subselectExpressions[] = $parser->Subselect();
-            $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+            $parser->match(TokenType::T_CLOSE_PARENTHESIS);
         }
 
-        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        $parser->match(TokenType::T_CLOSE_PARENTHESIS);
     }
 }

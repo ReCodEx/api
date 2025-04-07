@@ -47,7 +47,7 @@ class PaginationDbHelper
 
     /**
      * Internal function that appends andWhere clause to query builder handling
-     * fultext search of one search token.
+     * full text search of one search token.
      */
     private function addSearchCondition(QueryBuilder $qb, string $searchToken, string $alias)
     {
@@ -81,10 +81,10 @@ class PaginationDbHelper
     }
 
     /**
-     * Createa and initialize the helper.
+     * Create and initialize the helper.
      * @param array $orderByColumns Known order by names (sent from UI), each holding a list
      *                              of corresponding order by DB columns.
-     * @param array $searchCols List of columns which are tested by fultext search filter.
+     * @param array $searchCols List of columns which are tested by full text search filter.
      * @param string|null $localizedTextsClass Name of an entity class which is used for localization texts.
      *                                         If null, no localization is expected.
      */
@@ -116,7 +116,7 @@ class PaginationDbHelper
     }
 
     /**
-     * Apply the helper on a query bulider (add common clauses) using pagination metadata.
+     * Apply the helper on a query builder (add common clauses) using pagination metadata.
      * @param QueryBuilder $qb Query builder being augmented.
      * @param Pagination $pagination Pagination object which holds the filter and order by parameters.
      * @param string|null $alias Alias of the main table use in the query builder. If null, alias is auto-detected.
@@ -152,7 +152,7 @@ class PaginationDbHelper
     }
 
     /**
-     * Apply collation patches on the query yileded from the builder and fetch the results.
+     * Apply collation patches on the query yielded from the builder and fetch the results.
      * @param QueryBuilder $qb Query builder holding the final query.
      * @param Pagination $pagination Pagination object which holds the filter and order by parameters.
      * @return array
