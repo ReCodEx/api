@@ -8,7 +8,7 @@ use App\Security\ACL\IAssignmentSolutionPermissions;
 use Nette\SmartObject;
 
 /**
- * Structure that holds all options controling submission view construction.
+ * Structure that holds all options controlling submission view construction.
  */
 class SubmissionViewOptions
 {

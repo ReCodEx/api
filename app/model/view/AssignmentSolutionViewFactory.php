@@ -6,8 +6,6 @@ use App\Helpers\PermissionHints;
 use App\Model\Repository\Comments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\Group;
-use App\Model\Entity\User;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\UserStorage;
 use App\Exceptions\InternalServerException;
@@ -158,7 +156,7 @@ class AssignmentSolutionViewFactory
      * @param AssignmentSolution[] $solutions
      * @param bool|array|null $bestSolutionsHints
      *   If bool value is provided, it holds the `isBestSolution` value already for all solutions.
-     *   If iterrable value is provided, it holds a list of best solutions
+     *   If iterable value is provided, it holds a list of best solutions
      *   Otherwise the view factory determines the `isBestSolution` value on its own.
      * @return array
      */
