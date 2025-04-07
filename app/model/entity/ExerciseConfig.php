@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use App\Helpers\YamlException;
 use App\Helpers\Yaml;
 use DateTime;

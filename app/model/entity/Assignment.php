@@ -31,7 +31,7 @@ class Assignment extends AssignmentBase implements IExercise
         bool $isPublic,
         int $submissionsCountLimit,
         bool $allowSecondDeadline,
-        DateTime $secondDeadline = null,
+        ?DateTime $secondDeadline = null,
         int $maxPointsBeforeSecondDeadline = 0,
         bool $canViewLimitRatios = false,
         bool $canViewMeasuredValues = false,
@@ -84,7 +84,7 @@ class Assignment extends AssignmentBase implements IExercise
         Exercise $exercise,
         Group $group,
         $isPublic = false,
-        DateTime $firstDeadline = null
+        ?DateTime $firstDeadline = null
     ) {
         if ($exercise->getLocalizedTexts()->count() == 0) {
             throw new InvalidStateException("There are no localized descriptions of exercise");
@@ -182,7 +182,7 @@ class Assignment extends AssignmentBase implements IExercise
      */
     protected $secondDeadline;
 
-    public function isAfterDeadline(DateTime $now = null): bool
+    public function isAfterDeadline(?DateTime $now = null): bool
     {
         if ($now === null) {
             $now = new DateTime();
@@ -195,7 +195,7 @@ class Assignment extends AssignmentBase implements IExercise
         }
     }
 
-    public function isAfterFirstDeadline(DateTime $now = null): bool
+    public function isAfterFirstDeadline(?DateTime $now = null): bool
     {
         if ($now === null) {
             $now = new DateTime();
@@ -218,7 +218,7 @@ class Assignment extends AssignmentBase implements IExercise
      */
     protected $maxPointsDeadlineInterpolation = false;
 
-    public function getMaxPoints(DateTime $time = null): int
+    public function getMaxPoints(?DateTime $time = null): int
     {
         if ($time === null || $time < $this->firstDeadline) {
             return $this->maxPointsBeforeFirstDeadline;
@@ -454,8 +454,8 @@ class Assignment extends AssignmentBase implements IExercise
     {
         $exercise = $this->getExercise();
         return $exercise
-            && $this->getSupplementaryEvaluationFiles()->count() === $exercise->getSupplementaryEvaluationFiles(
-            )->count()
+            && $this->getSupplementaryEvaluationFiles()->count()
+            === $exercise->getSupplementaryEvaluationFiles()->count()
             && $this->getSupplementaryEvaluationFiles()->forAll(
                 function ($key, SupplementaryExerciseFile $file) use ($exercise) {
                     return $exercise->getSupplementaryEvaluationFiles()->contains($file);

@@ -20,7 +20,7 @@ class LocalizedAssignment extends LocalizedEntity implements JsonSerializable
 
     /**
      * Separate text visible to students which is kept separately from the exercise specification,
-     * so it will not be overriten every time an assigment is synced with exercise.
+     * so it will not be overwritten every time an assignment is synced with exercise.
      * @ORM\Column(type="text")
      */
     protected $studentHint;

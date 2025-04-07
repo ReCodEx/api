@@ -59,7 +59,7 @@ class SolutionEvaluation
      * @param float $score New value of the score
      * @param ExerciseScoreConfig|null $scoreConfig The config entity used to compute the score
      */
-    public function setScore(float $score, ExerciseScoreConfig $scoreConfig = null): void
+    public function setScore(float $score, ?ExerciseScoreConfig $scoreConfig = null): void
     {
         $this->score = $score;
         $this->scoreConfig = $scoreConfig;

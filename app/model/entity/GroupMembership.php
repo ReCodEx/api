@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use App\Exceptions\InvalidMembershipException;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use DateTime;
 
@@ -28,14 +27,14 @@ class GroupMembership implements JsonSerializable
     ];
 
     // membership types that are inherited from parent groups
-    // in the order of priorities (e.g., admin must be first as it supress other relations)
+    // in the order of priorities (e.g., admin must be first as it suppress other relations)
     public const INHERITABLE_TYPES = [
         self::TYPE_ADMIN,
     ];
 
     public const TYPE_ALL = "*";
 
-    public function __construct(Group $group, User $user, string $type, Group $inheritedFrom = null)
+    public function __construct(Group $group, User $user, string $type, ?Group $inheritedFrom = null)
     {
         $this->group = $group;
         $this->user = $user;
@@ -79,14 +78,14 @@ class GroupMembership implements JsonSerializable
      * Inheritance applies only for selected types of memberships (e.g., admin).
      * At present, explicit inherited memberships are used to capture inherited admin privileges
      * which are in place at the moment when a sub-groups are being placed to archive.
-     * In the futue, this technique may be used for performance optimizations as well.
+     * In the future, this technique may be used for performance optimizations as well.
      */
     protected $inheritedFrom = null;
 
     public function setType(string $type)
     {
         if (!in_array($type, self::KNOWN_TYPES)) {
-            throw new InvalidMembershipException("Unsuported membership type '$type'");
+            throw new InvalidMembershipException("Unsupported membership type '$type'");
         }
 
         if ($this->type !== $type) {

@@ -134,7 +134,7 @@ class Instance
         return $localizedRootGroup->getName();
     }
 
-    public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = null)
+    public static function createInstance(array $localizedTexts, bool $isOpen, ?User $admin = null)
     {
         $instance = new Instance();
         $instance->isOpen = $isOpen;

@@ -46,7 +46,7 @@ class PlagiarismDetectionBatch implements JsonSerializable
     /**
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
-     * Time when all the plagiate records were uploaded. If null, the upload is still pending.
+     * Time when all the plagiarism records were uploaded. If null, the upload is still pending.
      */
     protected $uploadCompletedAt = null;
 
@@ -67,7 +67,7 @@ class PlagiarismDetectionBatch implements JsonSerializable
     public function __construct(
         string $detectionTool,
         string $toolParameters,
-        User $supervisor = null
+        ?User $supervisor = null
     ) {
         $this->detectionTool = $detectionTool;
         $this->detectionToolParameters = $toolParameters;

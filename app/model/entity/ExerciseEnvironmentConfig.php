@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use App\Exceptions\ExerciseConfigException;
 use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\YamlException;
 use App\Helpers\Yaml;
@@ -68,7 +67,7 @@ class ExerciseEnvironmentConfig
         RuntimeEnvironment $runtimeEnvironment,
         string $variablesTable,
         User $author,
-        ExerciseEnvironmentConfig $createdFrom = null
+        ?ExerciseEnvironmentConfig $createdFrom = null
     ) {
         $this->runtimeEnvironment = $runtimeEnvironment;
         $this->variablesTable = $variablesTable;

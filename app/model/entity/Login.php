@@ -126,7 +126,7 @@ class Login
      * @param string $password
      * @return Login
      * @param Passwords|null $passwordsService injection of a service (we do not want to inject directly into entities)
-     *                       if null, the service is constructed inplace (special case to make fixtures work)
+     *                       if null, the service is constructed in place (special case to make fixtures work)
      * @throws InvalidApiArgumentException
      */
     public static function createLogin(User $user, string $email, string $password, ?Passwords $passwordsService = null)

@@ -10,7 +10,6 @@ use JsonSerializable;
  */
 class LocalizedNotification extends LocalizedEntity implements JsonSerializable
 {
-
     /**
      * @ORM\Column(type="text")
      */
