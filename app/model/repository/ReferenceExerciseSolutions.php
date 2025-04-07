@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class ReferenceExerciseSolutions extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, ReferenceExerciseSolution::class);

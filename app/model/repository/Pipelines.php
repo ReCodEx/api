@@ -19,7 +19,7 @@ class Pipelines extends BaseSoftDeleteRepository
 
     public function findByName(string $name): array
     {
-        return $this->findBy([ 'name' => $name ]);
+        return $this->findBy(['name' => $name]);
     }
 
     /**
@@ -30,7 +30,7 @@ class Pipelines extends BaseSoftDeleteRepository
      */
     public function getPreparedForPagination(Pagination $pagination): array
     {
-        $qb = $this->createQueryBuilder('p'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('p'); // takes care of soft delete cases
 
         // Only pipelines of given author ...
         if ($pagination->hasFilter("authorId")) {
@@ -61,7 +61,7 @@ class Pipelines extends BaseSoftDeleteRepository
      */
     public function getRuntimeEnvironmentPipelines(string $runtimeId): array
     {
-        $qb = $this->createQueryBuilder('p'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('p'); // takes care of soft delete cases
         $qb->andWhere(":rteId MEMBER OF p.runtimeEnvironments")->setParameter('rteId', $runtimeId);
         return $qb->getQuery()->getResult();
     }

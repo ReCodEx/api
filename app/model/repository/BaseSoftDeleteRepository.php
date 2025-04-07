@@ -67,7 +67,7 @@ class BaseSoftDeleteRepository extends BaseRepository
      * @param null $offset
      * @return T[]
      */
-    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null): array
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {
         return $this->repository->findBy(
             array_merge(
@@ -136,7 +136,7 @@ class BaseSoftDeleteRepository extends BaseRepository
      * @param string|null $indexBy
      * @return QueryBuilder
      */
-    public function createQueryBuilder(string $alias, string $indexBy = null): QueryBuilder
+    public function createQueryBuilder(string $alias, ?string $indexBy = null): QueryBuilder
     {
         $qb = $this->repository->createQueryBuilder($alias, $indexBy);
         $softDeleteColumn = $alias ? "$alias.$this->softDeleteColumn" : $this->softDeleteColumn;

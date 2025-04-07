@@ -12,7 +12,6 @@ use DateTime;
  */
 class ReferenceSolutionSubmissions extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, ReferenceSolutionSubmission::class);
@@ -42,7 +41,7 @@ class ReferenceSolutionSubmissions extends BaseRepository
         ?ReferenceSolutionSubmission $omitThisSubmission = null
     ): ?ReferenceSolutionSubmission {
         $submissions = $this->findBy(
-            [ "referenceSolution" => $solution ],
+            ["referenceSolution" => $solution],
             [
                 "submittedAt" => "DESC",  // make sure the last one submitted is first one in the result
                 "id" => "ASC",

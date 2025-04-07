@@ -31,7 +31,7 @@ class Users extends BaseSoftDeleteRepository
      */
     public function getPaginated(Pagination $pagination, &$totalCount): array
     {
-        $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('u'); // takes care of soft delete cases
 
         // Filter by instance ID ...
         if ($pagination->hasFilter("instanceId")) {
@@ -75,7 +75,7 @@ class Users extends BaseSoftDeleteRepository
 
 
     /**
-     * Search users firstnames and surnames based on given string.
+     * Search users first names and surnames based on given string.
      * @param string|null $search
      * @return User[]
      */
@@ -103,7 +103,7 @@ class Users extends BaseSoftDeleteRepository
      */
     public function findByLastAuthentication(?DateTime $before, ?bool $allowed = null, array $roles = []): array
     {
-        $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('u'); // takes care of soft delete cases
         if ($before) {
             $qb->andWhere(
                 'u.createdAt <= :before AND (u.lastAuthenticationAt <= :before OR u.lastAuthenticationAt IS NULL)'

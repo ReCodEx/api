@@ -4,7 +4,6 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\Group;
 use App\Model\Entity\GroupExam;
-use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use DateTime;
 use Exception;
@@ -49,9 +48,9 @@ class GroupExams extends BaseRepository
      */
     public function findOrCreate(
         Group $group,
-        DateTime $begin = null,
-        DateTime $end = null,
-        bool $strict = null
+        ?DateTime $begin = null,
+        ?DateTime $end = null,
+        ?bool $strict = null
     ): GroupExam {
         $begin = $begin ?? $group->getExamBegin();
         $end = $end ?? $group->getExamEnd();

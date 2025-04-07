@@ -121,11 +121,11 @@ class Exercises extends BaseSoftDeleteRepository
      * @param User $user currently logged in (so we can restrict the selection based on user privileges)
      * @return Exercise[]
      */
-    public function getPreparedForPagination(Pagination $pagination, Groups $groups, User $user = null): array
+    public function getPreparedForPagination(Pagination $pagination, Groups $groups, ?User $user = null): array
     {
-        // Welcome to Doctrine HELL! Put your sickbags on standby!
+        // Welcome to Doctrine HELL! Put your sick bags on standby!
 
-        $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('e'); // takes care of soft delete cases
 
         if ($pagination->hasFilter("archived")) {
             $archived = $pagination->getFilter("archived");
@@ -183,7 +183,7 @@ class Exercises extends BaseSoftDeleteRepository
             $adminOf = $user->getGroups(GroupMembership::TYPE_ADMIN); // primary admin
             $adminOfIndex = BaseRepository::createIdIndex($adminOf, true); // all values are "true"
 
-            // filter the groups of residence using membeship filters
+            // filter the groups of residence using membership filters
             $filteredGroupsOfResidence = array_filter(
                 $groupsOfResidence,
                 function ($group) use ($memberOfIndex, $adminOfIndex) {
@@ -275,7 +275,7 @@ class Exercises extends BaseSoftDeleteRepository
     /**
      * Get distinct authors of all exercises.
      * @param string|null $instanceId ID of an instance from which the authors are selected.
-     * @param string|null $groupId A group which restricts the exercies.
+     * @param string|null $groupId A group which restricts the exercises.
      *                             Only exercises attached to that group (or any ancestral group) are considered.
      * @param Groups $groups groups repository
      * @return User[] List of exercises authors.
@@ -287,7 +287,7 @@ class Exercises extends BaseSoftDeleteRepository
             $qb->andWhere(":instance MEMBER OF a.instances")->setParameter("instance", $instanceId);
         }
 
-        $sub = $this->createQueryBuilder("e"); // takes care of softdelete cases
+        $sub = $this->createQueryBuilder("e"); // takes care of soft delete cases
         $sub->andWhere("a = e.author");
 
         if ($groupId) {
@@ -319,7 +319,7 @@ class Exercises extends BaseSoftDeleteRepository
         $sub->andWhere("ec.config LIKE :like");
 
         // select the exercises corresponding to those configs
-        $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('e'); // takes care of soft delete cases
         $qb->andWhere($qb->expr()->exists($sub->getDQL()));
         $qb->andWhere($qb->expr()->isNull('e.archivedAt'));
         $qb->setParameter("like", "%$pipelineId%");

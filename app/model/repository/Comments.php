@@ -4,6 +4,7 @@ namespace App\Model\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Order;
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
 use App\Model\Entity\User;
@@ -104,7 +105,7 @@ class Comments extends BaseRepository
                         )
                     )
                 )
-                ->orderBy(["postedAt" => Criteria::DESC])
+                ->orderBy(["postedAt" => Order::Descending])
                 ->setMaxResults(1)
         )->first();
     }
