@@ -10,7 +10,6 @@ use Nette\Http\IResponse;
  */
 class ExerciseCompilationSoftException extends ExerciseCompilationException
 {
-
     /**
      * Constructor.
      * @param string $msg description

@@ -5,11 +5,9 @@ namespace App\Async\Handler;
 use App\Model\Entity\AsyncJob;
 use App\Model\Entity\User;
 use App\Model\Entity\Assignment;
-use App\Model\Repository\Assignments;
 use App\Async\IAsyncJobHandler;
 use App\Async\Dispatcher;
 use App\Helpers\Notifications\AssignmentEmailsSender;
-use InvalidArgumentException;
 
 /**
  * Scheduled job that sends email notifications when the assignment becomes visible.

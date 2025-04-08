@@ -10,7 +10,6 @@ use Nette\Http\IResponse;
  */
 class ExerciseCompilationException extends ApiException
 {
-
     /**
      * Create instance with further description.
      * @param string $msg description
