@@ -9,7 +9,6 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\RuntimeEnvironments;
-use Nette\Neon\Encoder;
 use Nette\Neon\Neon;
 use Nette\Utils\FileSystem;
 use Symfony\Component\Console\Command\Command;
@@ -95,7 +94,7 @@ class ExportDatabase extends Command
      */
     private function encodeResult($content): string
     {
-        return Neon::encode($content, Encoder::BLOCK);
+        return Neon::encode($content, true);
     }
 
     /**

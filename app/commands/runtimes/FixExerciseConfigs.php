@@ -53,25 +53,25 @@ class FixExerciseConfigs extends BaseCommand
     {
         $this->setName(self::$defaultName)->setDescription(
             'Scan exercise configs of given runtime environment and attempts to fix them. ' .
-            'This feature may be used when runtime was updated and some of its pipelines replaced.'
+                'This feature may be used when runtime was updated and some of its pipelines replaced.'
         )
-        ->addArgument(
-            'runtime',
-            InputArgument::REQUIRED,
-            'Identifier of the runtime environment of which the exercises will be updated.'
-        )
-        ->addOption(
-            'yes',
-            'y',
-            InputOption::VALUE_NONE,
-            "Assume 'yes' to all inquiries (run in non-interactive mode)"
-        )
-        ->addOption(
-            'silent',
-            's',
-            InputOption::VALUE_NONE,
-            "Silent mode (no outputs except for errors)"
-        );
+            ->addArgument(
+                'runtime',
+                InputArgument::REQUIRED,
+                'Identifier of the runtime environment of which the exercises will be updated.'
+            )
+            ->addOption(
+                'yes',
+                'y',
+                InputOption::VALUE_NONE,
+                "Assume 'yes' to all inquiries (run in non-interactive mode)"
+            )
+            ->addOption(
+                'silent',
+                's',
+                InputOption::VALUE_NONE,
+                "Silent mode (no outputs except for errors)"
+            );
     }
 
     private function writeln(...$lines): void
@@ -190,9 +190,9 @@ class FixExerciseConfigs extends BaseCommand
                 $pipeline['name'] = $newId;
                 $changes[$oldId] = $newId;
             }
-            unset($pipeline); // just to make sure a reference is not accidentaly used
+            unset($pipeline); // just to make sure a reference is not accidentally used
         }
-        unset($test); // just to make sure a reference is not accidentaly used
+        unset($test); // just to make sure a reference is not accidentally used
 
         return $changes;
     }
@@ -221,7 +221,7 @@ class FixExerciseConfigs extends BaseCommand
             // make sure internal pipeline caches are populated
             $this->loadPipelines($runtimeId);
 
-            // take all configs one by one regardles of their exercises
+            // take all configs one by one regardless of their exercises
             $configs = $this->exerciseConfigs->findAll();
             $updated = $failed = 0;
             foreach ($configs as $configEntity) {
@@ -235,7 +235,7 @@ class FixExerciseConfigs extends BaseCommand
                 $changes = $this->fixTestsPipelines($config['tests'], $runtimeId);
 
                 if ($changes === false) {
-                    // error occured
+                    // error occurred
                     $this->writeln("Cannot fix exercise config $configId, pipelines cannot be matched.");
                     ++$failed;
                 } elseif ($changes) {

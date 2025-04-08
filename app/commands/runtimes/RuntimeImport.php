@@ -78,23 +78,23 @@ class RuntimeImport extends BaseCommand
         $this->setName(self::$defaultName)->setDescription(
             'Import runtime environment and its pipelines from a ZIP package.'
         )
-        ->addArgument(
-            'zipFile',
-            InputArgument::REQUIRED,
-            'Path to the ZIP package from which the data will be loaded.'
-        )
-        ->addOption(
-            'yes',
-            'y',
-            InputOption::VALUE_NONE,
-            "Assume 'yes' to all inquiries (run in non-interactive mode)"
-        )
-        ->addOption(
-            'silent',
-            's',
-            InputOption::VALUE_NONE,
-            "Silent mode (no outputs except for errors)"
-        );
+            ->addArgument(
+                'zipFile',
+                InputArgument::REQUIRED,
+                'Path to the ZIP package from which the data will be loaded.'
+            )
+            ->addOption(
+                'yes',
+                'y',
+                InputOption::VALUE_NONE,
+                "Assume 'yes' to all inquiries (run in non-interactive mode)"
+            )
+            ->addOption(
+                'silent',
+                's',
+                InputOption::VALUE_NONE,
+                "Silent mode (no outputs except for errors)"
+            );
     }
 
     /*
@@ -278,7 +278,7 @@ class RuntimeImport extends BaseCommand
                 'platform' => $runtime->getPlatform(),
                 'description' => $runtime->getDescription(),
             ];
-            $this->output->writeln("Runtime $id already exists, the followig fields will be updated:");
+            $this->output->writeln("Runtime $id already exists, the following fields will be updated:");
             foreach ($old as $key => $value) {
                 if ($value !== $data[$key]) {
                     $this->output->writeln("\t[$key]: $value => $data[$key]");
@@ -318,7 +318,7 @@ class RuntimeImport extends BaseCommand
     /**
      * List the pipelines to be written and how they affect existing pipelines.
      * @param array $pipelines loaded pipeline metadata
-     * @param array $targetPipelines matched existing pipeline entites
+     * @param array $targetPipelines matched existing pipeline entities
      */
     protected function printPipelineUpdateInfo(array $pipelines, array $targetPipelines): void
     {
@@ -410,7 +410,7 @@ class RuntimeImport extends BaseCommand
 
     /**
      * Find out existing pipeline entity that corresponds to given loaded record.
-     * If ambigous, the user is interactively prompted to select the right pipeline.
+     * If ambiguous, the user is interactively prompted to select the right pipeline.
      * @param array $data pipeline structure loaded from manifest
      * @return Pipeline|null matching DB entity or null, if no match is found
      */

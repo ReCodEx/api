@@ -4,10 +4,7 @@ namespace App\Console;
 
 use App\Helpers\Notifications\GeneralStatsEmailsSender;
 use App\Helpers\GeneralStatsHelper;
-use App\Model\Repository\Assignments;
-use DateTime;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

@@ -5,7 +5,7 @@ namespace App\Console;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Pipelines;
 use DateTime;
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -60,7 +60,7 @@ class CleanupPipelineConfigs extends Command
         $limit->modify("-14 days");
 
         $deleteQuery->setParameter("date", $limit);
-        $deleteQuery->setParameter("ids", $usedConfigs, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $usedConfigs, ArrayParameterType::STRING);
 
         $deleted += $deleteQuery->execute();
         $output->writeln(sprintf("Removed %d unused pipeline config entities", $deleted));

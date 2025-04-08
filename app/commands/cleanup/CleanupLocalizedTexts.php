@@ -7,7 +7,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use DateTime;
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -75,7 +75,7 @@ class CleanupLocalizedTexts extends Command
         $limit->modify("-14 days");
         $deleteQuery->setParameter("date", $limit);
 
-        $deleteQuery->setParameter("ids", $usedTexts, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $usedTexts, ArrayParameterType::STRING);
 
         $deleted += $deleteQuery->execute();
 
