@@ -44,6 +44,6 @@ class PingAsyncJobHandler implements IAsyncJobHandler
 
     public function cancel(): void
     {
-        // ping is not interruptable, nothing to do here
+        // ping is not interrupt-able, nothing to do here
     }
 }

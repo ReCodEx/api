@@ -15,7 +15,7 @@ class UnauthorizedException extends ApiException
      * @param string $frontendErrorCode
      */
     public function __construct(
-        string $msg = "You must provide a valid access token or other specified means of authentication to be allowed to perform this request.",
+        string $msg = "You must provide a valid access token to perform this request.",
         string $frontendErrorCode = FrontendErrorMappings::E401_000__UNAUTHORIZED
     ) {
         parent::__construct($msg, IResponse::S401_Unauthorized, $frontendErrorCode);

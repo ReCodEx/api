@@ -56,7 +56,7 @@ class Worker
     private $timeToRestart = null;
 
     /**
-     * @var int number of jobs remainig to process (once it reaches zero, the worker terminates so it can be restarted)
+     * @var int number of jobs remaining to process (once it reaches zero, the worker terminates so it can be restarted)
      */
     private $jobsRemaining = 1;
 
@@ -93,7 +93,7 @@ class Worker
 
         $this->quiet = (bool)Arrays::get($config, "quiet", false);
 
-        // setup signal handling (try to terminate gracefuly on these signals)
+        // setup signal handling (try to terminate gracefully on these signals)
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGINT, [$this, 'terminate']);
@@ -112,7 +112,7 @@ class Worker
 
     /**
      * Test whether the worker shall process jobs further, or whether it should go for restart.
-     * @return bool true if it shoud continue
+     * @return bool true if it should continue
      */
     private function shallContinue(): bool
     {
@@ -195,7 +195,7 @@ class Worker
             );
         }
 
-        // we need to relaod the job since the dispatcher might cleared the caches...
+        // we need to reload the job since the dispatcher might cleared the caches...
         $jobReloaded = $this->asyncJobs->get($id);
         if ($jobReloaded) {
             if ($error) {
@@ -209,12 +209,12 @@ class Worker
 
     /**
      * Main method of the worker that actually processes the async job.
-     * This method is blockinig, once it terminates the worker process should also terminate.
+     * This method is blocking, once it terminates the worker process should also terminate.
      * @param string $workerId identifier of the worker (should be gathered from the CLI arguments)
      */
     public function run(string $workerId)
     {
-        $this->notify->init(); // start listeining for notifications
+        $this->notify->init(); // start listening for notifications
 
         while ($this->shallContinue()) { // just a precaution so the worker will not run forever
             // allocate and mark the best suitable job (null = none available)
