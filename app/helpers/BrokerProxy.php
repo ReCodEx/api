@@ -6,7 +6,6 @@ use App\Exceptions\InvalidStateException;
 use App\Exceptions\SubmissionFailedException;
 use ZMQ;
 use ZMQContext;
-use ZMQException;
 use ZMQPoll;
 use ZMQPollException;
 use ZMQSocket;
@@ -52,7 +51,7 @@ class BrokerProxy
 
     /**
      * Start evaluation of new job. This means sending proper message to broker that we want this new
-     * job to be evaluated, receive confirmation that the message was successfuly received and finally
+     * job to be evaluated, receive confirmation that the message was successfully received and finally
      * receive confirmation if the evaluation can be processed or not (for example if there is worker
      * for that hwgroup available).
      * @param string $jobId Unique identifier of the new job

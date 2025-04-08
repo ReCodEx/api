@@ -2,14 +2,11 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Exceptions\ResultsLoadingException;
-
 /**
  * Task results for skipped tasks
  */
 class SkippedTaskResult extends TaskResult
 {
-
     /**
      * Constructor
      * @param string $id Task ID for which skipped results will be created

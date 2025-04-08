@@ -2,11 +2,8 @@
 
 namespace App\Helpers\Evaluation;
 
-use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IScoreCalculator;
-use App\Helpers\Yaml;
-use App\Helpers\YamlException;
 
 /**
  * Simple uniform score calculator. It does not have a config, computes arithmetic average of all tests.

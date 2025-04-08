@@ -5,8 +5,6 @@ namespace App\Helpers\Evaluation;
 use Exception;
 
 /**
- * Exception spcialization used for errors in AST representation of universal score config.
+ * Exception specialization used for errors in AST representation of universal score config.
  */
-class AstNodeException extends Exception
-{
-}
+class AstNodeException extends Exception {}

@@ -88,10 +88,10 @@ class MetaFormatHelper
     {
         // find all property attributes
         $longAttributes = $reflectionObject->getAttributes(FormatParameterAttribute::class);
-        $pathAttribues = $reflectionObject->getAttributes(FPath::class);
+        $pathAttributes = $reflectionObject->getAttributes(FPath::class);
         $queryAttributes = $reflectionObject->getAttributes(FQuery::class);
         $postAttributes = $reflectionObject->getAttributes(FPost::class);
-        $requestAttributes = array_merge($longAttributes, $pathAttribues, $queryAttributes, $postAttributes);
+        $requestAttributes = array_merge($longAttributes, $pathAttributes, $queryAttributes, $postAttributes);
 
         // there should be only one attribute
         if (count($requestAttributes) == 0) {

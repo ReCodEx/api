@@ -204,7 +204,7 @@ class FileStorageManager
     }
 
     /**
-     * Internal function used for concanenating partial file chunks.
+     * Internal function used for concatenating partial file chunks.
      * @param string $path file with next chunk to be appended
      * @param resource $targetStream where the file should be appended
      */
@@ -240,7 +240,7 @@ class FileStorageManager
     public function assembleUploadedPartialFile(UploadedPartialFile $partFile, UploadedFile $file): void
     {
         if (!$partFile->isUploadComplete()) {
-            throw new FileStorageException("Unable to assemble partal file when the upload was not completed yet.");
+            throw new FileStorageException("Unable to assemble partial file when the upload was not completed yet.");
         }
 
         $dstPath = $this->getUploadedFilePath($file);
@@ -372,7 +372,7 @@ class FileStorageManager
     }
 
     /**
-     * Retrieve an atttachment file (file attached to specification of an exercise/assignment).
+     * Retrieve an attachment file (file attached to specification of an exercise/assignment).
      * @param AttachmentFile $file
      * @return IImmutableFile|null a file object or null if no such file exists
      */
@@ -383,7 +383,7 @@ class FileStorageManager
     }
 
     /**
-     * Remove an atttachment file (file attached to specification of an exercise/assignment).
+     * Remove an attachment file (file attached to specification of an exercise/assignment).
      * @param AttachmentFile $file
      * @return bool whether the file has been actually deleted (false = it does not exist)
      */
@@ -477,9 +477,9 @@ class FileStorageManager
     /**
      * Retrieve a solution file or the entire archive.
      * @param Solution $solution
-     * @param string|null $file name of the file to be retrieved; entire archive is retrievd if null
+     * @param string|null $file name of the file to be retrieved; entire archive is retrieved if null
      */
-    public function getSolutionFile(Solution $solution, string $file = null): ?IImmutableFile
+    public function getSolutionFile(Solution $solution, ?string $file = null): ?IImmutableFile
     {
         $path = $this->getSolutionArchivePath($solution);
         $path = $file ? "$path#$file" : $path;

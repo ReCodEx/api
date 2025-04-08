@@ -37,7 +37,7 @@ interface IImmutableFile
     public function getTime(): int;
 
     /**
-     * Retrive the entire file contents as a (binary) string.
+     * Retrieve the entire file contents as a (binary) string.
      * @param int $sizeLimit maximal length of the result, zero means no limit
      * @return string
      */
@@ -64,7 +64,7 @@ interface IImmutableFile
     public function getZipEntries(): array;
 
     /**
-     * Retrive the entire file and save it to local path.
+     * Retrieve the entire file and save it to local path.
      * @param string $path
      */
     public function saveAs(string $path): void;

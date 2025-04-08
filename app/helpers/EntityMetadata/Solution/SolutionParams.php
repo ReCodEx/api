@@ -10,8 +10,7 @@ use App\Exceptions\ParseException;
  */
 class SolutionParams
 {
-
-    const VARIABLES_KEY = "variables";
+    public const VARIABLES_KEY = "variables";
 
     /**
      * @var SubmitVariable[]

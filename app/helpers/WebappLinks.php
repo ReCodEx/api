@@ -25,7 +25,7 @@ class WebappLinks
     private $solutionUrl;
 
     /** @var string */
-    private $referenceSolutiontUrl;
+    private $referenceSolutionUrl;
 
     /** @var string */
     private $forgottenPasswordUrl;
@@ -67,9 +67,9 @@ class WebappLinks
             ["solutionUrl"],
             "$webappUrl/app/assignment/{assignmentId}/solution/{solutionId}"
         );
-        $this->referenceSolutiontUrl = Arrays::get(
+        $this->referenceSolutionUrl = Arrays::get(
             $linkTemplates,
-            ["referenceSolutiontUrl"],
+            ["referenceSolutionUrl"],
             "$webappUrl/app/exercises/{exerciseId}/reference-solution/{solutionId}"
         );
         $this->forgottenPasswordUrl = Arrays::get(
@@ -100,7 +100,7 @@ class WebappLinks
      */
     public function getAssignmentPageUrl(string $assignmentId): string
     {
-        return self::getLink($this->assignmentUrl, [ 'id' => $assignmentId ]);
+        return self::getLink($this->assignmentUrl, ['id' => $assignmentId]);
     }
 
     /**
@@ -109,7 +109,7 @@ class WebappLinks
      */
     public function getExercisePageUrl(string $exerciseId): string
     {
-        return self::getLink($this->exerciseUrl, [ 'id' => $exerciseId ]);
+        return self::getLink($this->exerciseUrl, ['id' => $exerciseId]);
     }
 
     /**
@@ -118,7 +118,7 @@ class WebappLinks
      */
     public function getShadowAssignmentPageUrl(string $assignmentId): string
     {
-        return self::getLink($this->shadowAssignmentUrl, [ 'id' => $assignmentId ]);
+        return self::getLink($this->shadowAssignmentUrl, ['id' => $assignmentId]);
     }
 
     /**
@@ -128,7 +128,7 @@ class WebappLinks
      */
     public function getSolutionPageUrl(string $assignmentId, string $solutionId): string
     {
-        return self::getLink($this->solutionUrl, [ 'assignmentId' => $assignmentId, 'solutionId' => $solutionId ]);
+        return self::getLink($this->solutionUrl, ['assignmentId' => $assignmentId, 'solutionId' => $solutionId]);
     }
 
     /**
@@ -139,8 +139,8 @@ class WebappLinks
     public function getReferenceSolutionPageUrl(string $exerciseId, string $solutionId): string
     {
         return self::getLink(
-            $this->referenceSolutiontUrl,
-            [ 'exerciseId' => $exerciseId, 'solutionId' => $solutionId ]
+            $this->referenceSolutionUrl,
+            ['exerciseId' => $exerciseId, 'solutionId' => $solutionId]
         );
     }
 
@@ -150,16 +150,16 @@ class WebappLinks
      */
     public function getForgottenPasswordUrl(string $token): string
     {
-        return self::getLink($this->forgottenPasswordUrl, [ 'token' => $token ]);
+        return self::getLink($this->forgottenPasswordUrl, ['token' => $token]);
     }
 
     /**
-     * @param string $token JWT used to veify the email
+     * @param string $token JWT used to verify the email
      * @return string URL that can be used to verify an email
      */
     public function getEmailVerificationUrl(string $token): string
     {
-        return self::getLink($this->emailVerificationUrl, [ 'token' => $token ]);
+        return self::getLink($this->emailVerificationUrl, ['token' => $token]);
     }
 
     /**
@@ -168,7 +168,7 @@ class WebappLinks
      */
     public function getInvitationUrl(string $token): string
     {
-        return self::getLink($this->invitationUrl, [ 'token' => $token ]);
+        return self::getLink($this->invitationUrl, ['token' => $token]);
     }
 
     /**
@@ -180,7 +180,7 @@ class WebappLinks
     {
         return self::getLink(
             $this->solutionSourceFilesUrl,
-            [ 'assignmentId' => $assignmentId, 'solutionId' => $solutionId ]
+            ['assignmentId' => $assignmentId, 'solutionId' => $solutionId]
         );
     }
 }

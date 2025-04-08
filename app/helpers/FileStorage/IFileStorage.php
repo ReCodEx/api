@@ -103,7 +103,7 @@ interface IFileStorage
     /**
      * Garbage collector implemented over filesystem. Helps to manage tmp storages.
      * Note: it is valid if the implementation performs no deletions, if GC is handled by other means.
-     * @param string $glob wildcard pattern (relative storage paths) targetting files for deletion (not inside ZIPs!)
+     * @param string $glob wildcard pattern (relative storage paths) targeting files for deletion (not inside ZIPs!)
      * @param int $threshold unix timestamp with the threshold time (older files are removed)
      * @return int number of files removed
      */

@@ -59,8 +59,8 @@ class ArchivedImmutableFile implements IImmutableFile
     public function __construct(
         string $archivePath,
         string $entry,
-        string $storagePath = null,
-        TmpFilesHelper $tmpFilesHelper = null
+        ?string $storagePath = null,
+        ?TmpFilesHelper $tmpFilesHelper = null
     ) {
         $this->archivePath = $archivePath;
         $this->entry = $entry;
@@ -134,7 +134,7 @@ class ArchivedImmutableFile implements IImmutableFile
 
         if ($contents === false) {
             throw new FileStorageException(
-                "The ZIP archive is unable to retrive contents of entry '$this->entry'",
+                "The ZIP archive is unable to retrieve contents of entry '$this->entry'",
                 $this->archivePath
             );
         }

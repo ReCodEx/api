@@ -10,11 +10,11 @@ use App\Helpers\Yaml;
 class BoundDirectoryConfig
 {
     /** Source folder key */
-    const SRC_KEY = "src";
+    public const SRC_KEY = "src";
     /** Destination folder key */
-    const DST_KEY = "dst";
+    public const DST_KEY = "dst";
     /** Mode key */
-    const MODE_KEY = "mode";
+    public const MODE_KEY = "mode";
 
     /** @var string Source folder for bound directory */
     private $source = "";

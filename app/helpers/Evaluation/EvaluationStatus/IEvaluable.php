@@ -9,7 +9,6 @@ use App\Model\Entity\SolutionEvaluation;
  */
 interface IEvaluable
 {
-
     /**
      * Query if the evaluation is ready
      * @return boolean The result

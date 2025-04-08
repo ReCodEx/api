@@ -12,7 +12,6 @@ use App\Helpers\YamlException;
  */
 class Loader
 {
-
     /**
      * Factory method for parsing evaluation results from YAML string.
      * @param string $results YAML encoded results received from backend

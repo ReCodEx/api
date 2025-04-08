@@ -2,7 +2,6 @@
 
 namespace App\Helpers\Emails;
 
-use Latte;
 use Latte\Engine;
 use Latte\Essential\Filters;
 use League\CommonMark\CommonMarkConverter;
@@ -13,7 +12,6 @@ use League\CommonMark\CommonMarkConverter;
  */
 class EmailLatteFactory
 {
-
     /**
      * Create latte engine for email templates with helper filters.
      * @return EmailLatteWrapper

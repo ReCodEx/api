@@ -18,7 +18,7 @@ abstract class AstNodeBinary extends AstNode
             );
         }
     }
-    
+
     public function addChild(AstNode $child)
     {
         if (count($this->children) >= 2) {
