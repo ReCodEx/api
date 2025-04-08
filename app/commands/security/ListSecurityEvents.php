@@ -4,7 +4,6 @@ namespace App\Console;
 
 use App\Model\Entity\SecurityEvent;
 use App\Model\Repository\SecurityEvents;
-use DateTime;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

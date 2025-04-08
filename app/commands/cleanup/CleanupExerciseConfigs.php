@@ -2,13 +2,10 @@
 
 namespace App\Console;
 
-use App\Model\Entity\Assignment;
-use App\Model\Entity\Exercise;
-use App\Model\Entity\SolutionEvaluation;
 use App\Model\Repository\Exercises;
 use DateTime;
 use Exception;
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -60,7 +57,7 @@ class CleanupExerciseConfigs extends Command
         $deleteQuery = $this->entityManager->createQuery(
             'DELETE FROM App\Model\Entity\ExerciseEnvironmentConfig c WHERE c.id IN (:ids)'
         );
-        $deleteQuery->setParameter("ids", $ids, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $ids, ArrayParameterType::STRING);
         return $deleteQuery->execute();
     }
 
@@ -115,7 +112,7 @@ class CleanupExerciseConfigs extends Command
         $deleteQuery = $this->entityManager->createQuery(
             'DELETE FROM App\Model\Entity\ExerciseLimits l WHERE l.id IN (:ids)'
         );
-        $deleteQuery->setParameter("ids", $ids, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $ids, ArrayParameterType::STRING);
         return $deleteQuery->execute();
     }
 
@@ -137,7 +134,7 @@ class CleanupExerciseConfigs extends Command
         $deleteQuery = $this->entityManager->createQuery(
             'DELETE FROM App\Model\Entity\ExerciseTest t WHERE t.id IN (:ids)'
         );
-        $deleteQuery->setParameter("ids", $ids, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $ids, ArrayParameterType::STRING);
         return $deleteQuery->execute();
     }
 
@@ -152,7 +149,7 @@ class CleanupExerciseConfigs extends Command
             'Tests',
         ];
 
-        $report = [ 'Removed:' ];
+        $report = ['Removed:'];
         foreach ($toDelete as $key) {
             $method = "cleanup$key";
             $deletedCount = $this->$method($limit);
