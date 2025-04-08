@@ -45,7 +45,7 @@ class SkippedSandboxResults implements ISandboxResults
 
     /**
      * Get exit signal that examined program
-     * @return int|null The signal number or null if the program exitted normally
+     * @return int|null The signal number or null if the program exited normally
      */
     public function getExitSignal(): ?int
     {

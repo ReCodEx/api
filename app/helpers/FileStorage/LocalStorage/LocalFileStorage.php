@@ -73,12 +73,12 @@ class LocalFileStorage implements IFileStorage
     /**
      * Decode a storage path.
      * @param string $path path is also normalized (that is why it is passed by reference)
-     * @param bool|null $exists If true/false, (non)existence checks are peformed, null = no checks.
+     * @param bool|null $exists If true/false, (non)existence checks are performed, null = no checks.
      *                          Checks are performed on real path only (not inside ZIP archives).
      * @param bool $mkdir whether to make sure all underlying sub-directories exist (mkdir if necessary)
      * @return array a tuple containing real path (first) and ZIP file entry or null (second)
      */
-    private function decodePath(string &$path, bool $exists = null, $mkdir = false): array
+    private function decodePath(string &$path, ?bool $exists = null, $mkdir = false): array
     {
         $tokens = explode('#', $path, 2);
         array_push($tokens, null); // make sure second item always exists
@@ -97,7 +97,7 @@ class LocalFileStorage implements IFileStorage
         }
 
         if ($exists === false && !$zipEntry) {
-            // check the file does not exist (skipped for zip entries, since we are not openning the ZIP archive here)
+            // check the file does not exist (skipped for zip entries, since we are not opening the ZIP archive here)
             if (file_exists($realPath)) {
                 throw new FileStorageException("File already exists.", $path);
             }
@@ -295,7 +295,7 @@ class LocalFileStorage implements IFileStorage
         }
 
         if ($srcZip && $dstZip && $srcReal === $dstReal) {
-            // copy witin one archive -> use ZipFileStorage implementation
+            // copy within one archive -> use ZipFileStorage implementation
             $zip = new ZipFileStorage($this->tmpFilesHelper, $srcReal, null, false);
             $zip->copy($srcZip, $dstZip, $overwrite);
             $zip->close();
@@ -354,12 +354,12 @@ class LocalFileStorage implements IFileStorage
         }
 
         if ($srcZip && $dstZip && $srcReal === $dstReal) {
-            // move witin one archive
+            // move within one archive
             $zip = new ZipFileStorage($this->tmpFilesHelper, $srcReal, null, false);
             $zip->move($srcZip, $dstZip, $overwrite);
             $zip->close();
         } elseif ($srcZip || $dstZip) {
-            // move with some archive involvment, but not simply in one archive -> fallback to copy
+            // move with some archive involvement, but not simply in one archive -> fallback to copy
             $this->copy($src, $dst, $overwrite);
             if (!$this->delete($src)) {
                 throw new FileStorageException("Unable to remove source file after copy-moving procedure.", $src);
@@ -475,7 +475,7 @@ class LocalFileStorage implements IFileStorage
         }
 
         if (!is_dir($root) || !is_writeable($root)) {
-            return 0; // nothinth to do
+            return 0; // nothing to do
         }
 
         $rootDirLen = strlen($this->rootDirectory ?? '') + 1; // plus 1 for '/';

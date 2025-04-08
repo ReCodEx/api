@@ -109,7 +109,7 @@ class GeneralStats
 
 
 /**
- * This helper gathers multiple statistics (typicaly numbers of new entites)
+ * This helper gathers multiple statistics (typically numbers of new entities)
  * over given period of time.
  */
 class GeneralStatsHelper

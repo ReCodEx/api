@@ -10,7 +10,7 @@ use App\Exceptions\JobConfigLoadingException;
 class EvaluationTaskType
 {
     /** Evaluation task type value */
-    const TASK_TYPE = "evaluation";
+    public const TASK_TYPE = "evaluation";
 
     /** @var Task Evaluation task */
     private $task;

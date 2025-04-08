@@ -13,27 +13,27 @@ use App\Helpers\Yaml;
 class SandboxConfig
 {
     /** Sandbox name key */
-    const NAME_KEY = "name";
+    public const NAME_KEY = "name";
     /** Stdin config key */
-    const STDIN_KEY = "stdin";
+    public const STDIN_KEY = "stdin";
     /** Stdout config key */
-    const STDOUT_KEY = "stdout";
+    public const STDOUT_KEY = "stdout";
     /** Stderr config key */
-    const STDERR_KEY = "stderr";
+    public const STDERR_KEY = "stderr";
     /** Stderr-to-stdout config key */
-    const STDERR_TO_STDOUT_KEY = "stderr-to-stdout";
+    public const STDERR_TO_STDOUT_KEY = "stderr-to-stdout";
     /** Output config key */
-    const OUTPUT_KEY = "output";
-    /** Carboncopy stdout key */
-    const CARBONCOPY_STDOUT_KEY = "carboncopy-stdout";
-    /** Carboncopy stderr key */
-    const CARBONCOPY_STDERR_KEY = "carboncopy-stderr";
+    public const OUTPUT_KEY = "output";
+    /** Carbon copy stdout key */
+    public const CARBONCOPY_STDOUT_KEY = "carboncopy-stdout";
+    /** Carbon copy stderr key */
+    public const CARBONCOPY_STDERR_KEY = "carboncopy-stderr";
     /** Change directory key */
-    const CHDIR_KEY = "chdir";
+    public const CHDIR_KEY = "chdir";
     /** Working directory key */
-    const WORKING_DIRECTORY_KEY = "working-directory";
+    public const WORKING_DIRECTORY_KEY = "working-directory";
     /** Limits collection key */
-    const LIMITS_KEY = "limits";
+    public const LIMITS_KEY = "limits";
 
     /** @var string Sandbox name */
     private $name = "";
@@ -47,9 +47,9 @@ class SandboxConfig
     private $stderrToStdout = false;
     /** @var bool Output from stdout and stderr will be written to result yaml */
     private $output = false;
-    /** @var string|null Standard output carboncopy file */
+    /** @var string|null Standard output carbon copy file */
     private $carboncopyStdout = null;
-    /** @var string|null Standard error carboncopy file */
+    /** @var string|null Standard error carbon copy file */
     private $carboncopyStderr = null;
     /** @var string|null Change directory */
     protected $chdir = null;
@@ -181,7 +181,7 @@ class SandboxConfig
     }
 
     /**
-     * Return standard output carboncopy file.
+     * Return standard output carbon copy file.
      * @return string|null
      */
     public function getCarboncopyStdout()
@@ -190,7 +190,7 @@ class SandboxConfig
     }
 
     /**
-     * Set output carboncopy file.
+     * Set output carbon copy file.
      * @param string $stdout
      * @return $this
      */
@@ -201,7 +201,7 @@ class SandboxConfig
     }
 
     /**
-     * Get standard error carboncopy file.
+     * Get standard error carbon copy file.
      * @return string|null
      */
     public function getCarboncopyStderr()
@@ -210,7 +210,7 @@ class SandboxConfig
     }
 
     /**
-     * Set error carboncopy file.
+     * Set error carbon copy file.
      * @param string $stderr
      * @return $this
      */
@@ -221,7 +221,7 @@ class SandboxConfig
     }
 
     /**
-     * Get directory in which sandboxed program will be executed.
+     * Get directory in which sand-boxed program will be executed.
      * @return string|null
      */
     public function getChdir()

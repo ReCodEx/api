@@ -27,8 +27,8 @@ class AnnotationParameterData
         string $location,
         bool $required,
         bool $nullable,
-        string $example = null,
-        string $nestedArraySwaggerType = null,
+        ?string $example = null,
+        ?string $nestedArraySwaggerType = null,
         ?array $nestedObjectParameterData = null,
     ) {
         $this->swaggerType = $swaggerType;
@@ -90,9 +90,9 @@ class AnnotationParameterData
         return $head . $body->toString();
     }
 
-  /**
-   * Converts the object to a @OA\Parameter(...) annotation string
-   */
+    /**
+     * Converts the object to a @OA\Parameter(...) annotation string
+     */
     public function toParameterAnnotation(): string
     {
         $head = "@OA\\Parameter";

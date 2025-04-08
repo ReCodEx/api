@@ -31,7 +31,7 @@ class ScoreCalculatorAccessor
         foreach ($calculators as $calculator) {
             $id = $calculator->getId();
             if (!empty($this->calculators[$id])) {
-                throw new InvalidArgumentException("Provided calculators contain duplicit IDs ($id)");
+                throw new InvalidArgumentException("Provided calculators contain duplicate IDs ($id)");
             }
             $this->calculators[$id] = $calculator;
         }

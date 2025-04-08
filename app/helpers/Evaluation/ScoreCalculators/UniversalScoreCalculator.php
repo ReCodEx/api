@@ -5,8 +5,6 @@ namespace App\Helpers\Evaluation;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IScoreCalculator;
-use App\Helpers\Yaml;
-use App\Helpers\YamlException;
 
 /**
  * Universal score calculator.
@@ -76,7 +74,7 @@ class UniversalScoreCalculator implements IScoreCalculator
             $rootNode = new AstNodeValue();
             $rootNode->setValue(1.0);
         } else {
-            // bulild an expression that does the same as uniform calculator
+            // build an expression that does the same as uniform calculator
             $avgNode = new AstNodeAverage();
             foreach ($testNames as $name) {
                 $testNode = new AstNodeTestResult();

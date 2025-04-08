@@ -4,8 +4,10 @@
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  *
- * We have copied this form abanndoned Nette/Reflection module, so we can use the parse and extend it in the future.
+ * We have copied this form abanndoned Nette/Reflection module, so we can use the parser and extend it in the future.
  * For the original code, visit https://github.com/nette/reflection/blob/master/src/Reflection/AnnotationsParser.php
+ * 
+ * News: After the great endpoint parameter specification refactoring, this may no longer be required.
  */
 
 namespace App\Helpers;

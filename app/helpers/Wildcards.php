@@ -81,7 +81,8 @@ class Wildcards
     }
 
     /**
-     * Split a comma-separated pattern into top-level parts (i.e. split only on commas that are not inside curly brackets)
+     * Split a comma-separated pattern into top-level parts
+     * (i.e. split only on commas that are not inside curly brackets)
      * @param string $pattern the pattern to split (not enclosed in curly braces)
      * @return Generator
      */

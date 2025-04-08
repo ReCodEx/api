@@ -11,7 +11,6 @@ use App\Helpers\FileStorage\IImmutableFile;
  */
 class StorageFileResponse implements Response
 {
-
     /** @var IImmutableFile */
     private $file;
 
@@ -35,7 +34,7 @@ class StorageFileResponse implements Response
     public function __construct(
         IImmutableFile $file,
         string $name,
-        string $contentType = null,
+        ?string $contentType = null,
         bool $forceDownload = true
     ) {
         $this->file = $file;
@@ -64,8 +63,8 @@ class StorageFileResponse implements Response
         $httpResponse->setHeader(
             'Content-Disposition',
             ($this->forceDownload ? 'attachment' : 'inline')
-            . '; filename="' . $this->name . '"'
-            . '; filename*=utf-8\'\'' . rawurlencode($this->name)
+                . '; filename="' . $this->name . '"'
+                . '; filename*=utf-8\'\'' . rawurlencode($this->name)
         );
 
         $httpResponse->setHeader('Content-Length', $this->file->getSize());

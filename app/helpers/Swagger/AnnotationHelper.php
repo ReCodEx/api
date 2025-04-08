@@ -123,7 +123,7 @@ class AnnotationHelper
     }
 
     /**
-     * Extracts standart doc comments from endpoints, such as '@param string $id An identifier'.
+     * Extracts standard doc comments from endpoints, such as '@param string $id An identifier'.
      * Based on the HTTP route of the endpoint, the extracted param can be identified as either a path or
      * query parameter.
      * @param array $annotations An array of annotations.

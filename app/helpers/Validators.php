@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use DateTime;
 use Nette\Utils;
 
 /**
@@ -10,7 +9,6 @@ use Nette\Utils;
  */
 class Validators extends Utils\Validators
 {
-
     /**
      * Registering new validating functions
      */

@@ -87,7 +87,7 @@ class ExternalServiceAuthenticator
                     'jwtSecret' => $auth['jwtSecret'],
                     'expiration' => Arrays::get($auth, 'expiration', 60),
                     'defaultRole' => Arrays::get($auth, 'defaultRole', null),
-                    // if set, users may register even when extrnal authenticator does not provide role
+                    // if set, users may register even when external authenticator does not provide role
                     'usedAlgorithm' => Arrays::get($auth, 'jwtAlgorithm', 'HS256'),
                     'extraIds' => Arrays::get($auth, 'extraIds', []),
                 ];
@@ -125,12 +125,12 @@ class ExternalServiceAuthenticator
      * @param string $authName name of the external authenticator
      * @param string $token form the external authentication service
      * @param string|null $instanceId identifier of an instance where the user should be registered
-     *                                (this may be overriden by a value in the token)
+     *                                (this may be overridden by a value in the token)
      * @return User
      * @throws BadRequestException
      * @throws WrongCredentialsException
      */
-    public function authenticate(string $authName, string $token, string $instanceId = null): User
+    public function authenticate(string $authName, string $token, ?string $instanceId = null): User
     {
         $user = null;
         $decodedToken = $this->decodeToken($authName, $token);
@@ -216,7 +216,7 @@ class ExternalServiceAuthenticator
     private function decodeToken(string $authName, string $token)
     {
         if (!$this->hasAuthenticator($authName)) {
-            throw new BadRequestException("Unkown external authenticator name '$authName'.");
+            throw new BadRequestException("Unknown external authenticator name '$authName'.");
         }
 
         $authenticator = $this->authenticators[$authName];
@@ -257,13 +257,13 @@ class ExternalServiceAuthenticator
      * @param object $decodedToken which is searched for instanceId key
      * @param string $instanceId instance suggested externally
      */
-    private function getInstance($decodedToken, string $instanceId = null): ?Instance
+    private function getInstance($decodedToken, ?string $instanceId = null): ?Instance
     {
         if (!empty($decodedToken->instanceId)) {
             $instanceId = $decodedToken->instanceId;
         }
 
-        // fetch the enetity from DB
+        // fetch the entity from DB
         if ($instanceId) {
             $instance = $this->instances->get($instanceId);
             if (!$instance) {
@@ -311,7 +311,7 @@ class ExternalServiceAuthenticator
             $extUser = $this->externalLogins->getUser($service, $eid);
             if ($extUser) {  // a user with given ID exists
                 if ($extUser->getId() !== $user->getId()) {
-                    // Identity crysis! ID belongs to another user...
+                    // Identity crisis! ID belongs to another user...
                     $this->failureHelper->report(
                         FailureHelper::TYPE_API_ERROR,
                         sprintf(

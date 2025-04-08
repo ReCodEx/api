@@ -4,7 +4,6 @@ namespace App\Helpers;
 
 use Nette;
 use Nette\Utils\Arrays;
-use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
 use App\Model\Repository\Logins;
@@ -34,7 +33,7 @@ class AnonymizationHelper
     protected $anonymizedName;
 
     /**
-     * @var string Suffix appended to an email addres of deleted user.
+     * @var string Suffix appended to an email address of deleted user.
      */
     protected $deletedEmailSuffix;
 

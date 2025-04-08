@@ -9,7 +9,6 @@ use Latte\Engine;
  */
 class EmailLatteWrapper
 {
-
     private $latte;
 
     public function __construct(Engine $latte)

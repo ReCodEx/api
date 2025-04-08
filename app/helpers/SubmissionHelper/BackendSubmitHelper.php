@@ -13,7 +13,6 @@ use ZMQSocketException;
  */
 class BackendSubmitHelper
 {
-
     /** @var BrokerProxy */
     private $broker;
 
@@ -45,7 +44,7 @@ class BackendSubmitHelper
     public function initiateEvaluation(
         JobConfig $jobConfig,
         array $headers = [],
-        string $hardwareGroup = null
+        ?string $hardwareGroup = null
     ): bool {
         // no files preparations are necessary, the submission archive can be constructed on demand
         $archiveUrl = $this->fileStorage->getWorkerSubmissionExternalUrl($jobConfig->getJobType(), $jobConfig->getId());

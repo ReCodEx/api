@@ -38,7 +38,7 @@ class PlagiarismDetectionAccessToken extends Command
     protected function configure()
     {
         $this->setName(self::$defaultName)
-            ->setDescription('Generate token restricted for plagiarsim scope (for 3rd party tools).');
+            ->setDescription('Generate token restricted for plagiarism scope (for 3rd party tools).');
         $this->addArgument('userId', InputArgument::REQUIRED, 'ID of the admin owning the token.');
         $this->addOption(
             'expiration',

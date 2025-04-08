@@ -9,7 +9,7 @@ use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 use App\Helpers\JobConfig\Tasks\Task;
 
 /**
- * Reprezentation of one test unit which belongs to job.
+ * Representation of one test unit which belongs to job.
  */
 class TestConfig
 {
@@ -53,7 +53,7 @@ class TestConfig
         if (empty($this->executionTaskType) || $this->evaluationTaskType === null) {
             throw new JobConfigLoadingException(
                 "Each test must contain at least on task of type 'execution' and exactly one of type 'evaluation'."
-                . " Test '{$id}' does not meet these criteria."
+                    . " Test '{$id}' does not meet these criteria."
             );
         }
     }

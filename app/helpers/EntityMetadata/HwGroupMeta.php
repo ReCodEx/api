@@ -10,7 +10,6 @@ use App\Helpers\Yaml;
  */
 class HwGroupMeta
 {
-
     private static $MEMORY_KEY = "memory";
     private static $CPU_TIME_PER_TEST_KEY = "cpuTimePerTest";
     private static $CPU_TIME_PER_EXERCISE_KEY = "cpuTimePerExercise";

@@ -121,20 +121,20 @@ class EmailLocalizationHelper
     private static $localizations = [
         EmailLocalizationHelper::CZECH_LOCALE => [
             // this is actually not perfect, but it will do for now
-            'y' => [ 1 => "rok", 2 => "roky", 5 => "let" ],
-            'm' => [ 1 => "měsíc", 2 => "měsíce", 5 => "měsíců" ],
-            'd' => [ 1 => "den", 2 => "dny", 5 => 'dní' ],
-            'h' => [ 1 => "hodina", 2 => "hodiny", 5 => "hodin" ],
-            'i' => [ 1 => "minuta", 2 => "minuty", 5 => "minut" ],
-            's' => [ 1 => "vteřina", 2 => "vteřiny", 5 => "vteřin" ],
+            'y' => [1 => "rok", 2 => "roky", 5 => "let"],
+            'm' => [1 => "měsíc", 2 => "měsíce", 5 => "měsíců"],
+            'd' => [1 => "den", 2 => "dny", 5 => 'dní'],
+            'h' => [1 => "hodina", 2 => "hodiny", 5 => "hodin"],
+            'i' => [1 => "minuta", 2 => "minuty", 5 => "minut"],
+            's' => [1 => "vteřina", 2 => "vteřiny", 5 => "vteřin"],
         ],
         EmailLocalizationHelper::DEFAULT_LOCALE => [ // default (English)
-            'y' => [ 1 => "year", 2 => "years" ],
-            'm' => [ 1 => "month", 2 => "months" ],
-            'd' => [ 1 => "day", 2 => "days" ],
-            'h' => [ 1 => "hour", 2 => "hours" ],
-            'i' => [ 1 => "minute", 2 => "minutes" ],
-            's' => [ 1 => "second", 2 => "seconds" ],
+            'y' => [1 => "year", 2 => "years"],
+            'm' => [1 => "month", 2 => "months"],
+            'd' => [1 => "day", 2 => "days"],
+            'h' => [1 => "hour", 2 => "hours"],
+            'i' => [1 => "minute", 2 => "minutes"],
+            's' => [1 => "second", 2 => "seconds"],
         ]
     ];
 
@@ -158,7 +158,7 @@ class EmailLocalizationHelper
     /**
      * Return localized string with an informal description of relative time (date interval).
      * It writes out up to two the most significant values, so it is brief yet it scales from seconds to years.
-     * The interval is treated as absoluted value (ignoring the sign).
+     * The interval is treated as absolute value (ignoring the sign).
      * @param DateInterval $dateDiff interval to be displayed
      * @param string $locale identification of the language
      * @return string formatted relative time
