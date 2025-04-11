@@ -158,6 +158,52 @@ class TestPlagiarismPresenter extends Tester\TestCase
         Assert::true($batch->getUploadCompletedAt() === null);
     }
 
+    public function testBatchSetCompletedAndMarkAssignments()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $batch = current(array_filter($this->presenter->detectionBatches->findAll(), function ($b) {
+            return $b->getUploadCompletedAt() === null;
+        }));
+        Assert::notNull($batch);
+
+        $assignments = [];
+        $otherAssignments = [];
+        foreach ($this->presenter->assignments->findAll() as $assignment) {
+            if ($assignment->isExam()) {
+                $otherAssignments[] = $assignment;
+            } else {
+                $assignments[] = $assignment;
+            }
+        }
+        Assert::count(2, $assignments);
+        Assert::count(1, $otherAssignments);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:PlagiarismPresenter',
+            'POST',
+            ['action' => 'updateBatch', 'id' => $batch->getId()],
+            [
+                'assignments' => array_map(function ($a) {
+                    return $a->getId();
+                }, $assignments)
+            ]
+        );
+        Assert::equal($batch->getId(), $payload->getId());
+        Assert::true($payload->getUploadCompletedAt() === null);
+
+        foreach ($assignments as $assignment) {
+            $this->presenter->assignments->refresh($assignment);
+            Assert::equal($batch->getId(), $assignment->getPlagiarismBatch()?->getId());
+        }
+
+        foreach ($otherAssignments as $assignment) {
+            $this->presenter->assignments->refresh($assignment);
+            Assert::null($assignment->getPlagiarismBatch());
+        }
+    }
+
     public function testGetSimilarities()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -237,16 +283,16 @@ class TestPlagiarismPresenter extends Tester\TestCase
                     'fileEntry' => $similarity->getFileEntry(),
                     'fragments' => [
                         [
-                            [ 'offset' => 42, 'length' => 54 ],
-                            [ 'offset' => 42, 'length' => 54 ],
+                            ['offset' => 42, 'length' => 54],
+                            ['offset' => 42, 'length' => 54],
                         ],
                         [
-                            [ 'offset' => 420, 'length' => 540 ],
-                            [ 'offset' => 420, 'length' => 540 ],
+                            ['offset' => 420, 'length' => 540],
+                            ['offset' => 420, 'length' => 540],
                         ],
                         [
-                            [ 'offset' => 4200, 'length' => 1024 ],
-                            [ 'offset' => 4200, 'length' => 1024 ],
+                            ['offset' => 4200, 'length' => 1024],
+                            ['offset' => 4200, 'length' => 1024],
                         ],
                     ]
                 ]],
@@ -476,8 +522,8 @@ class TestPlagiarismPresenter extends Tester\TestCase
                             'fileEntry' => $similarity->getFileEntry(),
                             'fragments' => [
                                 [
-                                    [ 'off' => 42, 'length' => 54 ],
-                                    [ 'offset' => 42, 'len' => 54 ],
+                                    ['off' => 42, 'length' => 54],
+                                    ['offset' => 42, 'len' => 54],
                                 ],
                             ]
                         ]],

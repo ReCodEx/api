@@ -18,6 +18,7 @@ use App\Model\Entity\PlagiarismDetectionBatch;
 use App\Model\Entity\PlagiarismDetectedSimilarity;
 use App\Model\Entity\PlagiarismDetectedSimilarFile;
 use App\Model\Entity\SolutionFile;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\PlagiarismDetectionBatches;
 use App\Model\Repository\PlagiarismDetectedSimilarities;
@@ -32,6 +33,12 @@ use App\Model\View\PlagiarismViewFactory;
  */
 class PlagiarismPresenter extends BasePresenter
 {
+    /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
+
     /**
      * @var AssignmentSolutions
      * @inject
@@ -168,15 +175,38 @@ class PlagiarismPresenter extends BasePresenter
      * Update detection bath record. At the moment, only the uploadCompletedAt can be changed.
      * @POST
      */
-    #[Post("uploadCompleted", new VBool(), "Whether the upload of the batch data is completed or not.")]
+    #[Post(
+        "uploadCompleted",
+        new VBool(),
+        "Whether the upload of the batch data is completed or not.",
+        required: false
+    )]
+    #[Post(
+        "assignments",
+        new VArray(new VUuid()),
+        "List of assignment IDs to be marked as 'checked' by this batch.",
+        required: false
+    )]
     #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
     public function actionUpdateBatch(string $id): void
     {
-        $req = $this->getRequest();
-        $uploadCompleted = filter_var($req->getPost("uploadCompleted"), FILTER_VALIDATE_BOOLEAN);
         $batch = $this->detectionBatches->findOrThrow($id);
-        $batch->setUploadCompleted($uploadCompleted);
-        $this->detectionBatches->persist($batch);
+        $req = $this->getRequest();
+
+        $uploadCompleted = $req->getPost("uploadCompleted");
+        if ($uploadCompleted !== null) {
+            $uploadCompleted = filter_var($uploadCompleted, FILTER_VALIDATE_BOOLEAN);
+            $batch->setUploadCompleted($uploadCompleted);
+        }
+
+        $assignments = $req->getPost("assignments") ?? [];
+        foreach ($assignments as $assignmentId) {
+            $assignment = $this->assignments->findOrThrow($assignmentId);
+            $assignment->setPlagiarismBatch($batch);
+            $this->assignments->persist($assignment, false); // no flush
+        }
+
+        $this->detectionBatches->persist($batch); // and flush
         $this->sendSuccessResponse($batch);
     }
 
@@ -281,7 +311,7 @@ class PlagiarismPresenter extends BasePresenter
             }
 
             try {
-                $detectedFile = new PlagiarismDetectedSimilarFile(
+                new PlagiarismDetectedSimilarFile(
                     $detectedSimilarity,
                     $similarSolution,
                     $similarFile,
