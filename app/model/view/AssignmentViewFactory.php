@@ -116,6 +116,7 @@ class AssignmentViewFactory
             ],
             "solutionFilesLimit" => $assignment->getSolutionFilesLimit(),
             "solutionSizeLimit" => $assignment->getSolutionSizeLimit(),
+            "plagiarismBatchId" => $assignment->getPlagiarismBatch()?->getId(),
             "permissionHints" => PermissionHints::get($this->assignmentAcl, $assignment)
         ];
     }

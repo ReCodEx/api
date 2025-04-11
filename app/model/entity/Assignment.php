@@ -544,6 +544,13 @@ class Assignment extends AssignmentBase implements IExercise
         $this->syncedAt = new DateTime();
     }
 
+    /**
+     * @var PlagiarismDetectionBatch|null
+     * @ORM\ManyToOne(targetEntity="PlagiarismDetectionBatch")
+     * Refers to last plagiarism detection batch which checked solutions of this assignment.
+     */
+    protected $plagiarismBatch = null;
+
     /*
      * Accessors
      */
@@ -701,5 +708,15 @@ class Assignment extends AssignmentBase implements IExercise
     public function setMaxPointsDeadlineInterpolation(bool $interpolation = true): void
     {
         $this->maxPointsDeadlineInterpolation = $interpolation;
+    }
+
+    public function getPlagiarismBatch(): ?PlagiarismDetectionBatch
+    {
+        return $this->plagiarismBatch;
+    }
+
+    public function setPlagiarismBatch(?PlagiarismDetectionBatch $batch = null)
+    {
+        $this->plagiarismBatch = $batch;
     }
 }
