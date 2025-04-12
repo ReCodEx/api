@@ -272,7 +272,7 @@ class RegistrationPresenter extends BasePresenter
         // check if the email is free
         $email = trim($format->email);
         // username is name of column which holds login identifier represented by email
-        if ($this->logins->getByUsername($email) !== null) {
+        if ($this->users->getByEmail($email) !== null) {
             throw new BadRequestException("This email address is already taken.");
         }
 
