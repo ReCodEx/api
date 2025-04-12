@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
 use App\Model\Entity\User;
+use App\Model\Entity\Instance;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -75,7 +76,7 @@ class Users extends BaseSoftDeleteRepository
 
 
     /**
-     * Search users first names and surnames based on given string.
+     * Search users first names and surnames based on given (sub)string.
      * @param string|null $search
      * @return User[]
      */
@@ -91,6 +92,21 @@ class Users extends BaseSoftDeleteRepository
     public function findByRoles(string ...$roles): array
     {
         return $this->findBy(["role" => $roles]);
+    }
+
+    /**
+     * Find users by exact match of the whole name.
+     * @param Instance $instance
+     * @param string $firstName
+     * @param string $lastName
+     * @return User[]
+     */
+    public function findByName(Instance $instance, string $firstName, string $lastName): array
+    {
+        $users = $this->findBy(["firstName" => $firstName, "lastName" => $lastName]);
+        return array_filter($users, function (User $user) use ($instance) {
+            return $user->belongsTo($instance);
+        });
     }
 
     /**
