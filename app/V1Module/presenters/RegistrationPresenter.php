@@ -286,17 +286,32 @@ class RegistrationPresenter extends BasePresenter
 
         // gather data
         $instanceId = $format->instanceId;
-        $instance = $this->getInstance($instanceId);
-        $titlesBeforeName = $format->titlesBeforeName === null ? "" : $format->titlesBeforeName;
-        $titlesAfterName = $format->titlesAfterName === null ? "" : $format->titlesAfterName;
+        $instance = $this->getInstance($instanceId); // we don't need it, just to check it exists
+        $titlesBeforeName = $format->titlesBeforeName === null ? "" : trim($format->titlesBeforeName);
+        $titlesAfterName = $format->titlesAfterName === null ? "" : trim($format->titlesAfterName);
+        $firstName = trim($format->firstName);
+        $lastName = trim($format->lastName);
+        if (!$firstName || !$lastName) {
+            throw new BadRequestException("The user's full name must be filled in.");
+        }
+
+        // Check for name collisions, unless the request explicitly says to ignore them.
+        if (!$format->ignoreNameCollision) {
+            $sameName = $this->users->findByName($instance, $firstName, $lastName);
+            if ($sameName) {
+                // let's report the colliding users
+                $this->sendSuccessResponse($this->userViewFactory->getUsers($sameName));
+                return;
+            }
+        }
 
         // create the token and send it via email
         try {
             $this->invitationHelper->invite(
                 $instanceId,
                 $email,
-                $format->firstName,
-                $format->lastName,
+                $firstName,
+                $lastName,
                 $titlesBeforeName,
                 $titlesAfterName,
                 $groupsIds,
