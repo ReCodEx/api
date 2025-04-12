@@ -55,7 +55,7 @@ class Users extends BaseSoftDeleteRepository
                 'email' => ['u.email'],
                 'createdAt' => ['u.createdAt'],
             ],
-            ['firstName', 'lastName'] // search column names
+            ['firstName', 'lastName', 'email'] // search column names
         );
         $paginationDbHelper->apply($qb, $pagination);
 
