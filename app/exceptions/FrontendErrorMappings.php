@@ -34,6 +34,8 @@ class FrontendErrorMappings
     public const E400_104__EXTERNAL_AUTH_FAILED_USER_NOT_FOUND = "400-104";
     /** External authentication failed - unable to register new user because no role was provided. */
     public const E400_105__EXTERNAL_AUTH_FAILED_MISSING_ROLE = "400-105";
+    /** User email already exists, new user cannot be created/invited/registered/.... */
+    public const E400_110__USER_EMAIL_ALREADY_EXISTS = "400-110";
 
     /** General job config error */
     public const E400_200__JOB_CONFIG = "400-200";
