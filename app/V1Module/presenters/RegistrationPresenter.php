@@ -169,8 +169,11 @@ class RegistrationPresenter extends BasePresenter
         // check if the email is free
         $email = trim($req->getPost("email"));
         // username is name of column which holds login identifier represented by email
-        if ($this->logins->getByUsername($email) !== null) {
-            throw new BadRequestException("This email address is already taken.");
+        if ($this->logins->getByUsername($email) !== null || $this->users->getByEmail($email) !== null) {
+            throw new BadRequestException(
+                "This email address is already taken.",
+                FrontendErrorMappings::E400_110__USER_EMAIL_ALREADY_EXISTS
+            );
         }
 
         $instanceId = $req->getPost("instanceId");
@@ -272,15 +275,18 @@ class RegistrationPresenter extends BasePresenter
         // check if the email is free
         $email = trim($format->email);
         // username is name of column which holds login identifier represented by email
-        if ($this->users->getByEmail($email) !== null) {
-            throw new BadRequestException("This email address is already taken.");
+        if ($this->logins->getByUsername($email) !== null || $this->users->getByEmail($email) !== null) {
+            throw new BadRequestException(
+                "This email address is already taken.",
+                FrontendErrorMappings::E400_110__USER_EMAIL_ALREADY_EXISTS
+            );
         }
 
         $groupsIds = $format->groups ?? [];
         foreach ($groupsIds as $id) {
             $group = $this->groups->get($id);
             if (!$group || $group->isOrganizational() || !$this->groupAcl->canInviteStudents($group)) {
-                throw new BadRequestException("Current user cannot invite people in group '$id'");
+                throw new ForbiddenRequestException("Current user cannot invite people in group '$id'");
             }
         }
 
