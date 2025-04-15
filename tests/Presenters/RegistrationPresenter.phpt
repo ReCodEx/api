@@ -356,6 +356,93 @@ class TestRegistrationPresenter extends Tester\TestCase
         );
     }
 
+    public function testCreateAccountSameName()
+    {
+        $student = $this->presenter->users->getByEmail(PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
+        Assert::notNull($student);
+
+        $email = "email@email.email";
+        $firstName = $student->getFirstName();
+        $lastName = $student->getLastName();
+        $password = "password";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'POST',
+            ['action' => 'createAccount'],
+            [
+                'email' => $email,
+                'firstName' => $firstName,
+                'lastName' => $lastName,
+                'password' => $password,
+                'passwordConfirm' => $password,
+                'instanceId' => $instanceId,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName
+            ]
+        );
+
+        Assert::equal(null, $payload["user"]);
+        Assert::count(1, $payload["usersWithSameName"]);
+        $user = current($payload["usersWithSameName"]);
+        Assert::equal($student->getId(), $user["id"]);
+    }
+
+    public function testCreateAccountSameNameEnabled()
+    {
+        $student = $this->presenter->users->getByEmail(PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
+        Assert::notNull($student);
+
+        $email = "email@email.email";
+        $firstName = $student->getFirstName();
+        $lastName = $student->getLastName();
+        $password = "password";
+        $instances = $this->instances->findAll();
+        $instanceId = array_pop($instances)->getId();
+        $titlesBeforeName = "titlesBeforeName";
+        $titlesAfterName = "titlesAfterName";
+
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'POST',
+            ['action' => 'createAccount'],
+            [
+                'email' => $email,
+                'firstName' => $firstName,
+                'lastName' => $lastName,
+                'password' => $password,
+                'passwordConfirm' => $password,
+                'instanceId' => $instanceId,
+                'titlesBeforeName' => $titlesBeforeName,
+                'titlesAfterName' => $titlesAfterName,
+                'ignoreNameCollision' => true,
+            ]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(201, $result['code']);
+        Assert::equal(2, count($result['payload']));
+        Assert::true(array_key_exists("accessToken", $result["payload"]));
+        Assert::true(array_key_exists("user", $result["payload"]));
+
+        // check created user
+        $user = $result["payload"]["user"];
+        Assert::equal("$titlesBeforeName $firstName $lastName $titlesAfterName", $user["fullName"]);
+        Assert::equal($email, $user["privateData"]["email"]);
+
+        // check created login
+        $login = $this->logins->findByUserId($user["id"]);
+        Assert::equal($user["id"], $login->getUser()->getId());
+        Assert::true($login->passwordsMatchOrEmpty($password, $this->presenter->passwordsService));
+    }
+
     public function testValidateRegistrationData()
     {
         $request = new Nette\Application\Request(

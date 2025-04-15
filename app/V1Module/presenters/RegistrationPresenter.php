@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
@@ -162,6 +163,12 @@ class RegistrationPresenter extends BasePresenter
     #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
     #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
     #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
+    #[Post(
+        "ignoreNameCollision",
+        new VBool(),
+        "If a use with the same name exists, this needs to be set to true.",
+        required: false
+    )]
     public function actionCreateAccount()
     {
         $req = $this->getRequest();
@@ -179,8 +186,13 @@ class RegistrationPresenter extends BasePresenter
         $instanceId = $req->getPost("instanceId");
         $instance = $this->getInstance($instanceId);
 
-        $titlesBeforeName = $req->getPost("titlesBeforeName") === null ? "" : $req->getPost("titlesBeforeName");
-        $titlesAfterName = $req->getPost("titlesAfterName") === null ? "" : $req->getPost("titlesAfterName");
+        $titlesBeforeName = trim($req->getPost("titlesBeforeName") ?? "");
+        $titlesAfterName = trim($req->getPost("titlesAfterName") ?? "");
+        $firstName = trim($req->getPost("firstName") ?? "");
+        $lastName = trim($req->getPost("lastName") ?? "");
+        if (!$firstName || !$lastName) {
+            throw new BadRequestException("The user's full name must be filled in.");
+        }
 
         // check given passwords
         $password = $req->getPost("password");
@@ -192,10 +204,23 @@ class RegistrationPresenter extends BasePresenter
             );
         }
 
+        // Check for name collisions, unless the request explicitly says to ignore them.
+        if (!$req->getPost("ignoreNameCollision")) {
+            $sameName = $this->users->findByName($instance, $firstName, $lastName);
+            if ($sameName) {
+                // let's report the colliding users
+                $this->sendSuccessResponse([
+                    "user" => null,
+                    "usersWithSameName" => $this->userViewFactory->getUsers($sameName),
+                ]);
+                return;
+            }
+        }
+
         $user = new User(
             $email,
-            $req->getPost("firstName"),
-            $req->getPost("lastName"),
+            $firstName,
+            $lastName,
             $titlesBeforeName,
             $titlesAfterName,
             Roles::STUDENT_ROLE,
