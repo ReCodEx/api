@@ -33,6 +33,14 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
     }
 
     /**
+     * @return Collection
+     */
+    public function getExercisesAndIReallyMeanAllOkay()
+    {
+        return $this->exercises;
+    }
+
+    /**
      * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="attachmentFiles")
      */
     protected $assignments;
@@ -49,6 +57,13 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
         );
     }
 
+    /**
+     * @return Collection
+     */
+    public function getAssignmentsAndIReallyMeanAllOkay()
+    {
+        return $this->assignments;
+    }
 
     /**
      * AttachmentFile constructor.

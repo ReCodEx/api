@@ -17,6 +17,7 @@ use App\Helpers\FileStorageManager;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AttachmentFile;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AttachmentFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
@@ -36,6 +37,12 @@ class ExerciseFilesPresenter extends BasePresenter
      * @inject
      */
     public $exercises;
+
+    /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
 
     /**
      * @var UploadedFiles
@@ -345,7 +352,37 @@ class ExerciseFilesPresenter extends BasePresenter
         $exercise->removeAttachmentFile($file);
         $this->exercises->flush();
 
-        $this->fileStorage->deleteAttachmentFile($file);
+        $this->attachmentFiles->refresh($file);
+        if ($file->getExercises()->isEmpty()) {
+            // file has no attachments to exercises, let's check the assignments
+            $isUsed = false;
+            foreach ($file->getAssignments() as $assignment) {
+                $group = $assignment->getGroup();
+                if ($group && !$group->isArchived()) {
+                    $isUsed = true;  // only non-archived assignments are considered relevant
+                    break;
+                }
+            }
+
+            if (!$isUsed) {
+                $this->fileStorage->deleteAttachmentFile($file);
+
+                if ($file->getAssignments()->isEmpty()) {
+                    // only if no attachments exists (except for deleted ones)
+                    // remove all links to deleted entities and remove the file record
+                    foreach ($file->getExercisesAndIReallyMeanAllOkay() as $exercise) {
+                        $exercise->removeAttachmentFile($file);
+                        $this->exercises->persist($exercise, false);
+                    }
+                    foreach ($file->getAssignmentsAndIReallyMeanAllOkay() as $assignment) {
+                        $assignment->removeAttachmentFile($file);
+                        $this->assignments->persist($assignment, false);
+                    }
+
+                    $this->attachmentFiles->remove($file);
+                }
+            }
+        }
 
         $this->sendSuccessResponse("OK");
     }
