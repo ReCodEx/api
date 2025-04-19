@@ -7,6 +7,7 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
@@ -330,6 +331,10 @@ class ExerciseFilesPresenter extends BasePresenter
     public function checkDeleteAttachmentFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
+        $file = $this->attachmentFiles->findOrThrow($fileId);
+        if (!$file->getExercises()->contains($exercise)) {
+            throw new BadRequestException("Selected file is not an attachment file for given exercise.");
+        }
         if (!$this->exerciseAcl->canUpdate($exercise)) {
             throw new ForbiddenRequestException("You cannot delete attachment files for this exercise.");
         }
