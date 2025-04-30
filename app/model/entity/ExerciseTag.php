@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ExerciseTag
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

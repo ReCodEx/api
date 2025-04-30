@@ -5,20 +5,16 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ParseException;
 use App\Exceptions\FrontendErrorMappings;
@@ -27,7 +23,6 @@ use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
-use App\Helpers\Pagination;
 use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
 use App\Helpers\Notifications\ExerciseNotificationSender;
@@ -36,7 +31,6 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseScoreConfig;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseTag;
-use App\Model\Entity\Pipeline;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\User;
 use App\Model\Repository\Exercises;
@@ -217,10 +211,10 @@ class ExercisesPresenter extends BasePresenter
     )]
     public function actionDefault(
         int $offset = 0,
-        int $limit = null,
-        string $orderBy = null,
-        array $filters = null,
-        string $locale = null
+        ?int $limit = null,
+        ?string $orderBy = null,
+        ?array $filters = null,
+        ?string $locale = null
     ) {
         $pagination = $this->getPagination(
             $offset,
@@ -272,7 +266,7 @@ class ExercisesPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    public function actionAuthors(string $instanceId = null, string $groupId = null)
+    public function actionAuthors(?string $instanceId = null, ?string $groupId = null)
     {
         $authors = $this->exercises->getAuthors($instanceId, $groupId, $this->groups);
         $this->sendSuccessResponse($this->userViewFactory->getUsers($authors));
@@ -315,7 +309,7 @@ class ExercisesPresenter extends BasePresenter
      * Get details of an exercise
      * @GET
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionDetail(string $id)
     {
         /** @var Exercise $exercise */
@@ -337,9 +331,9 @@ class ExercisesPresenter extends BasePresenter
      * @POST
      * @throws BadRequestException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("version", new VInt(), "Version of the edited exercise")]
     #[Post(
@@ -370,7 +364,7 @@ class ExercisesPresenter extends BasePresenter
         nullable: true,
     )]
     #[Post("mergeJudgeLogs", new VBool(), "If true, judge stderr will be merged into stdout (default for assignments)")]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $req = $this->getRequest();
@@ -409,7 +403,10 @@ class ExercisesPresenter extends BasePresenter
         $configurationType = $req->getPost("configurationType");
         if ($configurationType) {
             if (!Compiler::checkConfigurationType($configurationType)) {
-                throw new InvalidArgumentException("Invalid configuration type '{$configurationType}'");
+                throw new InvalidApiArgumentException(
+                    'configurationType',
+                    "Invalid configuration type '{$configurationType}'"
+                );
             }
             $exercise->setConfigurationType($configurationType);
         }
@@ -420,7 +417,7 @@ class ExercisesPresenter extends BasePresenter
 
         // localized texts cannot be empty
         if (count($localizedTexts) == 0) {
-            throw new InvalidArgumentException("No entry for localized texts given.");
+            throw new InvalidApiArgumentException('localizedTexts', "No entry for localized texts given.");
         }
 
         // go through given localizations and construct database entities
@@ -431,19 +428,19 @@ class ExercisesPresenter extends BasePresenter
                     $localization
                 ) || !array_key_exists("text", $localization)
             ) {
-                throw new InvalidArgumentException("Malformed localized text entry");
+                throw new InvalidApiArgumentException('localizedTexts', "Malformed localized text entry");
             }
 
             $lang = $localization["locale"];
 
             if (array_key_exists($lang, $localizations)) {
-                throw new InvalidArgumentException("Duplicate entry for language $lang");
+                throw new InvalidApiArgumentException("Duplicate entry for language $lang");
             }
 
             // create all new localized texts
             $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
             if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
-                throw new InvalidArgumentException("External assignment link is not a valid URL");
+                throw new InvalidApiArgumentException('link', "External assignment link is not a valid URL");
             }
 
             $localization["description"] = $localization["description"] ?? "";
@@ -487,7 +484,7 @@ class ExercisesPresenter extends BasePresenter
      * @POST
      */
     #[Post("version", new VInt(), "Version of the exercise.")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionValidate($id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -516,7 +513,7 @@ class ExercisesPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Query("archived", new VBool(), "Include also archived groups in the result", required: false)]
     public function actionAssignments(string $id, bool $archived = false)
     {
@@ -593,7 +590,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("hwGroups", new VArray(), "List of hardware groups identifications to which exercise belongs to")]
-    #[Path("id", new VString(), "identifier of exercise", required: true)]
+    #[Path("id", new VUuid(), "identifier of exercise", required: true)]
     public function actionHardwareGroups(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -637,7 +634,7 @@ class ExercisesPresenter extends BasePresenter
      * Delete an exercise
      * @DELETE
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionRemove(string $id)
     {
         /** @var Exercise $exercise */
@@ -656,7 +653,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws ParseException
      */
     #[Post("groupId", new VMixed(), "Identifier of the group to which exercise will be forked", nullable: true)]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionForkFrom(string $id)
     {
         $user = $this->getCurrentUser();
@@ -695,9 +692,9 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Attach exercise to group with given identification.
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("groupId", new VString(), "Identifier of the group to which exercise should be attached", required: true)]
     public function actionAttachGroup(string $id, string $groupId)
     {
@@ -705,7 +702,7 @@ class ExercisesPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($groupId);
 
         if ($exercise->getGroups()->contains($group)) {
-            throw new InvalidArgumentException("groupId", "group is already attached to the exercise");
+            throw new InvalidApiArgumentException('groupId', "group is already attached to the exercise");
         }
 
         $exercise->addGroup($group);
@@ -729,9 +726,9 @@ class ExercisesPresenter extends BasePresenter
     /**
      * Detach exercise from given group.
      * @DELETE
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("groupId", new VString(), "Identifier of the group which should be detached from exercise", required: true)]
     public function actionDetachGroup(string $id, string $groupId)
     {
@@ -739,7 +736,7 @@ class ExercisesPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($groupId);
 
         if (!$exercise->getGroups()->contains($group)) {
-            throw new InvalidArgumentException("groupId", "given group is not attached to the exercise");
+            throw new InvalidApiArgumentException('groupId', "given group is not attached to the exercise");
         }
 
         $exercise->removeGroup($group);
@@ -801,11 +798,12 @@ class ExercisesPresenter extends BasePresenter
     #[Query(
         "force",
         new VBool(),
-        "If true, the rename will be allowed even if the new tag name exists (tags will be merged). Otherwise, name collisions will result in error.",
+        "If true, the rename will be allowed even if the new tag name exists (tags will be merged). "
+            . "Otherwise, name collisions will result in error.",
         required: false,
     )]
     #[Path("tag", new VString(), "Tag to be updated", required: true)]
-    public function actionTagsUpdateGlobal(string $tag, string $renameTo = null, bool $force = false)
+    public function actionTagsUpdateGlobal(string $tag, ?string $renameTo = null, bool $force = false)
     {
         // Check whether at least one modification action is present (so far, we have only renameTo)
         if ($renameTo === null) {
@@ -813,12 +811,12 @@ class ExercisesPresenter extends BasePresenter
         }
 
         if (!$this->exerciseTags->verifyTagName($renameTo)) {
-            throw new InvalidArgumentException("renameTo", "tag name contains illicit characters");
+            throw new InvalidApiArgumentException('renameTo', "tag name contains illicit characters");
         }
 
         if (!$force && $this->exerciseTags->tagExists($renameTo)) {
-            throw new InvalidArgumentException(
-                "renameTo",
+            throw new InvalidApiArgumentException(
+                'renameTo',
                 "new tag name collides with existing name (use force to override)"
             );
         }
@@ -871,14 +869,14 @@ class ExercisesPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws NotFoundException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("name", new VString(1, 32), "Name of the newly added tag to given exercise", required: true)]
     public function actionAddTag(string $id, string $name)
     {
         if (!$this->exerciseTags->verifyTagName($name)) {
-            throw new InvalidArgumentException("name", "tag name contains illicit characters");
+            throw new InvalidApiArgumentException('name', "tag name contains illicit characters");
         }
 
         $exercise = $this->exercises->findOrThrow($id);
@@ -906,7 +904,7 @@ class ExercisesPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("name", new VString(), required: true)]
     public function actionRemoveTag(string $id, string $name)
     {
@@ -935,7 +933,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("archived", new VBool(), "Whether the exercise should be marked or unmarked", required: true)]
-    #[Path("id", new VString(), "identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetArchived(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -965,7 +963,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("author", new VUuid(), "Id of the new author of the exercise.", required: true)]
-    #[Path("id", new VString(), "identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "identifier of the exercise", required: true)]
     public function actionSetAuthor(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -1002,7 +1000,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("admins", new VArray(), "List of user IDs.", required: true)]
-    #[Path("id", new VString(), "identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "identifier of the exercise", required: true)]
     public function actionSetAdmins(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -1061,7 +1059,7 @@ class ExercisesPresenter extends BasePresenter
      * @POST
      */
     #[Post("message", new VString(), "Message sent to notified users.")]
-    #[Path("id", new VString(), "identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "identifier of the exercise", required: true)]
     public function actionSendNotification(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);

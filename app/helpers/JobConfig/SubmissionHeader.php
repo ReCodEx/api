@@ -48,7 +48,7 @@ class SubmissionHeader
     }
 
     /**
-     * Set job identification alogside with its type.
+     * Set job identification alongside with its type.
      * @param string $jobId identification of job
      * @return $this
      */

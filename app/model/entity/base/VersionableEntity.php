@@ -6,7 +6,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait VersionableEntity
 {
-
     /**
      * @ORM\Column(type="integer")
      */

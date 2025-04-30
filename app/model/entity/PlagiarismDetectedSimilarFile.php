@@ -4,8 +4,6 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\Plagiarism\SimilarityFragments;
-use JsonSerializable;
-use DateTime;
 
 /**
  * @ORM\Entity
@@ -33,7 +31,7 @@ class PlagiarismDetectedSimilarFile
     /**
      * @var PlagiarismDetectedSimilarity
      * @ORM\ManyToOne(targetEntity="PlagiarismDetectedSimilarity")
-     * Reference to a detected simularity record to which this file reference contribute.
+     * Reference to a detected similarity record to which this file reference contribute.
      */
     protected $detectedSimilarity;
 
@@ -56,7 +54,7 @@ class PlagiarismDetectedSimilarFile
     /**
      * @ORM\Column(type="string")
      * Either a relative path within a ZIP file (if the solution file refers to the only ZIP archive),
-     * or a reference to external file soure that were used for comparison (preferably an URL).
+     * or a reference to external file source that were used for comparison (preferably an URL).
      */
     protected $fileEntry;
 

@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class AssignmentSolutionSubmissions extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, AssignmentSolutionSubmission::class);
@@ -42,7 +41,7 @@ class AssignmentSolutionSubmissions extends BaseRepository
         ?AssignmentSolutionSubmission $omitThisSubmission = null
     ): ?AssignmentSolutionSubmission {
         $submissions = $this->findBy(
-            [ "assignmentSolution" => $solution ],
+            ["assignmentSolution" => $solution],
             [
                 "submittedAt" => "DESC",  // make sure the last one submitted is first one in the result
                 "id" => "ASC",

@@ -4,10 +4,9 @@ namespace App\Helpers\MetaFormats\FormatDefinitions;
 
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\MetaFormat;
-use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\Attributes\FPost;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -41,4 +40,7 @@ class UserFormat extends MetaFormat
 
     #[FPost(new VString(2, 2), "Language used in the invitation email (en by default).", required: false)]
     public ?string $locale;
+
+    #[FPost(new VBool(), "If a use with the same name exists, this needs to be set to true.", required: false)]
+    public ?bool $ignoreNameCollision;
 }

@@ -5,7 +5,6 @@ namespace App\Async;
 use App\Model\Entity\AsyncJob;
 use App\Model\Repository\AsyncJobs;
 use Doctrine\ORM\EntityManagerInterface;
-use Nette\Utils\Arrays;
 use Nette;
 use InvalidArgumentException;
 use DateTime;
@@ -59,7 +58,7 @@ class Dispatcher
      * @param DateTime|null $scheduleAt when the job should be executed (null == immediately)
      * @throws InvalidArgumentException
      */
-    public function schedule(AsyncJob $job, DateTime $scheduleAt = null)
+    public function schedule(AsyncJob $job, ?DateTime $scheduleAt = null)
     {
         $command = $job->getCommand();
         if (!array_key_exists($command, $this->knownHandlers)) {
@@ -85,7 +84,7 @@ class Dispatcher
 
         try {
             $rows = 0;
-            $this->entityManager->transactional(function ($em) use ($job, &$rows) {
+            $this->entityManager->wrapInTransaction(function ($em) use ($job, &$rows) {
                 $qb = $em->createQueryBuilder();
                 $qb->delete(AsyncJob::class, 'aj')
                     ->where($qb->expr()->isNull("aj.startedAt"))

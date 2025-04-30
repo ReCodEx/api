@@ -5,8 +5,6 @@ namespace App\Helpers\Evaluation;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IScoreCalculator;
-use App\Helpers\Yaml;
-use App\Helpers\YamlException;
 
 /**
  * Weighted score calculator. It expect config in structured format such as:
@@ -95,7 +93,7 @@ class WeightedScoreCalculator implements IScoreCalculator
 
         return true;
     }
-    
+
     /**
      * @param mixed $scoreConfig Structure containing configuration of the weights
      * @param array $testNames List of known test names (if empty, no check on names is performed)

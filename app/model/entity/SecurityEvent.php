@@ -9,11 +9,11 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @ORM\Table(indexes={@ORM\Index(name="event_created_at_idx", columns={"created_at"})})
- * A logged security event such as user loggin or token refresh.
+ * A logged security event such as user login or token refresh.
  */
 class SecurityEvent implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     public const TYPE_LOGIN = 'login';
     public const TYPE_LOGIN_EXTERNAL = 'loginext';
@@ -128,7 +128,7 @@ class SecurityEvent implements JsonSerializable
      * @param User $user involved in the action
      * @return SecurityEvent
      */
-    public static function createChangePasswoedEvent(string $remoteAddr, User $user): SecurityEvent
+    public static function createChangePasswordEvent(string $remoteAddr, User $user): SecurityEvent
     {
         return new self(self::TYPE_CHANGE_PASSWORD, $remoteAddr, $user);
     }

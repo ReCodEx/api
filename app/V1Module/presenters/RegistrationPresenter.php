@@ -3,20 +3,12 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
-use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\FrontendErrorMappings;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
@@ -36,13 +28,11 @@ use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
-use App\Helpers\MetaFormats\Attributes\ParamAttribute;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Nette\Http\IResponse;
 use Nette\Security\Passwords;
-use Tracy\ILogger;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -151,7 +141,7 @@ class RegistrationPresenter extends BasePresenter
     public function checkCreateAccount()
     {
         if (!$this->registrationConfig->isEnabled()) {
-            // If the registration is not enabled in general, creator must be logged in and have priviledges.
+            // If the registration is not enabled in general, creator must be logged in and have privileges.
             if (!$this->userAcl->canCreate()) {
                 throw new ForbiddenRequestException();
             }
@@ -163,7 +153,7 @@ class RegistrationPresenter extends BasePresenter
      * @POST
      * @throws BadRequestException
      * @throws WrongCredentialsException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("email", new VEmail(), "An email that will serve as a login name")]
     #[Post("firstName", new VString(2), "First name")]
@@ -173,6 +163,12 @@ class RegistrationPresenter extends BasePresenter
     #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
     #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
     #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
+    #[Post(
+        "ignoreNameCollision",
+        new VBool(),
+        "If a use with the same name exists, this needs to be set to true.",
+        required: false
+    )]
     public function actionCreateAccount()
     {
         $req = $this->getRequest();
@@ -180,15 +176,23 @@ class RegistrationPresenter extends BasePresenter
         // check if the email is free
         $email = trim($req->getPost("email"));
         // username is name of column which holds login identifier represented by email
-        if ($this->logins->getByUsername($email) !== null) {
-            throw new BadRequestException("This email address is already taken.");
+        if ($this->logins->getByUsername($email) !== null || $this->users->getByEmail($email) !== null) {
+            throw new BadRequestException(
+                "This email address is already taken.",
+                FrontendErrorMappings::E400_110__USER_EMAIL_ALREADY_EXISTS
+            );
         }
 
         $instanceId = $req->getPost("instanceId");
         $instance = $this->getInstance($instanceId);
 
-        $titlesBeforeName = $req->getPost("titlesBeforeName") === null ? "" : $req->getPost("titlesBeforeName");
-        $titlesAfterName = $req->getPost("titlesAfterName") === null ? "" : $req->getPost("titlesAfterName");
+        $titlesBeforeName = trim($req->getPost("titlesBeforeName") ?? "");
+        $titlesAfterName = trim($req->getPost("titlesAfterName") ?? "");
+        $firstName = trim($req->getPost("firstName") ?? "");
+        $lastName = trim($req->getPost("lastName") ?? "");
+        if (!$firstName || !$lastName) {
+            throw new BadRequestException("The user's full name must be filled in.");
+        }
 
         // check given passwords
         $password = $req->getPost("password");
@@ -200,10 +204,23 @@ class RegistrationPresenter extends BasePresenter
             );
         }
 
+        // Check for name collisions, unless the request explicitly says to ignore them.
+        if (!$req->getPost("ignoreNameCollision")) {
+            $sameName = $this->users->findByName($instance, $firstName, $lastName);
+            if ($sameName) {
+                // let's report the colliding users
+                $this->sendSuccessResponse([
+                    "user" => null,
+                    "usersWithSameName" => $this->userViewFactory->getUsers($sameName),
+                ]);
+                return;
+            }
+        }
+
         $user = new User(
             $email,
-            $req->getPost("firstName"),
-            $req->getPost("lastName"),
+            $firstName,
+            $lastName,
             $titlesBeforeName,
             $titlesAfterName,
             Roles::STUDENT_ROLE,
@@ -231,7 +248,7 @@ class RegistrationPresenter extends BasePresenter
                 "user" => $this->userViewFactory->getFullUser($user),
                 "accessToken" => $this->accessManager->issueToken($user)
             ],
-            IResponse::S201_CREATED
+            IResponse::S201_Created
         );
     }
 
@@ -272,7 +289,7 @@ class RegistrationPresenter extends BasePresenter
      * Create an invitation for a user and send it over via email
      * @POST
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Format(UserFormat::class)]
     public function actionCreateInvitation()
@@ -283,31 +300,49 @@ class RegistrationPresenter extends BasePresenter
         // check if the email is free
         $email = trim($format->email);
         // username is name of column which holds login identifier represented by email
-        if ($this->logins->getByUsername($email) !== null) {
-            throw new BadRequestException("This email address is already taken.");
+        if ($this->logins->getByUsername($email) !== null || $this->users->getByEmail($email) !== null) {
+            throw new BadRequestException(
+                "This email address is already taken.",
+                FrontendErrorMappings::E400_110__USER_EMAIL_ALREADY_EXISTS
+            );
         }
 
         $groupsIds = $format->groups ?? [];
         foreach ($groupsIds as $id) {
             $group = $this->groups->get($id);
             if (!$group || $group->isOrganizational() || !$this->groupAcl->canInviteStudents($group)) {
-                throw new BadRequestException("Current user cannot invite people in group '$id'");
+                throw new ForbiddenRequestException("Current user cannot invite people in group '$id'");
             }
         }
 
         // gather data
         $instanceId = $format->instanceId;
-        $instance = $this->getInstance($instanceId);
-        $titlesBeforeName = $format->titlesBeforeName === null ? "" : $format->titlesBeforeName;
-        $titlesAfterName = $format->titlesAfterName === null ? "" : $format->titlesAfterName;
+        $instance = $this->getInstance($instanceId); // we don't need it, just to check it exists
+        $titlesBeforeName = $format->titlesBeforeName === null ? "" : trim($format->titlesBeforeName);
+        $titlesAfterName = $format->titlesAfterName === null ? "" : trim($format->titlesAfterName);
+        $firstName = trim($format->firstName);
+        $lastName = trim($format->lastName);
+        if (!$firstName || !$lastName) {
+            throw new BadRequestException("The user's full name must be filled in.");
+        }
+
+        // Check for name collisions, unless the request explicitly says to ignore them.
+        if (!$format->ignoreNameCollision) {
+            $sameName = $this->users->findByName($instance, $firstName, $lastName);
+            if ($sameName) {
+                // let's report the colliding users
+                $this->sendSuccessResponse($this->userViewFactory->getUsers($sameName));
+                return;
+            }
+        }
 
         // create the token and send it via email
         try {
             $this->invitationHelper->invite(
                 $instanceId,
                 $email,
-                $format->firstName,
-                $format->lastName,
+                $firstName,
+                $lastName,
                 $titlesBeforeName,
                 $titlesAfterName,
                 $groupsIds,
@@ -330,7 +365,7 @@ class RegistrationPresenter extends BasePresenter
      * Accept invitation and create corresponding user account.
      * @POST
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("token", new VString(1), "Token issued in create invitation process.")]
     #[Post("password", new VString(1), "A password for authentication")]
@@ -409,7 +444,7 @@ class RegistrationPresenter extends BasePresenter
                 "user" => $this->userViewFactory->getFullUser($user),
                 "accessToken" => $this->accessManager->issueToken($user),
             ],
-            IResponse::S201_CREATED
+            IResponse::S201_Created
         );
     }
 }

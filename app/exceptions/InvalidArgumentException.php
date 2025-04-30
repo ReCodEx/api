@@ -8,7 +8,7 @@ use Nette\Http\IResponse;
  * Used if there is something very wrong with some particular parameter.
  * It may be wrong type or missing argument or something similar.
  */
-class InvalidArgumentException extends ApiException
+class InvalidApiArgumentException extends ApiException
 {
     /**
      * Creates exception with invalid argument name and some further description.
@@ -23,7 +23,7 @@ class InvalidArgumentException extends ApiException
     ) {
         parent::__construct(
             "Invalid Argument '$argument' - $msg",
-            IResponse::S400_BAD_REQUEST,
+            IResponse::S400_BadRequest,
             $frontendErrorCode,
             ["argument" => $argument]
         );

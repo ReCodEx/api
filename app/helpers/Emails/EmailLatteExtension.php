@@ -22,7 +22,7 @@ class EmailLatteExtension extends Latte\Extension
     private static $subject = null;
 
     /**
-     * Used both by the extension and to re-set the subjec before rendering.
+     * Used both by the extension and to re-set the subject before rendering.
      * @param string|null $subject
      */
     public static function setSubject(?string $subject): void

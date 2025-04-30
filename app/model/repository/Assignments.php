@@ -14,7 +14,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class Assignments extends BaseSoftDeleteRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Assignment::class);

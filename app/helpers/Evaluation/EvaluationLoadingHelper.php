@@ -68,7 +68,10 @@ class EvaluationLoadingHelper
                 // the result cannot be loaded even though the result MUST be ready at this point
                 $message = "Loading evaluation results failed with exception '{$e->getMessage()}'";
 
-                if ($submission instanceof AssignmentSolutionSubmission || $submission instanceof ReferenceSolutionSubmission) {
+                if (
+                    $submission instanceof AssignmentSolutionSubmission
+                    || $submission instanceof ReferenceSolutionSubmission
+                ) {
                     $failure = SubmissionFailure::create(SubmissionFailure::TYPE_LOADING_FAILURE, $message);
                     $submission->setFailure($failure);
                 } else {

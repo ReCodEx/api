@@ -13,10 +13,10 @@ use App\Helpers\Yaml;
  */
 class EvaluationResults
 {
-    const JOB_ID_KEY = "job-id";
-    const HARDWARE_GROUP_KEY = "hw-group";
-    const RESULTS_KEY = "results";
-    const TASK_ID_KEY = "task-id";
+    public const JOB_ID_KEY = "job-id";
+    public const HARDWARE_GROUP_KEY = "hw-group";
+    public const RESULTS_KEY = "results";
+    public const TASK_ID_KEY = "task-id";
 
     /** @var string Hardware group identifier of the worker that processed the job */
     private $hardwareGroup;
@@ -94,7 +94,7 @@ class EvaluationResults
     }
 
     /**
-     * Initialisation was OK
+     * Initialization was OK
      * @return boolean The result
      */
     public function initOK()

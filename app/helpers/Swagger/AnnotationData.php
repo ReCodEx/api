@@ -95,7 +95,7 @@ class AnnotationData
                 $requiredString .= "\"$name\",";
             }
             $requiredString .= "}";
-    
+
             $body->addValue("required=" . $requiredString);
         }
 

@@ -20,17 +20,16 @@ class VBool extends BaseValidator
             return true;
         }
 
-        if ($this->strict) {
-            ///TODO: replace this with 'return false;' once the testUpdateInstance test issue is fixed.
-            return $value === 'false';
+        if (!$this->strict) {
+            // FILTER_VALIDATE_BOOL is not used because it additionally allows "on", "yes", "off", "no" and ""
+            return $value === 0
+                || $value === 1
+                || $value === "0"
+                || $value === "1"
+                || $value === "false"
+                || $value === "true";
         }
 
-        // FILTER_VALIDATE_BOOL is not used because it additionally allows "on", "yes", "off", "no" and ""
-        return $value === 0
-            || $value === 1
-            || $value === "0"
-            || $value === "1"
-            || $value === "false"
-            || $value === "true";
+        return false;
     }
 }

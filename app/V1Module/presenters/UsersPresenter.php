@@ -5,19 +5,16 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\FrontendErrorMappings;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\ExternalLogin;
@@ -143,10 +140,10 @@ class UsersPresenter extends BasePresenter
     )]
     public function actionDefault(
         int $offset = 0,
-        int $limit = null,
-        string $orderBy = null,
-        array $filters = null,
-        string $locale = null
+        ?int $limit = null,
+        ?string $orderBy = null,
+        ?array $filters = null,
+        ?string $locale = null
     ) {
         $pagination = $this->getPagination(
             $offset,
@@ -202,7 +199,7 @@ class UsersPresenter extends BasePresenter
      * Get details of a user account
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionDetail(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -222,7 +219,7 @@ class UsersPresenter extends BasePresenter
      * @DELETE
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionDelete(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -245,7 +242,7 @@ class UsersPresenter extends BasePresenter
      * @POST
      * @throws BadRequestException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws WrongCredentialsException
      * @throws NotFoundException
      */
@@ -258,7 +255,7 @@ class UsersPresenter extends BasePresenter
     #[Post("password", new VString(1), "New password of current user", required: false)]
     #[Post("passwordConfirm", new VString(1), "Confirmation of new password of current user", required: false)]
     #[Post("gravatarUrlEnabled", new VBool(), "Enable or disable gravatar profile image", required: false)]
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionUpdateProfile(string $id)
     {
         $req = $this->getRequest();
@@ -307,7 +304,7 @@ class UsersPresenter extends BasePresenter
      * @param User $user
      * @param null|string $email
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     private function changeUserEmail(User $user, ?string $email)
     {
@@ -323,7 +320,7 @@ class UsersPresenter extends BasePresenter
         }
 
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new InvalidArgumentException('email', "Provided email is not in correct format");
+            throw new InvalidApiArgumentException('email', "Provided email is not in correct format");
         }
 
         $oldEmail = $user->getEmail();
@@ -343,7 +340,7 @@ class UsersPresenter extends BasePresenter
     }
 
     /**
-     * Change firstname and second name and check if user can change them.
+     * Change first name and last name and check if user can change them.
      * @param User $user
      * @param null|string $titlesBefore
      * @param null|string $firstname
@@ -388,7 +385,7 @@ class UsersPresenter extends BasePresenter
      * @param null|string $oldPassword
      * @param null|string $password
      * @param null|string $passwordConfirm
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws WrongCredentialsException
      */
     private function changeUserPassword(
@@ -404,7 +401,7 @@ class UsersPresenter extends BasePresenter
 
         if (!$password || !$passwordConfirm) {
             // old password was provided but the new ones not, illegal state
-            throw new InvalidArgumentException('password|passwordConfirm', "New password was not provided");
+            throw new InvalidApiArgumentException('password|passwordConfirm', "New password was not provided");
         }
 
         // passwords need to be handled differently
@@ -423,7 +420,7 @@ class UsersPresenter extends BasePresenter
             $login->changePassword($password, $this->passwordsService);
             $login->getUser()->setTokenValidityThreshold(new DateTime());
 
-            $event = SecurityEvent::createChangePasswoedEvent(
+            $event = SecurityEvent::createChangePasswordEvent(
                 $this->getHttpRequest()->getRemoteAddress(),
                 $login->getUser()
             );
@@ -492,13 +489,15 @@ class UsersPresenter extends BasePresenter
     #[Post(
         "assignmentSubmitAfterAcceptedEmails",
         new VBool(),
-        "Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment",
+        "Flag if email should be sent to the group supervisor if a student submits new solution "
+            . "for already accepted assignment",
         required: false,
     )]
     #[Post(
         "assignmentSubmitAfterReviewedEmails",
         new VBool(),
-        "Flag if email should be sent to group supervisor if a student submits new solution for already reviewed and not accepted assignment",
+        "Flag if email should be sent to group supervisor if a student submits new solution "
+            . "for already reviewed and not accepted assignment",
         required: false,
     )]
     #[Post(
@@ -516,10 +515,11 @@ class UsersPresenter extends BasePresenter
     #[Post(
         "solutionReviewRequestedEmails",
         new VBool(),
-        "Flag if notification should be send to a teacher when a solution reviewRequested flag is chagned in a supervised/admined group.",
+        "Flag if notification should be send to a teacher when a solution reviewRequested flag is changed "
+            . "in a supervised/admin-ed group.",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionUpdateSettings(string $id)
     {
         $req = $this->getRequest();
@@ -575,10 +575,10 @@ class UsersPresenter extends BasePresenter
     #[Post(
         "overwrite",
         new VBool(),
-        "Flag indicating that uiData should be overwritten completelly (instead of regular merge)",
+        "Flag indicating that uiData should be overwritten completely (instead of regular merge)",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionUpdateUiData(string $id)
     {
         $req = $this->getRequest();
@@ -632,9 +632,9 @@ class UsersPresenter extends BasePresenter
      * If user is registered externally, add local account as another login method.
      * Created password is empty and has to be changed in order to use it.
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionCreateLocalAccount(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -657,7 +657,7 @@ class UsersPresenter extends BasePresenter
      * Get a list of non-archived groups for a user
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionGroups(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -700,7 +700,7 @@ class UsersPresenter extends BasePresenter
      * Get a list of all groups for a user
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionAllGroups(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -726,7 +726,7 @@ class UsersPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionInstances(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -752,18 +752,18 @@ class UsersPresenter extends BasePresenter
     /**
      * Set a given role to the given user.
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
     #[Post("role", new VString(1), "Role which should be assigned to the user")]
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionSetRole(string $id)
     {
         $user = $this->users->findOrThrow($id);
         $role = $this->getRequest()->getPost("role");
         // validate role
         if (!$this->roles->validateRole($role)) {
-            throw new InvalidArgumentException("role", "Unknown user role '$role'");
+            throw new InvalidApiArgumentException('role', "Unknown user role '$role'");
         }
 
         $user->setRole($role);
@@ -786,7 +786,7 @@ class UsersPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionInvalidateTokens(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -822,11 +822,11 @@ class UsersPresenter extends BasePresenter
     /**
      * Set "isAllowed" flag of the given user. The flag determines whether a user may perform any operation of the API.
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
     #[Post("isAllowed", new VBool(), "Whether the user is allowed (active) or not.")]
-    #[Path("id", new VString(), "Identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the user", required: true)]
     public function actionSetAllowed(string $id)
     {
         $user = $this->users->findOrThrow($id);
@@ -849,10 +849,10 @@ class UsersPresenter extends BasePresenter
     /**
      * Add or update existing external ID of given authentication service.
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("externalId", new VString(1, 128))]
-    #[Path("id", new VString(), "identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "identifier of the user", required: true)]
     #[Path("service", new VString(), "identifier of the authentication service (login type)", required: true)]
     public function actionUpdateExternalLogin(string $id, string $service)
     {
@@ -863,8 +863,8 @@ class UsersPresenter extends BasePresenter
         $anotherUser = $this->externalLogins->getUser($service, $externalId);
         if ($anotherUser) {
             if ($anotherUser->getId() !== $id) {
-                // oopsie, this external ID is alreay used for a different user
-                throw new InvalidArgumentException('externalId', "This ID is already used by another user.");
+                // oopsie, this external ID is already used for a different user
+                throw new InvalidApiArgumentException('externalId', "This ID is already used by another user.");
             }
             // otherwise the external ID is already set to this user, so there is nothing to change...
         } else {
@@ -897,7 +897,7 @@ class UsersPresenter extends BasePresenter
      * Remove external ID of given authentication service.
      * @DELETE
      */
-    #[Path("id", new VString(), "identifier of the user", required: true)]
+    #[Path("id", new VUuid(), "identifier of the user", required: true)]
     #[Path("service", new VString(), "identifier of the authentication service (login type)", required: true)]
     public function actionRemoveExternalLogin(string $id, string $service)
     {

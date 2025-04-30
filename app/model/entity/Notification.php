@@ -15,7 +15,7 @@ use JsonSerializable;
  */
 class Notification implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

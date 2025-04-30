@@ -12,8 +12,8 @@ use JsonSerializable;
  */
 class ExerciseTest implements JsonSerializable
 {
-    use CreateableEntity;
-    use UpdateableEntity;
+    use CreatableEntity;
+    use UpdatableEntity;
 
     /**
      * @ORM\Id

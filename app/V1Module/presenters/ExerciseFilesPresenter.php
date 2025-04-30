@@ -3,20 +3,13 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
@@ -25,6 +18,7 @@ use App\Helpers\FileStorageManager;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AttachmentFile;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AttachmentFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
@@ -44,6 +38,12 @@ class ExerciseFilesPresenter extends BasePresenter
      * @inject
      */
     public $exercises;
+
+    /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
 
     /**
      * @var UploadedFiles
@@ -99,11 +99,11 @@ class ExerciseFilesPresenter extends BasePresenter
      * Associate supplementary files with an exercise and upload them to remote file server
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws SubmissionFailedException
      */
     #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUploadSupplementaryFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -140,16 +140,16 @@ class ExerciseFilesPresenter extends BasePresenter
 
         $fileCountLimit = $this->restrictionsConfig->getSupplementaryFileCountLimit();
         if ($totalFileCount > $fileCountLimit) {
-            throw new InvalidArgumentException(
-                "files",
+            throw new InvalidApiArgumentException(
+                'files',
                 "The number of files would exceed the configured limit ($fileCountLimit)"
             );
         }
 
         $sizeLimit = $this->restrictionsConfig->getSupplementaryFileSizeLimit();
         if ($totalFileSize > $sizeLimit) {
-            throw new InvalidArgumentException(
-                "files",
+            throw new InvalidApiArgumentException(
+                'files',
                 "The total size of files would exceed the configured limit ($sizeLimit)"
             );
         }
@@ -184,7 +184,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * Get list of all supplementary files for an exercise
      * @GET
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionGetSupplementaryFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -204,7 +204,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @DELETE
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
     public function actionDeleteSupplementaryFile(string $id, string $fileId)
     {
@@ -237,7 +237,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "of exercise", required: true)]
+    #[Path("id", new VUuid(), "of exercise", required: true)]
     public function actionDownloadSupplementaryFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -264,7 +264,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("files", new VMixed(), "Identifiers of attachment files", nullable: true)]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUploadAttachmentFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -319,7 +319,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @GET
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionGetAttachmentFiles(string $id)
     {
         /** @var Exercise $exercise */
@@ -331,6 +331,10 @@ class ExerciseFilesPresenter extends BasePresenter
     public function checkDeleteAttachmentFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
+        $file = $this->attachmentFiles->findOrThrow($fileId);
+        if (!$file->getExercises()->contains($exercise)) {
+            throw new BadRequestException("Selected file is not an attachment file for given exercise.");
+        }
         if (!$this->exerciseAcl->canUpdate($exercise)) {
             throw new ForbiddenRequestException("You cannot delete attachment files for this exercise.");
         }
@@ -342,7 +346,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
     public function actionDeleteAttachmentFile(string $id, string $fileId)
     {
@@ -353,7 +357,37 @@ class ExerciseFilesPresenter extends BasePresenter
         $exercise->removeAttachmentFile($file);
         $this->exercises->flush();
 
-        $this->fileStorage->deleteAttachmentFile($file);
+        $this->attachmentFiles->refresh($file);
+        if ($file->getExercises()->isEmpty()) {
+            // file has no attachments to exercises, let's check the assignments
+            $isUsed = false;
+            foreach ($file->getAssignments() as $assignment) {
+                $group = $assignment->getGroup();
+                if ($group && !$group->isArchived()) {
+                    $isUsed = true;  // only non-archived assignments are considered relevant
+                    break;
+                }
+            }
+
+            if (!$isUsed) {
+                $this->fileStorage->deleteAttachmentFile($file);
+
+                if ($file->getAssignments()->isEmpty()) {
+                    // only if no attachments exists (except for deleted ones)
+                    // remove all links to deleted entities and remove the file record
+                    foreach ($file->getExercisesAndIReallyMeanAllOkay() as $exercise) {
+                        $exercise->removeAttachmentFile($file);
+                        $this->exercises->persist($exercise, false);
+                    }
+                    foreach ($file->getAssignmentsAndIReallyMeanAllOkay() as $assignment) {
+                        $assignment->removeAttachmentFile($file);
+                        $this->assignments->persist($assignment, false);
+                    }
+
+                    $this->attachmentFiles->remove($file);
+                }
+            }
+        }
 
         $this->sendSuccessResponse("OK");
     }
@@ -373,7 +407,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "of exercise", required: true)]
+    #[Path("id", new VUuid(), "of exercise", required: true)]
     public function actionDownloadAttachmentFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);

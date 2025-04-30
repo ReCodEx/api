@@ -13,7 +13,6 @@ use Nette\Security\Passwords;
  */
 class Logins extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Login::class);

@@ -180,7 +180,7 @@ class Limits implements JsonSerializable
     }
 
     /**
-     * Gets number of processes/threads which can be created in sandboxed program.
+     * Gets number of processes/threads which can be created in sand-boxed program.
      * @return int Number of processes/threads
      */
     public function getParallel(): int
@@ -220,7 +220,7 @@ class Limits implements JsonSerializable
     }
 
     /**
-     * Gets maximum number of opened files in sandboxed application.
+     * Gets maximum number of opened files in sand-boxed application.
      * @return int Number of files
      */
     public function getDiskFiles(): int

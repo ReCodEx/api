@@ -38,7 +38,7 @@ class RouterFactory
         $router[] = self::createAssignmentsRoutes("$prefix/exercise-assignments");
         $router[] = self::createGroupsRoutes("$prefix/groups");
         $router[] = self::createGroupInvitationsRoutes("$prefix/group-invitations");
-        $router[] = self::createGroupAtrributesRoutes("$prefix/group-attributes");
+        $router[] = self::createGroupAttributesRoutes("$prefix/group-attributes");
         $router[] = self::createInstancesRoutes("$prefix/instances");
         $router[] = self::createReferenceSolutionsRoutes("$prefix/reference-solutions");
         $router[] = self::createAssignmentSolutionsRoutes("$prefix/assignment-solutions");
@@ -306,7 +306,7 @@ class RouterFactory
      * @param string $prefix Route prefix
      * @return RouteList All endpoint routes
      */
-    private static function createGroupAtrributesRoutes(string $prefix): RouteList
+    private static function createGroupAttributesRoutes(string $prefix): RouteList
     {
         $router = new RouteList();
 

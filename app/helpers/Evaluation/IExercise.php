@@ -53,7 +53,9 @@ interface IExercise
      * @param RuntimeEnvironment $environment
      * @return ExerciseEnvironmentConfig|null
      */
-    public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig;
+    public function getExerciseEnvironmentConfigByEnvironment(
+        RuntimeEnvironment $environment
+    ): ?ExerciseEnvironmentConfig;
 
     /**
      * Get collection of limits belonging to exercise.
@@ -67,7 +69,10 @@ interface IExercise
      * @param HardwareGroup $hwGroup
      * @return ExerciseLimits|null
      */
-    public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits;
+    public function getLimitsByEnvironmentAndHwGroup(
+        RuntimeEnvironment $environment,
+        HardwareGroup $hwGroup
+    ): ?ExerciseLimits;
 
     /**
      * Get score configuration entity which holds the calculator type and its configuration.

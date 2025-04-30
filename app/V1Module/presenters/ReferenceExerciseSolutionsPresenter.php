@@ -3,33 +3,25 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseCompilationException;
-use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotReadyException;
 use App\Exceptions\ParseException;
-use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\EvaluationLoadingHelper;
-use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FailureHelper;
 use App\Helpers\MonitorConfig;
@@ -38,10 +30,6 @@ use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\FileStorageException;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\HardwareGroup;
-use App\Model\Entity\SolutionFile;
-use App\Model\Entity\SubmissionFailure;
-use App\Model\Entity\UploadedFile;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Repository\Exercises;
@@ -374,7 +362,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * points and other important things that should be provided by user during submit.
      * @POST
      * @throws NotFoundException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ExerciseConfigException
      * @throws BadRequestException
      */
@@ -391,7 +379,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         // retrieve and check uploaded files
         $uploadedFiles = $this->files->findAllById($this->getRequest()->getPost("files"));
         if (count($uploadedFiles) === 0) {
-            throw new InvalidArgumentException("files", "No files were uploaded");
+            throw new InvalidApiArgumentException('files', "No files were uploaded");
         }
 
         // prepare file names into separate array and sum total upload size
@@ -481,7 +469,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("debug", new VBool(), "Debugging evaluation with all logs and outputs", required: false)]
-    #[Path("id", new VString(), "Identifier of the reference solution", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the reference solution", required: true)]
     public function actionResubmit(string $id)
     {
         $req = $this->getRequest();
@@ -572,7 +560,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $hwGroups = $referenceSolution->getExercise()->getHardwareGroups();
         foreach ($hwGroups->getValues() as $hwGroup) {
             try {
-                [ $submission, $jobConfig ] = $this->submissionHelper->submitReference(
+                [$submission, $jobConfig] = $this->submissionHelper->submitReference(
                     $referenceSolution,
                     $hwGroup,
                     $this->getCurrentUser(),
@@ -648,7 +636,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "of reference solution", required: true)]
+    #[Path("id", new VUuid(), "of reference solution", required: true)]
     public function actionFiles(string $id)
     {
         $solution = $this->referenceSolutions->findOrThrow($id)->getSolution();
@@ -760,7 +748,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
 
         $this->sendSuccessResponse(
             $this->referenceSolutionAcl->canViewDetail($solution) ?
-            $this->referenceSolutionViewFactory->getReferenceSolution($solution) : null
+                $this->referenceSolutionViewFactory->getReferenceSolution($solution) : null
         );
     }
 }

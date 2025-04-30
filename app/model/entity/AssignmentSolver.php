@@ -43,7 +43,7 @@ class AssignmentSolver implements JsonSerializable
     protected $lastAttemptIndex;
 
     /**
-     * Counts how many times one of the solutions have been evaluated (incuding re-evaluations).
+     * Counts how many times one of the solutions have been evaluated (including re-evaluations).
      * This counter is mainly for statistical purposes.
      * @ORM\Column(type="integer")
      */

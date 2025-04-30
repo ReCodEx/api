@@ -32,7 +32,7 @@ class RequestFactory extends Nette\Http\RequestFactory
         ) {
             $body = file_get_contents('php://input');
             try {
-                $json = $body ? Json::decode($body, Json::FORCE_ARRAY) : [];
+                $json = $body ? Json::decode($body, true) : [];
             } catch (JsonException $e) {
                 throw new BadRequestException("Parsing of the JSON body failed: " . $e->getMessage());
             }

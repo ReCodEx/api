@@ -3,7 +3,7 @@
 namespace App\Helpers\Evaluation;
 
 /**
- * Class representing binary function that comuptes A / B.
+ * Class representing binary function that computes A / B.
  * If B == 0, the result is (unexpectedly) zero.
  */
 class AstNodeDivision extends AstNodeBinary

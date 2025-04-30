@@ -56,7 +56,7 @@ abstract class AstNode
         if (!array_key_exists(self::KEY_TYPE, $config)) {
             throw new AstNodeException("Node type is not specified in the score config.");
         }
-        
+
         $type = $config[self::KEY_TYPE];
         if (!array_key_exists($type, $types)) {
             throw new AstNodeException("Unknown AST node type '$type' found in the score config.");
@@ -138,13 +138,13 @@ abstract class AstNode
     /**
      * Perform internal validation of the node itself (not the subtree).
      * This method stands aside, so it can be reused and the main interface
-     * (validate() method) does not have to be overriden in derived classes.
+     * (validate() method) does not have to be overridden in derived classes.
      * @param array $testNames List of allowed test names (array of strings)
      * @throws AstNodeException if something is not valid
      */
     protected function internalValidation(array $testNames = [])
     {
-        // expected to be overriden in derived classes
+        // expected to be overridden in derived classes
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class AstNode
 
         $this->internalValidation($testNames);
     }
-    
+
     /**
      * Compute the value of this node.
      * @param array $testResults Array with test results (keys are test names) which may be used in evaluation.

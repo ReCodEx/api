@@ -2,12 +2,10 @@
 
 namespace App\Console;
 
-use App\Model\Entity\User;
 use App\Model\Repository\Users;
 use App\Helpers\AnonymizationHelper;
 use DateTime;
 use DateInterval;
-use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -92,7 +90,8 @@ class RemoveInactiveUsers extends Command
 
         if (!$silent) {
             if ($this->roles) {
-                $output->writeln("The cleanup aims only at users with the following roles: " . join(', ', $this->roles));
+                $output->writeln("The cleanup aims only at users with the following roles: "
+                    . join(', ', $this->roles));
             }
             if ($this->disableThreshold) {
                 $output->writeln("Disabling users not authenticated since: "
@@ -152,7 +151,7 @@ class RemoveInactiveUsers extends Command
             $this->users->persist($user, false);
         }
 
-        // delete uers
+        // delete users
         foreach ($usersToDelete as $user) {
             $this->anonymizationHelper->prepareUserForSoftDelete($user);
             $this->users->remove($user, false);

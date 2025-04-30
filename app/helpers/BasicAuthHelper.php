@@ -21,7 +21,9 @@ class BasicAuthHelper
     {
         $auth = $req->getHeader("Authorization");
         if ($auth === null || str_starts_with($auth, "Basic ") === false) {
-            throw new HttpBasicAuthException("The request from backend-service must contain HTTP Basic authentication.");
+            throw new HttpBasicAuthException(
+                "The request from backend-service must contain HTTP Basic authentication."
+            );
         }
 
         $encodedCredentials = Strings::substring($auth, strlen("Basic "));

@@ -5,17 +5,14 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -188,7 +185,8 @@ class GroupsPresenter extends BasePresenter
     #[Query(
         "ancestors",
         new VBool(),
-        "If true, returns an ancestral closure of the initial result set. Included ancestral groups do not respect other filters (archived, search, ...).",
+        "If true, returns an ancestral closure of the initial result set. "
+            . "Included ancestral groups do not respect other filters (archived, search, ...).",
         required: false,
     )]
     #[Query(
@@ -206,9 +204,9 @@ class GroupsPresenter extends BasePresenter
         required: false,
     )]
     public function actionDefault(
-        string $instanceId = null,
+        ?string $instanceId = null,
         bool $ancestors = false,
-        string $search = null,
+        ?string $search = null,
         bool $archived = false,
         bool $onlyArchived = false
     ) {
@@ -230,11 +228,14 @@ class GroupsPresenter extends BasePresenter
         $threshold = $req->getPost("threshold");
         $pointsLimit = $req->getPost("pointsLimit");
         if ($threshold !== null && $pointsLimit !== null) {
-            throw new InvalidArgumentException("A group may have either a threshold or points limit, not both.");
+            throw new InvalidApiArgumentException(
+                'threshold',
+                "A group may have either a threshold or points limit, not both."
+            );
         }
         if ($threshold !== null) {
             if ($threshold <= 0 || $threshold > 100) {
-                throw new InvalidArgumentException("A threshold must be in the (0, 100] (%) range.");
+                throw new InvalidApiArgumentException('threshold', "A threshold must be in the (0, 100] (%) range.");
             }
             $group->setThreshold($threshold / 100);
         } else {
@@ -242,7 +243,7 @@ class GroupsPresenter extends BasePresenter
         }
         if ($pointsLimit !== null) {
             if ($pointsLimit <= 0) {
-                throw new InvalidArgumentException("A points limit must be a positive number.");
+                throw new InvalidApiArgumentException('pointsLimit', "A points limit must be a positive number.");
             }
             $group->setPointsLimit($pointsLimit);
         } else {
@@ -254,7 +255,7 @@ class GroupsPresenter extends BasePresenter
      * Create a new group
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("instanceId", new VUuid(), "An identifier of the instance where the group should be created")]
     #[Post(
@@ -301,7 +302,10 @@ class GroupsPresenter extends BasePresenter
         $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
 
         if ($parentGroup->isArchived()) {
-            throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+            throw new InvalidApiArgumentException(
+                'parentGroupId',
+                "It is not permitted to create subgroups in archived groups"
+            );
         }
 
         if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
@@ -317,7 +321,10 @@ class GroupsPresenter extends BasePresenter
         $noAdmin = filter_var($req->getPost("noAdmin"), FILTER_VALIDATE_BOOLEAN);
 
         if ($isOrganizational && $isExam) {
-            throw new InvalidArgumentException("A group cannot be both organizational and exam.");
+            throw new InvalidApiArgumentException(
+                'isOrganizational, isExam',
+                "A group cannot be both organizational and exam."
+            );
         }
 
         $group = new Group(
@@ -381,12 +388,12 @@ class GroupsPresenter extends BasePresenter
     /**
      * Update group info
      * @POST
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post(
         "externalId",
         new VMixed(),
-        "An informative, human readable indentifier of the group",
+        "An informative, human readable identifier of the group",
         required: false,
         nullable: true,
     )]
@@ -396,7 +403,7 @@ class GroupsPresenter extends BasePresenter
     #[Post("threshold", new VInt(), "A minimum percentage of points needed to pass the course", required: false)]
     #[Post("pointsLimit", new VInt(), "A minimum of (absolute) points needed to pass the course", required: false)]
     #[Post("localizedTexts", new VArray(), "Localized names and descriptions")]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionUpdateGroup(string $id)
     {
         $req = $this->getRequest();
@@ -437,7 +444,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetOrganizational(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -473,7 +480,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetArchived(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -485,7 +492,7 @@ class GroupsPresenter extends BasePresenter
             // snapshot the inherited membership-relations
             $typePriorities = array_flip(GroupMembership::INHERITABLE_TYPES);
 
-            // this is actually a hack for PHP Stan (can be removed when there will be more than 1 interitable type)
+            // this is actually a hack for PHP Stan (can be removed when there will be more than 1 inheritable type)
             $typePriorities[''] = -1; // adding a fake priority for fake type
 
             $membershipsToInherit = []; // aggregated memberships from all ancestors, key is user ID
@@ -555,7 +562,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -577,7 +584,7 @@ class GroupsPresenter extends BasePresenter
      * Set an examination period (in the future) when the group will be secured for submitting.
      * Only locked students may submit solutions in the group during this period.
      * This endpoint is also used to update already planned exam period, but only dates in the future
-     * can be editted (e.g., once an exam begins, the beginning may no longer be updated).
+     * can be edited (e.g., once an exam begins, the beginning may no longer be updated).
      * @POST
      * @throws NotFoundException
      */
@@ -595,7 +602,7 @@ class GroupsPresenter extends BasePresenter
         required: true,
     )]
     #[Post("strict", new VBool(), "Whether locked users are prevented from accessing other groups.", required: false)]
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -708,7 +715,7 @@ class GroupsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "An identifier of the updated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     public function actionRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -757,7 +764,7 @@ class GroupsPresenter extends BasePresenter
      * Retrieve a list of locks for given exam
      * @GET
      */
-    #[Path("id", new VString(), "An identifier of the related group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the related group", required: true)]
     #[Path("examId", new VInt(), "An identifier of the exam", required: true)]
     public function actionGetExamLocks(string $id, string $examId)
     {
@@ -773,7 +780,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws BadRequestException
      */
-    #[Path("id", new VString(), "An identifier of the relocated group", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the relocated group", required: true)]
     #[Path("newParentId", new VString(), "An identifier of the new parent group", required: true)]
     public function actionRelocate(string $id, string $newParentId)
     {
@@ -820,8 +827,8 @@ class GroupsPresenter extends BasePresenter
             if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
                 throw new ForbiddenRequestException(
                     "Group '$id' is the root group of instance '"
-                    . $group->getInstance()->getId()
-                    . "' and root groups cannot be deleted."
+                        . $group->getInstance()->getId()
+                        . "' and root groups cannot be deleted."
                 );
             }
         }
@@ -831,7 +838,7 @@ class GroupsPresenter extends BasePresenter
      * Delete a group
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionRemoveGroup(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -854,7 +861,7 @@ class GroupsPresenter extends BasePresenter
      * Get details of a group
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionDetail(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -874,9 +881,9 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of subgroups of a group
      * @GET
-     * @DEPRECTATED Subgroup list is part of group view.
+     * @DEPRECATED Subgroup list is part of group view.
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionSubgroups(string $id)
     {
         /** @var Group $group */
@@ -907,7 +914,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @DEPRECATED Members are listed in group view.
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -941,7 +948,7 @@ class GroupsPresenter extends BasePresenter
      * @POST
      */
     #[Post("type", new VString(1), "Identifier of membership type (admin, supervisor, ...)", required: true)]
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
     public function actionAddMember(string $id, string $userId)
     {
@@ -950,14 +957,15 @@ class GroupsPresenter extends BasePresenter
 
         $type = $this->getRequest()->getPost("type");
         if ($type === GroupMembership::TYPE_STUDENT || !in_array($type, GroupMembership::KNOWN_TYPES)) {
-            throw new InvalidArgumentException("Unknown membership type '$type'");
+            throw new InvalidApiArgumentException('type', "Unknown membership type '$type'");
         }
 
         $membership = $group->getMembershipOfUser($user);
         if ($membership) {
             // update type of existing membership (if it is not a student)
             if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
-                throw new InvalidArgumentException(
+                throw new InvalidApiArgumentException(
+                    'userId',
                     "The user is a student of the group and students cannot be made also members"
                 );
             }
@@ -986,7 +994,7 @@ class GroupsPresenter extends BasePresenter
      * Remove a member (other than student) from a group
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
     public function actionRemoveMember(string $id, string $userId)
     {
@@ -995,10 +1003,11 @@ class GroupsPresenter extends BasePresenter
 
         $membership = $group->getMembershipOfUser($user);
         if (!$membership) {
-            throw new InvalidArgumentException("The user is not a member of the group");
+            throw new InvalidApiArgumentException('userId', "The user is not a member of the group");
         }
         if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
-            throw new InvalidArgumentException(
+            throw new InvalidApiArgumentException(
+                'userId',
                 "The user is a student of the group and students must be removed by separate endpoint"
             );
         }
@@ -1024,7 +1033,7 @@ class GroupsPresenter extends BasePresenter
      * Get all exercise assignments for a group
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionAssignments(string $id)
     {
         /** @var Group $group */
@@ -1058,7 +1067,7 @@ class GroupsPresenter extends BasePresenter
      * Get all shadow assignments for a group
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionShadowAssignments(string $id)
     {
         /** @var Group $group */
@@ -1097,7 +1106,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @throws ForbiddenRequestException
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionStats(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -1126,7 +1135,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @throws BadRequestException
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionStudentsStats(string $id, string $userId)
     {
@@ -1156,7 +1165,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      * @throws BadRequestException
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionStudentsSolutions(string $id, string $userId)
     {
@@ -1195,7 +1204,7 @@ class GroupsPresenter extends BasePresenter
         }
 
         if ($group->isOrganizational()) {
-            throw new InvalidArgumentException("It is forbidden to add students to organizational groups");
+            throw new InvalidApiArgumentException('id', "It is forbidden to add students to organizational groups");
         }
     }
 
@@ -1203,7 +1212,7 @@ class GroupsPresenter extends BasePresenter
      * Add a student to a group
      * @POST
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionAddStudent(string $id, string $userId)
     {
@@ -1234,7 +1243,7 @@ class GroupsPresenter extends BasePresenter
      * Remove a student from a group
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionRemoveStudent(string $id, string $userId)
     {
@@ -1266,7 +1275,7 @@ class GroupsPresenter extends BasePresenter
      * Lock student in a group and with an IP from which the request was made.
      * @POST
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionLockStudent(string $id, string $userId)
     {
@@ -1294,7 +1303,7 @@ class GroupsPresenter extends BasePresenter
         $group = $this->groups->findOrThrow($id);
         $user = $this->users->findOrThrow($userId);
         if ($user->getGroupLock()?->getId() !== $group->getId()) {
-            throw new InvalidArgumentException("The user is not locked in given group.");
+            throw new InvalidApiArgumentException('userId', "The user is not locked in given group.");
         }
 
         if (!$this->groupAcl->canUnlockStudent($group, $user)) {
@@ -1306,7 +1315,7 @@ class GroupsPresenter extends BasePresenter
      * Unlock a student currently locked in a group.
      * @DELETE
      */
-    #[Path("id", new VString(), "Identifier of the group", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
     public function actionUnlockStudent(string $id, string $userId)
     {
@@ -1329,7 +1338,7 @@ class GroupsPresenter extends BasePresenter
     /**
      * @param Request $req
      * @param Group $group
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     private function updateLocalizations(Request $req, Group $group): void
     {
@@ -1349,14 +1358,18 @@ class GroupsPresenter extends BasePresenter
 
                 foreach ($otherGroups as $otherGroup) {
                     if ($otherGroup !== $group) {
-                        throw new InvalidArgumentException(
+                        throw new InvalidApiArgumentException(
+                            'name',
                             "There is already a group of this name, please choose a different one."
                         );
                     }
                 }
 
                 if (array_key_exists($lang, $localizations)) {
-                    throw new InvalidArgumentException(sprintf("Duplicate entry for locale %s", $lang));
+                    throw new InvalidApiArgumentException(
+                        'localizedTexts',
+                        sprintf("Duplicate entry for locale %s", $lang)
+                    );
                 }
 
                 $name = $item["name"] ?: "";

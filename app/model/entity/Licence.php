@@ -50,7 +50,7 @@ class Licence implements JsonSerializable
      * @param DateTime $when When the licence should have been valid.
      * @return bool
      */
-    public function isValid(DateTime $when = null)
+    public function isValid(?DateTime $when = null)
     {
         if ($when === null) {
             $when = new DateTime();
@@ -59,7 +59,7 @@ class Licence implements JsonSerializable
     }
 
     /**
-     * Internal note for the licence.
+     * Internal note for the license.
      * @ORM\Column(type="string")
      */
     protected $note;

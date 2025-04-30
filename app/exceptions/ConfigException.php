@@ -6,7 +6,7 @@ use Exception;
 use Nette\Http\IResponse;
 
 /**
- * Exception concerning core module confugration.
+ * Exception concerning core module configuration.
  */
 class ConfigException extends ApiException
 {

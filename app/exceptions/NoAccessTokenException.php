@@ -17,7 +17,7 @@ class NoAccessTokenException extends ApiException
     {
         parent::__construct(
             "You must provide an access token for this action.",
-            IResponse::S401_UNAUTHORIZED,
+            IResponse::S401_Unauthorized,
             FrontendErrorMappings::E401_001__NO_TOKEN
         );
     }

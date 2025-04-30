@@ -12,7 +12,7 @@ use JsonSerializable;
  */
 class GroupInvitation implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id
@@ -23,7 +23,7 @@ class GroupInvitation implements JsonSerializable
      */
     protected $id;
 
-   /**
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
      */
@@ -53,7 +53,7 @@ class GroupInvitation implements JsonSerializable
      * @param DateTime|null $expireAt
      * @param string $note
      */
-    public function __construct(Group $group, User $host, DateTime $expireAt = null, string $note)
+    public function __construct(Group $group, User $host, ?DateTime $expireAt = null, string $note = '')
     {
         $this->group = $group;
         $this->host = $host;

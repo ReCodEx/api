@@ -68,26 +68,26 @@ class FixConfigVariables extends BaseCommand
     {
         $this->setName(self::$defaultName)->setDescription(
             'Scan exercise configs of given runtime environment and attempt to fix the variables. ' .
-            'The variables lists are extracted from pipelines, new variables are added (with defaults), ' .
-            'unidentified variables are removed.'
+                'The variables lists are extracted from pipelines, new variables are added (with defaults), ' .
+                'unidentified variables are removed.'
         )
-        ->addArgument(
-            'runtime',
-            InputArgument::REQUIRED,
-            'Identifier of the runtime environment of which the exercises will be updated.'
-        )
-        ->addOption(
-            'yes',
-            'y',
-            InputOption::VALUE_NONE,
-            "Assume 'yes' to all inquiries (run in non-interactive mode)"
-        )
-        ->addOption(
-            'silent',
-            's',
-            InputOption::VALUE_NONE,
-            "Silent mode (no outputs except for errors)"
-        );
+            ->addArgument(
+                'runtime',
+                InputArgument::REQUIRED,
+                'Identifier of the runtime environment of which the exercises will be updated.'
+            )
+            ->addOption(
+                'yes',
+                'y',
+                InputOption::VALUE_NONE,
+                "Assume 'yes' to all inquiries (run in non-interactive mode)"
+            )
+            ->addOption(
+                'silent',
+                's',
+                InputOption::VALUE_NONE,
+                "Silent mode (no outputs except for errors)"
+            );
     }
 
     private function writeln(...$lines): void
@@ -121,7 +121,7 @@ class FixConfigVariables extends BaseCommand
     }
 
     /**
-     * Join given pipelines and extract expected variabled for that particular configuration.
+     * Join given pipelines and extract expected variables for that particular configuration.
      * @param string[] $pipelineIds list of pipeline ids to participate
      * @param VariablesTable $environmentVariables variables already defined in the environment
      * @return array pipeline id => [ name => Variable ]
@@ -276,9 +276,9 @@ class FixConfigVariables extends BaseCommand
                     $errors
                 );
             }
-            unset($pipeline); // just to make sure a reference is not accidentaly used
+            unset($pipeline); // just to make sure a reference is not accidentally used
         }
-        unset($test); // just to make sure a reference is not accidentaly used
+        unset($test); // just to make sure a reference is not accidentally used
 
         // consolidate update statistics
         foreach ($adds as $pid => $names) {
@@ -320,7 +320,7 @@ class FixConfigVariables extends BaseCommand
             $runtime = $this->runtimeEnvironments->findOrThrow($runtimeId);
             $expectedVariables = $this->getExpectedVariables($runtime);
 
-            // take all configs one by one regardles of their exercises
+            // take all configs one by one regardless of their exercises
             $configs = $this->exerciseConfigs->findAll();
             $updated = $failed = 0;
             foreach ($configs as $configEntity) {

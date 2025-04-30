@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class Licences extends BaseRepository
 {
-
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, Licence::class);

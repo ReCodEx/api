@@ -2,10 +2,10 @@
 
 namespace App\Helpers\Evaluation;
 
-use App\Exceptions\InvalidArgumentException;
 use App\Helpers\Evaluation\IScoreCalculator;
 use Nette;
 use Nette\Utils\Arrays;
+use InvalidArgumentException;
 
 /**
  * Provides access to different implementations of score calculation
@@ -31,7 +31,7 @@ class ScoreCalculatorAccessor
         foreach ($calculators as $calculator) {
             $id = $calculator->getId();
             if (!empty($this->calculators[$id])) {
-                throw new InvalidArgumentException("Provided calculators contain duplicit IDs ($id)");
+                throw new InvalidArgumentException("Provided calculators contain duplicate IDs ($id)");
             }
             $this->calculators[$id] = $calculator;
         }

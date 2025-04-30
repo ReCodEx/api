@@ -19,7 +19,7 @@ class FrontendErrorMappings
     public const E400_004__UPLOADED_FILE_INVALID_SIZE = "400-004";
     /** Per-partes upload is not completed yet */
     public const E400_005__UPLOADED_FILE_PARTIAL = "400-005";
-    /** Entity version is too old (concurrent edits occured) */
+    /** Entity version is too old (concurrent edits occurred) */
     public const E400_010__ENTITY_VERSION_TOO_OLD = "400-010";
 
     /** Invalid credentials */
@@ -34,6 +34,8 @@ class FrontendErrorMappings
     public const E400_104__EXTERNAL_AUTH_FAILED_USER_NOT_FOUND = "400-104";
     /** External authentication failed - unable to register new user because no role was provided. */
     public const E400_105__EXTERNAL_AUTH_FAILED_MISSING_ROLE = "400-105";
+    /** User email already exists, new user cannot be created/invited/registered/.... */
+    public const E400_110__USER_EMAIL_ALREADY_EXISTS = "400-110";
 
     /** General job config error */
     public const E400_200__JOB_CONFIG = "400-200";

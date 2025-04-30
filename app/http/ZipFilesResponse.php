@@ -41,7 +41,7 @@ class ZipFilesResponse implements Response
      * @param string|null $name
      * @param bool $forceDownload
      */
-    public function __construct(array $files, string $name = null, bool $forceDownload = true)
+    public function __construct(array $files, ?string $name = null, bool $forceDownload = true)
     {
         $this->files = $files;
         $this->name = $name;

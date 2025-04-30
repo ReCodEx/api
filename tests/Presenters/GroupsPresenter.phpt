@@ -243,9 +243,9 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             [
-            'action' => 'addStudent',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'addStudent',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ]
         );
 
@@ -275,9 +275,9 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             [
-            'action' => 'addStudent',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'addStudent',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ]
         );
 
@@ -305,9 +305,9 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'DELETE',
             [
-            'action' => 'removeStudent',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'removeStudent',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ]
         );
 
@@ -338,9 +338,9 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'DELETE',
             [
-            'action' => 'removeStudent',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'removeStudent',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ]
         );
 
@@ -374,9 +374,9 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'DELETE',
             [
-            'action' => 'removeStudent',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'removeStudent',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ]
         );
 
@@ -749,7 +749,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     ]
                 );
             },
-            \App\Exceptions\InvalidArgumentException::class
+            \App\Exceptions\InvalidApiArgumentException::class
         );
     }
 
@@ -1004,11 +1004,11 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             [
-            'action' => 'addMember',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'addMember',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ],
-            [ 'type' => 'supervisor' ]
+            ['type' => 'supervisor']
         );
 
         /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -1037,11 +1037,11 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             [
-            'action' => 'addMember',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'addMember',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ],
-            [ 'type' => 'supervisor' ]
+            ['type' => 'supervisor']
         );
 
         Assert::exception(
@@ -1068,9 +1068,9 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'DELETE',
             [
-            'action' => 'removeMember',
-            'id' => $group->getId(),
-            'userId' => $user->getId()
+                'action' => 'removeMember',
+                'id' => $group->getId(),
+                'userId' => $user->getId()
             ]
         );
 

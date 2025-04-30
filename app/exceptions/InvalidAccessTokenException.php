@@ -17,7 +17,7 @@ class InvalidAccessTokenException extends ApiException
     {
         parent::__construct(
             "Access token '$token' is not valid.",
-            IResponse::S401_UNAUTHORIZED,
+            IResponse::S401_Unauthorized,
             FrontendErrorMappings::E401_002__INVALID_TOKEN,
             ["token" => $token],
             $previous

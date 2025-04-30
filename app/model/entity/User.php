@@ -20,8 +20,8 @@ use DateTimeImmutable;
  */
 class User
 {
-    use CreateableEntity;
-    use DeleteableEntity;
+    use CreatableEntity;
+    use DeletableEntity;
 
     public function __construct(
         string $email,
@@ -254,7 +254,7 @@ class User
      * @param string|null $type filter that selects only groups by defined type of membership
      * @param string|null $notType filter that excludes groups by defined type of membership
      */
-    public function getGroups(string $type = null, string $notType = null)
+    public function getGroups(?string $type = null, ?string $notType = null)
     {
         $result = $this->getMemberships();
 
@@ -374,7 +374,7 @@ class User
                 $externalIds = reset($externalIds);
             }
         }
-        unset($externalIds);  // make sure this reference is not accidentaly reused
+        unset($externalIds);  // make sure this reference is not accidentally reused
 
         // filter the list if necessary
         if ($filter !== null) {
@@ -401,7 +401,7 @@ class User
      * Update the last authentication time to present.
      * @param DateTime|null $time the authentication time (if null, current time is set)
      */
-    public function updateLastAuthenticationAt(DateTime $time = null)
+    public function updateLastAuthenticationAt(?DateTime $time = null)
     {
         $this->lastAuthenticationAt = $time ?? new DateTime();
     }
@@ -452,10 +452,10 @@ class User
 
     /**
      * Set a new IP lock.
-     * @param string $ip addres in IPv4 or IPv6 human-readable format (e.g., '192.168.1.2')
+     * @param string $ip address in IPv4 or IPv6 human-readable format (e.g., '192.168.1.2')
      * @param DateTime|null $expiration of the IP lock, if null, the lock will never expire
      */
-    public function setIpLock(string $ip, DateTime $expiration = null): void
+    public function setIpLock(string $ip, ?DateTime $expiration = null): void
     {
         $ipNum = inet_pton($ip);
         if ($ipNum === false) {
@@ -548,9 +548,9 @@ class User
      * Lock the user within a group.
      * @param Group $group
      * @param DateTime|null $expiration of the lock, if null, the lock will never expire
-     * @param bool $strict if true, the user may not even accress other groups for reading
+     * @param bool $strict if true, the user may not even access other groups for reading
      */
-    public function setGroupLock(Group $group, DateTime $expiration = null, bool $strict = false): void
+    public function setGroupLock(Group $group, ?DateTime $expiration = null, bool $strict = false): void
     {
         // basic asserts to be on the safe side
         if (!$group->hasExamPeriodSet()) {

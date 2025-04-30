@@ -5,26 +5,20 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\ParseException;
 use App\Exceptions\FrontendErrorMappings;
-use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\User;
 use App\Model\Entity\PlagiarismDetectionBatch;
 use App\Model\Entity\PlagiarismDetectedSimilarity;
 use App\Model\Entity\PlagiarismDetectedSimilarFile;
 use App\Model\Entity\SolutionFile;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\PlagiarismDetectionBatches;
 use App\Model\Repository\PlagiarismDetectedSimilarities;
@@ -33,13 +27,18 @@ use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IPlagiarismPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Model\View\PlagiarismViewFactory;
-use DateTime;
 
 /**
  * Presenter handling plagiarism-related stuff (similarity records and their presentation)
  */
 class PlagiarismPresenter extends BasePresenter
 {
+    /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
+
     /**
      * @var AssignmentSolutions
      * @inject
@@ -86,7 +85,7 @@ class PlagiarismPresenter extends BasePresenter
      * @var PlagiarismViewFactory
      * @inject
      */
-    public $plagiarismViewFatory;
+    public $plagiarismViewFactory;
 
     public function checkListBatches(?string $detectionTool, ?string $solutionId): void
     {
@@ -129,7 +128,7 @@ class PlagiarismPresenter extends BasePresenter
      * Fetch a detail of a particular batch record.
      * @GET
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
     public function actionBatchDetail(string $id): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
@@ -173,18 +172,41 @@ class PlagiarismPresenter extends BasePresenter
     }
 
     /**
-     * Update dectection bath record. At the momeny, only the uploadCompletedAt can be changed.
+     * Update detection bath record. At the moment, only the uploadCompletedAt can be changed.
      * @POST
      */
-    #[Post("uploadCompleted", new VBool(), "Whether the upload of the batch data is completed or not.")]
-    #[Path("id", new VString(), required: true)]
+    #[Post(
+        "uploadCompleted",
+        new VBool(),
+        "Whether the upload of the batch data is completed or not.",
+        required: false
+    )]
+    #[Post(
+        "assignments",
+        new VArray(new VUuid()),
+        "List of assignment IDs to be marked as 'checked' by this batch.",
+        required: false
+    )]
+    #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
     public function actionUpdateBatch(string $id): void
     {
-        $req = $this->getRequest();
-        $uploadCompleted = filter_var($req->getPost("uploadCompleted"), FILTER_VALIDATE_BOOLEAN);
         $batch = $this->detectionBatches->findOrThrow($id);
-        $batch->setUploadCompleted($uploadCompleted);
-        $this->detectionBatches->persist($batch);
+        $req = $this->getRequest();
+
+        $uploadCompleted = $req->getPost("uploadCompleted");
+        if ($uploadCompleted !== null) {
+            $uploadCompleted = filter_var($uploadCompleted, FILTER_VALIDATE_BOOLEAN);
+            $batch->setUploadCompleted($uploadCompleted);
+        }
+
+        $assignments = $req->getPost("assignments") ?? [];
+        foreach ($assignments as $assignmentId) {
+            $assignment = $this->assignments->findOrThrow($assignmentId);
+            $assignment->setPlagiarismBatch($batch);
+            $this->assignments->persist($assignment, false); // no flush
+        }
+
+        $this->detectionBatches->persist($batch); // and flush
         $this->sendSuccessResponse($batch);
     }
 
@@ -201,14 +223,14 @@ class PlagiarismPresenter extends BasePresenter
      * Returns a list of detected similarities entities (similar file records are nested within).
      * @GET
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
     #[Path("solutionId", new VString(), required: true)]
     public function actionGetSimilarities(string $id, string $solutionId): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
         $solution = $this->assignmentSolutions->findOrThrow($solutionId);
         $similarities = array_map(
-            [$this->plagiarismViewFatory, 'getPlagiarismSimilarityData'],
+            [$this->plagiarismViewFactory, 'getPlagiarismSimilarityData'],
             $this->detectedSimilarities->getSolutionSimilarities($batch, $solution)
         );
         $this->sendSuccessResponse($similarities);
@@ -224,7 +246,7 @@ class PlagiarismPresenter extends BasePresenter
 
     /**
      * Appends one detected similarity record (similarities associated with one file and one other author)
-     * into a detected batch. This division was selected to make the appends relatively small and managable.
+     * into a detected batch. This division was selected to make the appends relatively small and manageable.
      * @POST
      */
     #[Post("solutionFileId", new VUuid(), "Id of the uploaded solution file.")]
@@ -237,7 +259,7 @@ class PlagiarismPresenter extends BasePresenter
     #[Post("authorId", new VUuid(), "Id of the author of the similar solutions/files.")]
     #[Post("similarity", new VDouble(), "Relative similarity of the records associated with selected author [0-1].")]
     #[Post("files", new VArray(), "List of similar files and their records.")]
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
     #[Path("solutionId", new VString(), required: true)]
     public function actionAddSimilarities(string $id, string $solutionId): void
     {
@@ -280,15 +302,16 @@ class PlagiarismPresenter extends BasePresenter
             }
             if (
                 $similarFile && (!($similarFile instanceof SolutionFile) || !$similarSolution
-                || $similarFile->getSolution()->getId() !== $similarSolution->getSolution()->getId())
+                    || $similarFile->getSolution()->getId() !== $similarSolution->getSolution()->getId())
             ) {
                 throw new BadRequestException(
-                    "In the similar files record, every solutionFileId must refer to a file related to the corresponding selected solution."
+                    "In the similar files record, every solutionFileId must refer "
+                        . "to a file related to the corresponding selected solution."
                 );
             }
 
             try {
-                $detectedFile = new PlagiarismDetectedSimilarFile(
+                new PlagiarismDetectedSimilarFile(
                     $detectedSimilarity,
                     $similarSolution,
                     $similarFile,
@@ -309,6 +332,6 @@ class PlagiarismPresenter extends BasePresenter
         $this->detectedSimilarities->persist($detectedSimilarity, false);
         $solution->setPlagiarismBatch($batch);
         $this->assignmentSolutions->persist($solution);
-        $this->sendSuccessResponse($this->plagiarismViewFatory->getPlagiarismSimilarityData($detectedSimilarity));
+        $this->sendSuccessResponse($this->plagiarismViewFactory->getPlagiarismSimilarityData($detectedSimilarity));
     }
 }

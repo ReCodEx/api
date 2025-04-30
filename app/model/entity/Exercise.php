@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use App\Helpers\ExercisesConfig;
@@ -20,9 +19,9 @@ use App\Helpers\ExercisesConfig;
 class Exercise implements IExercise
 {
     use ExerciseData;
-    use CreateableEntity;
-    use UpdateableEntity;
-    use DeleteableEntity;
+    use CreatableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
     use VersionableEntity;
 
     /**
@@ -153,8 +152,8 @@ class Exercise implements IExercise
         bool $isLocked = true,
         ?ExerciseScoreConfig $scoreConfig = null,
         string $configurationType = "simpleExerciseConfig",
-        int $solutionFilesLimit = null,
-        int $solutionSizeLimit = null
+        ?int $solutionFilesLimit = null,
+        ?int $solutionSizeLimit = null
     ) {
         $this->version = $version;
         $this->createdAt = new DateTime();
@@ -190,8 +189,8 @@ class Exercise implements IExercise
     public static function create(
         User $user,
         Group $group,
-        ExerciseScoreConfig $scoreConfig = null,
-        ExercisesConfig $config = null
+        ?ExerciseScoreConfig $scoreConfig = null,
+        ?ExercisesConfig $config = null
     ): Exercise {
         return new self(
             1,
@@ -270,7 +269,7 @@ class Exercise implements IExercise
 
     public function removeExerciseTest(?ExerciseTest $test): void
     {
-        $this->exerciseTests->remove($test);
+        $this->exerciseTests->removeElement($test);
     }
 
     public function addHardwareGroup(HardwareGroup $hardwareGroup): void
@@ -421,7 +420,7 @@ class Exercise implements IExercise
         $this->scoreConfig = $scoreConfig;
     }
 
-    public function getReferenceSolutions(int $minimalVisibility = null): Collection
+    public function getReferenceSolutions(?int $minimalVisibility = null): Collection
     {
         if ($minimalVisibility !== null) {
             return $this->referenceSolutions->filter(

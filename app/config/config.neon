@@ -114,7 +114,7 @@ parameters:
     exerciseUrl: "%webapp.address%/app/exercises/{id}"
     shadowAssignmentUrl: "%webapp.address%/app/shadow-assignment/{id}"
     solutionUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
-    referenceSolutiontUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
+    referenceSolutionUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
     forgottenPasswordUrl: "%webapp.address%/forgotten-password/change?{token}"  # URL of web application where the password can be changed
     emailVerificationUrl: "%webapp.address%/email-verification?{token}"
     invitationUrl: "%webapp.address%/accept-invitation?{token}"

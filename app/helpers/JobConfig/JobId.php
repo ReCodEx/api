@@ -10,9 +10,9 @@ use App\Exceptions\JobConfigLoadingException;
 class JobId
 {
     /** Separator used in ID */
-    const SEPARATOR = "_";
+    public const SEPARATOR = "_";
     /** Allowed types which can be used in ID */
-    const ALLOWED_TYPES = array("student", "reference");
+    public const ALLOWED_TYPES = array("student", "reference");
 
     /** @var string Identification of the job */
     private $id;

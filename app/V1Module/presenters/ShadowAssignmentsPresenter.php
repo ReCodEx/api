@@ -3,13 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
@@ -17,7 +13,7 @@ use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\FrontendErrorMappings;
@@ -105,7 +101,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -126,7 +122,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Post("version", new VInt(), "Version of the shadow assignment.")]
-    #[Path("id", new VString(), "Identifier of the shadow assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the shadow assignment", required: true)]
     public function actionValidate($id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -150,7 +146,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * Update details of an shadow assignment
      * @POST
      * @throws BadRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
     #[Post("version", new VInt(), "Version of the edited assignment")]
@@ -170,7 +166,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    #[Path("id", new VString(), "Identifier of the updated assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the updated assignment", required: true)]
     public function actionUpdateDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -192,7 +188,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
 
         // localized texts cannot be empty
         if (count($req->getPost("localizedTexts")) == 0) {
-            throw new InvalidArgumentException("No entry for localized texts given.");
+            throw new InvalidApiArgumentException('localizedTexts', "No entry for localized texts given.");
         }
 
         // old values of some attributes
@@ -219,13 +215,16 @@ class ShadowAssignmentsPresenter extends BasePresenter
             $lang = $localization["locale"];
 
             if (array_key_exists($lang, $localizedTexts)) {
-                throw new InvalidArgumentException("Duplicate entry for language '$lang' in localizedTexts");
+                throw new InvalidApiArgumentException(
+                    'localizedTexts',
+                    "Duplicate entry for language '$lang' in localizedTexts"
+                );
             }
 
             // create all new localized texts
             $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
             if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
-                throw new InvalidArgumentException("External assignment link is not a valid URL");
+                throw new InvalidApiArgumentException('link', "External assignment link is not a valid URL");
             }
 
             $localized = new LocalizedShadowAssignment(
@@ -295,7 +294,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the assignment to be removed", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the assignment to be removed", required: true)]
     public function actionRemove(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -328,7 +327,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
         "Datetime when the points were awarded, whatever that means",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the shadow assignment", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the shadow assignment", required: true)]
     public function actionCreatePoints(string $id)
     {
         $req = $this->getRequest();

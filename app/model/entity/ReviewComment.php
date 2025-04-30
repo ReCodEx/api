@@ -2,8 +2,6 @@
 
 namespace App\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
@@ -15,7 +13,7 @@ use DateTime;
  */
 class ReviewComment implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

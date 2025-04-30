@@ -4,7 +4,6 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\UserCalendar;
 use Doctrine\ORM\EntityManagerInterface;
-use DateTime;
 
 /**
  * @extends BaseRepository<UserCalendar>

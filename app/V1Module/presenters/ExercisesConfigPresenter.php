@@ -3,23 +3,16 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ParseException;
 use App\Helpers\ExerciseConfig\Helper;
@@ -174,7 +167,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetEnvironmentConfigs(string $id)
     {
         /** @var Exercise $exercise */
@@ -197,12 +190,12 @@ class ExercisesConfigPresenter extends BasePresenter
      * Configurations can be added or deleted here, based on what is provided in arguments.
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ExerciseConfigException
      * @throws NotFoundException
      */
     #[Post("environmentConfigs", new VArray(), "Environment configurations for the exercise")]
-    #[Path("id", new VString(), "identification of exercise", required: true)]
+    #[Path("id", new VUuid(), "identification of exercise", required: true)]
     public function actionUpdateEnvironmentConfigs(string $id)
     {
         /** @var Exercise $exercise */
@@ -214,7 +207,7 @@ class ExercisesConfigPresenter extends BasePresenter
 
         // configurations cannot be empty
         if (count($environmentConfigs) == 0) {
-            throw new InvalidArgumentException("No entry for runtime configurations given.");
+            throw new InvalidApiArgumentException('environmentConfigs', "No entry for runtime configurations given.");
         }
 
         $runtimeEnvironments = new ArrayCollection();
@@ -228,7 +221,10 @@ class ExercisesConfigPresenter extends BasePresenter
 
             // check for duplicate environments
             if (array_key_exists($environmentId, $configs)) {
-                throw new InvalidArgumentException("Duplicate entry for configuration '$environmentId''");
+                throw new InvalidApiArgumentException(
+                    'environmentConfigs',
+                    "Duplicate entry for configuration '$environmentId''"
+                );
             }
 
             // load variables table for this runtime configuration
@@ -284,7 +280,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetConfiguration(string $id)
     {
         /** @var Exercise $exercise */
@@ -321,7 +317,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ParseException
      */
     #[Post("config", new VArray(), "A list of basic high level exercise configuration")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetConfiguration(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -375,7 +371,7 @@ class ExercisesConfigPresenter extends BasePresenter
      */
     #[Post("runtimeEnvironmentId", new VString(1), "Environment identifier", required: false)]
     #[Post("pipelinesIds", new VArray(), "Identifiers of selected pipelines for one test")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetVariablesForExerciseConfig(string $id)
     {
         // get request data
@@ -419,7 +415,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws ExerciseConfigException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("runtimeEnvironmentId", new VString(), required: true)]
     #[Path("hwGroupId", new VString(), required: true)]
     public function actionGetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
@@ -468,7 +464,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ExerciseCompilationException
      */
     #[Post("limits", new VArray(), "A list of resource limits for the given environment and hardware group")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("runtimeEnvironmentId", new VString(), required: true)]
     #[Path("hwGroupId", new VString(), required: true)]
     public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
@@ -532,7 +528,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     #[Path("runtimeEnvironmentId", new VString(), required: true)]
     #[Path("hwGroupId", new VString(), required: true)]
     public function actionRemoveHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
@@ -576,7 +572,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetLimits(string $id)
     {
         /** @var Exercise $exercise */
@@ -593,8 +589,8 @@ class ExercisesConfigPresenter extends BasePresenter
 
         // fill existing limits into result structure
         foreach ($exercise->getExerciseLimits() as $limit) {
-            $limits[$limit->getHardwareGroup()->getId()][$limit->getRuntimeEnvironment()->getId(
-            )] = $limit->getParsedLimits();
+            $limits[$limit->getHardwareGroup()->getId()][$limit->getRuntimeEnvironment()->getId()]
+                = $limit->getParsedLimits();
         }
         $this->sendSuccessResponse($limits);
     }
@@ -618,7 +614,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ExerciseConfigException
      */
     #[Post("limits", new VArray(), "A list of resource limits in the same format as getLimits endpoint yields.")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetLimits(string $id)
     {
         /** @var Exercise $exercise */
@@ -677,7 +673,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Get score configuration for exercise based on given identification.
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -706,7 +702,7 @@ class ExercisesConfigPresenter extends BasePresenter
         "A configuration of the score calculator (the format depends on the calculator type)",
         nullable: true,
     )]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -745,7 +741,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Get tests for exercise based on given identification.
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionGetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -766,11 +762,11 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set tests for exercise based on given identification.
      * @POST
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ExerciseConfigException
      */
     #[Post("tests", new VArray(), "An array of tests which will belong to exercise")]
-    #[Path("id", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -792,18 +788,18 @@ class ExercisesConfigPresenter extends BasePresenter
         foreach ($tests as $test) {
             // Perform checks on the test name...
             if (!array_key_exists("name", $test)) {
-                throw new InvalidArgumentException("tests", "name item not found in particular test");
+                throw new InvalidApiArgumentException('tests', "name item not found in particular test");
             }
 
             $name = trim($test["name"]);
             if (!preg_match('/^[-a-zA-Z0-9_()\[\].! ]+$/', $name)) {
-                throw new InvalidArgumentException("tests", "test name contains illicit characters");
+                throw new InvalidApiArgumentException('tests', "test name contains illicit characters");
             }
             if (strlen($name) > 64) {
-                throw new InvalidArgumentException("tests", "test name too long (exceeds 64 characters)");
+                throw new InvalidApiArgumentException('tests', "test name too long (exceeds 64 characters)");
             }
             if (array_key_exists($name, $newTests)) {
-                throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
+                throw new InvalidApiArgumentException('tests', "two tests with the same name '$name' were specified");
             }
 
             $id = Arrays::get($test, "id", null);
@@ -816,7 +812,7 @@ class ExercisesConfigPresenter extends BasePresenter
                 $testsModified = true;
 
                 if ($exercise->getExerciseTestByName($name)) {
-                    throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
+                    throw new InvalidApiArgumentException('tests', "given test name '$name' is already taken");
                 }
 
                 $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
@@ -841,8 +837,8 @@ class ExercisesConfigPresenter extends BasePresenter
 
         $testCountLimit = $this->exerciseRestrictionsConfig->getTestCountLimit();
         if (count($newTests) > $testCountLimit) {
-            throw new InvalidArgumentException(
-                "tests",
+            throw new InvalidApiArgumentException(
+                'tests',
                 "The number of tests exceeds the configured limit ($testCountLimit)"
             );
         }

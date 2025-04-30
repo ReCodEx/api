@@ -3,14 +3,8 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
@@ -141,7 +135,7 @@ class InstancesPresenter extends BasePresenter
         $this->instances->persist($instance->getRootGroup(), false);
         $this->instances->persist($localizedRootGroup, false);
         $this->instances->persist($instance);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $user), IResponse::S201_CREATED);
+        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $user), IResponse::S201_Created);
     }
 
     public function checkUpdateInstance(string $id)
@@ -158,18 +152,16 @@ class InstancesPresenter extends BasePresenter
      * @POST
      */
     #[Post("isOpen", new VBool(), "Should the instance be open for registration?", required: false)]
-    #[Path("id", new VString(), "An identifier of the updated instance", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the updated instance", required: true)]
     public function actionUpdateInstance(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
 
         $req = $this->getRequest();
-        $isOpen = $req->getPost("isOpen") ? filter_var(
-            $req->getPost("isOpen"),
-            FILTER_VALIDATE_BOOLEAN
-        ) : $instance->isOpen();
-
-        $instance->setIsOpen($isOpen);
+        $isOpen = $req->getPost("isOpen");
+        if ($isOpen !== null) {
+            $instance->setIsOpen($isOpen);
+        }
         $this->instances->persist($instance);
         $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $this->getCurrentUser()));
     }
@@ -186,7 +178,7 @@ class InstancesPresenter extends BasePresenter
      * Delete an instance
      * @DELETE
      */
-    #[Path("id", new VString(), "An identifier of the instance to be deleted", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the instance to be deleted", required: true)]
     public function actionDeleteInstance(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -216,7 +208,7 @@ class InstancesPresenter extends BasePresenter
      * Get details of an instance
      * @GET
      */
-    #[Path("id", new VString(), "An identifier of the instance", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the instance", required: true)]
     public function actionDetail(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -235,7 +227,7 @@ class InstancesPresenter extends BasePresenter
      * Get a list of licenses associated with an instance
      * @GET
      */
-    #[Path("id", new VString(), "An identifier of the instance", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the instance", required: true)]
     public function actionLicences(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -256,7 +248,7 @@ class InstancesPresenter extends BasePresenter
      */
     #[Post("note", new VString(2), "A note for users or administrators")]
     #[Post("validUntil", new VTimestamp(), "Expiration date of the license")]
-    #[Path("id", new VString(), "An identifier of the instance", required: true)]
+    #[Path("id", new VUuid(), "An identifier of the instance", required: true)]
     public function actionCreateLicence(string $id)
     {
         $instance = $this->instances->findOrThrow($id);
@@ -284,8 +276,8 @@ class InstancesPresenter extends BasePresenter
      */
     #[Post("note", new VString(2, 255), "A note for users or administrators", required: false)]
     #[Post("validUntil", new VString(), "Expiration date of the license", required: false)]
-    #[Post("isValid", new VBool(), "Administrator switch to toggle licence validity", required: false)]
-    #[Path("licenceId", new VString(), "Identifier of the licence", required: true)]
+    #[Post("isValid", new VBool(), "Administrator switch to toggle license validity", required: false)]
+    #[Path("licenceId", new VString(), "Identifier of the license", required: true)]
     public function actionUpdateLicence(string $licenceId)
     {
         $licence = $this->licences->findOrThrow($licenceId);
@@ -319,7 +311,7 @@ class InstancesPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("licenceId", new VString(), "Identifier of the licence", required: true)]
+    #[Path("licenceId", new VString(), "Identifier of the license", required: true)]
     public function actionDeleteLicence(string $licenceId)
     {
         $licence = $this->licences->findOrThrow($licenceId);

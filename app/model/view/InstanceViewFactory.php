@@ -46,7 +46,7 @@ class InstanceViewFactory
             "id" => $instance->getId(),
             "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "", // BC
             "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "", // BC
-            "hasValidLicence" => $instance->hasValidLicence(),
+            "hasValidLicence" => $instance->hasValidLicense(),
             "isOpen" => $instance->isOpen(),
             "isAllowed" => $instance->isAllowed(),
             "createdAt" => $instance->getCreatedAt()->getTimestamp(),

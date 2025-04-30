@@ -24,13 +24,13 @@ use InvalidArgumentException;
  */
 class Group
 {
-    use DeleteableEntity;
+    use DeletableEntity;
 
     public function __construct(
         string $externalId,
         Instance $instance,
-        User $admin = null,
-        Group $parentGroup = null,
+        ?User $admin = null,
+        ?Group $parentGroup = null,
         bool $publicStats = false,
         bool $isPublic = false,
         bool $isOrganizational = false,
@@ -159,7 +159,7 @@ class Group
         }
     }
 
-    public function archive(DateTime $date = null)
+    public function archive(?DateTime $date = null)
     {
         $date = $date ?? new DateTime();
         $this->setArchivingStatus($date);
@@ -227,7 +227,7 @@ class Group
      */
     protected $isExam = false;
 
-     /**
+    /**
      * @ORM\Column(type="datetime", nullable=true)
      * When an exam in this groups begins. In the exam period, a user must lock in a group to be allowed
      * submitting solutions. This is completely independent of the isExam flag.
@@ -260,7 +260,7 @@ class Group
      * Switch the group into an exam group by setting the begin and end dates of the exam.
      * @param DateTime $begin when the exam starts
      * @param DateTime $end when the exam ends
-     * @param bool $strict if true, locked users cannot acceess other groups (for reading)
+     * @param bool $strict if true, locked users cannot access other groups (for reading)
      */
     public function setExamPeriod(DateTime $begin, DateTime $end, bool $strict = false): void
     {
@@ -293,7 +293,7 @@ class Group
      * Whether this is an exam group.
      * @return bool true if an exam is set in this group
      */
-    public function hasExamPeriodSet(DateTime $at = null): bool
+    public function hasExamPeriodSet(?DateTime $at = null): bool
     {
         $at = $at ?? new DateTime();
         return $this->examBegin !== null && $this->examEnd !== null && $this->examEnd > $at;
@@ -366,10 +366,10 @@ class Group
         return $this->instance->isDeleted() ? null : $this->instance;
     }
 
-    public function hasValidLicence()
+    public function hasValidLicense()
     {
         $instance = $this->getInstance();
-        return $instance && $instance->hasValidLicence();
+        return $instance && $instance->hasValidLicense();
     }
 
     /**
@@ -378,7 +378,7 @@ class Group
     protected $memberships;
 
     /**
-     * Get the membership enetity for this group and given user (null is returned if no membership exists).
+     * Get the membership entity for this group and given user (null is returned if no membership exists).
      * @param User $user
      * @return GroupMembership|null
      */
@@ -632,7 +632,7 @@ class Group
         $admins = []; // key is user ID, value is true
         while ($group !== null) {
             // getMembershipsInternal inherited flag goes: true = only inherited, false = only direct, null = all
-            $directAdmins = $group->getMembershipsInternal([ GroupMembership::TYPE_ADMIN ], $inherited ? null : false);
+            $directAdmins = $group->getMembershipsInternal([GroupMembership::TYPE_ADMIN], $inherited ? null : false);
             foreach ($directAdmins as $membership) {
                 $admins[$membership->getUser()->getId()] = true;
             }

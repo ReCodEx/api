@@ -101,9 +101,9 @@ class ReferenceExerciseSolution
         return $this->description;
     }
 
-    public function setDescription(string $desccription): void
+    public function setDescription(string $description): void
     {
-        $this->description = $desccription;
+        $this->description = $description;
     }
 
     public function getSolution(): Solution

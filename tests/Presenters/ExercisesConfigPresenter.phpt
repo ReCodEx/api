@@ -208,8 +208,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
                         "pipelines" => [
                             [
                                 "name" => $compilationPipeline->getId(),
-                                "variables" => [
-                                ]
+                                "variables" => []
                             ]
                         ]
                     ],
@@ -236,8 +235,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
                         "pipelines" => [
                             [
                                 "name" => $compilationPipeline->getId(),
-                                "variables" => [
-                                ]
+                                "variables" => []
                             ]
                         ]
                     ],
@@ -579,10 +577,10 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             $this->presenter,
             'V1:ExercisesConfig',
             'GET',
-            [ 'action' => 'getScoreConfig', 'id' => $exercise->getId() ]
+            ['action' => 'getScoreConfig', 'id' => $exercise->getId()]
         );
         $resultConfig = $payload->getConfigParsed();
-        Assert::equal(['testWeights' => [ 'Test 1' => 100, 'Test 2' => 100 ]], $resultConfig);
+        Assert::equal(['testWeights' => ['Test 1' => 100, 'Test 2' => 100]], $resultConfig);
     }
 
     public function testSetScoreConfig()
@@ -596,7 +594,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             'Test 1' => 100,
             'Test 2' => 100,
             'Test 3' => 100,
-        ] ];
+        ]];
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -733,7 +731,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             function () use ($request) {
                 $this->presenter->run($request);
             },
-            App\Exceptions\InvalidArgumentException::class
+            App\Exceptions\InvalidApiArgumentException::class
         );
     }
 }

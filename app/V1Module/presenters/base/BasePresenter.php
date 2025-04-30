@@ -11,7 +11,6 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongHttpMethodException;
 use App\Exceptions\NotImplementedException;
-use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Security\AccessManager;
@@ -20,21 +19,17 @@ use App\Model\Repository\Users;
 use App\Helpers\UserActions;
 use App\Helpers\Validators;
 use App\Helpers\FileStorage\IImmutableFile;
-use App\Helpers\AnnotationsParser;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormat;
-use App\Helpers\MetaFormats\MetaRequest;
 use App\Helpers\MetaFormats\RequestParamData;
 use App\Helpers\MetaFormats\Type;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
 use Nette\Http\IResponse;
-use Nette\Utils\Arrays;
 use Tracy\ILogger;
 use ReflectionClass;
 use ReflectionMethod;
-use LogicException;
 use ReflectionException;
 
 class BasePresenter extends \App\Presenters\BasePresenter
@@ -95,7 +90,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             if (!$remoteAddr || !$user->verifyIpLock($remoteAddr)) {
                 throw new ForbiddenRequestException(
                     "Forbidden Request - User is not allowed access from IP '$remoteAddr'.",
-                    IResponse::S403_FORBIDDEN,
+                    IResponse::S403_Forbidden,
                     FrontendErrorMappings::E403_003__USER_IP_LOCKED,
                     [
                         'remoteAddress' => $remoteAddr,
@@ -244,8 +239,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
      * @param ?array $valueDictionary If not null, a nested format instance will be created. The values will be taken
      *  from here instead of the request object. Format validation ignores parameter type (path, query or post).
      *  A top-level format will be created if null.
-     * @throws \App\Exceptions\InternalServerException Thrown when the format definition is corrupted/absent.
-     * @throws \App\Exceptions\BadRequestException Thrown when the request parameter values do not conform to the definition.
+     * @throws InternalServerException Thrown when the format definition is corrupted/absent.
+     * @throws BadRequestException Thrown when the request parameter values do not conform to the definition.
      * @return MetaFormat Returns a format instance with values filled from the request object.
      */
     private function processParamsFormat(string $format, ?array $valueDictionary): MetaFormat
@@ -265,7 +260,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             // top-level format
             if ($valueDictionary === null) {
                 $value = $this->getValueFromParamData($requestParamData);
-            // nested format
+                // nested format
             } else {
                 // Instead of retrieving the values with the getRequest call, use the provided $valueDictionary.
                 // This makes the nested format ignore the parameter type (path, query, post) which is intended.
@@ -366,7 +361,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         if ($this->getUser()->isLoggedIn()) {
             $remoteAddr = $this->getHttpRequest()->getRemoteAddress();
             $params = $this->getRequest()->getParameters();
-            unset($params[self::ACTION_KEY]);
+            unset($params[self::ActionKey]);
             $this->userActions->log($this->getAction(true), $remoteAddr, $params, $code);
         }
     }
@@ -399,7 +394,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         array $items,
         Pagination $pagination,
         bool $sliceItems = false,
-        int $totalCount = null,
+        ?int $totalCount = null,
         $code = IResponse::S200_OK
     ) {
         $this->sendSuccessResponse(
@@ -436,7 +431,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     protected function sendStorageFileResponse(
         IImmutableFile $file,
         string $name,
-        string $contentType = null,
+        ?string $contentType = null,
         bool $forceDownload = true
     ) {
         $this->logUserAction(200);
@@ -450,7 +445,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
      * @param string|null $name
      * @param bool $forceDownload
      */
-    protected function sendZipFilesResponse(array $files, string $name = null, bool $forceDownload = true)
+    protected function sendZipFilesResponse(array $files, ?string $name = null, bool $forceDownload = true)
     {
         $this->logUserAction(200);
         $this->sendResponse(new ZipFilesResponse($files, $name, $forceDownload));

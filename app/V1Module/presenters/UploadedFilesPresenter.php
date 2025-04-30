@@ -5,21 +5,14 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InternalServerException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\FileStorage\FileStorageException;
@@ -136,7 +129,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @GET
      * @LoggedIn
      */
-    #[Path("id", new VString(), "Identifier of the uploaded file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the uploaded file", required: true)]
     public function actionDetail(string $id)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
@@ -152,10 +145,10 @@ class UploadedFilesPresenter extends BasePresenter
 
         if ($file instanceof SolutionFile && $similarSolutionId) {
             // special check using similar solution hint
-            // similar solution refers to anoter solution which has detected similarities in this file
+            // similar solution refers to another solution which has detected similarities in this file
             // (so whoever can see plagiarisms of the original solution may see this file)
             $similarSolution = $this->assignmentSolutions->findOrThrow($similarSolutionId);
-            $fileSolution = $this->assignmentSolutions->findOneBy([ 'solution' => $file->getSolution() ]);
+            $fileSolution = $this->assignmentSolutions->findOneBy(['solution' => $file->getSolution()]);
 
             if (
                 $fileSolution &&
@@ -189,10 +182,11 @@ class UploadedFilesPresenter extends BasePresenter
     #[Query(
         "similarSolutionId",
         new VUuid(),
-        "Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.",
+        "Id of an assignment solution which has detected possible plagiarism in this file. "
+            . "This is basically a shortcut (hint) for ACLs.",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionDownload(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -204,7 +198,7 @@ class UploadedFilesPresenter extends BasePresenter
                 throw new NotFoundException(
                     "File not found in the storage",
                     FrontendErrorMappings::E404_000__NOT_FOUND,
-                    [ 'entry' => $entry ],
+                    ['entry' => $entry],
                     $ex
                 );
             }
@@ -236,10 +230,11 @@ class UploadedFilesPresenter extends BasePresenter
     #[Query(
         "similarSolutionId",
         new VUuid(),
-        "Id of an assignment solution which has detected possible plagiarism in this file. This is basically a shortcut (hint) for ACLs.",
+        "Id of an assignment solution which has detected possible plagiarism in this file. "
+            . "This is basically a shortcut (hint) for ACLs.",
         required: false,
     )]
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionContent(string $id, ?string $entry = null)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -251,7 +246,7 @@ class UploadedFilesPresenter extends BasePresenter
                 throw new NotFoundException(
                     "File not found in the storage",
                     FrontendErrorMappings::E404_000__NOT_FOUND,
-                    [ 'entry' => $entry ],
+                    ['entry' => $entry],
                     $ex
                 );
             }
@@ -294,7 +289,7 @@ class UploadedFilesPresenter extends BasePresenter
      * In the future, we might want to add algorithm selection via query parameter (default is SHA1).
      * @GET
      */
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionDigest(string $id)
     {
         $fileEntity = $this->uploadedFiles->findOrThrow($id);
@@ -319,7 +314,7 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Upload a file
      * @POST
-     * @throws InvalidArgumentException for files with invalid names
+     * @throws InvalidApiArgumentException for files with invalid names
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws CannotReceiveUploadedFileException
@@ -339,7 +334,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!$file->isOk()) {
             throw new CannotReceiveUploadedFileException(
                 sprintf("Cannot receive uploaded file '%s' due to '%d'", $file->getName(), $file->getError()),
-                IResponse::S500_INTERNAL_SERVER_ERROR,
+                IResponse::S500_InternalServerError,
                 FrontendErrorMappings::E500_001__CANNOT_RECEIVE_FILE,
                 ["filename" => $file->getName(), "errorCode" => $file->getError()]
             );
@@ -348,7 +343,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!Strings::match($file->getName(), self::FILENAME_PATTERN)) {
             throw new CannotReceiveUploadedFileException(
                 sprintf("File name '%s' contains invalid characters", $file->getName()),
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
                 ["filename" => $file->getName(), "pattern" => self::FILENAME_PATTERN]
             );
@@ -401,7 +396,7 @@ class UploadedFilesPresenter extends BasePresenter
         if (!Strings::match($name, self::FILENAME_PATTERN)) {
             throw new CannotReceiveUploadedFileException(
                 "File name '$name' contains invalid characters",
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
                 ["filename" => $name, "pattern" => self::FILENAME_PATTERN]
             );
@@ -412,7 +407,7 @@ class UploadedFilesPresenter extends BasePresenter
             // TODO: in the future, we might want to employ more sophisticated quota checking
             throw new CannotReceiveUploadedFileException(
                 "Invalid declared file size ($size) for per-partes upload",
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_004__UPLOADED_FILE_INVALID_SIZE,
                 ["size" => $size, "maximum" => $maxSize]
             );
@@ -436,20 +431,20 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Add another chunk to partial upload.
      * @PUT
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      * @throws ForbiddenRequestException
      * @throws BadRequestException
      * @throws CannotReceiveUploadedFileException
      * @throws InternalServerException
      */
     #[Query("offset", new VInt(), "Offset of the chunk for verification", required: true)]
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
     public function actionAppendPartial(string $id, int $offset)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
 
         if ($partialFile->getUploadedSize() !== $offset) {
-            throw new InvalidArgumentException(
+            throw new InvalidApiArgumentException(
                 'offset',
                 "The offset must corresponds with the actual upload size of the partial file."
             );
@@ -488,7 +483,7 @@ class UploadedFilesPresenter extends BasePresenter
      * Cancel partial upload and remove all uploaded chunks.
      * @DELETE
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
     public function actionCancelPartial(string $id)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
@@ -532,14 +527,14 @@ class UploadedFilesPresenter extends BasePresenter
      * All data chunks are extracted from the store, assembled into one file, and is moved back into the store.
      * @POST
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
     public function actionCompletePartial(string $id)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
         if (!$partialFile->isUploadComplete()) {
             throw new CannotReceiveUploadedFileException(
                 "Unable to finalize incomplete per-partes upload.",
-                IResponse::S400_BAD_REQUEST,
+                IResponse::S400_BadRequest,
                 FrontendErrorMappings::E400_005__UPLOADED_FILE_PARTIAL,
                 [
                     "chunks" => $partialFile->getChunks(),
@@ -598,7 +593,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("id", new VString(), "Identifier of the file", required: true)]
+    #[Path("id", new VUuid(), "Identifier of the file", required: true)]
     public function actionDownloadSupplementaryFile(string $id)
     {
         $fileEntity = $this->supplementaryFiles->findOrThrow($id);

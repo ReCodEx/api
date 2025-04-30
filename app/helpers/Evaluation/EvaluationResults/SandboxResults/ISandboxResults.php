@@ -30,7 +30,7 @@ interface ISandboxResults
 
     /**
      * Get total amount of consumed memory
-     * @return int The ammout of memory the process allocated
+     * @return int The amount of memory the process allocated
      */
     public function getUsedMemory(): int;
 
@@ -42,7 +42,7 @@ interface ISandboxResults
 
     /**
      * Get exit signal that terminated the program
-     * @return int|null The signal number or null if the program exitted normally
+     * @return int|null The signal number or null if the program exited normally
      */
     public function getExitSignal(): ?int;
 

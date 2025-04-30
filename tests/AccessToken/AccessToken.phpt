@@ -2,7 +2,6 @@
 
 include "../bootstrap.php";
 
-use App\Exceptions\InvalidArgumentException;
 use App\Security\AccessToken;
 use Tester\Assert;
 use App\Exceptions\InvalidAccessTokenException;

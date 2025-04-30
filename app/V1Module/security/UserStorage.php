@@ -3,10 +3,10 @@
 namespace App\Security;
 
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\User;
 use Nette;
 use Nette\Security\IIdentity;
+use InvalidArgumentException;
 
 class UserStorage implements Nette\Security\UserStorage
 {

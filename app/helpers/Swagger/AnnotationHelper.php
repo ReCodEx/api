@@ -2,16 +2,16 @@
 
 namespace App\Helpers\Swagger;
 
-use App\Exceptions\InvalidArgumentException;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\V1Module\Router\MethodRoute;
 use App\V1Module\RouterFactory;
+use Nette\Routing\RouteList;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use Exception;
-use Nette\Routing\RouteList;
+use InvalidArgumentException;
 
 /**
  * Parser that can parse the annotations of existing recodex endpoints.
@@ -20,27 +20,27 @@ class AnnotationHelper
 {
     private static $nullableSuffix = '|null';
     private static $typeMap = [
-      'bool' => 'boolean',
-      'boolean' => 'boolean',
-      'array' => 'array',
-      'int' => 'integer',
-      'integer' => 'integer',
-      'float' => 'number',
-      'number' => 'number',
-      'numeric' => 'number',
-      'numericint' => 'integer',
-      'timestamp' => 'integer',
-      'string' => 'string',
-      'unicode' => 'string',
-      'email' => 'string',
-      'url' => 'string',
-      'uri' => 'string',
-      'pattern' => null,
-      'alnum' => 'string',
-      'alpha' => 'string',
-      'digit' => 'string',
-      'lower' => 'string',
-      'upper' => 'string',
+        'bool' => 'boolean',
+        'boolean' => 'boolean',
+        'array' => 'array',
+        'int' => 'integer',
+        'integer' => 'integer',
+        'float' => 'number',
+        'number' => 'number',
+        'numeric' => 'number',
+        'numericint' => 'integer',
+        'timestamp' => 'integer',
+        'string' => 'string',
+        'unicode' => 'string',
+        'email' => 'string',
+        'url' => 'string',
+        'uri' => 'string',
+        'pattern' => null,
+        'alnum' => 'string',
+        'alpha' => 'string',
+        'digit' => 'string',
+        'lower' => 'string',
+        'upper' => 'string',
     ];
 
     private static $presenterNamespace = 'App\V1Module\Presenters\\';
@@ -123,7 +123,7 @@ class AnnotationHelper
     }
 
     /**
-     * Extracts standart doc comments from endpoints, such as '@param string $id An identifier'.
+     * Extracts standard doc comments from endpoints, such as '@param string $id An identifier'.
      * Based on the HTTP route of the endpoint, the extracted param can be identified as either a path or
      * query parameter.
      * @param array $annotations An array of annotations.
@@ -362,7 +362,7 @@ class AnnotationHelper
         // if the endpoint is linked to a format, use the format class
         if ($format !== null) {
             $attributeData = FormatCache::getFieldDefinitions($format);
-        // otherwise use loose param attributes
+            // otherwise use loose param attributes
         } else {
             $attributeData = MetaFormatHelper::extractRequestParamData($reflectionMethod);
         }
@@ -472,7 +472,7 @@ class AnnotationHelper
         return $property->getValue($object);
     }
 
-        /**
+    /**
      * Extracts the route string from a route object. Replaces '<..>' in the route with '{...}'.
      * @param mixed $routeObj
      */

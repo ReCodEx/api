@@ -4,14 +4,11 @@ namespace App\Model\View;
 
 use App\Helpers\EvaluationStatus\EvaluationStatus;
 use App\Helpers\GroupBindings\GroupBindingAccessor;
-use App\Helpers\Localizations;
-use App\Helpers\Pair;
 use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
 use App\Model\Entity\GroupExamLock;
-use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentPoints;
 use App\Model\Entity\User;
@@ -20,7 +17,6 @@ use App\Model\Repository\ShadowAssignmentPointsRepository;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
-use Doctrine\Common\Collections\Collection;
 use Nette\Utils\Arrays;
 
 /**
@@ -101,7 +97,7 @@ class GroupViewFactory
      * @param Group $group
      * @param User $student Student of this group
      * @param array $assignmentSolutions Loaded assignment solutions of the student for all assignments in the group.
-     *                                   This varialble allows us bulk-load optimizations for the solutions.
+     *                                   This variable allows us bulk-load optimizations for the solutions.
      * @return array Students statistics
      */
     private function getStudentStatsInternal(
@@ -238,7 +234,7 @@ class GroupViewFactory
                 "observers" => $group->getObserversIds(),
                 "students" => $this->groupAcl->canViewStudents($group) ? $group->getStudentsIds() : [],
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
-                "hasValidLicence" => $group->hasValidLicence(),
+                "hasValidLicence" => $group->hasValidLicense(),
                 "assignments" => $group->getAssignments()->filter(
                     function (Assignment $assignment) {
                         return $this->assignmentAcl->canViewDetail($assignment);

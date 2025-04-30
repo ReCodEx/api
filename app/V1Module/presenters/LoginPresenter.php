@@ -3,23 +3,16 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\SecurityEvent;
@@ -250,7 +243,7 @@ class LoginPresenter extends BasePresenter
      * @LoggedIn
      * @throws BadRequestException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("effectiveRole", new VString(), "Effective user role contained within issued token", required: false)]
     #[Post("scopes", new VArray(), "A list of requested scopes")]
@@ -327,7 +320,7 @@ class LoginPresenter extends BasePresenter
         }
 
         if (!$this->roles->validateRole($effectiveRole)) {
-            throw new InvalidArgumentException("effectiveRole", "Unknown user role '$effectiveRole'");
+            throw new InvalidApiArgumentException('effectiveRole', "Unknown user role '$effectiveRole'");
         }
 
         $role = $this->getCurrentUser()->getRole();

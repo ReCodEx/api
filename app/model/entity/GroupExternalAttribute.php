@@ -3,8 +3,6 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Exceptions\InvalidArgumentException;
-use Nette\Utils\Validators;
 use JsonSerializable;
 
 /**
@@ -17,7 +15,7 @@ use JsonSerializable;
  */
 class GroupExternalAttribute implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

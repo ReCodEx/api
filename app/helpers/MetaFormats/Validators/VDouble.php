@@ -16,7 +16,7 @@ class VDouble extends BaseValidator
 
     public function validate(mixed $value): bool
     {
-        // check if it is a double or a whole number (is_double(0) returns false)
+        // check if it is a double or an integer (is_double(0) returns false)
         if (is_double($value) || is_int($value)) {
             return true;
         }

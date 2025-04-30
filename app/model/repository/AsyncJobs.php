@@ -6,8 +6,6 @@ use App\Model\Entity\AsyncJob;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Collections\Criteria;
-use Exception;
 use DateTime;
 
 /**
@@ -25,14 +23,14 @@ class AsyncJobs extends BaseRepository
      * @param string|null $command only jobs of particular command are retrieved
      * @param bool $includeScheduled if true, scheduled jobs are also considered pending jobs
      * @param User|null $createdBy if set, only jobs created by a particular user are retrieved
-     * @param Assignment|null $assignment if set, only jobs associated with particular assignment are retireved
+     * @param Assignment|null $assignment if set, only jobs associated with particular assignment are retrieved
      * @return AsyncJob[]
      */
     public function findPendingJobs(
-        string $command = null,
+        ?string $command = null,
         bool $includeScheduled = true,
-        User $createdBy = null,
-        Assignment $assignment = null
+        ?User $createdBy = null,
+        ?Assignment $assignment = null
     ): array {
         $qb = $this->repository->createQueryBuilder("j");
         $qb->andWhere($qb->expr()->isNull("j.finishedAt"));
@@ -63,13 +61,13 @@ class AsyncJobs extends BaseRepository
      * Get recently failed jobs that fits given criteria.
      * @param string|null $command only jobs of particular command are retrieved
      * @param User|null $createdBy if set, only jobs created by a particular user are retrieved
-     * @param Assignment|null $assignment if set, only jobs associated with particular assignment are retireved
+     * @param Assignment|null $assignment if set, only jobs associated with particular assignment are retrieved
      * @return AsyncJob[]
      */
     public function findFailedJobs(
-        string $command = null,
-        User $createdBy = null,
-        Assignment $assignment = null
+        ?string $command = null,
+        ?User $createdBy = null,
+        ?Assignment $assignment = null
     ): array {
         $qb = $this->repository->createQueryBuilder("j");
         $qb->andWhere($qb->expr()->isNotNull("j.finishedAt"))->andWhere($qb->expr()->isNotNull("j.error"));
@@ -100,7 +98,7 @@ class AsyncJobs extends BaseRepository
      *                    (so not only fresh jobs, but also retries can be fetched)
      * @return AsyncJob[]
      */
-    public function findAllReadyForExecution(int $schedulingWindow, string $workerId = null): array
+    public function findAllReadyForExecution(int $schedulingWindow, ?string $workerId = null): array
     {
         $qb = $this->repository->createQueryBuilder("j");
 

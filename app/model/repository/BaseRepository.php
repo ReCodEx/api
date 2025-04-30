@@ -66,7 +66,7 @@ class BaseRepository
     /**
      * @return T[]
      */
-    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null): array
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {
         return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
     }
@@ -114,7 +114,7 @@ class BaseRepository
      */
     protected function findByDateTimeColumn(?DateTime $since, ?DateTime $until, $column = 'createdAt'): array
     {
-        $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('e'); // takes care of soft delete cases
         if ($since) {
             $qb->andWhere("e.$column >= :since")->setParameter('since', $since);
         }
@@ -176,7 +176,7 @@ class BaseRepository
      * @param string|null $indexBy
      * @return QueryBuilder
      */
-    protected function createQueryBuilder(string $alias, string $indexBy = null): QueryBuilder
+    protected function createQueryBuilder(string $alias, ?string $indexBy = null): QueryBuilder
     {
         return $this->repository->createQueryBuilder($alias, $indexBy);
     }
@@ -187,7 +187,7 @@ class BaseRepository
      * @param string|null $search
      * @return T[]
      */
-    protected function search(array $columns, string $search = null): array
+    protected function search(array $columns, ?string $search = null): array
     {
         $filter = Criteria::create();
 
@@ -206,7 +206,7 @@ class BaseRepository
      * @param null|string $search
      * @return T[]
      */
-    protected function searchBy(array $columns, string $search = null): array
+    protected function searchBy(array $columns, ?string $search = null): array
     {
         return $this->searchHelper(
             $search,

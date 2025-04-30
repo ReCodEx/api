@@ -3,19 +3,8 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
-use App\Helpers\MetaFormats\Attributes\Query;
-use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
-use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use Exception;
 use Nette\Application\IPresenterFactory;
 use Nette\Routing\Router;
@@ -55,12 +44,12 @@ class SecurityPresenter extends BasePresenter
         );
 
         if (!$requestParams) {
-            throw new InvalidArgumentException("url");
+            throw new InvalidApiArgumentException("url");
         }
 
         $presenterName = $requestParams["presenter"] ?? null;
         if (!$presenterName) {
-            throw new InvalidArgumentException("url");
+            throw new InvalidApiArgumentException("url");
         }
 
         $presenter = $this->presenterFactory->createPresenter($presenterName);
@@ -69,7 +58,7 @@ class SecurityPresenter extends BasePresenter
             return;
         }
 
-        $action = $requestParams["action"] ?? Presenter::DEFAULT_ACTION;
+        $action = $requestParams["action"] ?? Presenter::DefaultAction;
         $methodName = $presenter->formatPermissionCheckMethod($action);
         if (!method_exists($presenter, $methodName)) {
             $this->checkFailed();

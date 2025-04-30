@@ -73,7 +73,7 @@ class ExtensionConfig
     private array $userRoles = [];
 
     /**
-     * List of eligible user external login types. A user must hava at least one of these logins to see the extension.
+     * List of eligible user external login types. A user must have at least one of these logins to see the extension.
      * Empty list = no external logins are required.
      */
     private array $userExternalLogins = [];
@@ -97,7 +97,7 @@ class ExtensionConfig
         $this->tokenScopes = Arrays::get(
             $config,
             ["token", "scopes"],
-            [ TokenScope::MASTER, TokenScope::REFRESH ]
+            [TokenScope::MASTER, TokenScope::REFRESH]
         ) ?? [];
         $this->tokenUserId = Arrays::get($config, ["token", "user"], null);
         $this->instances = Arrays::get($config, "instances", []) ?? [];

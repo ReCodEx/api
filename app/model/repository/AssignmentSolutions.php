@@ -292,7 +292,7 @@ class AssignmentSolutions extends BaseRepository
         $qb = $this->createQueryBuilder('s');
         $qb->innerJoin("s.assignment", "a")->innerJoin("a.group", "g")->innerJoin("g.memberships", "gm");
         $qb->where($qb->expr()->eq("gm.user", ":user"))
-            ->andWhere($qb->expr()->in("gm.type", [ GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR ]))
+            ->andWhere($qb->expr()->in("gm.type", [GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR]))
             ->andWhere($qb->expr()->isNotNull("s.reviewStartedAt"))
             ->andWhere($qb->expr()->isNull("s.reviewedAt"))
             ->andWhere($qb->expr()->isNull("g.archivedAt"))
@@ -321,7 +321,7 @@ class AssignmentSolutions extends BaseRepository
 
         $conn = $this->em->getConnection();
         $stmt = $conn->prepare($query);
-        return $stmt->execute([
+        return $stmt->executeQuery([
             'assignmentId' => $assignment->getId(),
             'authorId' => $user->getId(),
         ])->fetchAssociative();
@@ -330,7 +330,7 @@ class AssignmentSolutions extends BaseRepository
     /**
      * Get all solutions with review request flag set from one group (optionally filtered for one student).
      * @param Group $group from which the solutions are loaded
-     * @param User|null $user if not null, only soliutions of this user will be returned
+     * @param User|null $user if not null, only solutions of this user will be returned
      * @return AssignmentSolution[]
      */
     public function findReviewRequestSolutions(Group $group, ?User $user = null): array
@@ -353,7 +353,7 @@ class AssignmentSolutions extends BaseRepository
     /**
      * As findReviewRequestSolutions(), but returns the result in associative array structure.
      * @param Group $group from which the solutions are loaded
-     * @param User|null $user if not null, only soliutions of this user will be returned
+     * @param User|null $user if not null, only solutions of this user will be returned
      * @return array[] solutions in array hierarchy [userId][assignmentId] -> Solution
      */
     public function findReviewRequestSolutionsIndexed(Group $group, ?User $user = null): array
@@ -380,7 +380,7 @@ class AssignmentSolutions extends BaseRepository
         $qb = $this->createQueryBuilder('s');
         $qb->innerJoin("s.assignment", "a")->innerJoin("a.group", "g")->innerJoin("g.memberships", "gm");
         $qb->where($qb->expr()->eq("gm.user", ":user"))
-            ->andWhere($qb->expr()->in("gm.type", [ GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR ]))
+            ->andWhere($qb->expr()->in("gm.type", [GroupMembership::TYPE_ADMIN, GroupMembership::TYPE_SUPERVISOR]))
             ->andWhere($qb->expr()->isNull("s.reviewStartedAt"))
             ->andWhere($qb->expr()->eq("s.reviewRequest", 1))
             ->andWhere($qb->expr()->isNull("g.archivedAt"))

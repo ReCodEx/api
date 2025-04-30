@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
 use App\Model\Entity\User;
+use App\Model\Entity\Instance;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -31,7 +32,7 @@ class Users extends BaseSoftDeleteRepository
      */
     public function getPaginated(Pagination $pagination, &$totalCount): array
     {
-        $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('u'); // takes care of soft delete cases
 
         // Filter by instance ID ...
         if ($pagination->hasFilter("instanceId")) {
@@ -55,7 +56,7 @@ class Users extends BaseSoftDeleteRepository
                 'email' => ['u.email'],
                 'createdAt' => ['u.createdAt'],
             ],
-            ['firstName', 'lastName'] // search column names
+            ['firstName', 'lastName', 'email'] // search column names
         );
         $paginationDbHelper->apply($qb, $pagination);
 
@@ -75,7 +76,7 @@ class Users extends BaseSoftDeleteRepository
 
 
     /**
-     * Search users firstnames and surnames based on given string.
+     * Search users first names and surnames based on given (sub)string.
      * @param string|null $search
      * @return User[]
      */
@@ -94,6 +95,21 @@ class Users extends BaseSoftDeleteRepository
     }
 
     /**
+     * Find users by exact match of the whole name.
+     * @param Instance $instance
+     * @param string $firstName
+     * @param string $lastName
+     * @return User[]
+     */
+    public function findByName(Instance $instance, string $firstName, string $lastName): array
+    {
+        $users = $this->findBy(["firstName" => $firstName, "lastName" => $lastName]);
+        return array_filter($users, function (User $user) use ($instance) {
+            return $user->belongsTo($instance);
+        });
+    }
+
+    /**
      * Find all users who have not authenticated to the system for some time.
      * @param DateTime|null $before Only users with last activity before given date
      *                              (i.e., not active after given date) are returned.
@@ -103,7 +119,7 @@ class Users extends BaseSoftDeleteRepository
      */
     public function findByLastAuthentication(?DateTime $before, ?bool $allowed = null, array $roles = []): array
     {
-        $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
+        $qb = $this->createQueryBuilder('u'); // takes care of soft delete cases
         if ($before) {
             $qb->andWhere(
                 'u.createdAt <= :before AND (u.lastAuthenticationAt <= :before OR u.lastAuthenticationAt IS NULL)'

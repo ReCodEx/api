@@ -18,8 +18,8 @@ class WrongHttpMethodException extends ApiException
     {
         $method = strtoupper($method);
         parent::__construct(
-            "This endpoint does not respond to $method HTTP requests, check the API documentation for more information.",
-            IResponse::S405_METHOD_NOT_ALLOWED,
+            "This endpoint does not respond to $method HTTP requests, check the API documentation for details.",
+            IResponse::S405_MethodNotAllowed,
             FrontendErrorMappings::E405_000__METHOD_NOT_ALLOWED,
             ["method" => $method]
         );

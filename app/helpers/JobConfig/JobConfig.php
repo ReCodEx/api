@@ -9,7 +9,7 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 /**
  * Stores all possible information about some particular job.
- * Job datas are parsed from structured configuration given at construction.
+ * Job data are parsed from structured configuration given at construction.
  */
 class JobConfig
 {
@@ -54,7 +54,7 @@ class JobConfig
     }
 
     /**
-     * Get the identificator of this job including the type
+     * Get the identification of this job including the type
      * @return string
      */
     public function getJobId(): string
@@ -63,7 +63,7 @@ class JobConfig
     }
 
     /**
-     * Get the identificator of this job without the type
+     * Get the identification of this job without the type
      * @return string
      */
     public function getId(): string
@@ -81,7 +81,7 @@ class JobConfig
     }
 
     /**
-     * Set the identificator of this job
+     * Set the identification of this job
      * @param string $jobId
      * @return $this
      */

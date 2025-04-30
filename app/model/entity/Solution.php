@@ -6,7 +6,6 @@ use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use JsonSerializable;
 use DateTime;
 use App\Helpers\Yaml;
 
@@ -16,7 +15,7 @@ use App\Helpers\Yaml;
  */
 class Solution
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id

@@ -72,7 +72,7 @@ class ExerciseLimits implements JsonSerializable
         HardwareGroup $hardwareGroup,
         string $limits,
         User $author,
-        ExerciseLimits $createdFrom = null
+        ?ExerciseLimits $createdFrom = null
     ) {
         $this->runtimeEnvironment = $runtimeEnvironment;
         $this->hardwareGroup = $hardwareGroup;

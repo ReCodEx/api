@@ -13,7 +13,7 @@ use JsonSerializable;
  */
 class ExerciseScoreConfig implements JsonSerializable
 {
-    use CreateableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id
@@ -69,8 +69,8 @@ class ExerciseScoreConfig implements JsonSerializable
      */
     public function configEquals($config): bool
     {
-        $serializd = $config !== null ? Yaml::dump($config) : null;
-        return $serializd === $this->config;
+        $serialized = $config !== null ? Yaml::dump($config) : null;
+        return $serialized === $this->config;
     }
 
     /**
@@ -88,7 +88,7 @@ class ExerciseScoreConfig implements JsonSerializable
     public function __construct(
         string $calculator = "",
         $config = null,
-        ExerciseScoreConfig $createdFrom = null
+        ?ExerciseScoreConfig $createdFrom = null
     ) {
         $this->createdAt = new DateTime();
 

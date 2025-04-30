@@ -4,7 +4,6 @@ namespace App\Console;
 
 use App\Model\Entity\GroupExamLock;
 use App\Model\Repository\GroupExamLocks;
-use DateTime;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
- * Lists all group exam lock records that occured in given time interval.
+ * Lists all group exam lock records that occurred in given time interval.
  * Locks are listed with related data in CSV format on the stdout.
  */
 class ListExamEvents extends BaseCommand

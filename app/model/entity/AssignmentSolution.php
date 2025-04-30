@@ -192,7 +192,7 @@ class AssignmentSolution
     /**
      * @var PlagiarismDetectionBatch|null
      * @ORM\ManyToOne(targetEntity="PlagiarismDetectionBatch")
-     * Refers to last plagarism detection batch, in which similarities were detected for this solution.
+     * Refers to last plagiarism detection batch, in which similarities were detected for this solution.
      * If null, no similarities were detected (yet).
      */
     protected $plagiarismBatch = null;

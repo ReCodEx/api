@@ -11,7 +11,7 @@ class TmpFilesHelper
     private $tempDirectory;
     private $files = [];
 
-    public function __construct(string $tempDirectory = null)
+    public function __construct(?string $tempDirectory = null)
     {
         $this->tempDirectory = $tempDirectory ? "$tempDirectory/tmpfiles" : sys_get_temp_dir();
     }

@@ -19,7 +19,7 @@ class Notify
      */
     public static function isAvailable(): bool
     {
-        $requirements = [ 'inotify_init', 'inotify_add_watch', 'inotify_read', 'inotify_queue_len', 'stream_select' ];
+        $requirements = ['inotify_init', 'inotify_add_watch', 'inotify_read', 'inotify_queue_len', 'stream_select'];
         foreach ($requirements as $reqFnc) {
             if (!function_exists($reqFnc)) {
                 return false;
@@ -118,7 +118,7 @@ class Notify
     }
 
     /**
-     * Wait (block) until a nofitication is risen or timeout is breached.
+     * Wait (block) until a notification is risen or timeout is breached.
      * @param int $timeout maximal waiting time in seconds
      * @return bool true if notifications were collected, false on timeout
      * @throws LogicException
@@ -136,7 +136,7 @@ class Notify
             );
         }
 
-        $streams = [ $this->inotifyStream ];
+        $streams = [$this->inotifyStream];
         @stream_select($streams, $streams, $streams, $timeout); // will block until event or timeout
         return $this->isNotifiedInternal();
     }

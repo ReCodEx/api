@@ -19,7 +19,7 @@ class CannotReceiveUploadedFileException extends ApiException
      */
     public function __construct(
         string $message,
-        int $code = IResponse::S500_INTERNAL_SERVER_ERROR,
+        int $code = IResponse::S500_InternalServerError,
         string $frontendCode = FrontendErrorMappings::E500_001__CANNOT_RECEIVE_FILE,
         $frontendErrorParams = null
     ) {

@@ -14,9 +14,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Instance
 {
-    use UpdateableEntity;
-    use DeleteableEntity;
-    use CreateableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
+    use CreatableEntity;
 
     /**
      * @ORM\Id
@@ -86,7 +86,7 @@ class Instance
         );
     }
 
-    public function hasValidLicence()
+    public function hasValidLicense()
     {
         return $this->needsLicence === false || $this->getValidLicences()->count() > 0;
     }
@@ -134,7 +134,7 @@ class Instance
         return $localizedRootGroup->getName();
     }
 
-    public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = null)
+    public static function createInstance(array $localizedTexts, bool $isOpen, ?User $admin = null)
     {
         $instance = new Instance();
         $instance->isOpen = $isOpen;

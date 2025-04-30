@@ -13,8 +13,8 @@ class OrderByCollationInjectionMysqlWalker extends SqlWalker
     /**
      * Name of the hint, which holds the actual collation.
      */
-    const HINT_COLLATION = 'orderByCollationInjectionMysqlWalker.collation';
-    const HINT_COLLATION_FORBIDDEN_COLUMNS = 'orderByCollationInjectionMysqlWalker.forbiddenCols';
+    public const HINT_COLLATION = 'orderByCollationInjectionMysqlWalker.collation';
+    public const HINT_COLLATION_FORBIDDEN_COLUMNS = 'orderByCollationInjectionMysqlWalker.forbiddenCols';
 
     private function isForbidden($orderByItemTokens)
     {

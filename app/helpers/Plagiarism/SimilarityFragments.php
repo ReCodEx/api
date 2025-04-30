@@ -6,7 +6,7 @@ use App\Exceptions\ParseException;
 use JsonSerializable;
 
 /**
- * Helper that handles validation and compression of similarity fragments structue.
+ * Helper that handles validation and compression of similarity fragments structure.
  * The structure holds an array of fragments, each fragment is a pair (array with 2 items)
  * of references (first one is tested file, second one is another file with detected similarities).
  * The reference is an object (encoded as associative array) with 'offset' and 'length' in human-friendly
@@ -53,7 +53,7 @@ class SimilarityFragments implements JsonSerializable
             );
         }
 
-        return [ 'o' => $offset, 'l' => $length ]; // compressed version
+        return ['o' => $offset, 'l' => $length]; // compressed version
     }
 
     /**

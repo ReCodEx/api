@@ -1,8 +1,8 @@
 %define name recodex-core
 %define short_name api
 %define install_dir /opt/%{name}
-%define version 2.15.0
-%define unmangled_version e5f2db258979c6136d734a25ec0f361ad0859a10
+%define version 2.16.1
+%define unmangled_version 9f2e984f03086c228016bc7e420bfa23d8c7e8b9
 %define release 1
 
 Summary: ReCodEx core API component

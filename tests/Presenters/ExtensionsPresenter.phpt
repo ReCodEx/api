@@ -72,9 +72,9 @@ class TestExtensionsPresenter extends Tester\TestCase
             'caption' => $caption,
             'url' => $url,
             'urlTokenExpiration' => 42,
-            'token' => [ 'expiration' => 54321, 'scopes' => $scopes, 'user' => $user ],
+            'token' => ['expiration' => 54321, 'scopes' => $scopes, 'user' => $user],
             'instances' => $instances,
-            'user' => [ 'roles' => $roles, 'externalLogins' => $externalLogins ],
+            'user' => ['roles' => $roles, 'externalLogins' => $externalLogins],
         ];
 
         $this->presenter->extensions = new Extensions($this->extensionsConfig);
@@ -116,7 +116,7 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
 
-        $this->injectExtension('test', 'Test', 'https://test.example.com/{token}/{locale}', [], null, [ $instanceId ]);
+        $this->injectExtension('test', 'Test', 'https://test.example.com/{token}/{locale}', [], null, [$instanceId]);
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -197,7 +197,7 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
 
-        $this->injectExtension('test', 'Test', 'https://', [], null, [], [ 'supervisor' ]);
+        $this->injectExtension('test', 'Test', 'https://', [], null, [], ['supervisor']);
 
         Assert::exception(
             function () use ($instanceId) {
@@ -242,10 +242,11 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
         PresenterTestHelper::login($this->container, "submitUser1@example.com", [TokenScope::EXTENSIONS], 42, [
-            "instance" => $instanceId, "extension" => "test"
+            "instance" => $instanceId,
+            "extension" => "test"
         ]);
 
-        $this->injectExtension('test', 'Test', 'https://', [ TokenScope::USERS ]);
+        $this->injectExtension('test', 'Test', 'https://', [TokenScope::USERS]);
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -268,10 +269,11 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
         PresenterTestHelper::login($this->container, "submitUser1@example.com", [TokenScope::EXTENSIONS], 42, [
-            "instance" => $instanceId, "extension" => "test"
+            "instance" => $instanceId,
+            "extension" => "test"
         ]);
 
-        $this->injectExtension('test', 'Test', 'https://', [ TokenScope::USERS ], $admin->getId());
+        $this->injectExtension('test', 'Test', 'https://', [TokenScope::USERS], $admin->getId());
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -293,7 +295,8 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
         PresenterTestHelper::login($this->container, "submitUser1@example.com", [TokenScope::MASTER], 42, [
-            "instance" => $instanceId, "extension" => "test"
+            "instance" => $instanceId,
+            "extension" => "test"
         ]);
 
         $this->injectExtension('test', 'Test', 'https://');
@@ -326,7 +329,7 @@ class TestExtensionsPresenter extends Tester\TestCase
                     ['action' => 'token', 'extId' => 'test']
                 );
             },
-            App\Exceptions\InvalidArgumentException::class
+            InvalidArgumentException::class
         );
     }
 
@@ -335,7 +338,8 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
         PresenterTestHelper::login($this->container, "submitUser1@example.com", [TokenScope::EXTENSIONS], 42, [
-            "instance" => $instanceId, "extension" => "ext1"
+            "instance" => $instanceId,
+            "extension" => "ext1"
         ]);
 
         $this->injectExtension('test', 'Test', 'https://');
@@ -358,7 +362,8 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
         PresenterTestHelper::login($this->container, "submitUser1@example.com", [TokenScope::EXTENSIONS], 42, [
-            "instance" => '', "extension" => "test"
+            "instance" => '',
+            "extension" => "test"
         ]);
 
         $this->injectExtension('test', 'Test', 'https://');
@@ -381,7 +386,8 @@ class TestExtensionsPresenter extends Tester\TestCase
         $currentUser = PresenterTestHelper::getUser($this->container, "submitUser1@example.com");
         $instanceId = $currentUser->getInstances()->first()->getId();
         PresenterTestHelper::login($this->container, "submitUser1@example.com", [TokenScope::EXTENSIONS], 42, [
-            "instance" => $instanceId, "extension" => "test"
+            "instance" => $instanceId,
+            "extension" => "test"
         ]);
 
         Assert::exception(

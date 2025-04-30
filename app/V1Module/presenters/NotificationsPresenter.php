@@ -5,18 +5,12 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
-use App\Helpers\MetaFormats\Type;
 use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Localizations;
 use App\Model\Entity\LocalizedNotification;
@@ -119,7 +113,7 @@ class NotificationsPresenter extends BasePresenter
      * @POST
      * @throws NotFoundException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("groupsIds", new VArray(), "Identification of groups")]
     #[Post("visibleFrom", new VTimestamp(), "Date from which is notification visible")]
@@ -140,7 +134,7 @@ class NotificationsPresenter extends BasePresenter
      * @param Notification $notification
      * @throws ForbiddenRequestException
      * @throws NotFoundException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     private function updateNotification(Notification $notification)
     {
@@ -167,7 +161,7 @@ class NotificationsPresenter extends BasePresenter
         $type = $req->getPost("type");
 
         if (!$this->roles->validateRole($role)) {
-            throw new InvalidArgumentException("role", "Unknown role");
+            throw new InvalidApiArgumentException('role', "Unknown role '$role'");
         }
 
         $notification->setVisibleFrom(DateTime::createFromFormat('U', $visibleFromTimestamp));
@@ -182,7 +176,7 @@ class NotificationsPresenter extends BasePresenter
     /**
      * Helper function which takes care of localized notification texts
      * @param Notification $notification
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     private function updateNotificationLocalizations(Notification $notification)
     {
@@ -192,18 +186,18 @@ class NotificationsPresenter extends BasePresenter
 
         // localized texts cannot be empty
         if (count($localizedTexts) == 0) {
-            throw new InvalidArgumentException("localizedTexts", "No entry for localized texts given.");
+            throw new InvalidApiArgumentException('localizedTexts', "No entry for localized texts given.");
         }
 
         // go through given localizations and construct database entities
         foreach ($localizedTexts as $localization) {
             if (!array_key_exists("locale", $localization) || !array_key_exists("text", $localization)) {
-                throw new InvalidArgumentException("Malformed localized text entry");
+                throw new InvalidApiArgumentException('localizedTexts', "Malformed localized text entry");
             }
 
             $lang = $localization["locale"];
             if (array_key_exists($lang, $localizations)) {
-                throw new InvalidArgumentException("Duplicate entry for language $lang");
+                throw new InvalidApiArgumentException('lang', "Duplicate entry for language $lang");
             }
 
             $localization["text"] = $localization["text"] ?? "";
@@ -231,7 +225,7 @@ class NotificationsPresenter extends BasePresenter
      * @POST
      * @throws NotFoundException
      * @throws ForbiddenRequestException
-     * @throws InvalidArgumentException
+     * @throws InvalidApiArgumentException
      */
     #[Post("groupsIds", new VArray(), "Identification of groups")]
     #[Post("visibleFrom", new VTimestamp(), "Date from which is notification visible")]
@@ -239,7 +233,7 @@ class NotificationsPresenter extends BasePresenter
     #[Post("role", new VString(1), "Users with this role and its children can see notification")]
     #[Post("type", new VString(), "Type of the notification (custom)")]
     #[Post("localizedTexts", new VArray(), "Text of notification")]
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), required: true)]
     public function actionUpdate(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);
@@ -261,7 +255,7 @@ class NotificationsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("id", new VString(), required: true)]
+    #[Path("id", new VUuid(), required: true)]
     public function actionRemove(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);

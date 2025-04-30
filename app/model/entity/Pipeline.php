@@ -2,7 +2,7 @@
 
 namespace App\Model\Entity;
 
-use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Helpers\ExerciseConfig\Pipeline as ExerciseConfigPipeline;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,9 +17,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Pipeline
 {
-    use CreateableEntity;
-    use UpdateableEntity;
-    use DeleteableEntity;
+    use CreatableEntity;
+    use UpdatableEntity;
+    use DeletableEntity;
     use VersionableEntity;
 
     /**
@@ -135,7 +135,7 @@ class Pipeline
         Collection $supplementaryEvaluationFiles,
         ?User $author = null,
         ?Pipeline $createdFrom = null,
-        Collection $runtimeEnvironments = null
+        ?Collection $runtimeEnvironments = null
     ) {
         $this->createdAt = new DateTime();
         $this->updatedAt = new DateTime();
@@ -211,7 +211,7 @@ class Pipeline
 
     /**
      * Set completely new associations with runtime environments.
-     * @param RuntimeEnvironment[] $environments list of runtime environments to override current associatons
+     * @param RuntimeEnvironment[] $environments list of runtime environments to override current associations
      */
     public function setRuntimeEnvironments(array $environments): void
     {
@@ -265,7 +265,7 @@ class Pipeline
     {
         foreach ($parameters as $name => $value) {
             if (!array_key_exists($name, static::DEFAULT_PARAMETERS)) {
-                throw new InvalidArgumentException(sprintf("Unknown parameter %s", $name));
+                throw new InvalidApiArgumentException($name, "Unknown parameter");
             }
 
             if ($this->parameters->containsKey($name)) {
@@ -279,7 +279,7 @@ class Pipeline
                     if (is_string($default)) {
                         $parameter = new StringPipelineParameter($this, $name);
                     } else {
-                        throw new InvalidArgumentException(sprintf("Unsupported value type for parameter %s", $name));
+                        throw new InvalidApiArgumentException($name, "Unsupported value type");
                     }
                 }
 

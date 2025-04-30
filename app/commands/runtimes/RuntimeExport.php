@@ -4,7 +4,6 @@ namespace App\Console;
 
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\Pipelines;
-use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\Pipeline;
 use App\Helpers\FileStorageManager;
 use ZipArchive;
@@ -46,7 +45,7 @@ class RuntimeExport extends Command
         $this->setName(self::$defaultName)->setDescription(
             'Export runtime environment and its pipelines into a ZIP package.'
         )->addArgument('runtime', InputArgument::REQUIRED, 'ID of the runtime environment to be exported.')
-        ->addArgument('saveAs', InputArgument::REQUIRED, 'Path to the output ZIP archive.');
+            ->addArgument('saveAs', InputArgument::REQUIRED, 'Path to the output ZIP archive.');
     }
 
     protected static function preprocessPipeline(Pipeline $pipeline)
@@ -125,7 +124,7 @@ class RuntimeExport extends Command
                 self::addJsonFile($zip, $pipeline->getId() . ".json", $config);
             }
 
-            // Add suplementary pipeline files
+            // Add supplementary pipeline files
             foreach ($pipelines as $pipeline) {
                 $files = $pipeline->getSupplementaryEvaluationFiles()->getValues();
                 foreach ($files as $supFile) {

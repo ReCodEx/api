@@ -16,7 +16,7 @@ class LdapConnectException extends ApiException
     {
         parent::__construct(
             'Cannot connect to LDAP server. Please check your configuration.',
-            IResponse::S500_INTERNAL_SERVER_ERROR,
+            IResponse::S500_InternalServerError,
             FrontendErrorMappings::E500_002__LDAP_CONNECTION
         );
     }

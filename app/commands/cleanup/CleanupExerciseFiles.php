@@ -52,7 +52,8 @@ class CleanupExercisesFiles extends Command
     protected function configure()
     {
         $this->setName('db:cleanup:exercise-files')
-            ->setDescription('Remove unused supplementary and attachment files (only DB records are removed in case of supplementary files).');
+            ->setDescription('Remove unused supplementary and attachment files "
+                . "(only DB records are removed in case of supplementary files).');
     }
 
     private function removeUnusedSupplementaryFiles(OutputInterface $output)
