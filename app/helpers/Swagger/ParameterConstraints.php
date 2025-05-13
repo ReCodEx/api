@@ -16,7 +16,7 @@ class ParameterConstraints
      */
     public function __construct(?string $pattern = null, ?int $minLength = null, ?int $maxLength = null)
     {
-        # swagger patterns must not contain the bounding '/.../' slashes
+        // swagger patterns must not contain the bounding '/.../' slashes
         if ($pattern != null && strlen($pattern) >= 2) {
             $pattern = substr($pattern, 1, -1);
         }

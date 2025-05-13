@@ -83,19 +83,15 @@ class AnnotationData
         foreach ($this->bodyParams as $bodyParam) {
             $body->addValue($bodyParam->toPropertyAnnotation());
             if ($bodyParam->required) {
-                $required[] = $bodyParam->name;
+                // add quotes around the names (required by the swagger generator)
+                $required[] = '"' . $bodyParam->name . '"';
             }
         }
 
         // add a list of required properties
         if (count($required) > 0) {
             // stringify the list (it has to be in '{"name1","name1",...}' format)
-            $requiredString = "{";
-            foreach ($required as $name) {
-                $requiredString .= "\"$name\",";
-            }
-            $requiredString .= "}";
-
+            $requiredString = "{" . implode(",", $required) . "}";
             $body->addValue("required=" . $requiredString);
         }
 
