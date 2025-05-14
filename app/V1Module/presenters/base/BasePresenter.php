@@ -12,6 +12,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongHttpMethodException;
 use App\Exceptions\NotImplementedException;
 use App\Exceptions\InternalServerException;
+use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\FrontendErrorMappings;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
@@ -219,6 +220,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     /**
      * Processes loose parameters. Request parameters are validated, no new data is created.
+     * @throws InvalidApiArgumentException Thrown when the request parameter values do not conform to the definition.
      * @param array $paramData Parameter data to be validated.
      */
     private function processParamsLoose(array $paramData)
@@ -240,7 +242,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
      *  from here instead of the request object. Format validation ignores parameter type (path, query or post).
      *  A top-level format will be created if null.
      * @throws InternalServerException Thrown when the format definition is corrupted/absent.
-     * @throws BadRequestException Thrown when the request parameter values do not conform to the definition.
+     * @throws BadRequestException Thrown when the request parameter values do not meet the structural constraints.
+     * @throws InvalidApiArgumentException Thrown when the request parameter values do not conform to the definition.
      * @return MetaFormat Returns a format instance with values filled from the request object.
      */
     private function processParamsFormat(string $format, ?array $valueDictionary): MetaFormat
