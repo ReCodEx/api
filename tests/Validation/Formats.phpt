@@ -186,7 +186,7 @@ class TestFormats extends Tester\TestCase
         }
     }
 
-    public function testIndividualParamValidation()
+    public function testIndividualParamValidationPermissive()
     {
         self::injectFormat(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
@@ -196,6 +196,15 @@ class TestFormats extends Tester\TestCase
         $format->checkedAssign("query", 1);
         $format->checkedAssign("path", "1");
         $format->checkedAssign("path", 1);
+
+        // make sure that the above assignments did not throw
+        Assert::true(true);
+    }
+
+    public function testIndividualParamValidationStrict()
+    {
+        self::injectFormat(ValidationTestFormat::class);
+        $format = new ValidationTestFormat();
 
         // post parameters have strict validation, assigning a string will throw
         $format->checkedAssign("post", 1);
@@ -210,6 +219,12 @@ class TestFormats extends Tester\TestCase
             },
             InvalidApiArgumentException::class
         );
+    }
+
+    public function testIndividualParamValidationNullable()
+    {
+        self::injectFormat(ValidationTestFormat::class);
+        $format = new ValidationTestFormat();
 
         // null cannot be assigned unless the parameter is nullable or not required
         $format->checkedAssign("queryOptional", null);
@@ -231,6 +246,7 @@ class TestFormats extends Tester\TestCase
         self::injectFormat(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
 
+        // assign valid values and validate
         $format->checkedAssign("query", 1);
         $format->checkedAssign("path", 1);
         $format->checkedAssign("post", 1);
@@ -285,6 +301,7 @@ class TestFormats extends Tester\TestCase
         Assert::false($nested->validateStructure());
         Assert::false($parent->validateStructure());
 
+        // invalid structure should throw during validation
         Assert::throws(
             function () use ($nested) {
                 $nested->validate();
