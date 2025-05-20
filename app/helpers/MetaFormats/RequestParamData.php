@@ -112,9 +112,11 @@ class RequestParamData
 
         // determine swagger type
         $nestedArraySwaggerType = null;
+        $arrayDepth = null;
         $swaggerType = $this->validators[0]::SWAGGER_TYPE;
-        // extract array element type
+        // extract array depth and element type
         if ($this->validators[0] instanceof VArray) {
+            $arrayDepth = $this->validators[0]->getArrayDepth();
             $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
         }
 
@@ -150,6 +152,7 @@ class RequestParamData
             $this->nullable,
             $exampleValue,
             $nestedArraySwaggerType,
+            $arrayDepth,
             $nestedObjectParameterData,
             $constraints,
         );

@@ -18,6 +18,7 @@ class AnnotationParameterData
     public bool $nullable;
     public ?string $example;
     public ?string $nestedArraySwaggerType;
+    public ?int $arrayDepth;
     public ?array $nestedObjectParameterData;
     public ?ParameterConstraints $constraints;
 
@@ -30,6 +31,7 @@ class AnnotationParameterData
         bool $nullable,
         ?string $example = null,
         ?string $nestedArraySwaggerType = null,
+        ?int $arrayDepth = null,
         ?array $nestedObjectParameterData = null,
         ?ParameterConstraints $constraints = null,
     ) {
@@ -41,30 +43,54 @@ class AnnotationParameterData
         $this->nullable = $nullable;
         $this->example = $example;
         $this->nestedArraySwaggerType = $nestedArraySwaggerType;
+        $this->arrayDepth = $arrayDepth;
         $this->nestedObjectParameterData = $nestedObjectParameterData;
         $this->constraints = $constraints;
     }
 
     private function addArrayItemsIfArray(ParenthesesBuilder $container)
     {
-        ///TODO: nested constraints should be added here
         if ($this->swaggerType !== "array") {
             return;
         }
 
         $itemsHead = "@OA\\Items";
-        $items = new ParenthesesBuilder();
+        $layers = [];
+        for ($i = 0; $i < $this->arrayDepth; $i++) {
+            $items = new ParenthesesBuilder();
 
-        if ($this->nestedArraySwaggerType !== null) {
-            $items->addKeyValue("type", $this->nestedArraySwaggerType);
+            // add array time for all nested arrays
+            if ($i < $this->arrayDepth - 1) {
+                $items->addKeyValue("type", "array");
+                // handle bottommost elements
+            } else {
+                // add element type if present
+                if ($this->nestedArraySwaggerType !== null) {
+                    $items->addKeyValue("type", $this->nestedArraySwaggerType);
+                }
+
+                // add example value
+                if ($this->example != null) {
+                    $items->addKeyValue("example", $this->example);
+                }
+
+                // add constraints
+                $this->constraints?->addConstraints($items);
+            }
+
+            $layers[] = $items;
         }
 
-        // add example value
-        if ($this->example != null) {
-            $items->addKeyValue("example", $this->example);
+        // serialize the layers from the bottom up
+        $layers = array_reverse($layers);
+        $serialized_layer = $itemsHead . $layers[0]->toString();
+        for ($i = 1; $i < $this->arrayDepth; $i++) {
+            $layer = $layers[$i];
+            $layer->addValue($serialized_layer);
+            $serialized_layer = $itemsHead . $layer->toString();
         }
 
-        $container->addValue($itemsHead . $items->toString());
+        $container->addValue($serialized_layer);
     }
 
     private function addObjectParamsIfObject(ParenthesesBuilder $container)
@@ -133,8 +159,10 @@ class AnnotationParameterData
             $body->addKeyValue("description", $this->description);
         }
 
-        // handle param constraints
-        $this->constraints?->addConstraints($body);
+        // handle param constraints (array constrains have to be added to the element, not the array)
+        if ($this->swaggerType !== "array") {
+            $this->constraints?->addConstraints($body);
+        }
 
         // handle arrays
         $this->addArrayItemsIfArray($body);

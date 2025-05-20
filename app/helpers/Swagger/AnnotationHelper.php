@@ -163,6 +163,11 @@ class AnnotationHelper
 
                 // the array element type cannot be determined from standard @param annotations
                 $nestedArraySwaggerType = null;
+                // the actual depth of the array cannot be determined as well
+                $arrayDepth = null;
+                if ($swaggerType == "array") {
+                    $arrayDepth = 1;
+                }
 
                 $descriptor = new AnnotationParameterData(
                     $swaggerType,
@@ -172,6 +177,7 @@ class AnnotationHelper
                     $isPathParam,
                     $nullable,
                     nestedArraySwaggerType: $nestedArraySwaggerType,
+                    arrayDepth: $arrayDepth,
                 );
                 $params[] = $descriptor;
             }
