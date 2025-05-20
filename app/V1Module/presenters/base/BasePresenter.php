@@ -27,6 +27,7 @@ use App\Helpers\MetaFormats\Type;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
+use Nette\Application\Request;
 use Nette\Http\IResponse;
 use Tracy\ILogger;
 use ReflectionClass;
@@ -129,7 +130,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
         $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
 
         Validators::init();
-        $this->processParams($actionReflection);
+        $this->processParams($this->getRequest(), $actionReflection);
     }
 
     protected function isRequestJson(): bool
@@ -205,29 +206,30 @@ class BasePresenter extends \App\Presenters\BasePresenter
         return $this->requestFormatInstance;
     }
 
-    private function processParams(ReflectionMethod $reflection)
+    private function processParams(Request $request, ReflectionMethod $reflection)
     {
         // use a method specialized for formats if there is a format available
         $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
         if ($format !== null) {
-            $this->requestFormatInstance = $this->processParamsFormat($format, null);
+            $this->requestFormatInstance = $this->processParamsFormat($request, $format, null);
         }
 
         // handle loose parameters
         $paramData = MetaFormatHelper::extractRequestParamData($reflection);
-        $this->processParamsLoose($paramData);
+        $this->processParamsLoose($request, $paramData);
     }
 
     /**
      * Processes loose parameters. Request parameters are validated, no new data is created.
      * @throws InvalidApiArgumentException Thrown when the request parameter values do not conform to the definition.
+     * @param Request $request Request object holding the request data.
      * @param array $paramData Parameter data to be validated.
      */
-    private function processParamsLoose(array $paramData)
+    private function processParamsLoose(Request $request, array $paramData)
     {
         // validate each param
         foreach ($paramData as $param) {
-            $paramValue = $this->getValueFromParamData($param);
+            $paramValue = $this->getValueFromParamData($request, $param);
 
             // this throws when it does not conform
             $param->conformsToDefinition($paramValue);
@@ -237,6 +239,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     /**
      * Processes parameters defined by a format. Request parameters are validated and a format instance with
      *  parameter values created.
+     * @param Request $request Request object holding the request data.
      * @param string $format The format defining the parameters.
      * @param ?array $valueDictionary If not null, a nested format instance will be created. The values will be taken
      *  from here instead of the request object. Format validation ignores parameter type (path, query or post).
@@ -246,7 +249,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
      * @throws InvalidApiArgumentException Thrown when the request parameter values do not conform to the definition.
      * @return MetaFormat Returns a format instance with values filled from the request object.
      */
-    private function processParamsFormat(string $format, ?array $valueDictionary): MetaFormat
+    private function processParamsFormat(Request $request, string $format, ?array $valueDictionary): MetaFormat
     {
         // get the parsed attribute data from the format fields
         $formatToFieldDefinitionsMap = FormatCache::getFormatToFieldDefinitionsMap();
@@ -262,7 +265,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             $value = null;
             // top-level format
             if ($valueDictionary === null) {
-                $value = $this->getValueFromParamData($requestParamData);
+                $value = $this->getValueFromParamData($request, $requestParamData);
                 // nested format
             } else {
                 // Instead of retrieving the values with the getRequest call, use the provided $valueDictionary.
@@ -278,7 +281,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             // replace the value dictionary stored in $value with a format instance
             $nestedFormatName = $requestParamData->getFormatName();
             if ($nestedFormatName !== null) {
-                $value = $this->processParamsFormat($nestedFormatName, $value);
+                $value = $this->processParamsFormat($request, $nestedFormatName, $value);
             }
 
             // this throws if the value is invalid
@@ -295,37 +298,37 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     /**
      * Calls either getPostField, getQueryField or getPathField based on the provided metadata.
+     * @param Request $request Request object holding the request data.
      * @param \App\Helpers\MetaFormats\RequestParamData $paramData Metadata of the request parameter.
      * @throws \App\Exceptions\InternalServerException Thrown when an unexpected parameter location was set.
      * @return mixed Returns the value from the request.
      */
-    private function getValueFromParamData(RequestParamData $paramData): mixed
+    private function getValueFromParamData(Request $request, RequestParamData $paramData): mixed
     {
         switch ($paramData->type) {
             case Type::Post:
-                return $this->getPostField($paramData->name, required: $paramData->required);
+                return $this->getPostField($request, $paramData->name, required: $paramData->required);
             case Type::Query:
-                return $this->getQueryField($paramData->name, required: $paramData->required);
+                return $this->getQueryField($request, $paramData->name, required: $paramData->required);
             case Type::Path:
-                return $this->getPathField($paramData->name);
+                return $this->getPathField($request, $paramData->name);
             default:
                 throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
         }
     }
 
-    private function getPostField($param, $required = true)
+    private function getPostField(Request $request, $param, $required = true)
     {
-        $req = $this->getRequest();
-        $post = $req->getPost();
+        $post = $request->getPost();
 
-        if ($req->isMethod("POST")) {
+        if ($request->isMethod("POST")) {
             // nothing to see here...
         } else {
-            if ($req->isMethod("PUT") || $req->isMethod("DELETE")) {
+            if ($request->isMethod("PUT") || $request->isMethod("DELETE")) {
                 parse_str(file_get_contents('php://input'), $post);
             } else {
                 throw new WrongHttpMethodException(
-                    "Cannot get the post parameters in method '" . $req->getMethod() . "'."
+                    "Cannot get the post parameters in method '" . $request->getMethod() . "'."
                 );
             }
         }
@@ -341,18 +344,18 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
     }
 
-    private function getQueryField($param, $required = true)
+    private function getQueryField(Request $request, $param, $required = true)
     {
-        $value = $this->getRequest()->getParameter($param);
+        $value = $request->getParameter($param);
         if ($value === null && $required) {
             throw new BadRequestException("Missing required query field $param");
         }
         return $value;
     }
 
-    private function getPathField($param)
+    private function getPathField(Request $request, $param)
     {
-        $value = $this->getParameter($param);
+        $value = $request->getParameter($param);
         if ($value === null) {
             throw new BadRequestException("Missing required path field $param");
         }

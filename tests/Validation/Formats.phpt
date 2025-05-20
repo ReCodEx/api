@@ -3,6 +3,7 @@
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidApiArgumentException;
+use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\Attributes\FPath;
 use App\Helpers\MetaFormats\Attributes\FPost;
 use App\Helpers\MetaFormats\Attributes\FQuery;
@@ -61,6 +62,33 @@ class ValidationTestFormat extends MetaFormat
     }
 }
 
+#[Format(ParentFormat::class)]
+class ParentFormat extends MetaFormat
+{
+    #[FQuery(new VInt(), required: true, nullable: false)]
+    public ?int $field;
+
+    #[FPost(new VObject(NestedFormat::class), required: true, nullable: false)]
+    public NestedFormat $nested;
+
+    public function validateStructure()
+    {
+        return $this->field == 1;
+    }
+}
+
+#[Format(NestedFormat::class)]
+class NestedFormat extends MetaFormat
+{
+    #[FQuery(new VInt(), required: true, nullable: false)]
+    public ?int $field;
+
+    public function validateStructure()
+    {
+        return $this->field == 2;
+    }
+}
+
 /**
  * @testCase
  */
@@ -75,7 +103,7 @@ class TestFormats extends Tester\TestCase
         $this->container = $container;
     }
 
-    private function injectFormat(string $format)
+    private static function injectFormat(string $format)
     {
         // initialize the cache
         FormatCache::getFormatToFieldDefinitionsMap();
@@ -158,7 +186,7 @@ class TestFormats extends Tester\TestCase
         }
     }
 
-    public function testIndividualParamValidation()
+    public function testIndividualParamValidationPermissive()
     {
         self::injectFormat(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
@@ -168,6 +196,15 @@ class TestFormats extends Tester\TestCase
         $format->checkedAssign("query", 1);
         $format->checkedAssign("path", "1");
         $format->checkedAssign("path", 1);
+
+        // make sure that the above assignments did not throw
+        Assert::true(true);
+    }
+
+    public function testIndividualParamValidationStrict()
+    {
+        self::injectFormat(ValidationTestFormat::class);
+        $format = new ValidationTestFormat();
 
         // post parameters have strict validation, assigning a string will throw
         $format->checkedAssign("post", 1);
@@ -182,6 +219,12 @@ class TestFormats extends Tester\TestCase
             },
             InvalidApiArgumentException::class
         );
+    }
+
+    public function testIndividualParamValidationNullable()
+    {
+        self::injectFormat(ValidationTestFormat::class);
+        $format = new ValidationTestFormat();
 
         // null cannot be assigned unless the parameter is nullable or not required
         $format->checkedAssign("queryOptional", null);
@@ -203,6 +246,7 @@ class TestFormats extends Tester\TestCase
         self::injectFormat(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
 
+        // assign valid values and validate
         $format->checkedAssign("query", 1);
         $format->checkedAssign("path", 1);
         $format->checkedAssign("post", 1);
@@ -227,6 +271,7 @@ class TestFormats extends Tester\TestCase
         // assign valid values to all fields, but fail the structural constraint of $query == 1
         $format->checkedAssign("path", 1);
         $format->checkedAssign("query", 2);
+        Assert::false($format->validateStructure());
         Assert::throws(
             function () use ($format) {
                 try {
@@ -240,7 +285,48 @@ class TestFormats extends Tester\TestCase
         );
     }
 
-    ///TODO: nested formats, loose format
+    public function testNestedFormat()
+    {
+        self::injectFormat(NestedFormat::class);
+        self::injectFormat(ParentFormat::class);
+        $nested = new NestedFormat();
+        $parent = new ParentFormat();
+
+        // assign valid values that do not pass structural validation
+        // (both fields need to be 1 to pass)
+        $nested->checkedAssign("field", 0);
+        $parent->checkedAssign("field", 0);
+        $parent->checkedAssign("nested", $nested);
+
+        Assert::false($nested->validateStructure());
+        Assert::false($parent->validateStructure());
+
+        // invalid structure should throw during validation
+        Assert::throws(
+            function () use ($nested) {
+                $nested->validate();
+            },
+            BadRequestException::class
+        );
+        Assert::throws(
+            function () use ($parent) {
+                $parent->validate();
+            },
+            BadRequestException::class
+        );
+
+        // fix the structural constain in the parent
+        $parent->checkedAssign("field", 1);
+        Assert::true($parent->validateStructure());
+
+        // make sure that the structural error in the nested format propagates to the parent
+        Assert::throws(
+            function () use ($parent) {
+                $parent->validate();
+            },
+            BadRequestException::class
+        );
+    }
 }
 
 (new TestFormats())->run();
