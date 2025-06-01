@@ -2,6 +2,8 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
+use App\Helpers\Swagger\ParameterConstraints;
+
 /**
  * Validates arrays and their nested elements.
  */
@@ -33,15 +35,43 @@ class VArray extends BaseValidator
     }
 
     /**
-     * @return string|null Returns the element swagger type. Can be null if the element validator is not set.
+     * @return string|null Returns the bottommost element swagger type. Can be null if the element validator is not set.
      */
     public function getElementSwaggerType(): mixed
     {
+        // return null if the element type is unspecified
         if ($this->nestedValidator === null) {
             return null;
         }
 
+        // traverse the VArray chain to get the final element type
+        if ($this->nestedValidator instanceof VArray) {
+            return $this->nestedValidator->getElementSwaggerType();
+        }
+
         return $this->nestedValidator::SWAGGER_TYPE;
+    }
+
+    /**
+     * @return int Returns the defined depth of the array.
+     *  1 for arrays containing the final elements, 2 for arrays of arrays etc.
+     */
+    public function getArrayDepth(): int
+    {
+        if ($this->nestedValidator instanceof VArray) {
+            return $this->nestedValidator->getArrayDepth() + 1;
+        }
+
+        return 1;
+    }
+
+    /**
+     * @return ParameterConstraints Returns all parameter constrains of the bottommost element type that will be
+     *  written into the generated swagger document. Returns null if there are no constraints.
+     */
+    public function getConstraints(): ?ParameterConstraints
+    {
+        return $this->nestedValidator?->getConstraints();
     }
 
     /**

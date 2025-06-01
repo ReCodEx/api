@@ -2,6 +2,8 @@
 
 namespace App\Helpers\MetaFormats\Validators;
 
+use App\Helpers\Swagger\ParameterConstraints;
+
 /**
  * Validates strings.
  */
@@ -30,6 +32,14 @@ class VString extends BaseValidator
     public function getExampleValue(): string
     {
         return "text";
+    }
+
+    public function getConstraints(): ParameterConstraints
+    {
+        // do not pass redundant constraints
+        $minLength = ($this->minLength > 0 ? $this->minLength : null);
+        $maxLength = ($this->maxLength !== -1 ? $this->maxLength : null);
+        return new ParameterConstraints($this->regex, $minLength, $maxLength);
     }
 
     public function validate(mixed $value): bool

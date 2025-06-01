@@ -199,7 +199,7 @@ class LoginPresenter extends BasePresenter
 
     /**
      * Refresh the access token of current user
-     * @GET
+     * @POST
      * @LoggedIn
      * @throws ForbiddenRequestException
      */

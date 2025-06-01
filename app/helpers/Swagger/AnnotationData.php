@@ -13,8 +13,17 @@ class AnnotationData
 
     public string $className;
     public string $methodName;
+    /**
+     * @var AnnotationParameterData[]
+     */
     public array $pathParams;
+    /**
+     * @var AnnotationParameterData[]
+     */
     public array $queryParams;
+    /**
+     * @var AnnotationParameterData[]
+     */
     public array $bodyParams;
     public ?string $endpointDescription;
 
@@ -68,9 +77,22 @@ class AnnotationData
         // only json is supported due to the media type
         $head = '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema';
         $body = new ParenthesesBuilder();
+        // list of all required properties
+        $required = [];
 
         foreach ($this->bodyParams as $bodyParam) {
             $body->addValue($bodyParam->toPropertyAnnotation());
+            if ($bodyParam->required) {
+                // add quotes around the names (required by the swagger generator)
+                $required[] = '"' . $bodyParam->name . '"';
+            }
+        }
+
+        // add a list of required properties
+        if (count($required) > 0) {
+            // stringify the list (it has to be in '{"name1","name1",...}' format)
+            $requiredString = "{" . implode(",", $required) . "}";
+            $body->addValue("required=" . $requiredString);
         }
 
         return $head . $body->toString() . "))";
@@ -85,8 +107,8 @@ class AnnotationData
     {
         // remove the namespace prefix of the class and make the first letter lowercase
         $className = lcfirst(Utils::shortenClass($this->className));
-        // remove the 'action' prefix
-        $endpoint = substr($this->methodName, strlen("action"));
+        // make the 'a' in the action prefix uppercase to match the camel-case notation
+        $endpoint = ucfirst($this->methodName);
         return $className . $endpoint;
     }
 

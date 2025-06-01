@@ -112,14 +112,26 @@ class RequestParamData
 
         // determine swagger type
         $nestedArraySwaggerType = null;
+        $arrayDepth = null;
         $swaggerType = $this->validators[0]::SWAGGER_TYPE;
-        // extract array element type
+        // extract array depth and element type
         if ($this->validators[0] instanceof VArray) {
+            $arrayDepth = $this->validators[0]->getArrayDepth();
             $nestedArraySwaggerType = $this->validators[0]->getElementSwaggerType();
         }
 
         // get example value from the first validator
         $exampleValue = $this->validators[0]->getExampleValue();
+
+        // get constraints from validators
+        $constraints = null;
+        foreach ($this->validators as $validator) {
+            $constraints = $validator->getConstraints();
+            // it is assumed that at most one validator defines constraints
+            if ($constraints !== null) {
+                break;
+            }
+        }
 
         // add nested parameter data if this is an object
         $format = $this->getFormatName();
@@ -140,7 +152,9 @@ class RequestParamData
             $this->nullable,
             $exampleValue,
             $nestedArraySwaggerType,
+            $arrayDepth,
             $nestedObjectParameterData,
+            $constraints,
         );
     }
 }
