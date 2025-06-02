@@ -2,4 +2,4 @@
 
 ./bin/console swagger:annotate
 ./cleaner
-./bin/console swagger:generate
+./bin/console swagger:generate > docs/swagger.yaml
