@@ -27,7 +27,12 @@ use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
 use App\Helpers\MetaFormats\Attributes\Format;
+use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
+use App\Helpers\MetaFormats\Validators\VDouble;
+use App\Helpers\MetaFormats\Validators\VInt;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -446,5 +451,19 @@ class RegistrationPresenter extends BasePresenter
             ],
             IResponse::S201_Created
         );
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Path("a", new VUuid())]
+    #[Query("b", new VInt())]
+    #[Post("c", new VDouble())]
+    public function actionTest()
+    {
+        $this->sendSuccessResponse("OK");
     }
 }
