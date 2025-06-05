@@ -24,6 +24,7 @@ use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
+use App\Helpers\Mocks\MockHelper;
 use App\V1Module\Presenters\BasePresenter;
 use Nette\Application\Request;
 use Tester\Assert;
@@ -55,17 +56,20 @@ class TestPresenter extends BasePresenter
     #[Path("path", new VInt())]
     public function actionTestLoose()
     {
+        $this->sendSuccessResponse("OK");
     }
 
     #[Format(PresenterTestFormat::class)]
     public function actionTestFormat()
     {
+        $this->sendSuccessResponse("OK");
     }
 
     #[Format(PresenterTestFormat::class)]
     #[Post("loose", new VInt())]
     public function actionTestCombined()
     {
+        $this->sendSuccessResponse("OK");
     }
 }
 
@@ -106,44 +110,38 @@ class TestBasePresenter extends Tester\TestCase
         Assert::notNull(FormatCache::getFieldDefinitions($format), "Tests whether a format was injected successfully.");
     }
 
-    private static function getMethod(BasePresenter $presenter, string $methodName): ReflectionMethod
-    {
-        $presenterReflection = new ReflectionObject($presenter);
-        $methodReflection = $presenterReflection->getMethod($methodName);
-        $methodReflection->setAccessible(true);
-        return $methodReflection;
-    }
-
     public function testLooseValid()
     {
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestLoose");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
-        // create a request object and invoke the actionTestLoose method
-        $request = new Request("name", method: "POST", params: ["path" => "1", "query" => "1"], post: ["post" => 1]);
-        $processParams->invoke($presenter, $request, $action);
+        // create a request object
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testLoose", "path" => "1", "query" => "1"],
+            post: ["post" => 1]
+        );
 
-        // check that the previous row did not throw
-        Assert::true(true);
+        $response = $presenter->run($request);
+        Assert::equal("OK", $response->getPayload()["payload"]);
     }
 
     public function testLooseInvalid()
     {
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestLoose");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // set an invalid parameter value and assert that the validation fails
         $request = new Request(
             "name",
             method: "POST",
-            params: ["path" => "string", "query" => "1"],
+            params: ["action" => "testLoose", "path" => "string", "query" => "1"],
             post: ["post" => 1]
         );
         Assert::throws(
-            function () use ($processParams, $presenter, $request, $action) {
-                $processParams->invoke($presenter, $request, $action);
+            function () use ($presenter, $request) {
+                $presenter->run($request);
             },
             InvalidApiArgumentException::class
         );
