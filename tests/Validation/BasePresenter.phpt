@@ -1,7 +1,6 @@
 <?php
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\Attributes\FPath;
@@ -11,19 +10,9 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\FormatCache;
-use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\Validators\BaseValidator;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
-use App\Helpers\MetaFormats\Validators\VObject;
-use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Helpers\Mocks\MockHelper;
 use App\V1Module\Presenters\BasePresenter;
 use Nette\Application\Request;
@@ -151,12 +140,18 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestFormat");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a valid request object
-        $request = new Request("name", method: "POST", params: ["path" => "1", "query" => "1"], post: ["post" => 1]);
-        $processParams->invoke($presenter, $request, $action);
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testFormat", "path" => "1", "query" => "1"],
+            post: ["post" => 1]
+        );
+
+        $response = $presenter->run($request);
+        Assert::equal("OK", $response->getPayload()["payload"]);
         
         // the presenter should automatically create a valid format object
         /** @var PresenterTestFormat */
@@ -174,19 +169,18 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestFormat");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a request object with invalid fields
         $request = new Request(
             "name",
             method: "POST",
-            params: ["path" => "string", "query" => "1"],
+            params: ["action" => "testFormat", "path" => "string", "query" => "1"],
             post: ["post" => 1]
         );
         Assert::throws(
-            function () use ($processParams, $presenter, $request, $action) {
-                $processParams->invoke($presenter, $request, $action);
+            function () use ($presenter, $request) {
+                $presenter->run($request);
             },
             InvalidApiArgumentException::class
         );
@@ -196,14 +190,18 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestFormat");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a request object with invalid structure
-        $request = new Request("name", method: "POST", params: ["path" => "1", "query" => "0"], post: ["post" => 1]);
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testFormat", "path" => "1", "query" => "0"],
+            post: ["post" => 1]
+        );
         Assert::throws(
-            function () use ($processParams, $presenter, $request, $action) {
-                $processParams->invoke($presenter, $request, $action);
+            function () use ($presenter, $request) {
+                $presenter->run($request);
             },
             BadRequestException::class
         );
@@ -213,17 +211,17 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestCombined");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a valid request object
         $request = new Request(
             "name",
             method: "POST",
-            params: ["path" => "1", "query" => "1"],
+            params: ["action" => "testCombined", "path" => "1", "query" => "1"],
             post: ["post" => 1, "loose" => 1]
         );
-        $processParams->invoke($presenter, $request, $action);
+        $response = $presenter->run($request);
+        Assert::equal("OK", $response->getPayload()["payload"]);
 
         // the presenter should automatically create a valid format object
         /** @var PresenterTestFormat */
@@ -241,19 +239,18 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestCombined");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a request object with invalid fields
         $request = new Request(
             "name",
             method: "POST",
-            params: ["path" => "string", "query" => "1"],
+            params: ["action" => "testCombined", "path" => "string", "query" => "1"],
             post: ["post" => 1, "loose" => 1]
         );
         Assert::throws(
-            function () use ($processParams, $presenter, $request, $action) {
-                $processParams->invoke($presenter, $request, $action);
+            function () use ($presenter, $request) {
+                $presenter->run($request);
             },
             InvalidApiArgumentException::class
         );
@@ -263,19 +260,18 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestCombined");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a request object with invalid structure
         $request = new Request(
             "name",
             method: "POST",
-            params: ["path" => "1", "query" => "0"],
+            params: ["action" => "testCombined", "path" => "1", "query" => "0"],
             post: ["post" => 1, "loose" => 1]
         );
         Assert::throws(
-            function () use ($processParams, $presenter, $request, $action) {
-                $processParams->invoke($presenter, $request, $action);
+            function () use ($presenter, $request) {
+                $presenter->run($request);
             },
             BadRequestException::class
         );
@@ -285,19 +281,18 @@ class TestBasePresenter extends Tester\TestCase
     {
         self::injectFormat(PresenterTestFormat::class);
         $presenter = new TestPresenter();
-        $action = self::getMethod($presenter, "actionTestCombined");
-        $processParams = self::getMethod($presenter, "processParams");
+        MockHelper::initPresenter($presenter);
 
         // create a request object with an invalid loose parameter
         $request = new Request(
             "name",
             method: "POST",
-            params: ["path" => "1", "query" => "1"],
+            params: ["action" => "testCombined", "path" => "1", "query" => "1"],
             post: ["post" => 1, "loose" => "string"]
         );
         Assert::throws(
-            function () use ($processParams, $presenter, $request, $action) {
-                $processParams->invoke($presenter, $request, $action);
+            function () use ($presenter, $request) {
+                $presenter->run($request);
             },
             InvalidApiArgumentException::class
         );
