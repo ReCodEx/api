@@ -30,6 +30,7 @@ use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
+use App\Helpers\MetaFormats\FormatDefinitions\TestFormat;
 use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -459,10 +460,22 @@ class RegistrationPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
-    #[Path("a", new VUuid())]
-    #[Query("b", new VInt())]
+    #[Path("a", new VInt())]
+    #[Query("b", new VEmail())]
     #[Post("c", new VDouble())]
-    public function actionTest()
+    public function actionTestLoose()
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Format(TestFormat::class)]
+    public function actionTestFormat()
     {
         $this->sendSuccessResponse("OK");
     }

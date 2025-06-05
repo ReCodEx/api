@@ -35,7 +35,7 @@ class TestFormatPerformance extends Command
         $request = new Request(
             "name",
             method: "POST",
-            params: ["action" => "test", "a" => "497dcba3-ecbf-4587-a2dd-5eb0665e6880", "b" => "1"],
+            params: ["action" => "testLoose", "a" => "1", "b" => "a@a.a"],
             post: ["c" => 1.1]
         );
 
@@ -45,14 +45,14 @@ class TestFormatPerformance extends Command
             $output->writeln("The endpoint did not run correctly.");
             return Command::FAILURE;
         }
-        
+
         $startTime = microtime(true);
-        $iterations = 100_000;
+        $iterations = 1_000_000;
         for ($i = 0; $i < $iterations; $i++) {
             $response = $presenter->run($request);
         }
         $endTime = microtime(true);
-        
+
         $elapsed = $endTime - $startTime;
         $output->writeln($elapsed);
 
