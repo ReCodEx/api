@@ -116,6 +116,11 @@ class AnnotationParameterData
 
         $body->addKeyValue("type", $this->swaggerType);
         $body->addKeyValue("nullable", $this->nullable);
+
+        if ($this->swaggerType !== "array") {
+            $this->constraints?->addConstraints($body);
+        }
+
         $this->addArrayItemsIfArray($body);
 
         return $head . $body->toString();
