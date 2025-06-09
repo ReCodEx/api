@@ -86,7 +86,7 @@ class UserViewFactory
                 "isExternal" => $user->hasExternalAccounts(),
                 "isAllowed" => $user->isAllowed(),
                 "externalIds" => $this->getExternalIds($user, $reallyShowEverything),
-                "ipLock" => $user->isIpLocked(),
+                "ipLock" => $user->isIpLocked() ? $user->getIpLockRaw() : null,
                 "groupLock" => $user->getGroupLock()?->getId(),
                 "isGroupLockStrict" => $user->isGroupLockStrict(),
             ];
@@ -96,8 +96,6 @@ class UserViewFactory
                 $uiData = $user->getUiData();
                 $privateData["uiData"] = $uiData ? $uiData->getData() : null;
                 $privateData["settings"] = $user->getSettings();
-                // ipLock is replaced with actual IP address
-                $privateData["ipLock"] = $user->isIpLocked() ? $user->getIpLockRaw() : null;
                 $privateData["ipLockExpiration"] = $user->isIpLocked()
                     ? $user->getIpLockExpiration()?->getTimestamp() : null;
                 $privateData["groupLockExpiration"] = $user->isGroupLocked()

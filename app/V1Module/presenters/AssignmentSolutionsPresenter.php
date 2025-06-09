@@ -390,12 +390,12 @@ class AssignmentSolutionsPresenter extends BasePresenter
             $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($solution);
             if ($assignment) {
                 $best = $this->assignmentSolutions->findBestSolution($assignment, $author);
-                if ($best->getId() !== $oldBest->getId()) {
+                if (!$best || !$oldBest || $best->getId() !== $oldBest->getId()) {
                     // best solution has changed, we need to report this
-                    if ($best->getId() !== $id) {
+                    if ($best && $best->getId() !== $id) {
                         $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($best);
                     }
-                    if ($oldBest->getId() !== $id) {
+                    if ($oldBest && $oldBest->getId() !== $id) {
                         $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($oldBest);
                     }
                 }
@@ -498,7 +498,9 @@ class AssignmentSolutionsPresenter extends BasePresenter
 
         // finally flush all changed to the database
         $this->assignmentSolutions->flush();
-        $this->assignmentSolutions->refresh($oldBestSolution);
+        if ($oldBestSolution) {
+            $this->assignmentSolutions->refresh($oldBestSolution);
+        }
 
         // send notification email
         $notificationMethod = $flag . 'FlagChanged';
@@ -512,7 +514,6 @@ class AssignmentSolutionsPresenter extends BasePresenter
         }
 
         // assemble response (all entities and stats that may have changed)
-        $assignmentId = $solution->getAssignment()->getId();
         $groupOfSolution = $solution->getAssignment()->getGroup();
         if ($groupOfSolution === null) {
             throw new NotFoundException("Group for assignment '$id' was not found");
@@ -528,12 +529,16 @@ class AssignmentSolutionsPresenter extends BasePresenter
             $solution->getAssignment(),
             $solution->getSolution()->getAuthor()
         );
-        if ($oldBestSolution->getId() !== $bestSolution->getId()) {
+        if (!$oldBestSolution || !$bestSolution || $oldBestSolution->getId() !== $bestSolution->getId()) {
             // add old and current best solutions as well (since they have changed)
-            $resSolutions[$oldBestSolution->getId()] =
-                $this->assignmentSolutionViewFactory->getSolutionData($oldBestSolution);
-            $resSolutions[$bestSolution->getId()] =
-                $this->assignmentSolutionViewFactory->getSolutionData($bestSolution);
+            if ($oldBestSolution) {
+                $resSolutions[$oldBestSolution->getId()] =
+                    $this->assignmentSolutionViewFactory->getSolutionData($oldBestSolution);
+            }
+            if ($bestSolution) {
+                $resSolutions[$bestSolution->getId()] =
+                    $this->assignmentSolutionViewFactory->getSolutionData($bestSolution);
+            }
         }
 
         $this->sendSuccessResponse([
