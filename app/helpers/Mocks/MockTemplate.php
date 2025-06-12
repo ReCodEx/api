@@ -2,10 +2,7 @@
 
 namespace App\Helpers\Mocks;
 
-use Nette;
 use Nette\Application\UI\Template;
-use Nette\Application\UI\TemplateFactory;
-use Nette\Security\IIdentity;
 
 class MockTemplate implements Template
 {

@@ -65,7 +65,7 @@ class TestPresenter extends BasePresenter
 /**
  * @testCase
  */
-class TestBasePresenter extends Tester\TestCase
+class TestPresenter extends Tester\TestCase
 {
     /** @var  Nette\DI\Container */
     protected $container;
