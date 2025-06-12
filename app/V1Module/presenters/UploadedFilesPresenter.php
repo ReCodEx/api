@@ -264,6 +264,7 @@ class UploadedFilesPresenter extends BasePresenter
         // Remove UTF BOM prefix...
         $utf8bom = "\xef\xbb\xbf";
         $contents = Strings::replace($contents, "~^$utf8bom~");
+        $contents = str_replace("\r\n", "\n", $contents); // normalize line endings
 
         $fixedContents = @mb_convert_encoding($contents, 'UTF-8', 'UTF-8');
 
