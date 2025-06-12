@@ -2,6 +2,7 @@
 
 namespace App\Helpers\MetaFormats;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidApiArgumentException;
 
@@ -42,29 +43,26 @@ class MetaFormat
 
     /**
      * Validates the given format.
-     * @return bool Returns whether the format and all nested formats are valid.
+     * @throws InvalidApiArgumentException Thrown when a value is not assignable.
+     * @throws BadRequestException Thrown when the structural constraints were not met.
      */
     public function validate()
     {
         // check whether all higher level contracts hold
         if (!$this->validateStructure()) {
-            return false;
+            throw new BadRequestException("The structural constraints of the format were not met.");
         }
 
         // go through all fields and check whether they were assigned properly
         $fieldFormats = FormatCache::getFieldDefinitions(get_class($this));
         foreach ($fieldFormats as $fieldName => $fieldFormat) {
-            if (!$this->checkIfAssignable($fieldName, $this->$fieldName)) {
-                return false;
-            }
+            $this->checkIfAssignable($fieldName, $this->$fieldName);
 
             // check nested formats recursively
-            if ($this->$fieldName instanceof MetaFormat && !$this->$fieldName->validate()) {
-                return false;
+            if ($this->$fieldName instanceof MetaFormat) {
+                $this->$fieldName->validate();
             }
         }
-
-        return true;
     }
 
     /**
