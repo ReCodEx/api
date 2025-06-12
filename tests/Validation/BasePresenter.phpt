@@ -20,6 +20,9 @@ use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+/**
+ * A Format class used to test FPost, FPath, FQuery and structure validation.
+ */
 #[Format(ValidationTestFormat::class)]
 class PresenterTestFormat extends MetaFormat
 {
@@ -32,17 +35,35 @@ class PresenterTestFormat extends MetaFormat
     #[FQuery(new VInt())]
     public ?int $query;
 
+    // The following properties will not be set in the tests, they are here to check that optional parameters
+    // can be omitted from the request.
+    #[FPost(new VInt(), required: false)]
+    public ?int $postOptional;
+
+    #[FQuery(new VInt(), required: false)]
+    public ?int $queryOptional;
+
+    /**
+     * This class requires the query property to be 1.
+     */
     public function validateStructure()
     {
         return $this->query == 1;
     }
 }
 
+/**
+ * A Presenter used to test loose attributes, Format attributes, and a combination of both.
+ */
 class TestPresenter extends BasePresenter
 {
     #[Post("post", new VInt())]
     #[Query("query", new VInt())]
     #[Path("path", new VInt())]
+    // The following parameters will not be set in the tests, they are here to check that optional parameters
+    // can be omitted from the request.
+    #[Post("postOptional", new VInt(), required: false)]
+    #[Query("queryOptional", new VInt(), required: false)]
     public function actionTestLoose()
     {
         $this->sendSuccessResponse("OK");
@@ -63,9 +84,12 @@ class TestPresenter extends BasePresenter
 }
 
 /**
+ * This test suite simulates a BasePresenter receiving user requests.
+ * The tests start by creating a presenter object, defining request data, and running the request.
+ * The tests include scenarios with both valid and invalid request data.
  * @testCase
  */
-class TestPresenter extends Tester\TestCase
+class TestBasePresenter extends Tester\TestCase
 {
     /** @var  Nette\DI\Container */
     protected $container;
@@ -76,26 +100,13 @@ class TestPresenter extends Tester\TestCase
         $this->container = $container;
     }
 
-    private static function injectFormat(string $format)
+    /**
+     * Injects a Format class to the FormatCache and checks whether it was injected successfully.
+     * @param string $format The Format class name.
+     */
+    private static function injectFormatChecked(string $format)
     {
-        // initialize the cache
-        FormatCache::getFormatToFieldDefinitionsMap();
-        FormatCache::getFormatNamesHashSet();
-
-        // inject the format name
-        $hashSetReflector = new ReflectionProperty(FormatCache::class, "formatNamesHashSet");
-        $hashSetReflector->setAccessible(true);
-        $formatNamesHashSet = $hashSetReflector->getValue();
-        $formatNamesHashSet[$format] = true;
-        $hashSetReflector->setValue(null, $formatNamesHashSet);
-
-        // inject the format definitions
-        $formatMapReflector = new ReflectionProperty(FormatCache::class, "formatToFieldFormatsMap");
-        $formatMapReflector->setAccessible(true);
-        $formatToFieldFormatsMap = $formatMapReflector->getValue();
-        $formatToFieldFormatsMap[$format] = MetaFormatHelper::createNameToFieldDefinitionsMap($format);
-        $formatMapReflector->setValue(null, $formatToFieldFormatsMap);
-
+        MockHelper::injectFormat($format);
         Assert::notNull(FormatCache::getFieldDefinitions($format), "Tests whether a format was injected successfully.");
     }
 
@@ -121,13 +132,14 @@ class TestPresenter extends Tester\TestCase
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
-        // set an invalid parameter value and assert that the validation fails
+        // set an invalid parameter value and assert that the validation fails ("path" should be an int)
         $request = new Request(
             "name",
             method: "POST",
             params: ["action" => "testLoose", "path" => "string", "query" => "1"],
             post: ["post" => 1]
         );
+
         Assert::throws(
             function () use ($presenter, $request) {
                 $presenter->run($request);
@@ -136,9 +148,30 @@ class TestPresenter extends Tester\TestCase
         );
     }
 
+    public function testLooseMissing()
+    {
+        $presenter = new TestPresenter();
+        MockHelper::initPresenter($presenter);
+
+        // create a request object
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testLoose", "path" => "1", "query" => "1"],
+            post: [] // missing path parameter
+        );
+
+        Assert::throws(
+            function () use ($presenter, $request) {
+                $presenter->run($request);
+            },
+            BadRequestException::class
+        );
+    }
+
     public function testFormatValid()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
@@ -146,38 +179,41 @@ class TestPresenter extends Tester\TestCase
         $request = new Request(
             "name",
             method: "POST",
-            params: ["action" => "testFormat", "path" => "1", "query" => "1"],
-            post: ["post" => 1]
+            params: ["action" => "testFormat", "path" => "2", "query" => "1"],
+            post: ["post" => 3]
         );
 
         $response = $presenter->run($request);
         Assert::equal("OK", $response->getPayload()["payload"]);
-        
+
         // the presenter should automatically create a valid format object
         /** @var PresenterTestFormat */
         $format = $presenter->getFormatInstance();
         Assert::notNull($format);
+
+        // throws when invalid
         $format->validate();
 
         // check if the values match
-        Assert::equal($format->path, 1);
+        Assert::equal($format->path, 2);
         Assert::equal($format->query, 1);
-        Assert::equal($format->post, 1);
+        Assert::equal($format->post, 3);
     }
 
-    public function testFormatInvalidField()
+    public function testFormatInvalidParameter()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
-        // create a request object with invalid fields
+        // create a request object with invalid parameters ("path" should be an int)
         $request = new Request(
             "name",
             method: "POST",
             params: ["action" => "testFormat", "path" => "string", "query" => "1"],
             post: ["post" => 1]
         );
+
         Assert::throws(
             function () use ($presenter, $request) {
                 $presenter->run($request);
@@ -186,19 +222,41 @@ class TestPresenter extends Tester\TestCase
         );
     }
 
-    public function testFormatInvalidStructure()
+    public function testFormatMissingParameter()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
-        // create a request object with invalid structure
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testFormat", "query" => "1"], // missing path
+            post: ["post" => 3]
+        );
+
+        Assert::throws(
+            function () use ($presenter, $request) {
+                $presenter->run($request);
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testFormatInvalidStructure()
+    {
+        self::injectFormatChecked(PresenterTestFormat::class);
+        $presenter = new TestPresenter();
+        MockHelper::initPresenter($presenter);
+
+        // create a request object with invalid structure ("query" has to be 1)
         $request = new Request(
             "name",
             method: "POST",
             params: ["action" => "testFormat", "path" => "1", "query" => "0"],
             post: ["post" => 1]
         );
+
         Assert::throws(
             function () use ($presenter, $request) {
                 $presenter->run($request);
@@ -209,7 +267,7 @@ class TestPresenter extends Tester\TestCase
 
     public function testCombinedValid()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
@@ -217,8 +275,8 @@ class TestPresenter extends Tester\TestCase
         $request = new Request(
             "name",
             method: "POST",
-            params: ["action" => "testCombined", "path" => "1", "query" => "1"],
-            post: ["post" => 1, "loose" => 1]
+            params: ["action" => "testCombined", "path" => "2", "query" => "1"],
+            post: ["post" => 3, "loose" => 4]
         );
         $response = $presenter->run($request);
         Assert::equal("OK", $response->getPayload()["payload"]);
@@ -227,27 +285,30 @@ class TestPresenter extends Tester\TestCase
         /** @var PresenterTestFormat */
         $format = $presenter->getFormatInstance();
         Assert::notNull($format);
+
+        // throws when invalid
         $format->validate();
 
         // check if the values match
-        Assert::equal($format->path, 1);
+        Assert::equal($format->path, 2);
         Assert::equal($format->query, 1);
-        Assert::equal($format->post, 1);
+        Assert::equal($format->post, 3);
     }
 
-    public function testCombinedInvalidFormatFields()
+    public function testCombinedInvalidFormatParameters()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
-        // create a request object with invalid fields
+        // create a request object with invalid parameters ("path" should be an int)
         $request = new Request(
             "name",
             method: "POST",
             params: ["action" => "testCombined", "path" => "string", "query" => "1"],
             post: ["post" => 1, "loose" => 1]
         );
+
         Assert::throws(
             function () use ($presenter, $request) {
                 $presenter->run($request);
@@ -258,17 +319,18 @@ class TestPresenter extends Tester\TestCase
 
     public function testCombinedInvalidStructure()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
-        // create a request object with invalid structure
+        // create a request object with invalid structure ("query" has to be 1)
         $request = new Request(
             "name",
             method: "POST",
             params: ["action" => "testCombined", "path" => "1", "query" => "0"],
             post: ["post" => 1, "loose" => 1]
         );
+
         Assert::throws(
             function () use ($presenter, $request) {
                 $presenter->run($request);
@@ -279,22 +341,65 @@ class TestPresenter extends Tester\TestCase
 
     public function testCombinedInvalidLooseParam()
     {
-        self::injectFormat(PresenterTestFormat::class);
+        self::injectFormatChecked(PresenterTestFormat::class);
         $presenter = new TestPresenter();
         MockHelper::initPresenter($presenter);
 
-        // create a request object with an invalid loose parameter
+        // create a request object with an invalid loose parameter (it should be an int)
         $request = new Request(
             "name",
             method: "POST",
             params: ["action" => "testCombined", "path" => "1", "query" => "1"],
             post: ["post" => 1, "loose" => "string"]
         );
+
         Assert::throws(
             function () use ($presenter, $request) {
                 $presenter->run($request);
             },
             InvalidApiArgumentException::class
+        );
+    }
+
+    public function testCombinedMissingLooseParam()
+    {
+        self::injectFormatChecked(PresenterTestFormat::class);
+        $presenter = new TestPresenter();
+        MockHelper::initPresenter($presenter);
+
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testCombined", "path" => "1", "query" => "1"],
+            post: ["post" => 1] // missing loose parameter
+        );
+
+        Assert::throws(
+            function () use ($presenter, $request) {
+                $presenter->run($request);
+            },
+            BadRequestException::class
+        );
+    }
+
+    public function testCombinedMissingFormatParam()
+    {
+        self::injectFormatChecked(PresenterTestFormat::class);
+        $presenter = new TestPresenter();
+        MockHelper::initPresenter($presenter);
+
+        $request = new Request(
+            "name",
+            method: "POST",
+            params: ["action" => "testCombined", "path" => "1", "query" => "1"],
+            post: ["loose" => 1] // missing post parameter
+        );
+
+        Assert::throws(
+            function () use ($presenter, $request) {
+                $presenter->run($request);
+            },
+            BadRequestException::class
         );
     }
 }

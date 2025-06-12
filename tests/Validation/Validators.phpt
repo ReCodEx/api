@@ -16,6 +16,9 @@ use Tester\Assert;
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 /**
+ * This test suite tests Format validators.
+ * All tests contain lists of valid/invalid values for both levels of strictness (if applicable), that are tested
+ * against a specific validator.
  * @testCase
  */
 class TestValidators extends Tester\TestCase
@@ -29,6 +32,14 @@ class TestValidators extends Tester\TestCase
         $this->container = $container;
     }
 
+    /**
+     * Helper function that returns readable error messages on failed validations.
+     * @param BaseValidator $validator The validator to be tested.
+     * @param mixed $value The value that did not pass.
+     * @param bool $expectedValid The expected value.
+     * @param bool $strict The strictness mode.
+     * @return string Returns an error message.
+     */
     private static function getAssertionFailedMessage(
         BaseValidator $validator,
         mixed $value,
@@ -61,7 +72,7 @@ class TestValidators extends Tester\TestCase
 
     /**
      * Test a validator against a set of input values. The strictness mode is set automatically by the method.
-     * @param App\Helpers\MetaFormats\Validators\BaseValidator $validator The validator to be tested.
+     * @param BaseValidator $validator The validator to be tested.
      * @param array $strictValid Valid values in the strict mode.
      * @param array $strictInvalid Invalid values in the strict mode.
      * @param array $permissiveValid Valid values in the permissive mode.
