@@ -3,29 +3,20 @@
 namespace App\Helpers\Mocks;
 
 use App\Helpers\Mocks\MockUserStorage;
-use App\Security\UserStorage;
 use App\V1Module\Presenters\BasePresenter;
-use App\V1Module\Presenters\RegistrationPresenter;
 use Nette\Application\Application;
 use Nette\Application\PresenterFactory;
-use Nette\Application\Request;
-use Nette\Application\Responses\JsonResponse;
 use Nette\Application\Routers\RouteList;
 use Nette\Http\Response;
 use Nette\Http\UrlScript;
 use Nette\Security\User;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\InvalidArgumentException;
 use Nette;
-use Nette\Security\IIdentity;
 
 class MockHelper
 {
     /**
      * Initializes a presenter object with empty http request, response, and user objects.
+     * This is intended to be called right after presenter instantiation and before calling the Presenter::run method.
      * @param BasePresenter $presenter The presenter to be initialized.
      */
     public static function initPresenter(BasePresenter $presenter)
