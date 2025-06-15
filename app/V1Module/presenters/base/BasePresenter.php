@@ -305,6 +305,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 return $this->getQueryField($paramData->name, required: $paramData->required);
             case Type::Path:
                 return $this->getPathField($paramData->name);
+            case Type::File:
+                return $this->getFileField(required: $paramData->required);
             default:
                 throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
         }
@@ -336,6 +338,25 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 return null;
             }
         }
+    }
+
+    private function getFileField($required = true)
+    {
+        $req = $this->getRequest();
+        $files = $req->getFiles();
+
+        if (count($files) === 0) {
+            if ($required) {
+                throw new BadRequestException("No file was uploaded");
+            } else {
+                return null;
+            }
+        } elseif (count($files) > 1) {
+            throw new BadRequestException("Too many files were uploaded");
+        }
+
+        $file = array_pop($files);
+        return $file;
     }
 
     private function getQueryField($param, $required = true)

@@ -4266,6 +4266,12 @@ paths:
           schema:
             type: integer
             nullable: false
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
       responses:
         '200':
           description: 'The data'
@@ -4308,6 +4314,19 @@ paths:
       summary: 'Upload a file'
       description: 'Upload a file'
       operationId: uploadedFilesPresenterActionUpload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              properties:
+                file:
+                  description: 'The whole file to be uploaded'
+                  type: string
+                  format: binary
+                  nullable: false
+              type: object
       responses:
         '200':
           description: 'The data'

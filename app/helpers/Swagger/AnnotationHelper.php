@@ -294,6 +294,7 @@ class AnnotationHelper
         $pathParams = [];
         $queryParams = [];
         $bodyParams = [];
+        $fileParams = [];
 
         foreach ($params as $param) {
             if ($param->location === 'path') {
@@ -302,6 +303,8 @@ class AnnotationHelper
                 $queryParams[] = $param;
             } elseif ($param->location === 'post') {
                 $bodyParams[] = $param;
+            } elseif ($param->location === 'file') {
+                $fileParams[] = $param;
             } else {
                 throw new Exception("Error in extractAnnotationData: Unknown param location: {$param->location}");
             }
@@ -314,6 +317,7 @@ class AnnotationHelper
             $pathParams,
             $queryParams,
             $bodyParams,
+            $fileParams,
             $description
         );
     }

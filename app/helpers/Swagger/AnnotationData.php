@@ -2,7 +2,9 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\AnnotationConversion\Utils;
+use App\Helpers\MetaFormats\FileRequestType;
 
 /**
  * A data structure for endpoint signatures that can produce annotations parsable by a swagger generator.
@@ -25,6 +27,10 @@ class AnnotationData
      * @var AnnotationParameterData[]
      */
     public array $bodyParams;
+    /**
+     * @var AnnotationParameterData[]
+     */
+    public array $fileParams;
     public ?string $endpointDescription;
 
     public function __construct(
@@ -34,6 +40,7 @@ class AnnotationData
         array $pathParams,
         array $queryParams,
         array $bodyParams,
+        array $fileParams,
         ?string $endpointDescription = null,
     ) {
         $this->className = $className;
@@ -42,12 +49,13 @@ class AnnotationData
         $this->pathParams = $pathParams;
         $this->queryParams = $queryParams;
         $this->bodyParams = $bodyParams;
+        $this->fileParams = $fileParams;
         $this->endpointDescription = $endpointDescription;
     }
 
     public function getAllParams(): array
     {
-        return array_merge($this->pathParams, $this->queryParams, $this->bodyParams);
+        return array_merge($this->pathParams, $this->queryParams, $this->bodyParams, $this->fileParams);
     }
 
     /**
@@ -63,24 +71,91 @@ class AnnotationData
     }
 
     /**
-     * Creates a JSON request body annotation string parsable by the swagger generator.
-     * Example: if the request body contains only the 'url' property, this method will produce:
-     * '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema(@OA\Property(property="url",type="string"))))'
-     * @return string|null Returns the annotation string or null, if there are no body parameters.
+     * Creates a requestBody annotation string parsable by the swagger generator.
+     * Processes JSON request body and files (form-data, octet-stream).
+     * @return string|null Returns the annotation string or null, if there is no body.
      */
     private function getBodyAnnotation(): string | null
     {
-        if (count($this->bodyParams) === 0) {
+        $head = '@OA\RequestBody';
+        $body = new ParenthesesBuilder();
+
+        // add the json schema
+        $jsonSchema = $this->serializeBodyParams(
+            "application/json",
+            $this->bodyParams
+        );
+        if ($jsonSchema !== null) {
+            $body->addValue($jsonSchema);
+        }
+
+        // add the file schema
+        $fileSchema = $this->getFileAnnotation();
+        if ($fileSchema !== null) {
+            $body->addValue($fileSchema);
+        }
+
+        if ($jsonSchema === null && $fileSchema === null) {
             return null;
         }
 
-        // only json is supported due to the media type
-        $head = '@OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema';
+        return $head . $body->toString();
+    }
+
+    private function getFileAnnotation(): string | null
+    {
+        if (count($this->fileParams) === 0) {
+            return null;
+        }
+
+        // filter file params based on type
+        $formParams = [];
+        $octetParams = [];
+        foreach ($this->fileParams as $fileParam) {
+            if ($fileParam->fileRequestType === FileRequestType::FormData) {
+                $formParams[] = $fileParam;
+            } elseif ($fileParam->fileRequestType === FileRequestType::OctetStream) {
+                $octetParams[] = $fileParam;
+            } else {
+                throw new InternalServerException("Unknown FileRequestType: " . $fileParam->fileRequestType->name);
+            }
+        }
+
+        if (count($formParams) > 0 && count($octetParams) > 0) {
+            throw new InternalServerException("File requests cannot upload files as both form-data and octet-stream.");
+        }
+        if (count($octetParams) > 1) {
+            throw new InternalServerException("There can only be one octet-stream per request.");
+        }
+
+        // generate a form-data or octet-stream annotation
+        if (count($formParams) > 0) {
+            return $this->serializeBodyParams("multipart/form-data", $formParams);
+        } else {
+            return $this->getOctetStreamAnnotation($octetParams[0]);
+        }
+    }
+
+    /**
+     * Creates a content annotation string parsable by the swagger generator.
+     * Example: if a JSON request body contains only the 'url' property, this method will produce:
+     * '@OA\MediaType(mediaType="application/json",@OA\Schema(@OA\Property(property="url",type="string")))'
+     * @param string $mediaType The media type of the parameters ("application/json", "multipart/form-data").
+     * @param array $bodyParams AnnotationParameterData array used to generate the annotation.
+     * @return string|null Returns the annotation string or null, if there are no body parameters.
+     */
+    private function serializeBodyParams(string $mediaType, array $bodyParams): string | null
+    {
+        if (count($bodyParams) === 0) {
+            return null;
+        }
+
+        $head = '@OA\MediaType(mediaType="' . $mediaType . '",@OA\Schema';
         $body = new ParenthesesBuilder();
         // list of all required properties
         $required = [];
 
-        foreach ($this->bodyParams as $bodyParam) {
+        foreach ($bodyParams as $bodyParam) {
             $body->addValue($bodyParam->toPropertyAnnotation());
             if ($bodyParam->required) {
                 // add quotes around the names (required by the swagger generator)
@@ -95,7 +170,17 @@ class AnnotationData
             $body->addValue("required=" . $requiredString);
         }
 
-        return $head . $body->toString() . "))";
+        return $head . $body->toString() . ")";
+    }
+
+    private function getOctetStreamAnnotation(AnnotationParameterData $octetParam): string
+    {
+        $head = '@OA\MediaType(mediaType="application/octet-stream",@OA\Schema';
+        $body = new ParenthesesBuilder();
+
+        $body->addKeyValue("type", $octetParam->swaggerType);
+        $body->addKeyValue("format", "binary");
+        return $head . $body->toString() . ")";
     }
 
     /**
@@ -137,9 +222,9 @@ class AnnotationData
             $body->addValue($queryParam->toParameterAnnotation());
         }
 
-        $jsonProperties = $this->getBodyAnnotation();
-        if ($jsonProperties !== null) {
-            $body->addValue($jsonProperties);
+        $bodyProperties = $this->getBodyAnnotation();
+        if ($bodyProperties !== null) {
+            $body->addValue($bodyProperties);
         }
 
         ///TODO: A placeholder for the response type. This has to be replaced with the autogenerated meta-view

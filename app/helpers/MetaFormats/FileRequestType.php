@@ -4,13 +4,11 @@ namespace App\Helpers\MetaFormats;
 
 // @codingStandardsIgnoreStart
 /**
- * An enumeration of request parameter types.
+ * An enumeration of types how files can be transmitted.
  */
-enum Type
+enum FileRequestType
 {
-  case Post;
-  case Query;
-  case Path;
-  case File;
+  case OctetStream;
+  case FormData;
 }
 // @codingStandardsIgnoreEnd
