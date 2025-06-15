@@ -368,13 +368,13 @@ class AnnotationHelper
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
         $reflectionMethod = self::getMethod($className, $methodName);
 
+        // extract loose attributes
+        $attributeData = MetaFormatHelper::extractRequestParamData($reflectionMethod);
+
+        // if the endpoint is linked to a format, add the format class attributes
         $format = MetaFormatHelper::extractFormatFromAttribute($reflectionMethod);
-        // if the endpoint is linked to a format, use the format class
         if ($format !== null) {
-            $attributeData = FormatCache::getFieldDefinitions($format);
-            // otherwise use loose param attributes
-        } else {
-            $attributeData = MetaFormatHelper::extractRequestParamData($reflectionMethod);
+            $attributeData = array_merge($attributeData, FormatCache::getFieldDefinitions($format));
         }
 
         $params = array_map(function ($data) {
