@@ -116,6 +116,8 @@ class AnnotationData
                 $formParams[] = $fileParam;
             } elseif ($fileParam->fileRequestType === FileRequestType::OctetStream) {
                 $octetParams[] = $fileParam;
+            } elseif ($fileParam->fileRequestType === null) {
+                throw new InternalServerException("The FileRequestType is null");
             } else {
                 throw new InternalServerException("Unknown FileRequestType: " . $fileParam->fileRequestType->name);
             }
