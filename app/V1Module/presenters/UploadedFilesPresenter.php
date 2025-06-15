@@ -443,7 +443,7 @@ class UploadedFilesPresenter extends BasePresenter
      */
     #[Query("offset", new VInt(), "Offset of the chunk for verification", required: true)]
     #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
-    #[File(FileRequestType::OctetStream, "A chunk of the uploaded file")]
+    #[File(FileRequestType::OctetStream, "A chunk of the uploaded file", required: false)]
     public function actionAppendPartial(string $id, int $offset)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
