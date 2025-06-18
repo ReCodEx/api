@@ -44,21 +44,21 @@ class MetaFormatHelper
     }
 
     /**
-     * Checks whether an entity contains a ResponseFormat attribute and extracts the format if so.
+     * Checks whether an entity contains ResponseFormat attributes and returns them.
      * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject A reflection
      * object of the entity.
-     * @return ?string Returns the format or null if no ResponseFormat attribute was present.
+     * @return array Returns an array of attribute instances.
      */
     public static function extractResponseFormatFromAttribute(
         ReflectionClass | ReflectionProperty | ReflectionMethod $reflectionObject
-    ): ?string {
+    ): array {
         $formatAttributes = $reflectionObject->getAttributes(ResponseFormat::class);
-        if (count($formatAttributes) === 0) {
-            return null;
+        $instances = [];
+        foreach ($formatAttributes as $formatAttribute) {
+            $instances[] = $formatAttribute->newInstance();
         }
 
-        $formatAttribute = $formatAttributes[0]->newInstance();
-        return $formatAttribute->class;
+        return $instances;
     }
 
     /**
