@@ -289,7 +289,8 @@ class AnnotationHelper
         string $methodName,
         HttpMethods $httpMethod,
         array $params,
-        ?string $description
+        ?string $description,
+        ?array $responseParams = null,
     ): AnnotationData {
         $pathParams = [];
         $queryParams = [];
@@ -318,7 +319,8 @@ class AnnotationHelper
             $queryParams,
             $bodyParams,
             $fileParams,
-            $description
+            $description,
+            $responseParams,
         );
     }
 
@@ -377,6 +379,16 @@ class AnnotationHelper
             $attributeData = array_merge($attributeData, FormatCache::getFieldDefinitions($format));
         }
 
+        // if the endpoint uses a response format, extract its parameters
+        $responseFormat = MetaFormatHelper::extractResponseFormatFromAttribute($reflectionMethod);
+        $responseParams = null;
+        if ($responseFormat !== null) {
+            $responseFieldDefinitions = FormatCache::getFieldDefinitions($responseFormat);
+            $responseParams = array_map(function ($data) {
+                return $data->toAnnotationParameterData();
+            }, $responseFieldDefinitions);
+        }
+
         $params = array_map(function ($data) {
             return $data->toAnnotationParameterData();
         }, $attributeData);
@@ -387,7 +399,8 @@ class AnnotationHelper
             $methodName,
             $httpMethod,
             $params,
-            $description
+            $description,
+            $responseParams,
         );
     }
 

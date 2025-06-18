@@ -42,6 +42,7 @@ class AnnotationData
         array $bodyParams,
         array $fileParams,
         ?string $endpointDescription = null,
+        ?array $responseParams = null,
     ) {
         $this->className = $className;
         $this->methodName = $methodName;
@@ -51,6 +52,7 @@ class AnnotationData
         $this->bodyParams = $bodyParams;
         $this->fileParams = $fileParams;
         $this->endpointDescription = $endpointDescription;
+        $this->responseParams = $responseParams;
     }
 
     public function getAllParams(): array
