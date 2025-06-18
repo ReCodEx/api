@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\V1Module\Router\MethodRoute;
@@ -289,8 +290,8 @@ class AnnotationHelper
         string $methodName,
         HttpMethods $httpMethod,
         array $params,
+        array $statusToParamsMap,
         ?string $description,
-        ?array $responseParams = null,
     ): AnnotationData {
         $pathParams = [];
         $queryParams = [];
@@ -319,8 +320,8 @@ class AnnotationHelper
             $queryParams,
             $bodyParams,
             $fileParams,
+            $statusToParamsMap,
             $description,
-            $responseParams,
         );
     }
 
@@ -350,6 +351,7 @@ class AnnotationHelper
             $methodName,
             $httpMethod,
             $params,
+            [], // there are no reponse params defined in the old annotations
             $description
         );
     }
@@ -379,14 +381,23 @@ class AnnotationHelper
             $attributeData = array_merge($attributeData, FormatCache::getFieldDefinitions($format));
         }
 
-        // if the endpoint uses a response format, extract its parameters
-        $responseFormat = MetaFormatHelper::extractResponseFormatFromAttribute($reflectionMethod);
-        $responseParams = null;
-        if ($responseFormat !== null) {
-            $responseFieldDefinitions = FormatCache::getFieldDefinitions($responseFormat);
+        // if the endpoint uses response formats, extract their parameters
+        $responseAttributes = MetaFormatHelper::extractResponseFormatFromAttribute($reflectionMethod);
+        $statusToParamsMap = [];
+        foreach ($responseAttributes as $responseAttribute) {
+            $responseFieldDefinitions = FormatCache::getFieldDefinitions($responseAttribute->format);
             $responseParams = array_map(function ($data) {
                 return $data->toAnnotationParameterData();
             }, $responseFieldDefinitions);
+
+            // check if all response status codes are unique
+            if (array_key_exists($responseAttribute->statusCode, $statusToParamsMap)) {
+                throw new InternalServerException(
+                    "The method " . $reflectionMethod->name . " contains duplicate response codes."
+                );
+            }
+
+            $statusToParamsMap[$responseAttribute->statusCode] = $responseParams;
         }
 
         $params = array_map(function ($data) {
@@ -399,8 +410,8 @@ class AnnotationHelper
             $methodName,
             $httpMethod,
             $params,
+            $statusToParamsMap,
             $description,
-            $responseParams,
         );
     }
 
