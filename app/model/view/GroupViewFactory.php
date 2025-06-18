@@ -4,6 +4,7 @@ namespace App\Model\View;
 
 use App\Helpers\EvaluationStatus\EvaluationStatus;
 use App\Helpers\GroupBindings\GroupBindingAccessor;
+use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
@@ -270,6 +271,28 @@ class GroupViewFactory
                 return !($ignoreArchived && $group->isArchived()) && $this->groupAcl->canViewPublicDetail($group);
             }
         );
+
+        // $groupFormat = new GroupFormat();
+        // $groupFormat->id = $group->getId();
+        // $groupFormat->externalId = $group->getExternalId();
+        // $groupFormat->organizational = $group->isOrganizational();
+        // $groupFormat->exam = $group->isExam();
+        // $groupFormat->archived = $group->isArchived();
+        // $groupFormat->public = $group->isPublic();
+        // $groupFormat->directlyArchived = $group->isDirectlyArchived();
+        // $groupFormat->localizedTexts = $group->getLocalizedTexts()->getValues();
+        // $groupFormat->primaryAdminsIds = $group->getPrimaryAdminsIds();
+        // $groupFormat->parentGroupId = $group->getParentGroup() ? $group->getParentGroup()->getId() : null;
+        // $groupFormat->parentGroupsIds = $group->getParentGroupsIds();
+        // $groupFormat->childGroups = $childGroups->map(
+        //     function (Group $group) {
+        //         return $group->getId();
+        //     }
+        // )->getValues();
+        // $groupFormat->privateData = $privateData;
+        // $groupFormat->permissionHints = PermissionHints::get($this->groupAcl, $group);
+
+        // return $groupFormat;
 
         return [
             "id" => $group->getId(),
