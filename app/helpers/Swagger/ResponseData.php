@@ -7,13 +7,26 @@ use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\FormatDefinitions\SuccessResponseFormat;
 use App\Helpers\MetaFormats\Validators\VObject;
 
+/**
+ * Class containing relevant information used to make swagger responses.
+ */
 class ResponseData
 {
+    /**
+     * @var AnnotationParameterData[]
+     */
     public array $responseParams;
     public string $description;
     public int $statusCode;
     public bool $useSuccessWrapper;
 
+    /**
+     * @param array $responseParams AnnotationParameterData describing the response object.
+     * @param string $description The description of the response.
+     * @param int $statusCode The response status code.
+     * @param bool $useSuccessWrapper Whether the response should be contained in
+     *  the "BasePresenter::sendSuccessResponse" wrapper.
+     */
     public function __construct(
         array $responseParams,
         string $description,
