@@ -32,9 +32,9 @@ class AnnotationData
      */
     public array $fileParams;
     /**
-     * @var array<int, array<AnnotationParameterData>>
+     * @var ResponseData[]
      */
-    public array $statusToParamsMap;
+    public array $responseDataList;
     public ?string $endpointDescription;
 
     public function __construct(
@@ -45,7 +45,7 @@ class AnnotationData
         array $queryParams,
         array $bodyParams,
         array $fileParams,
-        array $statusToParamsMap,
+        array $responseDataList,
         ?string $endpointDescription = null,
     ) {
         $this->className = $className;
@@ -55,7 +55,7 @@ class AnnotationData
         $this->queryParams = $queryParams;
         $this->bodyParams = $bodyParams;
         $this->fileParams = $fileParams;
-        $this->statusToParamsMap = $statusToParamsMap;
+        $this->responseDataList = $responseDataList;
         $this->endpointDescription = $endpointDescription;
     }
 
@@ -236,17 +236,22 @@ class AnnotationData
         }
 
         // generate responses
-        foreach ($this->statusToParamsMap as $statusCode => $responseParams) {
+        foreach ($this->responseDataList as $responseData) {
             $responseSchema = $this->serializeBodyParams(
                 "application/json",
-                $responseParams
+                $responseData->responseParams,
             );
 
-            $body->addValue('@OA\Response(response="' . $statusCode . '", ' . $responseSchema . ' )');
+            $responseBody = new ParenthesesBuilder();
+            $responseBody->addKeyValue("response", $responseData->statusCode);
+            $responseBody->addKeyValue("description", $responseData->description);
+            $responseBody->addValue($responseSchema);
+
+            $body->addValue("@OA\Response" . $responseBody->toString());
         }
 
         // add a placeholder response if none present
-        if (count($this->statusToParamsMap) === 0) {
+        if (count($this->responseDataList) === 0) {
             $body->addValue('@OA\Response(response="200",description="Placeholder response")');
         }
 

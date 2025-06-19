@@ -290,7 +290,7 @@ class AnnotationHelper
         string $methodName,
         HttpMethods $httpMethod,
         array $params,
-        array $statusToParamsMap,
+        array $responseDataList,
         ?string $description,
     ): AnnotationData {
         $pathParams = [];
@@ -320,7 +320,7 @@ class AnnotationHelper
             $queryParams,
             $bodyParams,
             $fileParams,
-            $statusToParamsMap,
+            $responseDataList,
             $description,
         );
     }
@@ -383,7 +383,8 @@ class AnnotationHelper
 
         // if the endpoint uses response formats, extract their parameters
         $responseAttributes = MetaFormatHelper::extractResponseFormatFromAttribute($reflectionMethod);
-        $statusToParamsMap = [];
+        $responseDataList = [];
+        $statusCodes = [];
         foreach ($responseAttributes as $responseAttribute) {
             $responseFieldDefinitions = FormatCache::getFieldDefinitions($responseAttribute->format);
             $responseParams = array_map(function ($data) {
@@ -391,13 +392,21 @@ class AnnotationHelper
             }, $responseFieldDefinitions);
 
             // check if all response status codes are unique
-            if (array_key_exists($responseAttribute->statusCode, $statusToParamsMap)) {
+            if (array_key_exists($responseAttribute->statusCode, $statusCodes)) {
                 throw new InternalServerException(
                     "The method " . $reflectionMethod->name . " contains duplicate response codes."
                 );
             }
+            $statusCodes[] = $responseAttribute->statusCode;
 
-            $statusToParamsMap[$responseAttribute->statusCode] = $responseParams;
+            $responseData = new ResponseData(
+                $responseParams,
+                $responseAttribute->description,
+                $responseAttribute->statusCode,
+                $responseAttribute->useSuccessWrapper
+            );
+
+            $responseDataList[] = $responseData;
         }
 
         $params = array_map(function ($data) {
@@ -410,7 +419,7 @@ class AnnotationHelper
             $methodName,
             $httpMethod,
             $params,
-            $statusToParamsMap,
+            $responseDataList,
             $description,
         );
     }
