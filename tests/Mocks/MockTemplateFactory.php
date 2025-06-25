@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Helpers\Mocks;
-
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Template;
 use Nette\Application\UI\TemplateFactory;
