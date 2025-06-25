@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Helpers\Mocks;
-
 use Nette\Application\UI\Template;
 
 class MockTemplate implements Template

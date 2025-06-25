@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Helpers\Mocks;
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . "/MockTemplate.php";
+require_once __DIR__ . "/MockTemplateFactory.php";
+require_once __DIR__ . "/MockUserStorage.php";
 
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\Mocks\MockUserStorage;
 use App\V1Module\Presenters\BasePresenter;
 use Nette\Application\Application;
 use Nette\Application\PresenterFactory;
@@ -12,8 +14,6 @@ use Nette\Application\Routers\RouteList;
 use Nette\Http\Response;
 use Nette\Http\UrlScript;
 use Nette\Security\User;
-use Nette;
-use ReflectionProperty;
 
 class MockHelper
 {

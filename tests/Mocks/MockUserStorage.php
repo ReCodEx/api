@@ -1,8 +1,5 @@
 <?php
 
-namespace App\Helpers\Mocks;
-
-use Nette;
 use Nette\Security\IIdentity;
 
 class MockUserStorage implements Nette\Security\UserStorage
