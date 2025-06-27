@@ -9,13 +9,11 @@ use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use ArrayAccess;
 
-/**
- * Format definition used by the RegistrationPresenter::actionCreateInvitation endpoint.
- */
 #[Format(GroupFormat::class)]
 class GroupFormat extends MetaFormat// implements ArrayAccess
 {
@@ -68,10 +66,10 @@ class GroupFormat extends MetaFormat// implements ArrayAccess
     #[FPost(new VArray(new VUuid()), "Identifications of child groups.")]
     public ?array $childGroups;
 
-    #[FPost(new VMixed(), "")]
-    public mixed $privateData;
+    #[FPost(new VObject(GroupPrivateDataFormat::class), required: false)]
+    public ?GroupPrivateDataFormat $privateData;
 
-    #[FPost(new VArray(), "")]
+    #[FPost(new VArray())]
     public ?array $permissionHints;
 
 
