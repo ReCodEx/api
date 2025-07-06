@@ -463,7 +463,7 @@ class RegistrationPresenter extends BasePresenter
     #[Path("a", new VInt())]
     #[Query("b", new VEmail())]
     #[Post("c", new VDouble())]
-    public function actionTestLoose()
+    public function actionTestLoose(int $a, ?string $b)
     {
         $this->sendSuccessResponse("OK");
     }
@@ -475,7 +475,7 @@ class RegistrationPresenter extends BasePresenter
      * @throws InvalidArgumentException
      */
     #[Format(TestFormat::class)]
-    public function actionTestFormat()
+    public function actionTestFormat(int $a, ?string $b)
     {
         $this->sendSuccessResponse("OK");
     }
