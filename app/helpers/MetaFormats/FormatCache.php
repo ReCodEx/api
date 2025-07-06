@@ -16,6 +16,37 @@ class FormatCache
     private static ?array $formatNamesHashSet = null;
     private static ?array $formatToFieldFormatsMap = null;
 
+    // this array caches loose attribute data which are added over time by the presenters
+    private static array $actionToRequestParamDataMap = [];
+
+    /**
+     * @param string $actionPath The presenter class name joined with the name of the action method.
+     * @return bool Returns whether the loose parameters of the action are cached.
+     */
+    public static function looseParametersCached(string $actionPath): bool
+    {
+        return array_key_exists($actionPath, self::$actionToRequestParamDataMap);
+    }
+
+    /**
+     * @param string $actionPath The presenter class name joined with the name of the action method.
+     * @return array Returns the cached RequestParamData array of the loose attributes.
+     */
+    public static function getLooseParameters(string $actionPath): array
+    {
+        return self::$actionToRequestParamDataMap[$actionPath];
+    }
+
+    /**
+     * Caches a RequestParamData array from the loose attributes of an action.
+     * @param string $actionPath The presenter class name joined with the name of the action method.
+     * @param array $data The RequestParamData array to be cached.
+     */
+    public static function cacheLooseParameters(string $actionPath, array $data): void
+    {
+        self::$actionToRequestParamDataMap[$actionPath] = $data;
+    }
+
     /**
      * @return array Returns a dictionary of dictionaries: [<formatName> => [<fieldName> => RequestParamData, ...], ...]
      * mapping formats to their fields and field metadata.

@@ -213,7 +213,14 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
 
         // handle loose parameters
-        $paramData = MetaFormatHelper::extractRequestParamData($reflection);
+
+        // cache the data from the loose attributes to improve performance
+        $actionPath = get_class($this) . $reflection->name;
+        if (!FormatCache::looseParametersCached($actionPath)) {
+            $newParamData = MetaFormatHelper::extractRequestParamData($reflection);
+            FormatCache::cacheLooseParameters($actionPath, $newParamData);
+        }
+        $paramData = FormatCache::getLooseParameters($actionPath);
         $this->processParamsLoose($paramData);
     }
 
