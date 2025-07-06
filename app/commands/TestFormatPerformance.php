@@ -29,12 +29,6 @@ class TestFormatPerformance extends Command
                 params: ["action" => "testLoose", "a" => "1", "b" => "a@a.a"],
                 post: ["c" => 1.1]
             ),
-            "format" => new Request(
-                "name",
-                method: "POST",
-                params: ["action" => "testFormat", "a" => "1", "b" => "a@a.a"],
-                post: ["c" => 1.1]
-            ),
         ];
     }
 
