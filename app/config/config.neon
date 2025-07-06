@@ -321,6 +321,7 @@ services:
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
   - App\Console\GenerateSwagger
+  - App\Console\TestFormatPerformance
   - App\Console\SwaggerAnnotator
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs

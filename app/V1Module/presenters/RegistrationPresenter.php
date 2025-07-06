@@ -414,4 +414,18 @@ class RegistrationPresenter extends BasePresenter
             IResponse::S201_CREATED
         );
     }
+
+        /**
+     * Endpoint for performance testing.
+     * @POST
+     * @param int $a
+     * @Param(type="query", name="b", validation="email")
+     * @Param(type="post", name="c", validation="float")
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    public function actionTestLoose(int $a, ?string $email)
+    {
+        $this->sendSuccessResponse("OK");
+    }
 }
