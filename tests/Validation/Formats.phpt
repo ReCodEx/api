@@ -8,23 +8,18 @@ use App\Helpers\MetaFormats\Attributes\FPath;
 use App\Helpers\MetaFormats\Attributes\FPost;
 use App\Helpers\MetaFormats\Attributes\FQuery;
 use App\Helpers\MetaFormats\FormatCache;
-use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\MetaFormatHelper;
-use App\Helpers\MetaFormats\Validators\BaseValidator;
-use App\Helpers\MetaFormats\Validators\VArray;
-use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VObject;
-use App\Helpers\MetaFormats\Validators\VString;
-use App\Helpers\MetaFormats\Validators\VTimestamp;
-use App\Helpers\MetaFormats\Validators\VUuid;
+use App\Helpers\Mocks\MockHelper;
 use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+/**
+ * Format used to test nullability and required flags.
+ */
 #[Format(RequiredNullabilityTestFormat::class)]
 class RequiredNullabilityTestFormat extends MetaFormat
 {
@@ -41,6 +36,9 @@ class RequiredNullabilityTestFormat extends MetaFormat
     public ?int $notRequiredNullable;
 }
 
+/**
+ * Format used to test the Param attributes and structural validation.
+ */
 #[Format(ValidationTestFormat::class)]
 class ValidationTestFormat extends MetaFormat
 {
@@ -62,6 +60,9 @@ class ValidationTestFormat extends MetaFormat
     }
 }
 
+/**
+ * Format used to test nested Formats.
+ */
 #[Format(ParentFormat::class)]
 class ParentFormat extends MetaFormat
 {
@@ -77,6 +78,9 @@ class ParentFormat extends MetaFormat
     }
 }
 
+/**
+ * Format used to test nested Formats.
+ */
 #[Format(NestedFormat::class)]
 class NestedFormat extends MetaFormat
 {
@@ -103,32 +107,23 @@ class TestFormats extends Tester\TestCase
         $this->container = $container;
     }
 
-    private static function injectFormat(string $format)
+    /**
+     * Injects a Format class to the FormatCache and checks whether it was injected successfully.
+     * @param string $format The Format class name.
+     */
+    private static function injectFormatChecked(string $format)
     {
-        // initialize the cache
-        FormatCache::getFormatToFieldDefinitionsMap();
-        FormatCache::getFormatNamesHashSet();
-
-        // inject the format name
-        $hashSetReflector = new ReflectionProperty(FormatCache::class, "formatNamesHashSet");
-        $hashSetReflector->setAccessible(true);
-        $formatNamesHashSet = $hashSetReflector->getValue();
-        $formatNamesHashSet[$format] = true;
-        $hashSetReflector->setValue(null, $formatNamesHashSet);
-
-        // inject the format definitions
-        $formatMapReflector = new ReflectionProperty(FormatCache::class, "formatToFieldFormatsMap");
-        $formatMapReflector->setAccessible(true);
-        $formatToFieldFormatsMap = $formatMapReflector->getValue();
-        $formatToFieldFormatsMap[$format] = MetaFormatHelper::createNameToFieldDefinitionsMap($format);
-        $formatMapReflector->setValue(null, $formatToFieldFormatsMap);
-
+        MockHelper::injectFormat($format);
         Assert::notNull(FormatCache::getFieldDefinitions($format), "Tests whether a format was injected successfully.");
     }
 
+    /**
+     * Tests that assigning an unknown Format property throws.
+     * @return void
+     */
     public function testInvalidFieldName()
     {
-        self::injectFormat(RequiredNullabilityTestFormat::class);
+        self::injectFormatChecked(RequiredNullabilityTestFormat::class);
 
         Assert::throws(
             function () {
@@ -144,9 +139,13 @@ class TestFormats extends Tester\TestCase
         );
     }
 
+    /**
+     * Tests that assigning null to a non-nullable property throws.
+     * @return void
+     */
     public function testRequiredNotNullable()
     {
-        self::injectFormat(RequiredNullabilityTestFormat::class);
+        self::injectFormatChecked(RequiredNullabilityTestFormat::class);
         $fieldName = "requiredNotNullable";
 
         // it is not nullable so this has to throw
@@ -169,9 +168,13 @@ class TestFormats extends Tester\TestCase
         Assert::equal($format->$fieldName, 1);
     }
 
+    /**
+     * Tests that assigning null to not-required or nullable properties does not throw.
+     * @return void
+     */
     public function testNullAssign()
     {
-        self::injectFormat(RequiredNullabilityTestFormat::class);
+        self::injectFormatChecked(RequiredNullabilityTestFormat::class);
         $format = new RequiredNullabilityTestFormat();
 
         // not required and not nullable fields can contain null (not required overrides not nullable)
@@ -186,9 +189,12 @@ class TestFormats extends Tester\TestCase
         }
     }
 
+    /**
+     * Test that QUERY and PATH properties use permissive validation (strings castable to ints).
+     */
     public function testIndividualParamValidationPermissive()
     {
-        self::injectFormat(ValidationTestFormat::class);
+        self::injectFormatChecked(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
 
         // path and query parameters do not have strict validation
@@ -197,17 +203,31 @@ class TestFormats extends Tester\TestCase
         $format->checkedAssign("path", "1");
         $format->checkedAssign("path", 1);
 
-        // make sure that the above assignments did not throw
-        Assert::true(true);
+        // test that assigning an invalid type still throws (int expected)
+        Assert::throws(
+            function () use ($format) {
+                try {
+                    $format->checkedAssign("query", "1.1");
+                } catch (Exception $e) {
+                    Assert::true(strlen($e->getMessage()) > 0);
+                    throw $e;
+                }
+            },
+            InvalidApiArgumentException::class
+        );
     }
 
+    /**
+     * Test that PATH parameters use strict validation (strings cannot be passed instead of target types).
+     */
     public function testIndividualParamValidationStrict()
     {
-        self::injectFormat(ValidationTestFormat::class);
+        self::injectFormatChecked(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
 
-        // post parameters have strict validation, assigning a string will throw
         $format->checkedAssign("post", 1);
+
+        // post parameters have strict validation, assigning a string will throw
         Assert::throws(
             function () use ($format) {
                 try {
@@ -221,9 +241,12 @@ class TestFormats extends Tester\TestCase
         );
     }
 
+    /**
+     * Test that assigning null to a non-nullable field throws.
+     */
     public function testIndividualParamValidationNullable()
     {
-        self::injectFormat(ValidationTestFormat::class);
+        self::injectFormatChecked(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
 
         // null cannot be assigned unless the parameter is nullable or not required
@@ -241,9 +264,12 @@ class TestFormats extends Tester\TestCase
         );
     }
 
+    /**
+     * Test that the validate function throws with an invalid parameter or failed structural constraint.
+     */
     public function testAggregateParamValidation()
     {
-        self::injectFormat(ValidationTestFormat::class);
+        self::injectFormatChecked(ValidationTestFormat::class);
         $format = new ValidationTestFormat();
 
         // assign valid values and validate
@@ -270,6 +296,8 @@ class TestFormats extends Tester\TestCase
 
         // assign valid values to all fields, but fail the structural constraint of $query == 1
         $format->checkedAssign("path", 1);
+        $format->validate();
+
         $format->checkedAssign("query", 2);
         Assert::false($format->validateStructure());
         Assert::throws(
@@ -285,15 +313,18 @@ class TestFormats extends Tester\TestCase
         );
     }
 
+    /**
+     * This test checks that errors in nested Formats propagate to the parent.
+     */
     public function testNestedFormat()
     {
-        self::injectFormat(NestedFormat::class);
-        self::injectFormat(ParentFormat::class);
+        self::injectFormatChecked(NestedFormat::class);
+        self::injectFormatChecked(ParentFormat::class);
         $nested = new NestedFormat();
         $parent = new ParentFormat();
 
         // assign valid values that do not pass structural validation
-        // (both fields need to be 1 to pass)
+        // (the parent field needs to be 1, the nested field 2)
         $nested->checkedAssign("field", 0);
         $parent->checkedAssign("field", 0);
         $parent->checkedAssign("nested", $nested);
@@ -308,6 +339,7 @@ class TestFormats extends Tester\TestCase
             },
             BadRequestException::class
         );
+        // the nested structure should also throw
         Assert::throws(
             function () use ($parent) {
                 $parent->validate();
@@ -326,6 +358,11 @@ class TestFormats extends Tester\TestCase
             },
             BadRequestException::class
         );
+
+        // fixing the nested structure should make both the nested and parent Format valid
+        $nested->checkedAssign("field", 2);
+        $nested->validate();
+        $parent->validate();
     }
 }
 

@@ -309,7 +309,7 @@ permissions:
 
     - allow: true
       resource: group
-      role: empowered-supervisor
+      role: supervisor
       actions:
           - viewExamLocksIPs
       conditions:

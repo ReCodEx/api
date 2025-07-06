@@ -3,6 +3,8 @@
 namespace App\Helpers\MetaFormats;
 
 use App\Exceptions\InternalServerException;
+use App\Helpers\MetaFormats\Attributes\FFile;
+use App\Helpers\MetaFormats\Attributes\File;
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\Attributes\FormatParameterAttribute;
 use App\Helpers\MetaFormats\Attributes\FPath;
@@ -50,8 +52,9 @@ class MetaFormatHelper
         $path = $reflectionMethod->getAttributes(name: Path::class);
         $query = $reflectionMethod->getAttributes(name: Query::class);
         $post = $reflectionMethod->getAttributes(name: Post::class);
+        $file = $reflectionMethod->getAttributes(name: File::class);
         $param = $reflectionMethod->getAttributes(name: Param::class);
-        return array_merge($path, $query, $post, $param);
+        return array_merge($path, $query, $post, $file, $param);
     }
 
     /**
@@ -91,7 +94,14 @@ class MetaFormatHelper
         $pathAttributes = $reflectionObject->getAttributes(FPath::class);
         $queryAttributes = $reflectionObject->getAttributes(FQuery::class);
         $postAttributes = $reflectionObject->getAttributes(FPost::class);
-        $requestAttributes = array_merge($longAttributes, $pathAttributes, $queryAttributes, $postAttributes);
+        $fileAttributes = $reflectionObject->getAttributes(FFile::class);
+        $requestAttributes = array_merge(
+            $longAttributes,
+            $pathAttributes,
+            $queryAttributes,
+            $postAttributes,
+            $fileAttributes
+        );
 
         // there should be only one attribute
         if (count($requestAttributes) == 0) {

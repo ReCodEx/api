@@ -2,9 +2,11 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MetaFormats\Attributes\File;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\FileRequestType;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -264,6 +266,7 @@ class UploadedFilesPresenter extends BasePresenter
         // Remove UTF BOM prefix...
         $utf8bom = "\xef\xbb\xbf";
         $contents = Strings::replace($contents, "~^$utf8bom~");
+        $contents = str_replace("\r\n", "\n", $contents); // normalize line endings
 
         $fixedContents = @mb_convert_encoding($contents, 'UTF-8', 'UTF-8');
 
@@ -320,6 +323,7 @@ class UploadedFilesPresenter extends BasePresenter
      * @throws CannotReceiveUploadedFileException
      * @throws InternalServerException
      */
+    #[File(FileRequestType::FormData, "The whole file to be uploaded")]
     public function actionUpload()
     {
         $user = $this->getCurrentUser();
@@ -439,6 +443,7 @@ class UploadedFilesPresenter extends BasePresenter
      */
     #[Query("offset", new VInt(), "Offset of the chunk for verification", required: true)]
     #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
+    #[File(FileRequestType::OctetStream, "A chunk of the uploaded file", required: false)]
     public function actionAppendPartial(string $id, int $offset)
     {
         $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
