@@ -286,7 +286,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             }
 
             // this throws if the value is invalid
-            $formatInstance->checkedAssign($fieldName, $value);
+            $formatInstance->checkedAssignWithSchema($requestParamData, $fieldName, $value);
         }
 
         // validate structural constraints
