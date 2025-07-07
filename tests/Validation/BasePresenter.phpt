@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . "/../Mocks/MockHelper.php";
+
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Helpers\MetaFormats\Attributes\Format;
@@ -11,9 +13,7 @@ use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormat;
-use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\Mocks\MockHelper;
 use App\V1Module\Presenters\BasePresenter;
 use Nette\Application\Request;
 use Tester\Assert;
