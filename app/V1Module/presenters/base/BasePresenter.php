@@ -26,6 +26,7 @@ use App\Helpers\MetaFormats\Type;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
+use Nette\Http\FileUpload;
 use Nette\Http\IResponse;
 use Tracy\ILogger;
 use ReflectionClass;
@@ -213,7 +214,14 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
 
         // handle loose parameters
-        $paramData = MetaFormatHelper::extractRequestParamData($reflection);
+
+        // cache the data from the loose attributes to improve performance
+        $actionPath = get_class($this) . $reflection->name;
+        if (!FormatCache::looseParametersCached($actionPath)) {
+            $newParamData = MetaFormatHelper::extractRequestParamData($reflection);
+            FormatCache::cacheLooseParameters($actionPath, $newParamData);
+        }
+        $paramData = FormatCache::getLooseParameters($actionPath);
         $this->processParamsLoose($paramData);
     }
 
@@ -279,7 +287,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             }
 
             // this throws if the value is invalid
-            $formatInstance->checkedAssign($fieldName, $value);
+            $formatInstance->checkedAssignWithSchema($requestParamData, $fieldName, $value);
         }
 
         // validate structural constraints
@@ -305,6 +313,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 return $this->getQueryField($paramData->name, required: $paramData->required);
             case Type::Path:
                 return $this->getPathField($paramData->name);
+            case Type::File:
+                return $this->getFileField(required: $paramData->required);
             default:
                 throw new InternalServerException("Unknown parameter type: {$paramData->type->name}");
         }
@@ -336,6 +346,30 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 return null;
             }
         }
+    }
+
+    /**
+     * @param bool $required Whether the file field is required.
+     * @throws BadRequestException Thrown when the number of files is not 1 (and the field is required).
+     * @return FileUpload|null Returns a FileUpload object or null if the file was optional and not sent.
+     */
+    private function getFileField(bool $required = true): FileUpload | null
+    {
+        $req = $this->getRequest();
+        $files = $req->getFiles();
+
+        if (count($files) === 0) {
+            if ($required) {
+                throw new BadRequestException("No file was uploaded");
+            } else {
+                return null;
+            }
+        } elseif (count($files) > 1) {
+            throw new BadRequestException("Too many files were uploaded");
+        }
+
+        $file = array_pop($files);
+        return $file;
     }
 
     private function getQueryField($param, $required = true)

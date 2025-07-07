@@ -3,6 +3,8 @@
 namespace App\Helpers\Swagger;
 
 use App\Exceptions\InternalServerException;
+use App\Helpers\MetaFormats\FileRequestType;
+use App\Helpers\MetaFormats\Type;
 
 /**
  * Contains data of a single annotation parameter.
@@ -21,6 +23,7 @@ class AnnotationParameterData
     public ?int $arrayDepth;
     public ?array $nestedObjectParameterData;
     public ?ParameterConstraints $constraints;
+    public ?FileRequestType $fileRequestType;
 
     public function __construct(
         string $swaggerType,
@@ -34,6 +37,7 @@ class AnnotationParameterData
         ?int $arrayDepth = null,
         ?array $nestedObjectParameterData = null,
         ?ParameterConstraints $constraints = null,
+        ?FileRequestType $fileRequestType = null,
     ) {
         $this->swaggerType = $swaggerType;
         $this->name = $name;
@@ -46,6 +50,7 @@ class AnnotationParameterData
         $this->arrayDepth = $arrayDepth;
         $this->nestedObjectParameterData = $nestedObjectParameterData;
         $this->constraints = $constraints;
+        $this->fileRequestType = $fileRequestType;
     }
 
     private function addArrayItemsIfArray(ParenthesesBuilder $container)
@@ -105,6 +110,15 @@ class AnnotationParameterData
         }
     }
 
+    private function addFileParamsIfFile(ParenthesesBuilder $container)
+    {
+        if ($this->location !== strtolower(Type::File->name)) {
+            return;
+        }
+
+        $container->addKeyValue("format", "binary");
+    }
+
     /**
      * Generates swagger schema annotations based on the data type.
      * @return string Returns the annotation.
@@ -116,6 +130,11 @@ class AnnotationParameterData
 
         $body->addKeyValue("type", $this->swaggerType);
         $body->addKeyValue("nullable", $this->nullable);
+
+        if ($this->swaggerType !== "array") {
+            $this->constraints?->addConstraints($body);
+        }
+
         $this->addArrayItemsIfArray($body);
 
         return $head . $body->toString();
@@ -169,6 +188,9 @@ class AnnotationParameterData
 
         // handle objects
         $this->addObjectParamsIfObject($body);
+
+        // handle files
+        $this->addFileParamsIfFile($body);
 
         // add example value
         if ($this->swaggerType !== "array" && $this->swaggerType !== "object") {

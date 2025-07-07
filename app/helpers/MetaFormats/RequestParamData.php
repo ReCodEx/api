@@ -6,6 +6,7 @@ use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Helpers\MetaFormats\Validators\BaseValidator;
 use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VFile;
 use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\Swagger\AnnotationParameterData;
 
@@ -143,6 +144,12 @@ class RequestParamData
             }, $nestedRequestParmData);
         }
 
+        // get file request type if file
+        $fileRequestType = null;
+        if ($this->validators[0] instanceof VFile) {
+            $fileRequestType = $this->validators[0]->fileRequestType;
+        }
+
         return new AnnotationParameterData(
             $swaggerType,
             $this->name,
@@ -155,6 +162,7 @@ class RequestParamData
             $arrayDepth,
             $nestedObjectParameterData,
             $constraints,
+            $fileRequestType,
         );
     }
 }
