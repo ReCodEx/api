@@ -26,6 +26,7 @@ use App\Helpers\MetaFormats\Type;
 use App\Responses\StorageFileResponse;
 use App\Responses\ZipFilesResponse;
 use Nette\Application\Application;
+use Nette\Http\FileUpload;
 use Nette\Http\IResponse;
 use Tracy\ILogger;
 use ReflectionClass;
@@ -347,7 +348,12 @@ class BasePresenter extends \App\Presenters\BasePresenter
         }
     }
 
-    private function getFileField($required = true)
+    /**
+     * @param bool $required Whether the file field is required.
+     * @throws BadRequestException Thrown when the number of files is not 1 (and the field is required).
+     * @return FileUpload|null Returns a FileUpload object or null if the file was optional and not sent.
+     */
+    private function getFileField(bool $required = true): FileUpload | null
     {
         $req = $this->getRequest();
         $files = $req->getFiles();
