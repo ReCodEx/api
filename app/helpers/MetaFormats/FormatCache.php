@@ -19,6 +19,9 @@ class FormatCache
     // this array caches loose attribute data which are added over time by the presenters
     private static array $actionToRequestParamDataMap = [];
 
+    // array that caches Format attribute format strings for actions
+    private static array $actionToFormatMap = [];
+
     /**
      * @param string $actionPath The presenter class name joined with the name of the action method.
      * @return bool Returns whether the loose parameters of the action are cached.
@@ -26,6 +29,33 @@ class FormatCache
     public static function looseParametersCached(string $actionPath): bool
     {
         return array_key_exists($actionPath, self::$actionToRequestParamDataMap);
+    }
+
+    /**
+     * @param string $actionPath The presenter class name joined with the name of the action method.
+     * @return bool Returns whether the action Format attribute string was cached.
+     */
+    public static function formatAttributeStringCached(string $actionPath): bool
+    {
+        return array_key_exists($actionPath, self::$actionToFormatMap);
+    }
+
+    /**
+     * @param string $actionPath The presenter class name joined with the name of the action method.
+     * @param string $format The attribute format string.
+     */
+    public static function cacheFormatAttributeString(string $actionPath, string $format)
+    {
+        self::$actionToFormatMap[$actionPath] = $format;
+    }
+
+    /**
+     * @param string $actionPath The presenter class name joined with the name of the action method.
+     * @return bool Returns action Format attribute string.
+     */
+    public static function getFormatAttributeString(string $actionPath): string
+    {
+        return self::$actionToFormatMap[$actionPath];
     }
 
     /**
