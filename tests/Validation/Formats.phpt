@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . "/../Mocks/MockHelper.php";
+
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidApiArgumentException;
@@ -9,10 +11,8 @@ use App\Helpers\MetaFormats\Attributes\FPost;
 use App\Helpers\MetaFormats\Attributes\FQuery;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormat;
-use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VObject;
-use App\Helpers\Mocks\MockHelper;
 use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
