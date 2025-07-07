@@ -42,9 +42,9 @@ class FormatCache
 
     /**
      * @param string $actionPath The presenter class name joined with the name of the action method.
-     * @param string $format The attribute format string.
+     * @param string|null $format The attribute format string or null if there is none.
      */
-    public static function cacheFormatAttributeString(string $actionPath, string $format)
+    public static function cacheFormatAttributeString(string $actionPath, string | null $format)
     {
         self::$actionToFormatMap[$actionPath] = $format;
     }
