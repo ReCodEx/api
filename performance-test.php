@@ -2,10 +2,10 @@
 
 use Nette\Application\Request;
 use App\Exceptions\InternalServerException;
-use App\Helpers\Mocks\MockHelper;
 use App\V1Module\Presenters\RegistrationPresenter;
 use Tester\Assert;
 
+require_once __DIR__ . "/tests/Mocks/MockHelper.php";
 require __DIR__ . '/tests/bootstrap.php';
 
 class PerformanceTest
