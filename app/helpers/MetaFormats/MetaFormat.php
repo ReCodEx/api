@@ -42,6 +42,21 @@ class MetaFormat
     }
 
     /**
+     * Tries to assign a value to a field. If the value does not conform to the provided schema, an exception is thrown.
+     *  The exception details why the value does not conform to the format.
+     *  More performant version of checkedAssign.
+     * @param RequestParamData $requestParamData The schema of the request parameter.
+     * @param string $fieldName The name of the field.
+     * @param mixed $value The value to be assigned.
+     * @throws InvalidApiArgumentException Thrown when the value is not assignable.
+     */
+    public function checkedAssignWithSchema(RequestParamData $requestParamData, string $fieldName, mixed $value)
+    {
+        $requestParamData->conformsToDefinition($value);
+        $this->$fieldName = $value;
+    }
+
+    /**
      * Validates the given format.
      * @throws InvalidApiArgumentException Thrown when a value is not assignable.
      * @throws BadRequestException Thrown when the structural constraints were not met.
