@@ -25,7 +25,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/login:
     post:
       summary: 'Log in using user credentials'
@@ -54,7 +54,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/login/refresh:
     post:
       summary: 'Refresh the access token of current user'
@@ -62,7 +62,7 @@ paths:
       operationId: loginPresenterActionRefresh
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/login/issue-restricted-token:
     post:
       summary: 'Issue a new access token with a restricted set of scopes'
@@ -93,7 +93,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/login/takeover/{userId}':
     post:
       summary: 'Takeover user account with specified user identification.'
@@ -110,7 +110,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/login/{authenticatorName}':
     post:
       summary: 'Log in using an external authentication service'
@@ -141,7 +141,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/broker/stats:
     get:
       summary: 'Get current statistics from broker.'
@@ -149,7 +149,7 @@ paths:
       operationId: brokerPresenterActionStats
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/broker/freeze:
     post:
       summary: 'Freeze broker and its execution.'
@@ -157,7 +157,7 @@ paths:
       operationId: brokerPresenterActionFreeze
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/broker/unfreeze:
     post:
       summary: 'Unfreeze broker and its execution.'
@@ -165,7 +165,7 @@ paths:
       operationId: brokerPresenterActionUnfreeze
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/broker-reports/error:
     post:
       summary: 'Announce a backend error that is not related to any job (meant to be called by the backend)'
@@ -185,7 +185,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/broker-reports/job-status/{jobId}':
     post:
       summary: 'Update the status of a job (meant to be called by the backend)'
@@ -218,7 +218,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/comments/{id}':
     get:
       summary: 'Get a comment thread'
@@ -236,7 +236,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Add a comment to a thread'
       description: 'Add a comment to a thread'
@@ -273,7 +273,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/comments/{threadId}/comment/{commentId}/toggle':
     post:
       summary: 'Make a private comment public or vice versa'
@@ -298,7 +298,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/comments/{threadId}/comment/{commentId}/private':
     post:
       summary: 'Set the private flag of a comment'
@@ -336,7 +336,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/comments/{threadId}/comment/{commentId}':
     delete:
       summary: 'Delete a comment'
@@ -361,7 +361,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/exercises:
     get:
       summary: 'Get a list of all exercises matching given filters in given pagination rage. The result conforms to pagination protocol.'
@@ -411,7 +411,7 @@ paths:
             nullable: true
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create exercise with all default values. Exercise detail can be then changed in appropriate endpoint.'
       description: 'Create exercise with all default values. Exercise detail can be then changed in appropriate endpoint.'
@@ -430,7 +430,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/exercises/list:
     post:
       summary: 'Get a list of exercises based on given ids.'
@@ -451,7 +451,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/exercises/authors:
     get:
       summary: 'List authors of all exercises, possibly filtered by a group in which the exercises appear.'
@@ -476,7 +476,7 @@ paths:
             nullable: true
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/exercises/tags:
     get:
       summary: 'Get list of global exercise tag names which are currently registered.'
@@ -484,7 +484,7 @@ paths:
       operationId: exercisesPresenterActionAllTags
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/exercises/tags-stats:
     get:
       summary: 'Get list of global exercise tag names along with how many times they have been used.'
@@ -492,7 +492,7 @@ paths:
       operationId: exercisesPresenterActionTagsStats
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/tags/{tag}':
     post:
       summary: "Update the tag globally. At the moment, the only 'update' function is 'rename'. Other types of updates may be implemented in the future."
@@ -527,7 +527,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}':
     get:
       summary: 'Get details of an exercise'
@@ -545,7 +545,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update detail of an exercise'
       description: 'Update detail of an exercise'
@@ -619,7 +619,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete an exercise'
       description: 'Delete an exercise'
@@ -636,7 +636,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/validate':
     post:
       summary: 'Check if the version of the exercise is up-to-date.'
@@ -667,7 +667,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/fork':
     post:
       summary: 'Fork exercise from given one into the completely new one.'
@@ -697,7 +697,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/assignments':
     get:
       summary: 'Get all non-archived assignments created from this exercise.'
@@ -723,7 +723,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/hardware-groups':
     post:
       summary: 'Set hardware groups which are associated with exercise.'
@@ -754,7 +754,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/groups/{groupId}':
     post:
       summary: 'Attach exercise to group with given identification.'
@@ -780,7 +780,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Detach exercise from given group.'
       description: 'Detach exercise from given group.'
@@ -805,7 +805,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/tags/{name}':
     post:
       summary: 'Add tag with given name to the exercise.'
@@ -833,7 +833,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove tag with given name from exercise.'
       description: 'Remove tag with given name from exercise.'
@@ -858,7 +858,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/archived':
     post:
       summary: '(Un)mark the exercise as archived. Nothing happens if the exercise is already in the requested state.'
@@ -889,7 +889,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/author':
     post:
       summary: 'Change the author of the exercise. This is a very special operation reserved for powerful users.'
@@ -921,7 +921,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/admins':
     post:
       summary: 'Change who the admins of an exercise are (all users on the list are added, prior admins not on the list are removed).'
@@ -952,7 +952,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/notification':
     post:
       summary: 'Sends an email to all group admins and supervisors, where the exercise is assigned. The purpose of this is to quickly notify all relevant teachers when a bug is found or the exercise is modified significantly. The response is number of emails sent (number of notified users).'
@@ -983,7 +983,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/supplementary-files':
     get:
       summary: 'Get list of all supplementary files for an exercise'
@@ -1001,7 +1001,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Associate supplementary files with an exercise and upload them to remote file server'
       description: 'Associate supplementary files with an exercise and upload them to remote file server'
@@ -1030,7 +1030,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/supplementary-files/{fileId}':
     delete:
       summary: 'Delete supplementary exercise file with given id'
@@ -1056,7 +1056,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/supplementary-files/download-archive':
     get:
       summary: 'Download archive containing all supplementary files for exercise.'
@@ -1074,7 +1074,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/attachment-files':
     get:
       summary: 'Get a list of all attachment files for an exercise'
@@ -1092,7 +1092,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Associate attachment exercise files with an exercise'
       description: 'Associate attachment exercise files with an exercise'
@@ -1121,7 +1121,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/attachment-files/{fileId}':
     delete:
       summary: 'Delete attachment exercise file with given id'
@@ -1147,7 +1147,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/attachment-files/download-archive':
     get:
       summary: 'Download archive containing all attachment files for exercise.'
@@ -1165,7 +1165,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/tests':
     get:
       summary: 'Get tests for exercise based on given identification.'
@@ -1183,7 +1183,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Set tests for exercise based on given identification.'
       description: 'Set tests for exercise based on given identification.'
@@ -1213,7 +1213,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/environment-configs':
     get:
       summary: 'Get runtime configurations for exercise.'
@@ -1231,7 +1231,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Change runtime configuration of exercise. Configurations can be added or deleted here, based on what is provided in arguments.'
       description: 'Change runtime configuration of exercise. Configurations can be added or deleted here, based on what is provided in arguments.'
@@ -1261,7 +1261,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/config':
     get:
       summary: 'Get a basic exercise high level configuration.'
@@ -1279,7 +1279,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Set basic exercise configuration'
       description: 'Set basic exercise configuration'
@@ -1309,7 +1309,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/config/variables':
     post:
       summary: 'Get variables for exercise configuration which are derived from given pipelines and runtime environment.'
@@ -1346,7 +1346,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/environment/{runtimeEnvironmentId}/hwgroup/{hwGroupId}/limits':
     get:
       summary: 'Get a description of resource limits for an exercise for given hwgroup.'
@@ -1380,7 +1380,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Set resource limits for an exercise for given hwgroup.'
       description: 'Set resource limits for an exercise for given hwgroup.'
@@ -1426,7 +1426,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove resource limits of given hwgroup from an exercise.'
       description: 'Remove resource limits of given hwgroup from an exercise.'
@@ -1459,7 +1459,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/limits':
     get:
       summary: 'Get a description of resource limits for given exercise (all hwgroups all environments).'
@@ -1477,7 +1477,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update resource limits for given exercise. If limits for particular hwGroup or environment are not posted, no change occurs. If limits for particular hwGroup or environment are posted as null, they are removed.'
       description: 'Update resource limits for given exercise. If limits for particular hwGroup or environment are not posted, no change occurs. If limits for particular hwGroup or environment are posted as null, they are removed.'
@@ -1507,7 +1507,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercises/{id}/score-config':
     get:
       summary: 'Get score configuration for exercise based on given identification.'
@@ -1525,7 +1525,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Set score configuration for exercise.'
       description: 'Set score configuration for exercise.'
@@ -1560,7 +1560,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/exercise-assignments:
     post:
       summary: 'Assign an exercise to a group'
@@ -1585,7 +1585,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}':
     get:
       summary: 'Get details of an assignment'
@@ -1603,7 +1603,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update details of an assignment'
       description: 'Update details of an assignment'
@@ -1752,7 +1752,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete an assignment'
       description: 'Delete an assignment'
@@ -1769,7 +1769,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/solutions':
     get:
       summary: 'Get a list of solutions of all users for the assignment'
@@ -1787,7 +1787,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/best-solutions':
     get:
       summary: 'Get the best solutions to an assignment for all students in group.'
@@ -1805,7 +1805,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/download-best-solutions':
     get:
       summary: 'Download the best solutions of an assignment for all students in group.'
@@ -1823,7 +1823,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/users/{userId}/solutions':
     get:
       summary: 'Get a list of solutions created by a user of an assignment'
@@ -1849,7 +1849,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/users/{userId}/best-solution':
     get:
       summary: 'Get the best solution by a user to an assignment'
@@ -1875,7 +1875,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/validate':
     post:
       summary: 'Check if the version of the assignment is up-to-date.'
@@ -1906,7 +1906,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/sync-exercise':
     post:
       summary: 'Update the assignment so that it matches with the current version of the exercise (limits, texts, etc.)'
@@ -1924,7 +1924,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/can-submit':
     get:
       summary: 'Check if the given user can submit solutions to the assignment'
@@ -1950,7 +1950,7 @@ paths:
             nullable: true
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/submit':
     post:
       summary: 'Submit a solution of an assignment'
@@ -2000,7 +2000,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/resubmit-all':
     get:
       summary: 'Return a list of all pending resubmit async jobs associated with given assignment. Under normal circumstances, the list should be either empty, or contain only one job.'
@@ -2018,7 +2018,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Start async job that resubmits all submissions of an assignment. No job is started when there are pending resubmit jobs for the selected assignment. Returns list of pending async jobs (same as GET call)'
       description: 'Start async job that resubmits all submissions of an assignment. No job is started when there are pending resubmit jobs for the selected assignment. Returns list of pending async jobs (same as GET call)'
@@ -2035,7 +2035,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/pre-submit':
     post:
       summary: 'Pre submit action which will, based on given files, detect possible runtime environments for the assignment. Also it can be further used for entry points and other important things that should be provided by user during submit.'
@@ -2074,7 +2074,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/async-jobs':
     get:
       summary: 'Get all pending async jobs related to a particular assignment.'
@@ -2092,7 +2092,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/groups:
     get:
       summary: 'Get a list of all non-archived groups a user can see. The return set is filtered by parameters.'
@@ -2141,7 +2141,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create a new group'
       description: 'Create a new group'
@@ -2217,7 +2217,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/groups/validate-add-group-data:
     post:
       summary: 'Validate group creation data'
@@ -2251,7 +2251,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}':
     get:
       summary: 'Get details of a group'
@@ -2269,7 +2269,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update group info'
       description: 'Update group info'
@@ -2330,7 +2330,19 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Response data'
+          content:
+            application/json:
+              schema:
+                required:
+                  - success
+                  - code
+                  - payload
+                properties:
+                  success: { description: '', type: boolean, example: 'true', nullable: false }
+                  code: { description: '', type: integer, example: '0', nullable: false }
+                  payload: { description: '', properties: { id: { description: 'An identifier of the group', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, externalId: { description: 'An informative, human readable identifier of the group', type: string, example: text, nullable: true }, organizational: { description: 'Whether the group is organizational (no assignments nor students).', type: boolean, example: 'true', nullable: false }, exam: { description: 'Whether the group is an exam group.', type: boolean, example: 'true', nullable: false }, archived: { description: 'Whether the group is archived', type: boolean, example: 'true', nullable: false }, public: { description: 'Should the group be visible to all student?', type: boolean, example: 'true', nullable: false }, directlyArchived: { description: 'Whether the group was explicitly marked as archived', type: boolean, example: 'true', nullable: false }, localizedTexts: { description: 'Localized names and descriptions', type: array, items: {  }, nullable: false }, primaryAdminsIds: { description: 'IDs of users which are explicitly listed as direct admins of this group', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, parentGroupId: { description: 'Identifier of the parent group (absent for a top-level group)', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, parentGroupsIds: { description: 'Identifications of groups in descending order.', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, childGroups: { description: 'Identifications of child groups.', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, privateData: { description: '', properties: { admins: { description: 'IDs of all users that have admin privileges to this group (including inherited)', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, supervisors: { description: '', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, observers: { description: '', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, students: { description: '', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, instanceId: { description: '', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, hasValidLicence: { description: '', type: boolean, example: 'true', nullable: false }, assignments: { description: '', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, shadowAssignments: { description: '', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, publicStats: { description: '', type: boolean, example: 'true', nullable: false }, detaining: { description: '', type: boolean, example: 'true', nullable: false }, threshold: { description: '', type: number, example: '0.1', nullable: false }, pointsLimit: { description: '', type: integer, example: '0', nullable: false }, bindings: { description: '', type: array, items: {  }, nullable: false }, examBegin: { description: '', type: integer, example: '1740135333', nullable: false }, examEnd: { description: '', type: integer, example: '1740135333', nullable: false }, examLockStrict: { description: '', type: boolean, example: 'true', nullable: false }, exams: { description: '', type: array, items: {  }, nullable: false } }, type: object, nullable: false }, permissionHints: { description: '', type: array, items: {  }, nullable: false } }, type: object, nullable: false }
+                type: object
     delete:
       summary: 'Delete a group'
       description: 'Delete a group'
@@ -2347,7 +2359,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/subgroups':
     get:
       summary: 'Get a list of subgroups of a group'
@@ -2365,7 +2377,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/organizational':
     post:
       summary: "Set the 'isOrganizational' flag for a group"
@@ -2396,7 +2408,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/archived':
     post:
       summary: "Set the 'isArchived' flag for a group"
@@ -2427,7 +2439,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/examPeriod':
     post:
       summary: 'Set an examination period (in the future) when the group will be secured for submitting. Only locked students may submit solutions in the group during this period. This endpoint is also used to update already planned exam period, but only dates in the future can be edited (e.g., once an exam begins, the beginning may no longer be updated).'
@@ -2468,7 +2480,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Change the group back to regular group (remove information about an exam).'
       description: 'Change the group back to regular group (remove information about an exam).'
@@ -2485,7 +2497,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/exam/{examId}':
     get:
       summary: 'Retrieve a list of locks for given exam'
@@ -2511,7 +2523,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/relocate/{newParentId}':
     post:
       summary: 'Relocate the group under a different parent.'
@@ -2537,7 +2549,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/students/stats':
     get:
       summary: 'Get statistics of a group. If the user does not have the rights to view all of these, try to at least return their statistics.'
@@ -2555,7 +2567,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/students/{userId}':
     get:
       summary: 'Get statistics of a single student in a group'
@@ -2581,7 +2593,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Add a student to a group'
       description: 'Add a student to a group'
@@ -2606,7 +2618,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove a student from a group'
       description: 'Remove a student from a group'
@@ -2631,7 +2643,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/students/{userId}/solutions':
     get:
       summary: 'Get all solutions of a single student from all assignments in a group'
@@ -2657,7 +2669,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/lock/{userId}':
     post:
       summary: 'Lock student in a group and with an IP from which the request was made.'
@@ -2683,7 +2695,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Unlock a student currently locked in a group.'
       description: 'Unlock a student currently locked in a group.'
@@ -2708,7 +2720,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/members':
     get:
       summary: 'Get a list of members of a group'
@@ -2726,7 +2738,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/members/{userId}':
     post:
       summary: 'Add/update a membership (other than student) for given user'
@@ -2766,7 +2778,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove a member (other than student) from a group'
       description: 'Remove a member (other than student) from a group'
@@ -2791,7 +2803,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/assignments':
     get:
       summary: 'Get all exercise assignments for a group'
@@ -2809,7 +2821,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{id}/shadow-assignments':
     get:
       summary: 'Get all shadow assignments for a group'
@@ -2827,7 +2839,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/groups/{groupId}/invitations':
     get:
       summary: 'List all invitations of a group.'
@@ -2844,7 +2856,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create a new invitation for given group.'
       description: 'Create a new invitation for given group.'
@@ -2878,7 +2890,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/group-invitations/{id}':
     get:
       summary: 'Return invitation details including all relevant group entities (so a name can be constructed).'
@@ -2896,7 +2908,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Edit the invitation.'
       description: 'Edit the invitation.'
@@ -2931,7 +2943,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       operationId: groupInvitationsPresenterActionRemove
       parameters:
@@ -2946,7 +2958,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/group-invitations/{id}/accept':
     post:
       summary: 'Allow the current user to join the corresponding group using the invitation.'
@@ -2964,7 +2976,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/group-attributes:
     get:
       summary: 'Return all attributes that correspond to given filtering parameters.'
@@ -2981,7 +2993,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/group-attributes/{groupId}':
     post:
       summary: 'Create an external attribute for given group.'
@@ -3028,7 +3040,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/group-attributes/{id}':
     delete:
       summary: 'Remove selected attribute'
@@ -3046,7 +3058,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/instances:
     get:
       summary: 'Get a list of all instances'
@@ -3054,7 +3066,7 @@ paths:
       operationId: instancesPresenterActionDefault
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create a new instance'
       description: 'Create a new instance'
@@ -3085,7 +3097,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/instances/{id}':
     get:
       summary: 'Get details of an instance'
@@ -3103,7 +3115,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update an instance'
       description: 'Update an instance'
@@ -3131,7 +3143,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete an instance'
       description: 'Delete an instance'
@@ -3148,7 +3160,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/instances/{id}/licences':
     get:
       summary: 'Get a list of licenses associated with an instance'
@@ -3166,7 +3178,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create a new license for an instance'
       description: 'Create a new license for an instance'
@@ -3203,7 +3215,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/instances/licences/{licenceId}':
     post:
       summary: 'Update an existing license for an instance'
@@ -3243,7 +3255,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove existing license for an instance'
       description: 'Remove existing license for an instance'
@@ -3259,7 +3271,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/exercise/{exerciseId}':
     get:
       summary: 'Get reference solutions for an exercise'
@@ -3276,7 +3288,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/exercise/{exerciseId}/pre-submit':
     post:
       summary: 'Pre submit action which will, based on given files, detect possible runtime environments for the exercise. Also it can be further used for entry points and other important things that should be provided by user during submit.'
@@ -3306,7 +3318,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/exercise/{exerciseId}/submit':
     post:
       summary: 'Add new reference solution to an exercise'
@@ -3350,7 +3362,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/exercise/{exerciseId}/resubmit-all':
     post:
       summary: 'Evaluate all reference solutions for an exercise (and for all configured hardware groups).'
@@ -3378,7 +3390,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/{solutionId}':
     get:
       summary: 'Get details of a reference solution'
@@ -3395,7 +3407,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update details about the ref. solution (note, etc...)'
       description: 'Update details about the ref. solution (note, etc...)'
@@ -3425,7 +3437,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete reference solution with given identification.'
       description: 'Delete reference solution with given identification.'
@@ -3441,7 +3453,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/{id}/resubmit':
     post:
       summary: 'Evaluate a single reference exercise solution for all configured hardware groups'
@@ -3470,7 +3482,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/{solutionId}/submissions':
     get:
       summary: 'Get a list of submissions for given reference solution.'
@@ -3487,7 +3499,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/{id}/files':
     get:
       summary: 'Get the list of submitted files of the solution.'
@@ -3505,7 +3517,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/{solutionId}/download-solution':
     get:
       summary: 'Download archive containing all solution files for particular reference solution.'
@@ -3522,7 +3534,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/{solutionId}/visibility':
     post:
       summary: 'Set visibility of given reference solution.'
@@ -3552,7 +3564,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/submission/{submissionId}':
     get:
       summary: 'Get reference solution evaluation (i.e., submission) for an exercise solution.'
@@ -3569,7 +3581,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove reference solution evaluation (submission) permanently.'
       description: 'Remove reference solution evaluation (submission) permanently.'
@@ -3585,7 +3597,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/submission/{submissionId}/download-result':
     get:
       summary: 'Download result archive from backend for a reference solution evaluation'
@@ -3602,7 +3614,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/reference-solutions/submission/{submissionId}/score-config':
     get:
       summary: 'Get score configuration associated with given submission evaluation'
@@ -3619,7 +3631,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}':
     get:
       summary: 'Get information about solutions.'
@@ -3637,7 +3649,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update details about the solution (note, etc...)'
       description: 'Update details about the solution (note, etc...)'
@@ -3668,7 +3680,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete assignment solution with given identification.'
       description: 'Delete assignment solution with given identification.'
@@ -3685,7 +3697,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/bonus-points':
     post:
       summary: 'Set new amount of bonus points for a solution (and optionally points override) Returns array of solution entities that has been changed by this.'
@@ -3720,7 +3732,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/submissions':
     get:
       summary: 'Get list of all submissions of a solution'
@@ -3738,7 +3750,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/set-flag/{flag}':
     post:
       summary: 'Set flag of the assignment solution.'
@@ -3777,7 +3789,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/resubmit':
     post:
       summary: 'Resubmit a solution (i.e., create a new submission)'
@@ -3806,7 +3818,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/files':
     get:
       summary: 'Get the list of submitted files of the solution.'
@@ -3824,7 +3836,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/download-solution':
     get:
       summary: 'Download archive containing all solution files for particular solution.'
@@ -3842,7 +3854,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/submission/{submissionId}':
     get:
       summary: 'Get information about the evaluation of a submission'
@@ -3859,7 +3871,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove the submission permanently'
       description: 'Remove the submission permanently'
@@ -3875,7 +3887,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/submission/{submissionId}/download-result':
     get:
       summary: 'Download result archive from backend for particular submission.'
@@ -3892,7 +3904,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/submission/{submissionId}/score-config':
     get:
       summary: 'Get score configuration associated with given submission evaluation'
@@ -3909,7 +3921,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/review':
     get:
       summary: 'Get detail of the solution and a list of review comments.'
@@ -3927,7 +3939,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update the state of the review process of the solution.'
       description: 'Update the state of the review process of the solution.'
@@ -3957,7 +3969,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Update the state of the review process of the solution.'
       description: 'Update the state of the review process of the solution.'
@@ -3974,7 +3986,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/review-comment':
     post:
       summary: 'Create a new comment within a review.'
@@ -4030,7 +4042,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/assignment-solutions/{id}/review-comment/{commentId}':
     post:
       summary: 'Update existing comment within a review.'
@@ -4081,7 +4093,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove one comment from a review.'
       description: 'Remove one comment from a review.'
@@ -4106,7 +4118,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/assignment-solvers:
     get:
       summary: 'Get a list of assignment solvers based on given parameters (assignment/group and solver user). Either assignment or group ID must be set (group is ignored if assignment is set), user ID is optional.'
@@ -4142,7 +4154,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/submission-failures:
     get:
       summary: 'List all submission failures, ever'
@@ -4150,7 +4162,7 @@ paths:
       operationId: submissionFailuresPresenterActionDefault
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/submission-failures/unresolved:
     get:
       summary: 'List all unresolved submission failures'
@@ -4158,7 +4170,7 @@ paths:
       operationId: submissionFailuresPresenterActionUnresolved
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/submission-failures/{id}':
     get:
       summary: 'Get details of a failure'
@@ -4176,7 +4188,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/submission-failures/{id}/resolve':
     post:
       summary: 'Mark a submission failure as resolved'
@@ -4213,7 +4225,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/uploaded-files/partial:
     post:
       summary: 'Start new upload per-partes. This process expects the file is uploaded as a sequence of PUT requests, each one carrying a chunk of data. Once all the chunks are in place, the complete request assembles them together in one file and transforms UploadPartialFile into UploadFile entity.'
@@ -4242,7 +4254,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/uploaded-files/partial/{id}':
     put:
       summary: 'Add another chunk to partial upload.'
@@ -4274,7 +4286,7 @@ paths:
               format: binary
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Finalize partial upload and convert the partial file into UploadFile. All data chunks are extracted from the store, assembled into one file, and is moved back into the store.'
       description: 'Finalize partial upload and convert the partial file into UploadFile. All data chunks are extracted from the store, assembled into one file, and is moved back into the store.'
@@ -4291,7 +4303,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Cancel partial upload and remove all uploaded chunks.'
       description: 'Cancel partial upload and remove all uploaded chunks.'
@@ -4308,7 +4320,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/uploaded-files:
     post:
       summary: 'Upload a file'
@@ -4329,7 +4341,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/uploaded-files/supplementary-file/{id}/download':
     get:
       summary: 'Download supplementary file'
@@ -4347,7 +4359,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/uploaded-files/{id}':
     get:
       summary: 'Get details of a file'
@@ -4365,7 +4377,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/uploaded-files/{id}/download':
     get:
       summary: 'Download a file'
@@ -4401,7 +4413,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/uploaded-files/{id}/content':
     get:
       summary: 'Get the contents of a file'
@@ -4437,7 +4449,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/uploaded-files/{id}/digest':
     get:
       summary: 'Compute a digest using a hashing algorithm. This feature is intended for upload checksums only. In the future, we might want to add algorithm selection via query parameter (default is SHA1).'
@@ -4455,7 +4467,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/users:
     get:
       summary: 'Get a list of all users matching given filters in given pagination rage. The result conforms to pagination protocol.'
@@ -4505,7 +4517,7 @@ paths:
             nullable: true
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create a user account'
       description: 'Create a user account'
@@ -4578,7 +4590,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/users/validate-registration-data:
     post:
       summary: "Check if the registered E-mail isn't already used and if the password is strong enough"
@@ -4602,7 +4614,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/users/list:
     post:
       summary: 'Get a list of users based on given ids.'
@@ -4623,7 +4635,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/ical/{id}':
     get:
       summary: 'Get calendar values in iCal format that correspond to given token.'
@@ -4640,7 +4652,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Set given iCal token to expired state. Expired tokens cannot be used to retrieve calendars.'
       description: 'Set given iCal token to expired state. Expired tokens cannot be used to retrieve calendars.'
@@ -4656,7 +4668,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/users/invite:
     post:
       summary: 'Create an invitation for a user and send it over via email'
@@ -4728,7 +4740,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/users/accept-invitation:
     post:
       summary: 'Accept invitation and create corresponding user account.'
@@ -4764,7 +4776,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}':
     get:
       summary: 'Get details of a user account'
@@ -4782,7 +4794,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update the profile associated with a user account'
       description: 'Update the profile associated with a user account'
@@ -4854,7 +4866,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete a user account'
       description: 'Delete a user account'
@@ -4871,7 +4883,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/invalidate-tokens':
     post:
       summary: 'Invalidate all existing tokens issued for given user'
@@ -4889,7 +4901,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/groups':
     get:
       summary: 'Get a list of non-archived groups for a user'
@@ -4907,7 +4919,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/groups/all':
     get:
       summary: 'Get a list of all groups for a user'
@@ -4925,7 +4937,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/instances':
     get:
       summary: 'Get a list of instances where a user is registered'
@@ -4943,7 +4955,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/settings':
     post:
       summary: 'Update the profile settings'
@@ -5027,7 +5039,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/ui-data':
     post:
       summary: 'Update the user-specific structured UI data'
@@ -5063,7 +5075,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/create-local':
     post:
       summary: 'If user is registered externally, add local account as another login method. Created password is empty and has to be changed in order to use it.'
@@ -5081,7 +5093,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/role':
     post:
       summary: 'Set a given role to the given user.'
@@ -5113,7 +5125,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/external-login/{service}':
     post:
       summary: 'Add or update existing external ID of given authentication service.'
@@ -5154,7 +5166,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove external ID of given authentication service.'
       description: 'Remove external ID of given authentication service.'
@@ -5179,7 +5191,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/calendar-tokens':
     get:
       summary: 'Get all iCal tokens of one user (including expired ones).'
@@ -5197,7 +5209,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create new iCal token for a particular user.'
       description: 'Create new iCal token for a particular user.'
@@ -5214,7 +5226,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/pending-reviews':
     get:
       summary: 'Return all solutions with pending reviews that given user teaches (is admin/supervisor in corresponding groups). Along with that it returns all assignment entities of the corresponding solutions.'
@@ -5232,7 +5244,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/users/{id}/review-requests':
     get:
       summary: 'Return all solutions with reviewRequest flag that given user might need to review (is admin/supervisor in corresponding groups). Along with that it returns all assignment entities of the corresponding solutions.'
@@ -5250,7 +5262,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/email-verification/verify:
     post:
       summary: 'Verify users email.'
@@ -5258,7 +5270,7 @@ paths:
       operationId: emailVerificationPresenterActionEmailVerification
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/email-verification/resend:
     post:
       summary: 'Resend the email for the current user to verify his/her email address.'
@@ -5266,7 +5278,7 @@ paths:
       operationId: emailVerificationPresenterActionResendVerificationEmail
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/forgotten-password:
     post:
       summary: 'Request a password reset (user will receive an e-mail that prompts them to reset their password)'
@@ -5288,7 +5300,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/forgotten-password/change:
     post:
       summary: "Change the user's password"
@@ -5310,7 +5322,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/forgotten-password/validate-password-strength:
     post:
       summary: 'Check if a password is strong enough'
@@ -5330,7 +5342,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/runtime-environments:
     get:
       summary: 'Get a list of all runtime environments'
@@ -5338,7 +5350,7 @@ paths:
       operationId: runtimeEnvironmentsPresenterActionDefault
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/hardware-groups:
     get:
       summary: 'Get a list of all hardware groups in system'
@@ -5346,7 +5358,7 @@ paths:
       operationId: hardwareGroupsPresenterActionDefault
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/pipelines:
     get:
       summary: 'Get a list of pipelines with an optional filter, ordering, and pagination pruning. The result conforms to pagination protocol.'
@@ -5396,7 +5408,7 @@ paths:
             nullable: true
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create a brand new pipeline.'
       description: 'Create a brand new pipeline.'
@@ -5414,7 +5426,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/pipelines/boxes:
     get:
       summary: 'Get a list of default boxes which might be used in pipeline.'
@@ -5422,7 +5434,7 @@ paths:
       operationId: pipelinesPresenterActionGetDefaultBoxes
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}/fork':
     post:
       summary: 'Create a complete copy of given pipeline.'
@@ -5451,7 +5463,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}':
     get:
       summary: 'Get pipeline based on given identification.'
@@ -5469,7 +5481,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update pipeline with given data.'
       description: 'Update pipeline with given data.'
@@ -5525,7 +5537,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete an pipeline'
       description: 'Delete an pipeline'
@@ -5542,7 +5554,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}/runtime-environments':
     post:
       summary: 'Set runtime environments associated with given pipeline.'
@@ -5560,7 +5572,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}/validate':
     post:
       summary: 'Check if the version of the pipeline is up-to-date.'
@@ -5591,7 +5603,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}/supplementary-files':
     get:
       summary: 'Get list of all supplementary files for a pipeline'
@@ -5609,7 +5621,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Associate supplementary files with a pipeline and upload them to remote file server'
       description: 'Associate supplementary files with a pipeline and upload them to remote file server'
@@ -5638,7 +5650,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}/supplementary-files/{fileId}':
     delete:
       summary: 'Delete supplementary pipeline file with given id'
@@ -5664,7 +5676,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/pipelines/{id}/exercises':
     get:
       summary: 'Get all exercises that use given pipeline. Only bare minimum is retrieved for each exercise (localized name and author).'
@@ -5682,13 +5694,13 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/extensions/sis/status/:
     get:
       operationId: sisPresenterActionStatus
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/extensions/sis/terms/:
     get:
       summary: 'Get a list of all registered SIS terms'
@@ -5696,7 +5708,7 @@ paths:
       operationId: sisPresenterActionGetTerms
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Register a new term'
       description: 'Register a new term'
@@ -5720,7 +5732,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/terms/{id}':
     post:
       summary: 'Set details of a term'
@@ -5762,7 +5774,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete a term'
       description: 'Delete a term'
@@ -5778,7 +5790,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/users/{userId}/subscribed-groups/{year}/{term}/as-student':
     get:
       summary: 'Get all courses subscirbed by a student and corresponding ReCodEx groups. Organizational and archived groups are filtered out from the result. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.'
@@ -5811,7 +5823,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/users/{userId}/supervised-courses/{year}/{term}':
     get:
       summary: 'Get supervised SIS courses and corresponding ReCodEx groups. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.'
@@ -5844,7 +5856,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/remote-courses/{courseId}/possible-parents':
     get:
       summary: 'Find groups that can be chosen as parents of a group created from given SIS group by current user'
@@ -5861,7 +5873,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/remote-courses/{courseId}/create':
     post:
       summary: 'Create a new group based on a SIS group'
@@ -5890,7 +5902,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/remote-courses/{courseId}/bind':
     post:
       summary: 'Bind an existing local group to a SIS group'
@@ -5919,7 +5931,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/sis/remote-courses/{courseId}/bindings/{groupId}':
     delete:
       summary: 'Delete a binding between a local group and a SIS group'
@@ -5944,7 +5956,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/emails:
     post:
       summary: 'Sends an email with provided subject and message to all ReCodEx users.'
@@ -5973,7 +5985,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/emails/supervisors:
     post:
       summary: 'Sends an email with provided subject and message to all supervisors and superadmins.'
@@ -6002,7 +6014,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/emails/regular-users:
     post:
       summary: 'Sends an email with provided subject and message to all regular users.'
@@ -6031,7 +6043,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/emails/groups/{groupId}':
     post:
       summary: 'Sends an email with provided subject and message to regular members of given group and optionally to supervisors and admins.'
@@ -6090,7 +6102,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/shadow-assignments/{id}':
     get:
       summary: 'Get details of a shadow assignment'
@@ -6108,7 +6120,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update details of an shadow assignment'
       description: 'Update details of an shadow assignment'
@@ -6172,7 +6184,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete shadow assignment'
       description: 'Delete shadow assignment'
@@ -6189,7 +6201,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/shadow-assignments:
     post:
       summary: 'Create new shadow assignment in given group.'
@@ -6209,7 +6221,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/shadow-assignments/{id}/validate':
     post:
       summary: 'Check if the version of the shadow assignment is up-to-date.'
@@ -6240,7 +6252,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/shadow-assignments/{id}/create-points':
     post:
       summary: 'Create new points for shadow assignment and user.'
@@ -6288,7 +6300,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/shadow-assignments/points/{pointsId}':
     post:
       summary: 'Update detail of shadow assignment points.'
@@ -6330,7 +6342,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Remove points of shadow assignment.'
       description: 'Remove points of shadow assignment.'
@@ -6346,7 +6358,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/notifications:
     get:
       summary: 'Get all notifications which are currently active. If groupsIds is given returns only the ones from given groups (and their ancestors) and global ones (without group).'
@@ -6364,7 +6376,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create notification with given attributes'
       description: 'Create notification with given attributes'
@@ -6415,7 +6427,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/notifications/all:
     get:
       summary: 'Get all notifications in the system.'
@@ -6423,7 +6435,7 @@ paths:
       operationId: notificationsPresenterActionAll
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/notifications/{id}':
     post:
       summary: 'Update notification'
@@ -6485,7 +6497,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     delete:
       summary: 'Delete a notification'
       description: 'Delete a notification'
@@ -6502,7 +6514,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/worker-files/supplementary-file/{hash}':
     get:
       summary: 'Sends over an exercise supplementary file (a data file required by the tests).'
@@ -6519,7 +6531,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/async-jobs/{id}':
     get:
       summary: 'Retrieves details about particular async job.'
@@ -6537,7 +6549,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/async-jobs:
     get:
       summary: 'Retrieves details about async jobs that are either pending or were recently completed.'
@@ -6562,7 +6574,7 @@ paths:
             nullable: true
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/async-jobs/{id}/abort':
     post:
       summary: 'Retrieves details about particular async job.'
@@ -6580,7 +6592,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/async-jobs/ping:
     post:
       summary: 'Initiates ping job. An empty job designed to verify the async handler is running.'
@@ -6588,7 +6600,7 @@ paths:
       operationId: asyncJobsPresenterActionPing
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   /v1/plagiarism:
     get:
       summary: 'Get a list of all batches, optionally filtered by query params.'
@@ -6616,7 +6628,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Create new detection batch record'
       description: 'Create new detection batch record'
@@ -6644,7 +6656,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/plagiarism/{id}':
     get:
       summary: 'Fetch a detail of a particular batch record.'
@@ -6662,7 +6674,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Update detection bath record. At the moment, only the uploadCompletedAt can be changed.'
       description: 'Update detection bath record. At the moment, only the uploadCompletedAt can be changed.'
@@ -6695,7 +6707,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/plagiarism/{id}/{solutionId}':
     get:
       summary: 'Retrieve detected plagiarism records from a specific batch related to one solution. Returns a list of detected similarities entities (similar file records are nested within).'
@@ -6721,7 +6733,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
     post:
       summary: 'Appends one detected similarity record (similarities associated with one file and one other author) into a detected batch. This division was selected to make the appends relatively small and manageable.'
       description: 'Appends one detected similarity record (similarities associated with one file and one other author) into a detected batch. This division was selected to make the appends relatively small and manageable.'
@@ -6785,7 +6797,7 @@ paths:
               type: object
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/{extId}/{instanceId}':
     get:
       summary: 'Return URL referring to the extension with properly injected temporary JWT token.'
@@ -6828,7 +6840,7 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
   '/v1/extensions/{extId}':
     post:
       summary: 'This endpoint is used by a backend of an extension to get a proper access token (from a temp token passed via URL). It also returns details about authenticated user.'
@@ -6845,5 +6857,5 @@ paths:
             nullable: false
       responses:
         '200':
-          description: 'The data'
+          description: 'Placeholder response'
 

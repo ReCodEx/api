@@ -14,6 +14,7 @@ use App\Helpers\MetaFormats\Attributes\Param;
 use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\Attributes\ResponseFormat;
 use ReflectionClass;
 use App\Helpers\Swagger\AnnotationHelper;
 use ReflectionMethod;
@@ -40,6 +41,24 @@ class MetaFormatHelper
 
         $formatAttribute = $formatAttributes[0]->newInstance();
         return $formatAttribute->class;
+    }
+
+    /**
+     * Checks whether an entity contains ResponseFormat attributes and returns them.
+     * @param \ReflectionClass|\ReflectionProperty|\ReflectionMethod $reflectionObject A reflection
+     * object of the entity.
+     * @return array Returns an array of attribute instances.
+     */
+    public static function extractResponseFormatFromAttribute(
+        ReflectionClass | ReflectionProperty | ReflectionMethod $reflectionObject
+    ): array {
+        $formatAttributes = $reflectionObject->getAttributes(ResponseFormat::class);
+        $instances = [];
+        foreach ($formatAttributes as $formatAttribute) {
+            $instances[] = $formatAttribute->newInstance();
+        }
+
+        return $instances;
     }
 
     /**

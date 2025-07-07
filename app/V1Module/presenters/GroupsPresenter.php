@@ -5,6 +5,8 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\Attributes\ResponseFormat;
+use App\Helpers\MetaFormats\FormatDefinitions\GroupFormat;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VInt;
@@ -404,6 +406,7 @@ class GroupsPresenter extends BasePresenter
     #[Post("pointsLimit", new VInt(), "A minimum of (absolute) points needed to pass the course", required: false)]
     #[Post("localizedTexts", new VArray(), "Localized names and descriptions")]
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionUpdateGroup(string $id)
     {
         $req = $this->getRequest();
