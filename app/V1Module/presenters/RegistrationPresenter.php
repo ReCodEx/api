@@ -415,7 +415,7 @@ class RegistrationPresenter extends BasePresenter
         );
     }
 
-        /**
+    /**
      * Endpoint for performance testing.
      * @POST
      * @param int $a
@@ -425,6 +425,52 @@ class RegistrationPresenter extends BasePresenter
      * @throws InvalidArgumentException
      */
     public function actionTestLoose(int $a, ?string $email)
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @param string $a
+     * @param string $b
+     * @param ?string $c
+     * @param ?string $d
+     * @param ?string $e
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    public function actionTest5UrlLoose(string $a, string $b, ?string $c, ?string $d, ?string $e)
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @Param(type="post", name="a", validation="string")
+     * @Param(type="post", name="b", validation="string")
+     * @Param(type="post", name="c", validation="string")
+     * @Param(type="post", name="d", validation="string")
+     * @Param(type="post", name="e", validation="string")
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    public function actionTest5BodyLoose()
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @Param(type="post", name="a", validation="string")
+     * @Param(type="post", name="nested")
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    public function actionTest5BodyLooseNested()
     {
         $this->sendSuccessResponse("OK");
     }

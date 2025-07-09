@@ -479,6 +479,9 @@ class RouterFactory
         $router[] = new GetRoute("$prefix/ical/<id>", "UserCalendars:");
         $router[] = new DeleteRoute("$prefix/ical/<id>", "UserCalendars:expireCalendar");
         $router[] = new PostRoute("$prefix/testLoose/<a>", "Registration:testLoose");
+        $router[] = new PostRoute("$prefix/test5UrlLoose/<a>/<b>", "Registration:test5UrlLoose");
+        $router[] = new PostRoute("$prefix/test5BodyLoose", "Registration:test5BodyLoose");
+        $router[] = new PostRoute("$prefix/test5BodyLooseNested", "Registration:test5BodyLooseNested");
         $router[] = new PostRoute("$prefix/invite", "Registration:createInvitation");
         $router[] = new PostRoute("$prefix/accept-invitation", "Registration:acceptInvitation");
 

@@ -26,6 +26,31 @@ class PerformanceTest
                 params: ["action" => "testLoose", "a" => "1", "b" => "a@a.a"],
                 post: ["c" => 1.1]
             ),
+            "5UrlLoose" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5UrlLoose", "a" => "a", "b" => "b", "c" => "c", "d" => "d", "e" => "e"],
+            ),
+            "5BodyLoose" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5BodyLoose"],
+                post: ["a" => "a", "b" => "b", "c" => "c", "d" => "d", "e" => "e"]
+            ),
+            "5BodyLooseNested" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5BodyLooseNested"],
+                post: ["a" => "a", "nested" => [
+                    "b" => "b", "nested" => [
+                        "c" => "c", "nested" => [
+                            "d" => "d", "nested" => [
+                                "e" => "e"
+                            ]
+                        ]
+                    ]
+                ]]
+            ),
         ];
     }
 
