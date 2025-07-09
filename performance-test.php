@@ -12,8 +12,8 @@ class PerformanceTest
 {
     protected static $defaultName = 'test:performance';
 
-    private static $warmupIterations = 100000;
-    private static $measureIterations = 1000000;
+    private static $warmupIterations = 1000;
+    private static $measureIterations = 10000;
     private $tests = [];
     public $output = [];
 
@@ -31,6 +31,42 @@ class PerformanceTest
                 method: "POST",
                 params: ["action" => "testFormat", "a" => "1", "b" => "a@a.a"],
                 post: ["c" => 1.1]
+            ),
+            "5UrlLoose" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5UrlLoose", "a" => "a", "b" => "b", "c" => "c", "d" => "d", "e" => "e"],
+            ),
+            "5UrlFormat" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5UrlFormat", "a" => "a", "b" => "b", "c" => "c", "d" => "d", "e" => "e"],
+            ),
+            "5BodyLoose" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5BodyLoose"],
+                post: ["a" => "a", "b" => "b", "c" => "c", "d" => "d", "e" => "e"]
+            ),
+            "5BodyFormat" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5BodyFormat"],
+                post: ["a" => "a", "b" => "b", "c" => "c", "d" => "d", "e" => "e"]
+            ),
+            "5BodyFormatNested" => new Request(
+                "name",
+                method: "POST",
+                params: ["action" => "test5BodyFormatNested"],
+                post: ["a" => "a", "nested" => [
+                    "b" => "b", "nested" => [
+                        "c" => "c", "nested" => [
+                            "d" => "d", "nested" => [
+                                "e" => "e"
+                            ]
+                        ]
+                    ]
+                ]]
             ),
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\Attributes\Post;
+use App\Helpers\MetaFormats\FormatDefinitions\Test5BodyFormat;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VMixed;
@@ -29,8 +30,10 @@ use App\Helpers\InvitationHelper;
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Attributes\Query;
+use App\Helpers\MetaFormats\FormatDefinitions\Test5UrlFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
 use App\Helpers\MetaFormats\FormatDefinitions\TestFormat;
+use App\Helpers\MetaFormats\FormatDefinitions\TestNested1Format;
 use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -476,6 +479,74 @@ class RegistrationPresenter extends BasePresenter
      */
     #[Format(TestFormat::class)]
     public function actionTestFormat(int $a, ?string $b)
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Path("a", new VString())]
+    #[Path("b", new VString())]
+    #[Query("c", new VString())]
+    #[Query("d", new VString())]
+    #[Query("e", new VString())]
+    public function actionTest5UrlLoose(string $a, string $b, ?string $c, ?string $d, ?string $e)
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Format(Test5UrlFormat::class)]
+    public function actionTest5UrlFormat(string $a, string $b, ?string $c, ?string $d, ?string $e)
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Post("a", new VString())]
+    #[Post("b", new VString())]
+    #[Post("c", new VString())]
+    #[Post("d", new VString())]
+    #[Post("e", new VString())]
+    public function actionTest5BodyLoose()
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Format(Test5BodyFormat::class)]
+    public function actionTest5BodyFormat()
+    {
+        $this->sendSuccessResponse("OK");
+    }
+
+    /**
+     * Endpoint for performance testing.
+     * @POST
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    #[Format(TestNested1Format::class)]
+    public function actionTest5BodyFormatNested()
     {
         $this->sendSuccessResponse("OK");
     }
