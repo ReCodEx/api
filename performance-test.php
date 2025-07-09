@@ -12,8 +12,8 @@ class PerformanceTest
 {
     protected static $defaultName = 'test:performance';
 
-    private static $warmupIterations = 1000;
-    private static $measureIterations = 10000;
+    private static $warmupIterations = 100_000;
+    private static $measureIterations = 1_000_000;
     private $tests = [];
     public $output = [];
 
