@@ -292,6 +292,7 @@ class GroupsPresenter extends BasePresenter
         "If true, no admin is assigned to group (current user is assigned as admin by default.",
         required: false,
     )]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionAddGroup()
     {
         $req = $this->getRequest();
@@ -448,6 +449,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionSetOrganizational(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -484,6 +486,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionSetArchived(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -566,6 +569,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Post("value", new VBool(), "The value of the flag", required: true)]
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionSetExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -606,6 +610,7 @@ class GroupsPresenter extends BasePresenter
     )]
     #[Post("strict", new VBool(), "Whether locked users are prevented from accessing other groups.", required: false)]
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -719,6 +724,7 @@ class GroupsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -865,6 +871,7 @@ class GroupsPresenter extends BasePresenter
      * @GET
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionDetail(string $id)
     {
         $group = $this->groups->findOrThrow($id);
@@ -953,6 +960,7 @@ class GroupsPresenter extends BasePresenter
     #[Post("type", new VString(1), "Identifier of membership type (admin, supervisor, ...)", required: true)]
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionAddMember(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -999,6 +1007,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionRemoveMember(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1217,6 +1226,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionAddStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1248,6 +1258,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[ResponseFormat(GroupFormat::class)]
     public function actionRemoveStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
