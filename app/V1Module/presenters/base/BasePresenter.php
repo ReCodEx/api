@@ -104,6 +104,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     public function startup()
     {
         parent::startup();
+        set_time_limit(20);
         $this->application->errorPresenter = "V1:ApiError";
         $this->parameters = new \stdClass();
 
