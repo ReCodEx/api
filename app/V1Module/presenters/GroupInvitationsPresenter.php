@@ -39,7 +39,7 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public $groupViewFactory;
 
-    public function checkDefault($id)
+    public function noncheckDefault($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
         if (!$invitation->getGroup() || !$this->groupAcl->canViewInvitations($invitation->getGroup())) {
@@ -53,15 +53,10 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public function actionDefault($id)
     {
-        $invitation = $this->groupInvitations->findOrThrow($id);
-        $groups = $this->groups->groupsAncestralClosure([ $invitation->getGroup() ]);
-        $this->sendSuccessResponse([
-            "invitation" => $invitation,
-            "groups" => $this->groupViewFactory->getGroups($groups),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdate($id)
+    public function noncheckUpdate($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
         if (!$invitation->getGroup() || !$this->groupAcl->canEditInvitations($invitation->getGroup())) {
@@ -77,16 +72,10 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public function actionUpdate($id)
     {
-        $req = $this->getRequest();
-        $invitation = $this->groupInvitations->findOrThrow($id);
-        $expireAt = $req->getPost("expireAt");
-        $invitation->setExpireAt($expireAt ? new DateTime("@" . (int)$expireAt) : null);
-        $invitation->setNote($req->getPost("note"));
-        $this->groupInvitations->persist($invitation);
-        $this->sendSuccessResponse($invitation);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove($id)
+    public function noncheckRemove($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
         if (!$invitation->getGroup() || !$this->groupAcl->canEditInvitations($invitation->getGroup())) {
@@ -99,12 +88,10 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public function actionRemove($id)
     {
-        $invitation = $this->groupInvitations->findOrThrow($id);
-        $this->groupInvitations->remove($invitation);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkAccept($id)
+    public function noncheckAccept($id)
     {
         $invitation = $this->groupInvitations->findOrThrow($id);
         if (
@@ -123,17 +110,10 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public function actionAccept($id)
     {
-        $invitation = $this->groupInvitations->findOrThrow($id);
-        $group = $invitation->getGroup();
-        $user = $this->getCurrentUser();
-        if ($group->isStudentOf($user) === false) {
-            $user->makeStudentOf($group);
-            $this->groups->flush();
-        }
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkList($groupId)
+    public function noncheckList($groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
         if (!$this->groupAcl->canViewDetail($group)) {
@@ -147,11 +127,10 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public function actionList($groupId)
     {
-        $group = $this->groups->findOrThrow($groupId);
-        $this->sendSuccessResponse($group->getInvitations()->toArray());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreate($groupId)
+    public function noncheckCreate($groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
         if (!$this->groupAcl->canEditInvitations($group)) {
@@ -167,14 +146,6 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     public function actionCreate($groupId)
     {
-        $req = $this->getRequest();
-        $group = $this->groups->findOrThrow($groupId);
-        $host = $this->getCurrentUser();
-        $expireAt = $req->getPost("expireAt");
-        $expireAt = $expireAt ? new DateTime("@" . (int)$expireAt) : null;
-
-        $invitation = new GroupInvitation($group, $host, $expireAt, $req->getPost("note"));
-        $this->groupInvitations->persist($invitation);
-        $this->sendSuccessResponse($invitation);
+        $this->sendSuccessResponse("OK");
     }
 }

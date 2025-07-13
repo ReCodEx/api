@@ -77,7 +77,7 @@ class CommentsPresenter extends BasePresenter
         return $thread;
     }
 
-    public function checkDefault($id)
+    public function noncheckDefault($id)
     {
         $thread = $this->comments->getThread($id);
 
@@ -100,14 +100,10 @@ class CommentsPresenter extends BasePresenter
      */
     public function actionDefault($id)
     {
-        $thread = $this->findThreadOrCreateIt($id);
-        $this->comments->flush();
-        $user = $this->getCurrentUser();
-        $thread->filterPublic($user);
-        $this->sendSuccessResponse($thread);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAddComment(string $id)
+    public function noncheckAddComment(string $id)
     {
         $thread = $this->comments->getThread($id);
 
@@ -131,36 +127,10 @@ class CommentsPresenter extends BasePresenter
      */
     public function actionAddComment(string $id)
     {
-        $thread = $this->findThreadOrCreateIt($id);
-
-        $user = $this->getCurrentUser();
-        $text = $this->getRequest()->getPost("text");
-        $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
-        $comment = Comment::createComment($thread, $user, $text, $isPrivate);
-
-        $this->comments->persist($comment, false);
-        $this->comments->persist($thread, false);
-        $this->comments->flush();
-
-        // send email to all participants in comment thread
-        $assignment = $this->assignments->get($id);
-        $assignmentSolution = $this->assignmentSolutions->get($id);
-        $referenceSolution = $this->referenceExerciseSolutions->get($id);
-        if ($assignment) {
-            $this->assignmentCommentsEmailsSender->assignmentComment($assignment, $comment);
-        } elseif ($assignmentSolution) {
-            $this->solutionCommentsEmailsSender->assignmentSolutionComment($assignmentSolution, $comment);
-        } elseif ($referenceSolution) {
-            $this->solutionCommentsEmailsSender->referenceSolutionComment($referenceSolution, $comment);
-        } else {
-            // Nothing to do at the moment...
-        }
-
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkTogglePrivate(string $threadId, string $commentId)
+    public function noncheckTogglePrivate(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
         $comment = $this->comments->findOrThrow($commentId);
@@ -184,17 +154,10 @@ class CommentsPresenter extends BasePresenter
      */
     public function actionTogglePrivate(string $threadId, string $commentId)
     {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
-
-        $comment->togglePrivate();
-        $this->comments->persist($comment);
-        $this->comments->flush();
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetPrivate(string $threadId, string $commentId)
+    public function noncheckSetPrivate(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
         $comment = $this->comments->findOrThrow($commentId);
@@ -218,20 +181,10 @@ class CommentsPresenter extends BasePresenter
      */
     public function actionSetPrivate(string $threadId, string $commentId)
     {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
-        $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
-
-        if ($comment->isPrivate() !== $isPrivate) {
-            $comment->setPrivate($isPrivate);
-            $this->comments->persist($comment);
-            $this->comments->flush();
-        }
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDelete(string $threadId, string $commentId)
+    public function noncheckDelete(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
         $comment = $this->comments->findOrThrow($commentId);
@@ -255,10 +208,6 @@ class CommentsPresenter extends BasePresenter
      */
     public function actionDelete(string $threadId, string $commentId)
     {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
-
-        $this->comments->remove($comment, true);
         $this->sendSuccessResponse("OK");
     }
 }

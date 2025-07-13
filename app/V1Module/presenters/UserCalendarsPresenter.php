@@ -120,55 +120,10 @@ class UserCalendarsPresenter extends BasePresenter
      */
     public function actionDefault(string $id)
     {
-        $calendar = $this->userCalendars->findOrThrow($id);
-        if ($calendar->isExpired()) {
-            throw new BadRequestException("Given iCal identifier has expired.");
-        }
-
-        $user = $calendar->getUser();
-        if (!$user) {
-            throw new BadRequestException("The user attached to given iCal identifier was deleted.");
-        }
-
-        // prepare ACLs for given user (this endpoint is not using identity)
-        /** @var IAssignmentPermissions */
-        $assignmentAcl = $this->aclLoader->loadACLModule(
-            IAssignmentPermissions::class,
-            $this->authorizator,
-            new Identity($user, null)
-        );
-
-        /** @var IGroupPermissions */
-        $groupAcl = $this->aclLoader->loadACLModule(
-            IGroupPermissions::class,
-            $this->authorizator,
-            new Identity($user, null)
-        );
-
-        // get all relevant assignments from all groups related to user...
-        $lang = $user->getSettings()->getDefaultLanguage();
-        $events = [];
-        foreach ($this->groups->findGroupsByMembership($user) as $group) {
-            if ($groupAcl->canViewAssignments($group)) {
-                foreach ($group->getAssignments() as $assignment) {
-                    if ($assignmentAcl->canViewDetail($assignment)) {
-                        $events[] = $this->createDeadlineEvent($user, $assignment, $lang);
-                    }
-                }
-            }
-        }
-
-        // prepare the calendar entity that wraps the events
-        $calendarEntity = new Calendar($events);
-        $calendarEntity->setProductIdentifier('-//ReCodEx Team at MFF-UK/ReCodEx//2.x/EN');
-
-        // render the deadline events
-        $componentFactory = new CalendarFactory();
-        $calendarComponent = $componentFactory->createCalendar($calendarEntity);
-        $this->sendResponse(new CalendarResponse($calendarComponent));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUserCalendars(string $id)
+    public function noncheckUserCalendars(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canViewCalendars($user)) {
@@ -183,12 +138,10 @@ class UserCalendarsPresenter extends BasePresenter
      */
     public function actionUserCalendars(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $calendars = $this->userCalendars->findBy([ 'user' => $user ], [ 'createdAt' => 'DESC' ]);
-        $this->sendSuccessResponse($calendars);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreateCalendar(string $id)
+    public function noncheckCreateCalendar(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canEditCalendars($user)) {
@@ -203,13 +156,10 @@ class UserCalendarsPresenter extends BasePresenter
      */
     public function actionCreateCalendar(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $calendar = new UserCalendar($user);
-        $this->userCalendars->persist($calendar);
-        $this->sendSuccessResponse($calendar);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkExpireCalendar(string $id)
+    public function noncheckExpireCalendar(string $id)
     {
         $calendar = $this->userCalendars->findOrThrow($id);
         $user = $calendar->getUser();
@@ -225,9 +175,6 @@ class UserCalendarsPresenter extends BasePresenter
      */
     public function actionExpireCalendar(string $id)
     {
-        $calendar = $this->userCalendars->findOrThrow($id);
-        $calendar->setExpiredAt();
-        $this->userCalendars->persist($calendar);
-        $this->sendSuccessResponse($calendar);
+        $this->sendSuccessResponse("OK");
     }
 }

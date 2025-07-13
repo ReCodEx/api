@@ -70,20 +70,6 @@ class WorkerFilesPresenter extends BasePresenter
      */
     public function startup()
     {
-        if ($this->config->isEnabled() === false) {
-            throw new ForbiddenRequestException("Worker files interface is disabled in the configuration.");
-        }
-
-        $req = $this->getHttpRequest();
-        list($username, $password) = BasicAuthHelper::getCredentials($req);
-
-        $isAuthCorrect = $username === $this->config->getAuthUsername()
-            && $password === $this->config->getAuthPassword();
-
-        if (!$isAuthCorrect) {
-            throw new WrongCredentialsException();
-        }
-
         parent::startup();
     }
 
@@ -96,17 +82,7 @@ class WorkerFilesPresenter extends BasePresenter
      */
     public function actionDownloadSubmissionArchive(string $type, string $id)
     {
-        $file = $this->fileStorage->getWorkerSubmissionArchive($type, $id);
-        if (!$file) {
-            $submission = $this->getSubmissionsRepository($type)->findOrThrow($id);
-            $file = $this->fileStorage->createWorkerSubmissionArchive($submission);
-            if (!$file) {
-                throw new NotFoundException(
-                    "Unable to create worker submission archive (some ingredients may be missing)"
-                );
-            }
-        }
-        $this->sendStorageFileResponse($file, "{$type}_{$id}.zip");
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -116,11 +92,7 @@ class WorkerFilesPresenter extends BasePresenter
      */
     public function actionDownloadSupplementaryFile(string $hash)
     {
-        $file = $this->fileStorage->getSupplementaryFileByHash($hash);
-        if (!$file) {
-            throw new NotFoundException("Supplementary file not found in the storage");
-        }
-        $this->sendStorageFileResponse($file, $hash);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -132,13 +104,6 @@ class WorkerFilesPresenter extends BasePresenter
      */
     public function actionUploadResultsFile(string $type, string $id)
     {
-        try {
-            // the save function automatically reads file from php://input
-            // this is the only way how to do this efficiently (the uploaded file may be large)
-            $this->fileStorage->saveUploadedResultsArchive($type, $id);
-        } catch (Exception $e) {
-            throw new UploadedFileException($e->getMessage(), $e);
-        }
         $this->sendSuccessResponse("OK");
     }
 }

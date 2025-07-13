@@ -77,7 +77,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
     public $reviewsEmailSender;
 
 
-    public function checkDefault(string $id)
+    public function noncheckDefault(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canViewReview($solution)) {
@@ -93,14 +93,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionDefault(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $this->sendSuccessResponse([
-            "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
-            "reviewComments" => $solution->getReviewComments()->toArray(),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdate(string $id)
+    public function noncheckUpdate(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canReview($solution)) {
@@ -118,48 +114,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionUpdate(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $close = filter_var($this->getRequest()->getPost("close"), FILTER_VALIDATE_BOOLEAN);
-        $reviewedAt = $solution->getReviewedAt();
-
-        if ($solution->getReviewStartedAt() === null) {
-            $solution->setReviewStartedAt(new DateTime()); // the review is marked as opened in any case
-        }
-
-        if ($close && $reviewedAt === null) {
-            // opened -> closed transition
-            $solution->setReviewedAt(new DateTime());
-
-            $issues = 0; // issues are duly counted only when the review is closed
-            foreach ($solution->getReviewComments() as $comment) {
-                if ($comment->isIssue()) {
-                    ++$issues;
-                }
-            }
-            $solution->setIssuesCount($issues);
-        } elseif (!$close && $reviewedAt !== null) {
-            // closed -> opened (reverse) transition
-            $solution->setReviewedAt(null);
-            $solution->setIssuesCount(0);
-        }
-
-        // make sure modifications are saved first
-        $this->assignmentSolutions->persist($solution);
-
-        // handle mail notifications
-        if ($close && $reviewedAt === null) {
-            $this->reviewsEmailSender->solutionReviewClosed($solution);
-        } elseif (!$close && $reviewedAt !== null) {
-            $this->reviewsEmailSender->solutionReviewReopened($solution, $reviewedAt);
-        }
-
-        $this->sendSuccessResponse([
-            "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
-            "reviewComments" => $solution->getReviewComments()->toArray(),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove(string $id)
+    public function noncheckRemove(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canReview($solution)) {
@@ -187,27 +145,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionRemove(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $closed = $solution->getReviewedAt(); // remember that!
-
-        // erase all comments
-        $this->reviewComments->deleteCommentsOfSolution($solution);
-
-        // reset the state in the solution entity
-        $solution->setReviewStartedAt(null);
-        $solution->setReviewedAt(null);
-        $solution->setIssuesCount(0);
-        $this->assignmentSolutions->persist($solution);
-
-        if ($closed !== null) {
-            // notifications are sent only for closed reviews
-            $this->reviewsEmailSender->solutionReviewRemoved($solution, $closed);
-        }
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkNewComment(string $id)
+    public function noncheckNewComment(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canAddReviewComment($solution)) {
@@ -242,7 +183,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
                 );
             }
 
-            // TODO - in the future, we might want to check the entry as well
+            // TODO - in the future, we might want to noncheck the entry as well
         } elseif ($line !== 0) {
             throw new BadRequestException("Global comment (with no file) must have a line value set to zero.");
         }
@@ -265,46 +206,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionNewComment(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if ($solution->getReviewStartedAt() === null) {
-            // first comment also opens the review
-            $solution->setReviewStartedAt(new DateTime());
-            $this->assignmentSolutions->persist($solution);
-        }
-
-        // get and verify inputs
-        $req = $this->getRequest();
-        $text = trim($req->getPost("text"));
-        if (!$text) {
-            throw new BadRequestException("The text of the comment must not be empty.");
-        }
-
-        $file = trim($req->getPost("file"));
-        $line = $req->getPost("line");
-        $this->verifyCodeLocation($solution, $file, $line);
-        $issue = filter_var($req->getPost("issue"), FILTER_VALIDATE_BOOLEAN);
-
-        // create the review comment
-        $comment = new ReviewComment($solution, $this->getCurrentUser(), $file, $line, $text, $issue);
-        $this->reviewComments->persist($comment);
-
-        if ($solution->getReviewedAt() !== null) {
-            // review is already closed, this needs special treatement
-            if ($issue) {
-                $solution->setIssuesCount($solution->getIssuesCount() + 1);
-                $this->assignmentSolutions->persist($solution);
-            }
-
-            $suppressNotification = filter_var($req->getPost("suppressNotification"), FILTER_VALIDATE_BOOLEAN);
-            if (!$suppressNotification) {
-                $this->reviewsEmailSender->newReviewComment($solution, $comment);
-            }
-        }
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkEditComment(string $id, string $commentId)
+    public function noncheckEditComment(string $id, string $commentId)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         $comment = $this->reviewComments->findOrThrow($commentId);
@@ -331,46 +236,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionEditComment(string $id, string $commentId)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $comment = $this->reviewComments->findOrThrow($commentId);
-
-        // get and verify inputs
-        $req = $this->getRequest();
-        $text = trim($req->getPost("text"));
-        if (!$text) {
-            throw new BadRequestException("The text of the comment must not be empty.");
-        }
-
-        $issue = $req->getPost("issue") !== null ? filter_var($req->getPost("issue"), FILTER_VALIDATE_BOOLEAN) : null;
-        $issueChanged = $issue !== null && $comment->isIssue() !== $issue;
-
-        if ($text !== $comment->getText() || $issueChanged) {
-            // modification needed
-            $oldText = $comment->getText();
-            $comment->setText($text);
-            if ($issue !== null) {
-                $comment->setIssue($issue);
-            }
-            $this->reviewComments->persist($comment);
-
-            if ($solution->getReviewedAt() !== null) {
-                // review is already closed, this needs special treatement
-                if ($issueChanged) {
-                    $solution->setIssuesCount($solution->getIssuesCount() + ($issue ? 1 : -1));
-                    $this->assignmentSolutions->persist($solution);
-                }
-
-                $suppressNotification = filter_var($req->getPost("suppressNotification"), FILTER_VALIDATE_BOOLEAN);
-                if (!$suppressNotification) {
-                    $this->reviewsEmailSender->changedReviewComment($solution, $comment, $oldText, $issueChanged);
-                }
-            }
-        }
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteComment(string $id, string $commentId)
+    public function noncheckDeleteComment(string $id, string $commentId)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         $comment = $this->reviewComments->findOrThrow($commentId);
@@ -391,26 +260,10 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionDeleteComment(string $id, string $commentId)
     {
-        $comment = $this->reviewComments->findOrThrow($commentId);
-        $isIssue = $comment->isIssue();
-        $this->reviewComments->remove($comment);
-
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if ($solution->getReviewedAt() !== null) {
-            // review is already closed, this needs special treatement
-            if ($isIssue) {
-                $solution->setIssuesCount($solution->getIssuesCount() - 1);
-                $this->assignmentSolutions->persist($solution);
-            }
-            $this->reviewComments->flush();
-
-            // deletions are always reported (if the review is closed)
-            $this->reviewsEmailSender->removedReviewComment($solution, $comment);
-        }
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkPending(string $id)
+    public function noncheckPending(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canListPendingReviews($user)) {
@@ -426,20 +279,6 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      */
     public function actionPending(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $solutions = $this->assignmentSolutions->findPendingReviewsOfTeacher($user);
-
-        $assignments = [];
-        foreach ($solutions as $solution) {
-            $assignment = $solution->getAssignment();
-            if ($assignment) {
-                $assignments[$assignment->getId()] = $assignment;
-            }
-        }
-
-        $this->sendSuccessResponse([
-            'solutions' => $this->assignmentSolutionViewFactory->getSolutionsData($solutions),
-            'assignments' => $this->assignmentsViewFactory->getAssignments(array_values($assignments)),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 }

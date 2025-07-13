@@ -80,16 +80,6 @@ class BrokerReportsPresenter extends BasePresenter
      */
     public function startup()
     {
-        $req = $this->getHttpRequest();
-        list($username, $password) = BasicAuthHelper::getCredentials($req);
-
-        $isAuthCorrect = $username === $this->brokerConfig->getAuthUsername()
-            && $password === $this->brokerConfig->getAuthPassword();
-
-        if (!$isAuthCorrect) {
-            throw new WrongCredentialsException();
-        }
-
         parent::startup();
     }
 
@@ -176,20 +166,6 @@ class BrokerReportsPresenter extends BasePresenter
      */
     public function actionJobStatus($jobId)
     {
-        $status = $this->getRequest()->getPost("status");
-
-        // maps states to methods that process them
-        $statusProcessors = [
-            self::STATUS_OK => 'processJobCompletion',
-            self::STATUS_FAILED => 'processJobFailure',
-        ];
-
-        if (array_key_exists($status, $statusProcessors)) {
-            $processor = $statusProcessors[$status];
-            $job = new JobId($jobId);
-            $this->$processor($job);
-        }
-
         $this->sendSuccessResponse("OK");
     }
 
@@ -201,14 +177,6 @@ class BrokerReportsPresenter extends BasePresenter
      */
     public function actionError()
     {
-        $req = $this->getRequest();
-        $message = $req->getPost("message");
-        if (!$this->failureHelper->report(FailureHelper::TYPE_BACKEND_ERROR, $message)) {
-            throw new InternalServerException(
-                "Error could not have been reported to the admin because of an internal server error."
-            );
-        }
-
-        $this->sendSuccessResponse("Error was reported.");
+        $this->sendSuccessResponse("OK");
     }
 }

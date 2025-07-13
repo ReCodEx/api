@@ -113,7 +113,7 @@ class PipelinesPresenter extends BasePresenter
     public $fileStorage;
 
 
-    public function checkGetDefaultBoxes()
+    public function noncheckGetDefaultBoxes()
     {
         if (!$this->pipelineAcl->canViewAll()) {
             throw new ForbiddenRequestException("You cannot list default boxes.");
@@ -126,11 +126,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionGetDefaultBoxes()
     {
-        $boxes = $this->boxService->getAllBoxes();
-        $this->sendSuccessResponse($boxes);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDefault(string $search = null)
+    public function noncheckDefault(string $search = null)
     {
         if (!$this->pipelineAcl->canViewAll()) {
             throw new ForbiddenRequestException("You cannot list all pipelines.");
@@ -154,24 +153,7 @@ class PipelinesPresenter extends BasePresenter
         array $filters = null,
         string $locale = null
     ) {
-        $pagination = $this->getPagination(
-            $offset,
-            $limit,
-            $locale,
-            $orderBy,
-            ($filters === null) ? [] : $filters,
-            ['search', 'exerciseId', 'authorId']
-        );
-
-        $pipelines = $this->pipelines->getPreparedForPagination($pagination);
-        $pipelines = array_filter(
-            $pipelines,
-            function (Pipeline $pipeline) {
-                return $this->pipelineAcl->canViewDetail($pipeline);
-            }
-        );
-        $pipelines = $this->pipelineViewFactory->getPipelines($pipelines);
-        $this->sendPaginationSuccessResponse($pipelines, $pagination, true); // true = needs to be sliced inside
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -184,22 +166,7 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionCreatePipeline()
     {
-        $req = $this->getRequest();
-
-        if (!$this->pipelineAcl->canCreate()) {
-            throw new ForbiddenRequestException("You are not allowed to create pipeline.");
-        }
-
-        $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
-        if ($global && !$this->pipelineAcl->canCreateGlobal()) {
-            throw new ForbiddenRequestException("You are not allowed to create global pipelines.");
-        }
-
-        // create pipeline entity, persist it and return it
-        $pipeline = Pipeline::create($global ? null : $this->getCurrentUser());
-        $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
-        $this->pipelines->persist($pipeline);
-        $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -213,25 +180,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionForkPipeline(string $id)
     {
-        $req = $this->getRequest();
-        $pipeline = $this->pipelines->findOrThrow($id);
-
-        if (!$this->pipelineAcl->canFork($pipeline)) {
-            throw new ForbiddenRequestException("You are not allowed to fork pipeline.");
-        }
-
-        $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
-        if ($global && !$this->pipelineAcl->canCreateGlobal()) {
-            throw new ForbiddenRequestException("You are not allowed to create global pipelines.");
-        }
-
-        // fork pipeline entity, persist it and return it
-        $pipeline = Pipeline::forkFrom($global ? null : $this->getCurrentUser(), $pipeline);
-        $this->pipelines->persist($pipeline);
-        $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemovePipeline(string $id)
+    public function noncheckRemovePipeline(string $id)
     {
         /** @var Pipeline $pipeline */
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -248,12 +200,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionRemovePipeline(string $id)
     {
-        $pipeline = $this->pipelines->findOrThrow($id);
-        $this->pipelines->remove($pipeline);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkGetPipeline(string $id)
+    public function noncheckGetPipeline(string $id)
     {
         /** @var Pipeline $pipeline */
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -270,12 +220,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionGetPipeline(string $id)
     {
-        /** @var Pipeline $pipeline */
-        $pipeline = $this->pipelines->findOrThrow($id);
-        $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdatePipeline(string $id)
+    public function noncheckUpdatePipeline(string $id)
     {
         /** @var Pipeline $pipeline */
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -303,66 +251,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionUpdatePipeline(string $id)
     {
-        /** @var Pipeline $pipeline */
-        $pipeline = $this->pipelines->findOrThrow($id);
-
-        $req = $this->getRequest();
-        $version = intval($req->getPost("version"));
-        if ($version !== $pipeline->getVersion()) {
-            $v = $pipeline->getVersion();
-            throw new BadRequestException(
-                "The pipeline was edited in the meantime and the version has changed. Current version is $v.",
-                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
-                [
-                    'entity' => 'pipeline',
-                    'id' => $id,
-                    'version' => $v
-                ]
-            );
-        }
-
-        $global = filter_var($req->getPost("global"), FILTER_VALIDATE_BOOLEAN);
-        if ($global && !$this->pipelineAcl->canCreateGlobal()) {
-            throw new ForbiddenRequestException("You are not allowed to create global pipelines.");
-        }
-
-        // update fields of the pipeline
-        $name = $req->getPost("name");
-        $description = $req->getPost("description");
-        $pipeline->setName($name);
-        $pipeline->setDescription($description);
-        $pipeline->updatedNow();
-        $pipeline->incrementVersion();
-        if ($global !== $pipeline->isGlobal()) {
-            $pipeline->setAuthor($global ? null : $this->getCurrentUser());
-        }
-
-        // get new configuration from parameters, parse it and check for format errors
-        $pipelinePost = $req->getPost("pipeline");
-        if (!empty($pipelinePost)) {
-            $pipelineConfig = $this->exerciseConfigLoader->loadPipeline($pipelinePost);
-            $oldConfig = $pipeline->getPipelineConfig();
-
-            // validate new pipeline configuration
-            $this->configValidator->validatePipeline($pipeline, $pipelineConfig);
-
-            // create new pipeline configuration based on given data and store it in pipeline entity
-            $newConfig = new PipelineConfig((string)$pipelineConfig, $this->getCurrentUser(), $oldConfig);
-            $pipeline->setPipelineConfig($newConfig);
-        }
-
-        $parameters = $this->request->getPost("parameters");
-        if ($parameters !== null) {
-            $pipeline->setParameters($parameters);
-        }
-
-        $this->pipelines->persist($pipeline);
-        $this->pipelines->flush();
-
-        $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateRuntimeEnvironments(string $id)
+    public function noncheckUpdateRuntimeEnvironments(string $id)
     {
         /** @var Pipeline $pipeline */
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -382,17 +274,7 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionUpdateRuntimeEnvironments(string $id)
     {
-        /** @var Pipeline $pipeline */
-        $pipeline = $this->pipelines->findOrThrow($id);
-
-        $envsIds = $this->getRequest()->getPost("environments");
-        $envs = array_map(function ($envId) {
-            return $this->runtimes->findOrThrow($envId);
-        }, $envsIds);
-        $pipeline->setRuntimeEnvironments($envs);
-
-        $this->pipelines->flush();
-        $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -405,23 +287,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionValidatePipeline(string $id)
     {
-        $pipeline = $this->pipelines->findOrThrow($id);
-
-        if (!$this->pipelineAcl->canUpdate($pipeline)) {
-            throw new ForbiddenRequestException("You cannot modify this pipeline.");
-        }
-
-        $req = $this->getRequest();
-        $version = intval($req->getPost("version"));
-
-        $this->sendSuccessResponse(
-            [
-                "versionIsUpToDate" => $pipeline->getVersion() === $version
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUploadSupplementaryFiles(string $id)
+    public function noncheckUploadSupplementaryFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         if (!$this->pipelineAcl->canUpdate($pipeline)) {
@@ -440,44 +309,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionUploadSupplementaryFiles(string $id)
     {
-        $pipeline = $this->pipelines->findOrThrow($id);
-        $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-        $supplementaryFiles = [];
-        $currentSupplementaryFiles = [];
-
-        /** @var SupplementaryExerciseFile $file */
-        foreach ($pipeline->getSupplementaryEvaluationFiles() as $file) {
-            $currentSupplementaryFiles[$file->getName()] = $file;
-        }
-
-        /** @var UploadedFile $file */
-        foreach ($files as $file) {
-            if (get_class($file) !== UploadedFile::class) {
-                throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
-            }
-
-            if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
-                /** @var SupplementaryExerciseFile $currentFile */
-                $currentFile = $currentSupplementaryFiles[$file->getName()];
-                $pipeline->getSupplementaryEvaluationFiles()->removeElement($currentFile);
-            }
-
-            $hash = $this->fileStorage->storeUploadedSupplementaryFile($file);
-            $pipelineFile = SupplementaryExerciseFile::fromUploadedFileAndPipeline($file, $pipeline, $hash);
-            $supplementaryFiles[] = $pipelineFile;
-
-            $this->uploadedFiles->persist($pipelineFile, false);
-            $this->uploadedFiles->remove($file, false);
-        }
-
-        $pipeline->updatedNow();
-        $this->pipelines->flush();
-        $this->uploadedFiles->flush();
-
-        $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkGetSupplementaryFiles(string $id)
+    public function noncheckGetSupplementaryFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         if (!$this->pipelineAcl->canViewDetail($pipeline)) {
@@ -493,11 +328,10 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionGetSupplementaryFiles(string $id)
     {
-        $pipeline = $this->pipelines->findOrThrow($id);
-        $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteSupplementaryFile(string $id, string $fileId)
+    public function noncheckDeleteSupplementaryFile(string $id, string $fileId)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         if (!$this->pipelineAcl->canUpdate($pipeline)) {
@@ -514,18 +348,11 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionDeleteSupplementaryFile(string $id, string $fileId)
     {
-        $pipeline = $this->pipelines->findOrThrow($id);
-        $file = $this->supplementaryFiles->findOrThrow($fileId);
-
-        $pipeline->updatedNow();
-        $pipeline->getSupplementaryEvaluationFiles()->removeElement($file);
-        $this->pipelines->flush();
-
         $this->sendSuccessResponse("OK");
     }
 
 
-    public function checkGetPipelineExercises(string $id)
+    public function noncheckGetPipelineExercises(string $id)
     {
         /** @var Pipeline $pipeline */
         $pipeline = $this->pipelines->findOrThrow($id);
@@ -543,10 +370,6 @@ class PipelinesPresenter extends BasePresenter
      */
     public function actionGetPipelineExercises(string $id)
     {
-        $exercises = $this->exercises->getPipelineExercises($id);
-        $this->sendSuccessResponse(array_map(
-            [$this->exerciseViewFactory, "getExerciseBareMinimum"],
-            array_values($exercises)
-        ));
+        $this->sendSuccessResponse("OK");
     }
 }

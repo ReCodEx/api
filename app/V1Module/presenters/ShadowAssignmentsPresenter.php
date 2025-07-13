@@ -79,7 +79,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
     public $pointsChangedEmailsSender;
 
 
-    public function checkDetail(string $id)
+    public function noncheckDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
         if (!$this->shadowAssignmentAcl->canViewDetail($assignment)) {
@@ -95,11 +95,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionDetail(string $id)
     {
-        $assignment = $this->shadowAssignments->findOrThrow($id);
-        $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkValidate(string $id)
+    public function noncheckValidate(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
         if (!$this->shadowAssignmentAcl->canUpdate($assignment)) {
@@ -116,16 +115,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionValidate($id)
     {
-        $assignment = $this->shadowAssignments->findOrThrow($id);
-        $version = intval($this->getHttpRequest()->getPost("version"));
-        $this->sendSuccessResponse(
-            [
-                "versionIsUpToDate" => $assignment->getVersion() === $version
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateDetail(string $id)
+    public function noncheckUpdateDetail(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
         if (!$this->shadowAssignmentAcl->canUpdate($assignment)) {
@@ -157,86 +150,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionUpdateDetail(string $id)
     {
-        $assignment = $this->shadowAssignments->findOrThrow($id);
-
-        $req = $this->getRequest();
-        $version = intval($req->getPost("version"));
-        if ($version !== $assignment->getVersion()) {
-            $v = $assignment->getVersion();
-            throw new BadRequestException(
-                "The shadow assignment was edited in the meantime and the version has changed. Current version is $v.",
-                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
-                [
-                    'entity' => 'shadowAssignment',
-                    'id' => $id,
-                    'version' => $v
-                ]
-            );
-        }
-
-        // localized texts cannot be empty
-        if (count($req->getPost("localizedTexts")) == 0) {
-            throw new InvalidArgumentException("No entry for localized texts given.");
-        }
-
-        // old values of some attributes
-        $wasPublic = $assignment->isPublic();
-        $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-        $sendNotification = $req->getPost("sendNotification") ? filter_var(
-            $req->getPost("sendNotification"),
-            FILTER_VALIDATE_BOOLEAN
-        ) : true;
-
-        $assignment->incrementVersion();
-        $assignment->updatedNow();
-        $assignment->setIsPublic($isPublic);
-        $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
-        $assignment->setMaxPoints($req->getPost("maxPoints"));
-
-        $deadline = (int)$req->getPost("deadline");
-        $assignment->setDeadline($deadline ? DateTime::createFromFormat('U', $deadline) : null);
-
-
-        // go through localizedTexts and construct database entities
-        $localizedTexts = [];
-        foreach ($req->getPost("localizedTexts") as $localization) {
-            $lang = $localization["locale"];
-
-            if (array_key_exists($lang, $localizedTexts)) {
-                throw new InvalidArgumentException("Duplicate entry for language '$lang' in localizedTexts");
-            }
-
-            // create all new localized texts
-            $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
-            if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
-                throw new InvalidArgumentException("External assignment link is not a valid URL");
-            }
-
-            $localized = new LocalizedShadowAssignment(
-                $lang,
-                trim(Arrays::get($localization, "name", "")),
-                trim(Arrays::get($localization, "text", "")),
-                $externalAssignmentLink ?: null
-            );
-
-            $localizedTexts[$lang] = $localized;
-        }
-
-        // make changes to database
-        Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
-
-        foreach ($assignment->getLocalizedTexts() as $localizedText) {
-            $this->shadowAssignments->persist($localizedText, false);
-        }
-
-        // sending notification has to be after setting new localized texts
-        if ($sendNotification && $wasPublic === false && $isPublic === true) {
-            // assignment is moving from non-public to public, send notification to students
-            $this->assignmentEmailsSender->assignmentCreated($assignment);
-        }
-
-        $this->shadowAssignments->flush();
-        $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -249,23 +163,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionCreate()
     {
-        $req = $this->getRequest();
-        $group = $this->groups->findOrThrow($req->getPost("groupId"));
-
-        if (!$this->groupAcl->canCreateShadowAssignment($group)) {
-            throw new ForbiddenRequestException("You are not allowed to create assignment in given group.");
-        }
-
-        if ($group->isOrganizational()) {
-            throw new BadRequestException("You cannot create assignment in organizational groups");
-        }
-
-        $assignment = ShadowAssignment::createInGroup($group);
-        $this->shadowAssignments->persist($assignment);
-        $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove(string $id)
+    public function noncheckRemove(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
 
@@ -282,12 +183,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionRemove(string $id)
     {
-        $assignment = $this->shadowAssignments->findOrThrow($id);
-        $this->shadowAssignments->remove($assignment);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreatePoints(string $id)
+    public function noncheckCreatePoints(string $id)
     {
         $assignment = $this->shadowAssignments->findOrThrow($id);
         if (!$this->shadowAssignmentAcl->canCreatePoints($assignment)) {
@@ -312,45 +211,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionCreatePoints(string $id)
     {
-        $req = $this->getRequest();
-        $userId = $req->getPost("userId");
-        $points = (int)$req->getPost("points");
-        $note = $req->getPost("note");
-
-        $awardedAt = $req->getPost("awardedAt") ?: null;
-        $awardedAt = $awardedAt ? DateTime::createFromFormat('U', $awardedAt) : null;
-
-        $assignment = $this->shadowAssignments->findOrThrow($id);
-        if ($assignment->getGroup() === null) {
-            throw new NotFoundException("Group for assignment '$id' was deleted");
-        }
-
-        $user = $this->users->findOrThrow($userId);
-        if (!$assignment->getGroup()->isStudentOf($user)) {
-            throw new BadRequestException("User is not member of the group");
-        }
-
-        if ($assignment->getPointsByUser($user)) {
-            throw new BadRequestException("Given user already has shadow assignment points");
-        }
-
-        $pointsEntity = new ShadowAssignmentPoints(
-            $points,
-            $note,
-            $assignment,
-            $this->getCurrentUser(),
-            $user,
-            $awardedAt
-        );
-        $this->shadowAssignmentPointsRepository->persist($pointsEntity);
-
-        // user was awarded with points, send an email
-        $this->pointsChangedEmailsSender->shadowPointsUpdated($pointsEntity);
-
-        $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getPoints($pointsEntity));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdatePoints(string $pointsId)
+    public function noncheckUpdatePoints(string $pointsId)
     {
         $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
         $assignment = $points->getShadowAssignment();
@@ -372,31 +236,10 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionUpdatePoints(string $pointsId)
     {
-        $pointsEntity = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
-        $oldPoints = $pointsEntity->getPoints();
-
-        $req = $this->getRequest();
-        $points = (int)$req->getPost("points");
-        $note = $req->getPost("note");
-
-        $awardedAt = $req->getPost("awardedAt") ?: null;
-        $awardedAt = $awardedAt ? DateTime::createFromFormat('U', $awardedAt) : null;
-
-        $pointsEntity->updatedNow();
-        $pointsEntity->setPoints($points);
-        $pointsEntity->setNote($note);
-        $pointsEntity->setAwardedAt($awardedAt);
-        $this->shadowAssignmentPointsRepository->flush();
-
-        if ($oldPoints !== $points) {
-            // user points was updated, send an email
-            $this->pointsChangedEmailsSender->shadowPointsUpdated($pointsEntity);
-        }
-
-        $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getPoints($pointsEntity));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemovePoints(string $pointsId)
+    public function noncheckRemovePoints(string $pointsId)
     {
         $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
         $assignment = $points->getShadowAssignment();
@@ -413,8 +256,6 @@ class ShadowAssignmentsPresenter extends BasePresenter
      */
     public function actionRemovePoints(string $pointsId)
     {
-        $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
-        $this->shadowAssignmentPointsRepository->remove($points);
         $this->sendSuccessResponse("OK");
     }
 }

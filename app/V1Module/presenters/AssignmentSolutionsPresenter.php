@@ -131,7 +131,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
     public $reviewComments;
 
 
-    public function checkSolution(string $id)
+    public function noncheckSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
@@ -147,21 +147,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionSolution(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-
-        // if there is submission, try to evaluate it
-        $submission = $solution->getLastSubmission();
-        if ($submission) {
-            $this->evaluationLoadingHelper->loadEvaluation($submission);
-        }
-
-        // fetch data
-        $this->sendSuccessResponse(
-            $this->assignmentSolutionViewFactory->getSolutionData($solution)
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateSolution(string $id)
+    public function noncheckUpdateSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canUpdate($solution)) {
@@ -179,15 +168,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionUpdateSolution(string $id)
     {
-        $req = $this->getRequest();
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $solution->setNote($req->getPost("note"));
-
-        $this->assignmentSolutions->flush();
-        $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getSolutionData($solution));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteSolution(string $id)
+    public function noncheckDeleteSolution(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canDelete($solution)) {
@@ -203,29 +187,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionDeleteSolution(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-
-        // delete review (if any)
-        $this->reviewComments->deleteCommentsOfSolution($solution);
-
-        // delete files of submissions that will be deleted in cascade
-        $submissions = $solution->getSubmissions()->getValues();
-        foreach ($submissions as $submission) {
-            $this->fileStorage->deleteResultsArchive($submission);
-            $this->fileStorage->deleteJobConfig($submission);
-        }
-
-        // delete source codes
-        $this->fileStorage->deleteSolutionArchive($solution->getSolution());
-
-        $solution->setLastSubmission(null); // break cyclic dependency, so submissions may be deleted on cascade
-        $this->assignmentSolutions->flush();
-        $this->assignmentSolutions->remove($solution);
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubmissions(string $id)
+    public function noncheckSubmissions(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
@@ -240,26 +205,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionSubmissions(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-
-        $submissions = $this->assignmentSolutionAcl->canViewEvaluation($solution)
-            ? $solution->getSubmissions()->getValues()
-            : [];
-
-        // display only data that the current user can view
-        $submissions = array_map(
-            function (AssignmentSolutionSubmission $submission) {
-                // try to load evaluation if not present
-                $this->evaluationLoadingHelper->loadEvaluation($submission);
-                return $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission);
-            },
-            $submissions
-        );
-
-        $this->sendSuccessResponse($submissions);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubmission(string $submissionId)
+    public function noncheckSubmission(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
         $solution = $submission->getAssignmentSolution();
@@ -277,16 +226,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionSubmission(string $submissionId)
     {
-        $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
-
-        // try to load evaluation if not present
-        $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-        $submissionData = $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission);
-        $this->sendSuccessResponse($submissionData);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteSubmission(string $submissionId)
+    public function noncheckDeleteSubmission(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
         $solution = $submission->getAssignmentSolution();
@@ -305,17 +248,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionDeleteSubmission(string $submissionId)
     {
-        $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
-        $solution = $submission->getAssignmentSolution();
-        $solution->setLastSubmission($this->assignmentSolutionSubmissions->getLastSubmission($solution, $submission));
-        $this->assignmentSolutionSubmissions->remove($submission);
-        $this->assignmentSolutionSubmissions->flush();
-        $this->fileStorage->deleteResultsArchive($submission);
-        $this->fileStorage->deleteJobConfig($submission);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetBonusPoints(string $id)
+    public function noncheckSetBonusPoints(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canSetBonusPoints($solution)) {
@@ -338,62 +274,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionSetBonusPoints(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $assignment = $solution->getAssignment();
-        $author = $solution->getSolution()->getAuthor();
-        $oldBonusPoints = $solution->getBonusPoints();
-        $oldOverridenPoints = $solution->getOverriddenPoints();
-
-        $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
-        $overriddenPoints = $this->getRequest()->getPost("overriddenPoints");
-
-        // remember, who was the best in case the new points will change that
-        $oldBest = null;
-        if ($assignment && ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints)) {
-            $oldBest = $this->assignmentSolutions->findBestSolution($assignment, $author);
-        }
-
-        $solution->setBonusPoints($newBonusPoints);
-
-        // TODO: validations 'null|numericint' for overridenPoints cannot be used, because null is converted to empty
-        // TODO: string which immediately breaks stated validation... in the future, this behaviour has to change
-        // TODO: lucky third TODO
-        if (Validators::isNumericInt($overriddenPoints)) {
-            $solution->setOverriddenPoints($overriddenPoints);
-        } else {
-            if (empty($overriddenPoints)) {
-                $solution->setOverriddenPoints(null);
-            } else {
-                throw new InvalidArgumentException(
-                    "overridenPoints",
-                    "The value '$overriddenPoints' is not null|numericint"
-                );
-            }
-        }
-
-        $this->assignmentSolutions->flush();
-
-        $changedSolutions = []; // list of changed solutions reported back in payload
-        if ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints) {
-            $this->pointsChangedEmailsSender->solutionPointsUpdated($solution);
-            $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($solution);
-            if ($assignment) {
-                $best = $this->assignmentSolutions->findBestSolution($assignment, $author);
-                if ($best->getId() !== $oldBest->getId()) {
-                    // best solution has changed, we need to report this
-                    if ($best->getId() !== $id) {
-                        $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($best);
-                    }
-                    if ($oldBest->getId() !== $id) {
-                        $changedSolutions[] = $this->assignmentSolutionViewFactory->getSolutionData($oldBest);
-                    }
-                }
-            }
-        }
-        $this->sendSuccessResponse($changedSolutions);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetFlag(string $id, string $flag)
+    public function noncheckSetFlag(string $id, string $flag)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
 
@@ -433,109 +317,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionSetFlag(string $id, string $flag)
     {
-        $req = $this->getRequest();
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if ($solution->getAssignment() === null) {
-            throw new NotFoundException("Assignment for solution '$id' was deleted");
-        }
-
-        if ($solution->getSolution()->getAuthor() === null) {
-            throw new NotFoundException("Author of solution '$id' was deleted");
-        }
-
-        // map of boolean flag names with the information about uniqueness
-        $knownBoolFlags = [
-            "accepted" => true,
-            "reviewRequest" => true,
-        ];
-
-        if (!array_key_exists($flag, $knownBoolFlags)) {
-            throw new BadRequestException("Trying to set unknown boolean flag '$flag' to the solution");
-        }
-
-        // handle given flag
-        $unique = $knownBoolFlags[$flag];
-        $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
-        $oldValue = $solution->getFlag($flag);
-        if ($value === $oldValue) {
-            $this->sendSuccessResponse(["solutions" => []]);
-            return; // nothing changed
-        }
-
-        $oldBestSolution = $this->assignmentSolutions->findBestSolution(
-            $solution->getAssignment(),
-            $solution->getSolution()->getAuthor()
-        );
-
-        // handle unique flags
-        $resetedSolution = null; // remeber original holder of a unique flag (for an email notification)
-        /* @phpstan-ignore-next-line */
-        if ($unique && $value) {
-            // flag has to be set to false for all other solutions of a user
-            $assignmentSolutions = $this->assignmentSolutions->findSolutions(
-                $solution->getAssignment(),
-                $solution->getSolution()->getAuthor()
-            );
-            foreach ($assignmentSolutions as $assignmentSolution) {
-                if ($assignmentSolution->getFlag($flag)) {
-                    $resetedSolution = $assignmentSolution;
-                }
-                $assignmentSolution->setFlag($flag, false);
-            }
-        }
-        // handle given flag
-        $solution->setFlag($flag, $value);
-
-        // finally flush all changed to the database
-        $this->assignmentSolutions->flush();
-        $this->assignmentSolutions->refresh($oldBestSolution);
-
-        // send notification email
-        $notificationMethod = $flag . 'FlagChanged';
-        if (method_exists($this->solutionFlagChangedEmailSender, $notificationMethod)) {
-            $this->solutionFlagChangedEmailSender->$notificationMethod(
-                $this->getCurrentUser(),
-                $solution,
-                $value,
-                $resetedSolution
-            );
-        }
-
-        // assemble response (all entites and stats that may have changed)
-        $assignmentId = $solution->getAssignment()->getId();
-        $groupOfSolution = $solution->getAssignment()->getGroup();
-        if ($groupOfSolution === null) {
-            throw new NotFoundException("Group for assignment '$id' was not found");
-        }
-
-        $resSolutions = [ $id => $this->assignmentSolutionViewFactory->getSolutionData($solution) ];
-        if ($resetedSolution) {
-            $resSolutions[$resetedSolution->getId()] =
-                $this->assignmentSolutionViewFactory->getSolutionData($resetedSolution);
-        }
-
-        $bestSolution = $this->assignmentSolutions->findBestSolution(
-            $solution->getAssignment(),
-            $solution->getSolution()->getAuthor()
-        );
-        if ($oldBestSolution->getId() !== $bestSolution->getId()) {
-            // add old and current best solutions as well (since they have changed)
-            $resSolutions[$oldBestSolution->getId()] =
-                $this->assignmentSolutionViewFactory->getSolutionData($oldBestSolution);
-            $resSolutions[$bestSolution->getId()] =
-                $this->assignmentSolutionViewFactory->getSolutionData($bestSolution);
-        }
-
-        $this->sendSuccessResponse([
-            "solutions" => array_values($resSolutions),
-            "stats" => $this->groupViewFactory->getStudentsStats(
-                $groupOfSolution,
-                $solution->getSolution()->getAuthor()
-            ),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadSolutionArchive(string $id)
+    public function noncheckDownloadSolutionArchive(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
@@ -554,15 +339,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionDownloadSolutionArchive(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        $zipFile = $this->fileStorage->getSolutionFile($solution->getSolution());
-        if (!$zipFile) {
-            throw new NotFoundException("Solution archive not found.");
-        }
-        $this->sendStorageFileResponse($zipFile, "solution-{$id}.zip", "application/zip");
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkFiles(string $id)
+    public function noncheckFiles(string $id)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
         if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
@@ -579,11 +359,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionFiles(string $id)
     {
-        $solution = $this->assignmentSolutions->findOrThrow($id)->getSolution();
-        $this->sendSuccessResponse($this->solutionFilesViewFactory->getSolutionFilesData($solution));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadResultArchive(string $submissionId)
+    public function noncheckDownloadResultArchive(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
         if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution())) {
@@ -601,22 +380,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionDownloadResultArchive(string $submissionId)
     {
-        $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
-        $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-        if (!$submission->hasEvaluation()) {
-            throw new NotReadyException("Submission is not evaluated yet");
-        }
-
-        $file = $this->fileStorage->getResultsArchive($submission);
-        if (!$file) {
-            throw new NotFoundException("Archive for submission '$submissionId' not found in file storage");
-        }
-
-        $this->sendStorageFileResponse($file, "results-{$submissionId}.zip", "application/zip");
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkEvaluationScoreConfig(string $submissionId)
+    public function noncheckEvaluationScoreConfig(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
         $solution = $submission->getAssignmentSolution();
@@ -634,15 +401,10 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionEvaluationScoreConfig(string $submissionId)
     {
-        $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
-        $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-        $evaluation = $submission->getEvaluation();
-        $scoreConfig = $evaluation !== null ? $evaluation->getScoreConfig() : null;
-        $this->sendSuccessResponse($scoreConfig);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkReviewRequests(string $id)
+    public function noncheckReviewRequests(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canListReviewRequests($user)) {
@@ -659,20 +421,6 @@ class AssignmentSolutionsPresenter extends BasePresenter
      */
     public function actionReviewRequests(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $solutions = $this->assignmentSolutions->findReviewRequestSolutionsOfTeacher($user);
-
-        $assignments = [];
-        foreach ($solutions as $solution) {
-            $assignment = $solution->getAssignment();
-            if ($assignment) {
-                $assignments[$assignment->getId()] = $assignment;
-            }
-        }
-
-        $this->sendSuccessResponse([
-            'solutions' => $this->assignmentSolutionViewFactory->getSolutionsData($solutions),
-            'assignments' => $this->assignmentsViewFactory->getAssignments(array_values($assignments)),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 }

@@ -99,7 +99,7 @@ class UsersPresenter extends BasePresenter
     public $passwordsService;
 
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->userAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -123,25 +123,10 @@ class UsersPresenter extends BasePresenter
         array $filters = null,
         string $locale = null
     ) {
-        $pagination = $this->getPagination(
-            $offset,
-            $limit,
-            $locale,
-            $orderBy,
-            ($filters === null) ? [] : $filters,
-            ['search', 'instanceId', 'roles']
-        );
-        $users = $this->users->getPaginated($pagination, $totalCount);
-        $users = array_map(
-            function (User $user) {
-                return $this->userViewFactory->getUser($user);
-            },
-            $users
-        );
-        $this->sendPaginationSuccessResponse($users, $pagination, false, $totalCount);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkListByIds()
+    public function noncheckListByIds()
     {
         if (!$this->userAcl->canViewList()) {
             throw new ForbiddenRequestException();
@@ -155,17 +140,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionListByIds()
     {
-        $users = $this->users->findByIds($this->getRequest()->getPost("ids"));
-        $users = array_filter(
-            $users,
-            function (User $user) {
-                return $this->userAcl->canViewPublicData($user);
-            }
-        );
-        $this->sendSuccessResponse($this->userViewFactory->getUsers($users));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDetail(string $id)
+    public function noncheckDetail(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canViewPublicData($user)) {
@@ -180,11 +158,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionDetail(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDelete(string $id)
+    public function noncheckDelete(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canDelete($user)) {
@@ -200,13 +177,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionDelete(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $this->anonymizationHelper->prepareUserForSoftDelete($user);
-        $this->users->remove($user);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateProfile(string $id)
+    public function noncheckUpdateProfile(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -240,45 +214,7 @@ class UsersPresenter extends BasePresenter
      */
     public function actionUpdateProfile(string $id)
     {
-        $req = $this->getRequest();
-
-        // fill user with provided data
-        $user = $this->users->findOrThrow($id);
-        $login = $user->getLogin();
-
-        // change details in separate methods
-        $this->changeUserEmail($user, $req->getPost("email"));
-        $this->changePersonalData(
-            $user,
-            $req->getPost("titlesBeforeName"),
-            $req->getPost("firstName"),
-            $req->getPost("lastName"),
-            $req->getPost("titlesAfterName")
-        );
-        $passwordChanged = $this->changeUserPassword(
-            $login,
-            $req->getPost("oldPassword"),
-            $req->getPost("password"),
-            $req->getPost("passwordConfirm")
-        );
-
-        $gravatarUrlEnabled = $req->getPost("gravatarUrlEnabled");
-        if ($gravatarUrlEnabled !== null) {  // null or missing value -> no update
-            $user->setGravatar(filter_var($gravatarUrlEnabled, FILTER_VALIDATE_BOOLEAN));
-        }
-
-        // make changes permanent
-        $this->users->flush();
-        $this->logins->flush();
-
-        $this->sendSuccessResponse(
-            [
-                "user" => $this->userViewFactory->getUser($user),
-                "accessToken" => $passwordChanged && $user === $this->getCurrentUser()
-                    ? $this->accessManager->issueRefreshedToken($this->getAccessToken())
-                    : null
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -295,7 +231,7 @@ class UsersPresenter extends BasePresenter
             return;
         }
 
-        // check if there is not another user using provided email
+        // noncheck if there is not another user using provided email
         $userEmail = $this->users->getByEmail($email);
         if ($userEmail !== null && $userEmail->getId() !== $user->getId()) {
             throw new BadRequestException("This email address is already taken.");
@@ -322,7 +258,7 @@ class UsersPresenter extends BasePresenter
     }
 
     /**
-     * Change firstname and second name and check if user can change them.
+     * Change firstname and second name and noncheck if user can change them.
      * @param User $user
      * @param null|string $titlesBefore
      * @param null|string $firstname
@@ -391,7 +327,7 @@ class UsersPresenter extends BasePresenter
             $login->passwordsMatchOrEmpty($oldPassword, $this->passwordsService) ||
             (!$oldPassword && $this->userAcl->canForceChangePassword($login->getUser()))
         ) {
-            // check if new passwords match each other
+            // noncheck if new passwords match each other
             if ($password !== $passwordConfirm) {
                 throw new WrongCredentialsException(
                     "Provided passwords do not match",
@@ -417,7 +353,7 @@ class UsersPresenter extends BasePresenter
         return true;
     }
 
-    public function checkUpdateSettings(string $id)
+    public function noncheckUpdateSettings(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -461,42 +397,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionUpdateSettings(string $id)
     {
-        $req = $this->getRequest();
-        $user = $this->users->findOrThrow($id);
-        $settings = $user->getSettings();
-
-        // handle boolean flags
-        $knownBoolFlags = [
-            "newAssignmentEmails",
-            "assignmentDeadlineEmails",
-            "submissionEvaluatedEmails",
-            "solutionCommentsEmails",
-            "solutionReviewsEmails",
-            "assignmentCommentsEmails",
-            "pointsChangedEmails",
-            "assignmentSubmitAfterAcceptedEmails",
-            "assignmentSubmitAfterReviewedEmails",
-            "exerciseNotificationEmails",
-            "solutionAcceptedEmails",
-            "solutionReviewRequestedEmails",
-        ];
-
-        foreach ($knownBoolFlags as $flag) {
-            if ($req->getPost($flag) !== null) {
-                $settings->setFlag($flag, filter_var($req->getPost($flag), FILTER_VALIDATE_BOOLEAN));
-            }
-        }
-
-        // handle string flags
-        if ($req->getPost("defaultLanguage") !== null) {
-            $settings->setDefaultLanguage(trim($req->getPost("defaultLanguage")));
-        }
-
-        $this->users->persist($user);
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateUiData(string $id)
+    public function noncheckUpdateUiData(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -516,38 +420,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionUpdateUiData(string $id)
     {
-        $req = $this->getRequest();
-        $user = $this->users->findOrThrow($id);
-        $uiData = $user->getUiData();
-
-        $overwrite = filter_var($req->getPost("overwrite"), FILTER_VALIDATE_BOOLEAN);
-        $newUiData = $req->getPost("uiData");
-        if (!$newUiData && !$overwrite) {
-            // nothing will change
-            $this->sendSuccessResponse($this->userViewFactory->getUser($user));
-            return;
-        }
-
-        if (!$newUiData && ($overwrite || $uiData)) {
-            $user->setUiData(null); // ui data are being erased
-        } else {
-            if (!$overwrite && $uiData) {
-                $newUiData = array_merge($uiData->getData(), $newUiData);
-            }
-
-            if (!$uiData) {
-                $uiData = new UserUiData($newUiData);
-                $user->setUiData($uiData);
-            } else {
-                $uiData->setData($newUiData);
-            }
-        }
-
-        $this->users->persist($user);
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreateLocalAccount(string $id)
+    public function noncheckCreateLocalAccount(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canCreateLocalAccount($user)) {
@@ -572,14 +448,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionCreateLocalAccount(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-
-        Login::createLogin($user, $user->getEmail(), "", $this->passwordsService);
-        $this->users->flush();
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkGroups(string $id)
+    public function noncheckGroups(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -595,34 +467,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionGroups(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-
-        $asStudent = $user->getGroupsAsStudent()->filter(
-            function (Group $group) {
-                return !$group->isArchived();
-            }
-        );
-
-        $asSupervisor = $user->getGroupsAsSupervisor()->filter(
-            function (Group $group) {
-                return !$group->isArchived();
-            }
-        );
-
-        $this->sendSuccessResponse(
-            [
-                "supervisor" => $this->groupViewFactory->getGroups($asSupervisor->getValues()),
-                "student" => $this->groupViewFactory->getGroups($asStudent->getValues()),
-                "stats" => $user->getGroupsAsStudent()->map(
-                    function (Group $group) use ($user) {
-                        return $this->groupViewFactory->getStudentsStats($group, $user);
-                    }
-                )->getValues(),
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAllGroups(string $id)
+    public function noncheckAllGroups(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -638,16 +486,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionAllGroups(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $this->sendSuccessResponse(
-            [
-                "supervisor" => $this->groupViewFactory->getGroups($user->getGroupsAsSupervisor()->getValues(), false),
-                "student" => $this->groupViewFactory->getGroups($user->getGroupsAsStudent()->getValues(), false)
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkInstances(string $id)
+    public function noncheckInstances(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -664,15 +506,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionInstances(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstances(
-            $user->getInstances()->toArray(),
-            $this->getCurrentUser()
-        ));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetRole(string $id)
+    public function noncheckSetRole(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canSetRole($user)) {
@@ -695,19 +532,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionSetRole(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $role = $this->getRequest()->getPost("role");
-        // validate role
-        if (!$this->roles->validateRole($role)) {
-            throw new InvalidArgumentException("role", "Unknown user role '$role'");
-        }
-
-        $user->setRole($role);
-        $this->users->flush();
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkInvalidateTokens(string $id)
+    public function noncheckInvalidateTokens(string $id)
     {
         $user = $this->users->findOrThrow($id);
 
@@ -725,25 +553,10 @@ class UsersPresenter extends BasePresenter
      */
     public function actionInvalidateTokens(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $user->setTokenValidityThreshold(new DateTime());
-        $this->users->flush();
-
-        $event = SecurityEvent::createInvalidateTokensEvent($this->getHttpRequest()->getRemoteAddress(), $user);
-        $this->securityEvents->persist($event);
-
-        $token = $this->getAccessToken();
-
-        $this->sendSuccessResponse(
-            [
-                "accessToken" => $user === $this->getCurrentUser() ? $this->accessManager->issueRefreshedToken(
-                    $token
-                ) : null
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetAllowed(string $id)
+    public function noncheckSetAllowed(string $id)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canSetIsAllowed($user)) {
@@ -766,21 +579,17 @@ class UsersPresenter extends BasePresenter
      */
     public function actionSetAllowed(string $id)
     {
-        $user = $this->users->findOrThrow($id);
-        $isAllowed = filter_var($this->getRequest()->getPost("isAllowed"), FILTER_VALIDATE_BOOLEAN);
-        $user->setIsAllowed($isAllowed);
-        $this->users->flush();
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateExternalLogin(string $id, string $service)
+    public function noncheckUpdateExternalLogin(string $id, string $service)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canSetExternalIds($user)) {
             throw new ForbiddenRequestException();
         }
 
-        // in the future, we might consider cross-checking the service ID
+        // in the future, we might consider cross-nonchecking the service ID
     }
 
     /**
@@ -793,41 +602,17 @@ class UsersPresenter extends BasePresenter
      */
     public function actionUpdateExternalLogin(string $id, string $service)
     {
-        $user = $this->users->findOrThrow($id);
-
-        // make sure the external ID is not used for another user
-        $externalId = $this->getRequest()->getPost("externalId");
-        $anotherUser = $this->externalLogins->getUser($service, $externalId);
-        if ($anotherUser) {
-            if ($anotherUser->getId() !== $id) {
-                // oopsie, this external ID is alreay used for a different user
-                throw new InvalidArgumentException('externalId', "This ID is already used by another user.");
-            }
-            // otherwise the external ID is already set to this user, so there is nothing to change...
-        } else {
-            // create/update external login entry
-            $login = $this->externalLogins->findByUser($user, $service);
-            if ($login) {
-                $login->setExternalId($externalId);
-            } else {
-                $login = new ExternalLogin($user, $service, $externalId);
-            }
-
-            $this->externalLogins->persist($login);
-            $this->users->refresh($user);
-        }
-
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemoveExternalLogin(string $id, string $service)
+    public function noncheckRemoveExternalLogin(string $id, string $service)
     {
         $user = $this->users->findOrThrow($id);
         if (!$this->userAcl->canSetExternalIds($user)) {
             throw new ForbiddenRequestException();
         }
 
-        // in the future, we might consider cross-checking the service ID
+        // in the future, we might consider cross-nonchecking the service ID
     }
 
     /**
@@ -838,12 +623,6 @@ class UsersPresenter extends BasePresenter
      */
     public function actionRemoveExternalLogin(string $id, string $service)
     {
-        $user = $this->users->findOrThrow($id);
-        $login = $this->externalLogins->findByUser($user, $service);
-        if ($login) {
-            $this->externalLogins->remove($login);
-            $this->users->refresh($user);
-        }
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 }

@@ -75,7 +75,7 @@ class PlagiarismPresenter extends BasePresenter
      */
     public $plagiarismViewFatory;
 
-    public function checkListBatches(?string $detectionTool, ?string $solutionId): void
+    public function noncheckListBatches(?string $detectionTool, ?string $solutionId): void
     {
         if (!$this->plagiarismAcl->canViewBatches()) {
             throw new ForbiddenRequestException();
@@ -92,12 +92,10 @@ class PlagiarismPresenter extends BasePresenter
      */
     public function actionListBatches(?string $detectionTool, ?string $solutionId): void
     {
-        $solution = $solutionId ? $this->assignmentSolutions->findOrThrow($solutionId) : null;
-        $batches = $this->detectionBatches->findByToolAndSolution($detectionTool, $solution);
-        $this->sendSuccessResponse($batches);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkBatchDetail(string $id): void
+    public function noncheckBatchDetail(string $id): void
     {
         if (!$this->plagiarismAcl->canViewBatches()) {
             throw new ForbiddenRequestException();
@@ -110,11 +108,10 @@ class PlagiarismPresenter extends BasePresenter
      */
     public function actionBatchDetail(string $id): void
     {
-        $batch = $this->detectionBatches->findOrThrow($id);
-        $this->sendSuccessResponse($batch);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreateBatch(): void
+    public function noncheckCreateBatch(): void
     {
         if (!$this->plagiarismAcl->canCreateBatch()) {
             throw new ForbiddenRequestException();
@@ -131,15 +128,10 @@ class PlagiarismPresenter extends BasePresenter
      */
     public function actionCreateBatch(): void
     {
-        $req = $this->getRequest();
-        $detectionTool = $req->getPost("detectionTool") ?? '';
-        $toolParams = $req->getPost("detectionToolParams") ?? '';
-        $batch = new PlagiarismDetectionBatch($detectionTool, $toolParams, $this->getCurrentUser());
-        $this->detectionBatches->persist($batch);
-        $this->sendSuccessResponse($batch);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateBatch(string $id): void
+    public function noncheckUpdateBatch(string $id): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
         if (!$this->plagiarismAcl->canUpdateBatch($batch)) {
@@ -155,15 +147,10 @@ class PlagiarismPresenter extends BasePresenter
      */
     public function actionUpdateBatch(string $id): void
     {
-        $req = $this->getRequest();
-        $uploadCompleted = filter_var($req->getPost("uploadCompleted"), FILTER_VALIDATE_BOOLEAN);
-        $batch = $this->detectionBatches->findOrThrow($id);
-        $batch->setUploadCompleted($uploadCompleted);
-        $this->detectionBatches->persist($batch);
-        $this->sendSuccessResponse($batch);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkGetSimilarities(string $id, string $solutionId): void
+    public function noncheckGetSimilarities(string $id, string $solutionId): void
     {
         $solution = $this->assignmentSolutions->findOrThrow($solutionId);
         if (!$this->assignmentSolutionAcl->canViewDetectedPlagiarisms($solution)) {
@@ -178,16 +165,10 @@ class PlagiarismPresenter extends BasePresenter
      */
     public function actionGetSimilarities(string $id, string $solutionId): void
     {
-        $batch = $this->detectionBatches->findOrThrow($id);
-        $solution = $this->assignmentSolutions->findOrThrow($solutionId);
-        $similarities = array_map(
-            [$this->plagiarismViewFatory, 'getPlagiarismSimilarityData'],
-            $this->detectedSimilarities->getSolutionSimilarities($batch, $solution)
-        );
-        $this->sendSuccessResponse($similarities);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAddSimilarities(string $id, string $solutionId): void
+    public function noncheckAddSimilarities(string $id, string $solutionId): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
         if (!$this->plagiarismAcl->canUpdateBatch($batch)) {
@@ -212,74 +193,6 @@ class PlagiarismPresenter extends BasePresenter
      */
     public function actionAddSimilarities(string $id, string $solutionId): void
     {
-        $batch = $this->detectionBatches->findOrThrow($id);
-        $solution = $this->assignmentSolutions->findOrThrow($solutionId);
-
-        $req = $this->getRequest();
-        $testedFile = $this->uploadedFiles->findOrThrow($req->getPost("solutionFileId"));
-        if (
-            !($testedFile instanceof SolutionFile) ||
-            $testedFile->getSolution()->getId() !== $solution->getSolution()->getId()
-        ) {
-            throw new BadRequestException("Given solutionFileId must refer to a file related to selected solution.");
-        }
-
-        $testedFileEntry = $req->getPost("fileEntry") ?? '';
-        $author = $this->users->findOrThrow($req->getPost('authorId'));
-        $similarity = min(1.0, max(0.0, (float)$req->getPost("similarity")));
-
-        $detectedSimilarity = new PlagiarismDetectedSimilarity(
-            $batch,
-            $author,
-            $solution,
-            $testedFile,
-            $testedFileEntry,
-            $similarity
-        );
-
-        foreach ($req->getPost("files") as $file) {
-            $similarSolution = array_key_exists('solutionId', $file)
-                ? $this->assignmentSolutions->findOrThrow($file['solutionId']) : null;
-            $similarFile = array_key_exists('solutionFileId', $file)
-                ? $this->uploadedFiles->findOrThrow($file['solutionFileId']) : null;
-
-            // correctness checks
-            if ($similarSolution && $similarSolution->getSolution()->getAuthor()->getId() !== $author->getId()) {
-                throw new BadRequestException(
-                    "All similar solutions referred in 'files' must be of the given author."
-                );
-            }
-            if (
-                $similarFile && (!($similarFile instanceof SolutionFile) || !$similarSolution
-                || $similarFile->getSolution()->getId() !== $similarSolution->getSolution()->getId())
-            ) {
-                throw new BadRequestException(
-                    "In the similar files record, every solutionFileId must refer to a file related to the corresponding selected solution."
-                );
-            }
-
-            try {
-                $detectedFile = new PlagiarismDetectedSimilarFile(
-                    $detectedSimilarity,
-                    $similarSolution,
-                    $similarFile,
-                    $file['fileEntry'] ?? '',
-                    $file['fragments'] ?? []
-                );
-                // actually, nothing else to do with detected file (it is automatically added to detected similarity)
-            } catch (ParseException $e) {
-                throw new BadRequestException(
-                    "File fragments structure is not correct. " . $e->getMessage(),
-                    FrontendErrorMappings::E400_000__BAD_REQUEST,
-                    null,
-                    $e
-                );
-            }
-        }
-
-        $this->detectedSimilarities->persist($detectedSimilarity, false);
-        $solution->setPlagiarismBatch($batch);
-        $this->assignmentSolutions->persist($solution);
-        $this->sendSuccessResponse($this->plagiarismViewFatory->getPlagiarismSimilarityData($detectedSimilarity));
+        $this->sendSuccessResponse("OK");
     }
 }

@@ -185,12 +185,7 @@ class GroupsPresenter extends BasePresenter
         bool $archived = false,
         bool $onlyArchived = false
     ) {
-        $user = $this->groupAcl->canViewAll() ? null : $this->getCurrentUser(); // user for membership restriction
-        $groups = $this->groups->findFiltered($user, $instanceId, $search, $archived, $onlyArchived);
-        if ($ancestors) {
-            $groups = $this->groups->groupsAncestralClosure($groups);
-        }
-        $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups, false));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -255,54 +250,7 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionAddGroup()
     {
-        $req = $this->getRequest();
-        $instanceId = $req->getPost("instanceId");
-        $parentGroupId = $req->getPost("parentGroupId");
-        $user = $this->getCurrentUser();
-
-        /** @var Instance $instance */
-        $instance = $this->instances->findOrThrow($instanceId);
-        $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
-
-        if ($parentGroup->isArchived()) {
-            throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
-        }
-
-        if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
-            throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
-        }
-
-        $externalId = $req->getPost("externalId") === null ? "" : $req->getPost("externalId");
-        $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
-        $detaining = filter_var($req->getPost("detaining"), FILTER_VALIDATE_BOOLEAN);
-        $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-        $isOrganizational = filter_var($req->getPost("isOrganizational"), FILTER_VALIDATE_BOOLEAN);
-        $isExam = filter_var($req->getPost("isExam"), FILTER_VALIDATE_BOOLEAN);
-        $noAdmin = filter_var($req->getPost("noAdmin"), FILTER_VALIDATE_BOOLEAN);
-
-        if ($isOrganizational && $isExam) {
-            throw new InvalidArgumentException("A group cannot be both organizational and exam.");
-        }
-
-        $group = new Group(
-            $externalId,
-            $instance,
-            $noAdmin ? null : $user,
-            $parentGroup,
-            $publicStats,
-            $isPublic,
-            $isOrganizational,
-            $detaining,
-            $isExam,
-        );
-
-        $this->setGroupPoints($req, $group);
-        $this->updateLocalizations($req, $group);
-
-        $this->groups->persist($group, false);
-        $this->groups->flush();
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -316,25 +264,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionValidateAddGroupData()
     {
-        $req = $this->getRequest();
-        $name = $req->getPost("name");
-        $locale = $req->getPost("locale");
-        $parentGroupId = $req->getPost("parentGroupId");
-        $instance = $this->instances->findOrThrow($req->getPost("instanceId"));
-        $parentGroup = $parentGroupId !== null ? $this->groups->findOrThrow($parentGroupId) : $instance->getRootGroup();
-
-        if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
-            throw new ForbiddenRequestException();
-        }
-
-        $this->sendSuccessResponse(
-            [
-                "groupNameIsFree" => count($this->groups->findByName($locale, $name, $instance, $parentGroup)) === 0
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateGroup(string $id)
+    public function noncheckUpdateGroup(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$this->groupAcl->canUpdate($group)) {
@@ -363,25 +296,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionUpdateGroup(string $id)
     {
-        $req = $this->getRequest();
-        $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
-        $detaining = filter_var($req->getPost("detaining"), FILTER_VALIDATE_BOOLEAN);
-        $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-
-        $group = $this->groups->findOrThrow($id);
-        $group->setExternalId($req->getPost("externalId"));
-        $group->setPublicStats($publicStats);
-        $group->setDetaining($detaining);
-        $group->setIsPublic($isPublic);
-
-        $this->setGroupPoints($req, $group);
-        $this->updateLocalizations($req, $group);
-
-        $this->groups->persist($group);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetOrganizational(string $id)
+    public function noncheckSetOrganizational(string $id)
     {
         $group = $this->groups->findOrThrow($id);
 
@@ -404,25 +322,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionSetOrganizational(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-        $isOrganizational = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
-
-        if ($isOrganizational) {
-            if ($group->getStudents()->count() > 0) {
-                throw new BadRequestException("The group already contains students");
-            }
-
-            if ($group->getAssignments()->count() > 0) {
-                throw new BadRequestException("The group already contains assignments");
-            }
-        }
-
-        $group->setOrganizational($isOrganizational);
-        $this->groups->persist($group);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetArchived(string $id)
+    public function noncheckSetArchived(string $id)
     {
         $group = $this->groups->findOrThrow($id);
 
@@ -440,62 +343,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionSetArchived(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-        $archive = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
-
-        if ($archive) {
-            $group->archive(new DateTime());
-
-            // snapshot the inherited membership-relations
-            $typePriorities = array_flip(GroupMembership::INHERITABLE_TYPES);
-
-            // this is actually a hack for PHP Stan (can be removed when there will be more than 1 interitable type)
-            $typePriorities[''] = -1; // adding a fake priority for fake type
-
-            $membershipsToInherit = []; // aggregated memberships from all ancestors, key is user ID
-
-            // scan ancestors and aggregate memberships by priorities
-            $g = $group; // current group is included as well to remove redundant relations
-            while ($g !== null) {
-                $memberships = $g->getMemberships(...GroupMembership::INHERITABLE_TYPES);
-                foreach ($memberships as $membership) {
-                    $userId = $membership->getUser()->getId();
-                    if (
-                        !empty($membershipsToInherit[$userId])
-                        && $typePriorities[$membershipsToInherit[$userId]->getType()]
-                        > $typePriorities[$membership->getType()] // lower value = higher priority
-                    ) {
-                        continue; // existing membership with higher priority is already recorded
-                    }
-
-                    $membershipsToInherit[$userId] = $membership;
-                }
-                $g = $g->getParentGroup();
-            }
-
-            // create inherited membership records in the database
-            foreach ($membershipsToInherit as $membership) {
-                // direct memberships are ignored, they were just used to remove redundant relations
-                if ($membership->getGroup()->getId() !== $group->getId()) {
-                    $group->inheritMembership($membership);
-                }
-            }
-        } else {
-            $group->undoArchiving();
-
-            // remove inherited memberships what so ever
-            $memberships = $group->getInheritedMemberships(...GroupMembership::INHERITABLE_TYPES);
-            foreach ($memberships as $membership) {
-                $group->removeMembership($membership);
-                $this->groupMemberships->remove($membership);
-            }
-        }
-
-        $this->groups->persist($group);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetExam(string $id)
+    public function noncheckSetExam(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$group->getChildGroups()->isEmpty()) {
@@ -522,14 +373,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionSetExam(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-        $isExam = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
-        $group->setExam($isExam);
-        $this->groups->persist($group);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetExamPeriod(string $id)
+    public function noncheckSetExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$this->groupAcl->canSetExamPeriod($group)) {
@@ -554,100 +401,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionSetExamPeriod(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-
-        $req = $this->getRequest();
-        $beginTs = (int)$req->getPost("begin");
-        $endTs = (int)$req->getPost("end");
-        $strict = $req->getPost("strict") !== null
-            ? filter_var($req->getPost("strict"), FILTER_VALIDATE_BOOLEAN) : null;
-        $now = (new DateTime())->getTimestamp();
-        $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
-
-        if ($strict === null) {
-            if ($group->hasExamPeriodSet()) {
-                $strict = $group->isExamLockStrict(); // flag is not present -> is not changing
-            } else {
-                throw new BadRequestException("The strict flag must be present when new exam is being set.");
-            }
-        }
-
-        // beginning must be in the future (or must not be modified)
-        if ((!$group->hasExamPeriodSet() || $beginTs) && $beginTs < $now - $nowTolerance) {
-            throw new BadRequestException("The exam must be set in the future.");
-        }
-
-        // if begin was not sent, or the exam already started, use old begin value
-        $beginTs = ($group->hasExamPeriodSet() && (!$beginTs || $group->getExamBegin()->getTimestamp() <= $now))
-            ? $group->getExamBegin()->getTimestamp() : $beginTs;
-
-        // an exam should not last more than a day (yes, we hardcode the day interval here for safety)
-        if ($beginTs >= $endTs || $endTs - $beginTs > 86400) {
-            throw new BadRequestException("The [begin,end] interval must be valid and less than a day wide.");
-        }
-
-        // the end should also be in the future (this is necessary only for updates)
-        if ($endTs < $now - $nowTolerance) {
-            throw new BadRequestException("The exam end must be set in the future.");
-        }
-
-        $begin = DateTime::createFromFormat('U', $beginTs);
-        $end = DateTime::createFromFormat('U', $endTs);
-
-        if ($group->hasExamPeriodSet()) {
-            if ($group->getExamBegin()->getTimestamp() <= $now) { // ... already begun
-                if ($strict !== $group->isExamLockStrict()) {
-                    throw new BadRequestException("The strict flag cannot be changed once the exam begins.");
-                }
-
-                // the exam already begun, we need to fix any group-locked users
-                foreach ($group->getStudents() as $student) {
-                    if ($student->getGroupLock()?->getId() === $id) {
-                        $student->setGroupLock($group, $end, $strict);
-                        if ($student->isIpLocked()) {
-                            $student->setIpLock($student->getIpLockRaw(), $end);
-                        }
-                        $this->users->persist($student, false);
-                    }
-                }
-
-                // we need to fix deadlines of all aligned exam assignments
-                foreach ($group->getAssignments() as $assignment) {
-                    if (
-                        $assignment->isExam() &&
-                        $assignment->getFirstDeadline()->getTimestamp() === $group->getExamEnd()->getTimestamp()
-                    ) {
-                        $assignment->setFirstDeadline($end);
-                        $this->assignments->persist($assignment, false);
-                    }
-                }
-            } elseif ($group->getExamBegin() !== $begin) {
-                // we also need to fix times of appearance for scheduled assignments
-                foreach ($group->getAssignments() as $assignment) {
-                    if (
-                        $assignment->isExam() && $assignment->isPublic() &&
-                        $assignment->getVisibleFrom()?->getTimestamp() === $group->getExamBegin()->getTimestamp()
-                    ) {
-                        $assignment->setVisibleFrom($now < $beginTs ? $begin : null);
-                        $this->assignments->persist($assignment, false);
-                    }
-                }
-            }
-        }
-
-        $exam = $this->groupExams->findPendingForGroup($group);
-        if ($exam) {
-            $exam->update($begin, $end, $strict);
-            $this->groupExams->persist($exam, false);
-        }
-
-        $group->setExamPeriod($begin, $end, $strict);
-        $this->groups->persist($group);
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemoveExamPeriod(string $id)
+    public function noncheckRemoveExamPeriod(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$group->hasExamPeriodSet()) {
@@ -667,13 +424,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionRemoveExamPeriod(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-        $group->removeExamPeriod();
-        $this->groups->persist($group);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRelocate(string $id, string $newParentId)
+    public function noncheckRelocate(string $id, string $newParentId)
     {
         $group = $this->groups->findOrThrow($id);
         $newParent = $this->groups->findOrThrow($newParentId);
@@ -693,7 +447,7 @@ class GroupsPresenter extends BasePresenter
         }
     }
 
-    public function checkGetExamLocks(string $id, string $examId)
+    public function noncheckGetExamLocks(string $id, string $examId)
     {
         $groupExam = $this->groupExams->findOrThrow($examId);
         if ($groupExam->getGroup()?->getId() !== $id) {
@@ -717,10 +471,7 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionGetExamLocks(string $id, string $examId)
     {
-        $group = $this->groups->findOrThrow($id);
-        $exam = $this->groupExams->findOrThrow($examId);
-        $locks = $this->groupExamLocks->findBy(["groupExam" => $exam]);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroupExamLocks($group, $locks));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -733,36 +484,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionRelocate(string $id, string $newParentId)
     {
-        $group = $this->groups->findOrThrow($id);
-        $newParent = $this->groups->findOrThrow($newParentId);
-
-        if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
-            throw new BadRequestException(
-                "The root group of an instance cannot relocate.",
-                FrontendErrorMappings::E400_502__GROUP_INSTANCE_ROOT_CANNOT_RELOCATE,
-                ['groupId' => $id, 'instanceId' => $group->getInstance()->getId()]
-            );
-        }
-
-        foreach ($this->groups->groupsAncestralClosure([$newParent]) as $parent) {
-            if ($parent->getId() === $id) { // group cannot be relocated under its descendant
-                throw new BadRequestException(
-                    "The relocation would create a loop in the group hierarchy.",
-                    FrontendErrorMappings::E400_503__GROUP_RELOCATION_WOULD_CREATE_LOOP,
-                    ['groupId' => $id, 'newParentId' => $newParentId]
-                );
-            }
-        }
-
-        $group->setParentGroup($newParent);
-        $this->groups->persist($group);
-        $this->forward(
-            'Groups:',
-            ['instanceId' => $newParent->getInstance()->getId(), 'ancestors' => true]
-        ); // return all groups
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemoveGroup(string $id)
+    public function noncheckRemoveGroup(string $id)
     {
         $group = $this->groups->findOrThrow($id);
 
@@ -790,15 +515,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionRemoveGroup(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-
-        $this->groups->remove($group);
-        $this->groups->flush();
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkDetail(string $id)
+    public function noncheckDetail(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$this->groupAcl->canViewPublicDetail($group)) {
@@ -813,11 +533,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionDetail(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubgroups(string $id)
+    public function noncheckSubgroups(string $id)
     {
         /** @var Group $group */
         $group = $this->groups->findOrThrow($id);
@@ -835,22 +554,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionSubgroups(string $id)
     {
-        /** @var Group $group */
-        $group = $this->groups->findOrThrow($id);
-
-        $subgroups = array_values(
-            array_filter(
-                $group->getAllSubgroups(),
-                function (Group $subgroup) {
-                    return $this->groupAcl->canViewPublicDetail($subgroup);
-                }
-            )
-        );
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroups($subgroups));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkMembers(string $id)
+    public function noncheckMembers(string $id)
     {
         $group = $this->groups->findOrThrow($id);
         if (!$this->groupAcl->canViewDetail($group)) {
@@ -866,16 +573,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionMembers(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-        $this->sendSuccessResponse(
-            [
-                "admins" => $this->userViewFactory->getUsers($group->getPrimaryAdmins()->getValues()),
-                "supervisors" => $this->userViewFactory->getUsers($group->getSupervisors()->getValues()),
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAddMember(string $id, string $userId)
+    public function noncheckAddMember(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
@@ -902,34 +603,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionAddMember(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        $type = $this->getRequest()->getPost("type");
-        if ($type === GroupMembership::TYPE_STUDENT || !in_array($type, GroupMembership::KNOWN_TYPES)) {
-            throw new InvalidArgumentException("Unknown membership type '$type'");
-        }
-
-        $membership = $group->getMembershipOfUser($user);
-        if ($membership) {
-            // update type of existing membership (if it is not a student)
-            if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
-                throw new InvalidArgumentException(
-                    "The user is a student of the group and students cannot be made also members"
-                );
-            }
-            $membership->setType($type);
-        } else {
-            // create new membership
-            $membership = new GroupMembership($group, $user, $type);
-            $group->addMembership($membership);
-        }
-        $this->groupMemberships->persist($membership);
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemoveMember(string $id, string $userId)
+    public function noncheckRemoveMember(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
@@ -947,27 +624,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionRemoveMember(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        $membership = $group->getMembershipOfUser($user);
-        if (!$membership) {
-            throw new InvalidArgumentException("The user is not a member of the group");
-        }
-        if ($membership->getType() === GroupMembership::TYPE_STUDENT) {
-            throw new InvalidArgumentException(
-                "The user is a student of the group and students must be removed by separate endpoint"
-            );
-        }
-
-        $group->removeMembership($membership);
-        $this->groupMemberships->remove($membership);
-        $this->groupMemberships->flush();
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAssignments(string $id)
+    public function noncheckAssignments(string $id)
     {
         /** @var Group $group */
         $group = $this->groups->findOrThrow($id);
@@ -984,24 +644,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionAssignments(string $id)
     {
-        /** @var Group $group */
-        $group = $this->groups->findOrThrow($id);
-
-        $assignments = $group->getAssignments();
-        $this->sendSuccessResponse(
-            $assignments->filter(
-                function (Assignment $assignment) {
-                    return $this->assignmentAcl->canViewDetail($assignment);
-                }
-            )->map(
-                function (Assignment $assignment) {
-                    return $this->assignmentViewFactory->getAssignment($assignment);
-                }
-            )->getValues()
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkShadowAssignments(string $id)
+    public function noncheckShadowAssignments(string $id)
     {
         /** @var Group $group */
         $group = $this->groups->findOrThrow($id);
@@ -1018,24 +664,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionShadowAssignments(string $id)
     {
-        /** @var Group $group */
-        $group = $this->groups->findOrThrow($id);
-
-        $assignments = $group->getShadowAssignments();
-        $this->sendSuccessResponse(
-            $assignments->filter(
-                function (ShadowAssignment $assignment) {
-                    return $this->shadowAssignmentAcl->canViewDetail($assignment);
-                }
-            )->map(
-                function (ShadowAssignment $assignment) {
-                    return $this->shadowAssignmentViewFactory->getAssignment($assignment);
-                }
-            )->getValues()
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkStats(string $id)
+    public function noncheckStats(string $id)
     {
         $group = $this->groups->findOrThrow($id);
 
@@ -1057,18 +689,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionStats(string $id)
     {
-        $group = $this->groups->findOrThrow($id);
-
-        if (!$this->groupAcl->canViewStats($group)) {
-            $user = $this->getCurrentUser();
-            $stats = $this->groupViewFactory->getStudentsStats($group, $user);
-            $this->sendSuccessResponse([$stats]);
-        } else {
-            $this->sendSuccessResponse($this->groupViewFactory->getAllStudentsStats($group));
-        }
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkStudentsStats(string $id, string $userId)
+    public function noncheckStudentsStats(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
@@ -1087,17 +711,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionStudentsStats(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        if ($group->isStudentOf($user) === false) {
-            throw new BadRequestException("User $userId is not student of $id");
-        }
-
-        $this->sendSuccessResponse($this->groupViewFactory->getStudentsStats($group, $user));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkStudentsSolutions(string $id, string $userId)
+    public function noncheckStudentsSolutions(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
@@ -1117,28 +734,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionStudentsSolutions(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        if ($group->isStudentOf($user) === false) {
-            throw new BadRequestException("User $userId is not student of $id");
-        }
-
-        $allSolutions = $this->assignmentSolutions->findGroupSolutionsOfStudent($group, $user);
-        $bestSolutions = $this->assignmentSolutions->filterBestSolutions($allSolutions);
-        $solutions = array_filter(
-            $allSolutions,
-            function (AssignmentSolution $solution) {
-                return $this->assignmentSolutionAcl->canViewDetail($solution);
-            }
-        );
-
-        $this->sendSuccessResponse(
-            $this->solutionsViewFactory->getSolutionsData($solutions, $bestSolutions)
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAddStudent(string $id, string $userId)
+    public function noncheckAddStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
@@ -1164,20 +763,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionAddStudent(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        // make sure that the user is not already member of the group
-        if ($group->isStudentOf($user) === false) {
-            $user->makeStudentOf($group);
-            $this->groups->flush();
-        }
-
-        // join the group
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemoveStudent(string $id, string $userId)
+    public function noncheckRemoveStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
         $group = $this->groups->findOrThrow($id);
@@ -1195,22 +784,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionRemoveStudent(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        // make sure that the user is student of the group
-        if ($group->isStudentOf($user) === true) {
-            $membership = $user->findMembershipAsStudent($group);
-            if ($membership) {
-                $this->groupMemberships->remove($membership);
-                $this->groups->flush();
-            }
-        }
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkLockStudent(string $id, string $userId)
+    public function noncheckLockStudent(string $id, string $userId)
     {
         $group = $this->groups->findOrThrow($id);
         $user = $this->users->findOrThrow($userId);
@@ -1227,26 +804,10 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionLockStudent(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $group = $this->groups->findOrThrow($id);
-
-        $expiration = $group->getExamEnd();
-        $user->setIpLock($this->getHttpRequest()->getRemoteAddress(), $expiration);
-        $user->setGroupLock($group, $expiration, $group->isExamLockStrict());
-        $this->users->persist($user, false);
-
-        // make sure the locking is also logged
-        $exam = $this->groupExams->findOrCreate($group);
-        $examLock = new GroupExamLock($exam, $user, $user->getIpLockRaw());
-        $this->groupExamLocks->persist($examLock);
-
-        $this->sendSuccessResponse([
-            'user' => $this->userViewFactory->getUser($user),
-            'group' => $this->groupViewFactory->getGroup($group),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUnlockStudent(string $id, string $userId)
+    public function noncheckUnlockStudent(string $id, string $userId)
     {
         $group = $this->groups->findOrThrow($id);
         $user = $this->users->findOrThrow($userId);
@@ -1267,19 +828,7 @@ class GroupsPresenter extends BasePresenter
      */
     public function actionUnlockStudent(string $id, string $userId)
     {
-        $user = $this->users->findOrThrow($userId);
-
-        $lock = $this->groupExamLocks->getCurrentLock($user);
-        if ($lock) {
-            $lock->setUnlockedAt();
-            $this->groupExamLocks->persist($lock, false);
-        }
-
-        $user->removeIpLock();
-        $user->removeGroupLock();
-        $this->users->persist($user);
-
-        $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+        $this->sendSuccessResponse("OK");
     }
 
 

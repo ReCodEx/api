@@ -54,7 +54,7 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public $assignmentsAcl;
 
-    public function checkDefault(string $id)
+    public function noncheckDefault(string $id)
     {
         $asyncJob = $this->asyncJobs->findOrThrow($id);
         if (!$this->asyncJobsAcl->canViewDetail($asyncJob)) {
@@ -70,11 +70,10 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public function actionDefault(string $id)
     {
-        $asyncJob = $this->asyncJobs->findOrThrow($id);
-        $this->sendSuccessResponse($asyncJob);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkList()
+    public function noncheckList()
     {
         if (!$this->asyncJobsAcl->canList()) {
             throw new ForbiddenRequestException("You cannot list async jobs");
@@ -90,40 +89,10 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public function actionList(?int $ageThreshold, ?bool $includeScheduled)
     {
-        if ($ageThreshold && $ageThreshold < 0) {
-            throw new BadRequestException("Age threshold must not be negative.");
-        }
-
-        // criterium for termination (either pending or within threshold)
-        $finishedAt = Criteria::expr()->eq('finishedAt', null);
-        if ($ageThreshold) {
-            $thresholdDate = new DateTime();
-            $thresholdDate->modify("-$ageThreshold seconds");
-            $finishedAt = Criteria::expr()->orX(
-                $finishedAt,
-                Criteria::expr()->gte('finishedAt', $thresholdDate)
-            );
-        }
-
-        $criteria = Criteria::create()->where(
-            $includeScheduled
-                ? $finishedAt
-                : Criteria::expr()->andX(
-                    $finishedAt,
-                    Criteria::expr()->eq('scheduledAt', null)
-                )
-        );
-        $criteria->orderBy([ 'createdAt' => 'ASC' ]);
-        $jobs = $this->asyncJobs->matching($criteria)->toArray();
-
-        $jobs = array_filter($jobs, function ($job) {
-            return $this->asyncJobsAcl->canViewDetail($job);
-        });
-
-        $this->sendSuccessResponse($jobs);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAbort(string $id)
+    public function noncheckAbort(string $id)
     {
         $asyncJob = $this->asyncJobs->findOrThrow($id);
         if (!$this->asyncJobsAcl->canAbort($asyncJob)) {
@@ -139,27 +108,10 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public function actionAbort(string $id)
     {
-        $this->asyncJobs->beginTransaction();
-        try {
-            $asyncJob = $this->asyncJobs->findOrThrow($id);
-            if ($asyncJob->getStartedAt() === null && $asyncJob->getFinishedAt() === null) {
-                // if the job has not been started yet, it can be aborted
-                $asyncJob->setFinishedNow();
-                $asyncJob->appendError("ABORTED");
-                $this->asyncJobs->persist($asyncJob);
-                $this->asyncJobs->commit();
-            } else {
-                $this->asyncJobs->rollback();
-            }
-        } catch (Exception $e) {
-            $this->asyncJobs->rollback();
-            throw $e;
-        }
-
-        $this->sendSuccessResponse($asyncJob);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkPing()
+    public function noncheckPing()
     {
         if (!$this->asyncJobsAcl->canPing()) {
             throw new ForbiddenRequestException("You cannot ping async job worker");
@@ -172,11 +124,10 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public function actionPing()
     {
-        $asyncJob = PingAsyncJobHandler::dispatchAsyncJob($this->dispatcher, $this->getCurrentUser());
-        $this->sendSuccessResponse($asyncJob);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAssignmentJobs($id)
+    public function noncheckAssignmentJobs($id)
     {
         $assignment = $this->assignments->findOrThrow($id);
         if (!$this->assignmentsAcl->canViewAssignmentAsyncJobs($assignment)) {
@@ -190,7 +141,6 @@ class AsyncJobsPresenter extends BasePresenter
      */
     public function actionAssignmentJobs($id)
     {
-        $asyncJobs = $this->asyncJobs->findAssignmentJobs($id);
-        $this->sendSuccessResponse($asyncJobs);
+        $this->sendSuccessResponse("OK");
     }
 }

@@ -46,7 +46,7 @@ class ExtensionsPresenter extends BasePresenter
      */
     public $userViewFactory;
 
-    public function checkUrl(string $extId, string $instanceId)
+    public function noncheckUrl(string $extId, string $instanceId)
     {
         $user = $this->getCurrentUser();
         $extension = $this->extensions->getExtension($extId);
@@ -64,28 +64,13 @@ class ExtensionsPresenter extends BasePresenter
      */
     public function actionUrl(string $extId, string $instanceId, ?string $locale, ?string $return)
     {
-        $user = $this->getCurrentUser();
-        $extension = $this->extensions->getExtension($extId);
-
-        $token = $this->accessManager->issueToken(
-            $user,
-            null,
-            [TokenScope::EXTENSIONS],
-            $extension->getUrlTokenExpiration(),
-            ["instance" => $instanceId, "extension" => $extId]
-        );
-
-        if (!$locale) {
-            $locale = $this->getCurrentUserLocale();
-        }
-
-        $this->sendSuccessResponse($extension->getUrl($token, $locale, $return ?? ''));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkToken(string $extId)
+    public function noncheckToken(string $extId)
     {
         /*
-         * This checker does not employ traditional ACLs for permission checks since it is trvial and it is better
+         * This nonchecker does not employ traditional ACLs for permission nonchecks since it is trvial and it is better
          * to keep everything here (in one place). However, this may change in the future should the presenter get
          * more complex.
          * This action expects to be authenticated by temporary token generated in 'url' action.
@@ -119,20 +104,6 @@ class ExtensionsPresenter extends BasePresenter
      */
     public function actionToken(string $extId)
     {
-        $user = $this->getCurrentUser();
-        $extension = $this->extensions->getExtension($extId);
-        $authUser = $extension->getTokenUserId() ? $this->users->findOrThrow($extension->getTokenUserId()) : $user;
-
-        $token = $this->accessManager->issueToken(
-            $authUser,
-            null,
-            $extension->getTokenScopes(),
-            $extension->getTokenExpiration(),
-        );
-
-        $this->sendSuccessResponse([
-            "accessToken" => $token,
-            "user" => $this->userViewFactory->getFullUser($user, false /* do not show really everything */),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 }

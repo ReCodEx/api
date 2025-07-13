@@ -110,7 +110,7 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public $logger;
 
-    public function checkDetail(string $id)
+    public function noncheckDetail(string $id)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
         if (!$this->uploadedFileAcl->canViewDetail($file)) {
@@ -126,19 +126,18 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionDetail(string $id)
     {
-        $file = $this->uploadedFiles->findOrThrow($id);
-        $this->sendSuccessResponse($file);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownload(string $id, ?string $entry = null, ?string $similarSolutionId = null)
+    public function noncheckDownload(string $id, ?string $entry = null, ?string $similarSolutionId = null)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
         if ($this->uploadedFileAcl->canDownload($file)) {
-            return;  // this is sufficient check for most downloads
+            return;  // this is sufficient noncheck for most downloads
         }
 
         if ($file instanceof SolutionFile && $similarSolutionId) {
-            // special check using similar solution hint
+            // special noncheck using similar solution hint
             // similar solution refers to anoter solution which has detected similarities in this file
             // (so whoever can see plagiarisms of the original solution may see this file)
             $similarSolution = $this->assignmentSolutions->findOrThrow($similarSolutionId);
@@ -175,32 +174,12 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionDownload(string $id, ?string $entry = null)
     {
-        $fileEntity = $this->uploadedFiles->findOrThrow($id);
-        if ($entry && $fileEntity instanceof SolutionZipFile) {
-            try {
-                $file = $fileEntity->getNestedFile($this->fileStorage, $entry);
-                $name = basename($entry);
-            } catch (FileStorageException $ex) {
-                throw new NotFoundException(
-                    "File not found in the storage",
-                    FrontendErrorMappings::E404_000__NOT_FOUND,
-                    [ 'entry' => $entry ],
-                    $ex
-                );
-            }
-        } else {
-            $file = $fileEntity->getFile($this->fileStorage);
-            $name = $fileEntity->getName();
-        }
-        if (!$file) {
-            throw new NotFoundException("File not found in the storage");
-        }
-        $this->sendStorageFileResponse($file, $name);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkContent(string $id, ?string $entry = null, ?string $similarSolutionId = null)
+    public function noncheckContent(string $id, ?string $entry = null, ?string $similarSolutionId = null)
     {
-        $this->checkDownload($id, $entry, $similarSolutionId);
+        $this->noncheckDownload($id, $entry, $similarSolutionId);
     }
 
     /**
@@ -215,46 +194,10 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionContent(string $id, ?string $entry = null)
     {
-        $fileEntity = $this->uploadedFiles->findOrThrow($id);
-        if ($entry && $fileEntity instanceof SolutionZipFile) {
-            try {
-                $file = $fileEntity->getNestedFile($this->fileStorage, $entry);
-                $size = $file->getSize();
-            } catch (FileStorageException $ex) {
-                throw new NotFoundException(
-                    "File not found in the storage",
-                    FrontendErrorMappings::E404_000__NOT_FOUND,
-                    [ 'entry' => $entry ],
-                    $ex
-                );
-            }
-        } else {
-            $file = $fileEntity->getFile($this->fileStorage);
-            $size = $fileEntity->getFileSize();
-        }
-        if (!$file) {
-            throw new NotFoundException("File not found in the storage");
-        }
-
-        $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
-        $contents = $file->getContents($sizeLimit);
-
-        // Remove UTF BOM prefix...
-        $utf8bom = "\xef\xbb\xbf";
-        $contents = Strings::replace($contents, "~^$utf8bom~");
-
-        $fixedContents = @mb_convert_encoding($contents, 'UTF-8', 'UTF-8');
-
-        $this->sendSuccessResponse(
-            [
-                "content" => $fixedContents,
-                "malformedCharacters" => $fixedContents !== $contents,
-                "tooLarge" => $size > $sizeLimit,
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDigest(string $id)
+    public function noncheckDigest(string $id)
     {
         $file = $this->uploadedFiles->findOrThrow($id);
         if (!$this->uploadedFileAcl->canDownload($file)) {
@@ -263,26 +206,17 @@ class UploadedFilesPresenter extends BasePresenter
     }
 
     /**
-     * Compute a digest using a hashing algorithm. This feature is intended for upload checksums only.
+     * Compute a digest using a hashing algorithm. This feature is intended for upload nonchecksums only.
      * In the future, we might want to add algorithm selection via query parameter (default is SHA1).
      * @GET
      * @param string $id Identifier of the file
      */
     public function actionDigest(string $id)
     {
-        $fileEntity = $this->uploadedFiles->findOrThrow($id);
-        $file = $fileEntity->getFile($this->fileStorage);
-        if (!$file) {
-            throw new NotFoundException("File not found in the storage");
-        }
-
-        $this->sendSuccessResponse([
-            'algorithm' => 'sha1',
-            'digest' => $file->getDigest(),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpload()
+    public function noncheckUpload()
     {
         if (!$this->uploadedFileAcl->canUpload()) {
             throw new ForbiddenRequestException();
@@ -300,56 +234,10 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionUpload()
     {
-        $user = $this->getCurrentUser();
-        $files = $this->getRequest()->getFiles();
-        if (count($files) === 0) {
-            throw new BadRequestException("No file was uploaded");
-        } elseif (count($files) > 1) {
-            throw new BadRequestException("Too many files were uploaded");
-        }
-
-        $file = array_pop($files);
-        if (!$file->isOk()) {
-            throw new CannotReceiveUploadedFileException(
-                sprintf("Cannot receive uploaded file '%s' due to '%d'", $file->getName(), $file->getError()),
-                IResponse::S500_INTERNAL_SERVER_ERROR,
-                FrontendErrorMappings::E500_001__CANNOT_RECEIVE_FILE,
-                ["filename" => $file->getName(), "errorCode" => $file->getError()]
-            );
-        }
-
-        if (!Strings::match($file->getName(), self::FILENAME_PATTERN)) {
-            throw new CannotReceiveUploadedFileException(
-                sprintf("File name '%s' contains invalid characters", $file->getName()),
-                IResponse::S400_BAD_REQUEST,
-                FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
-                ["filename" => $file->getName(), "pattern" => self::FILENAME_PATTERN]
-            );
-        }
-
-        // In theory, this may create race condition (DB record is commited before file is moved).
-        // But we need the ID from the database so we can save the file.
-        $uploadedFile = new UploadedFile($file->getName(), new DateTime(), $file->getSize(), $user);
-        $this->uploadedFiles->persist($uploadedFile);
-
-        try {
-            $this->fileStorage->storeUploadedFile($uploadedFile, $file);
-        } catch (Exception $e) {
-            $this->uploadedFiles->remove($uploadedFile);
-            $this->uploadedFiles->flush();
-            throw new InternalServerException(
-                "Cannot move uploaded file to internal server storage",
-                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
-                null,
-                $e
-            );
-        }
-
-        $this->uploadedFiles->flush();
-        $this->sendSuccessResponse($uploadedFile);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkStartPartial()
+    public function noncheckStartPartial()
     {
         // actually, this is same as upload
         if (!$this->uploadedFileAcl->canUpload()) {
@@ -368,38 +256,10 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionStartPartial()
     {
-        $user = $this->getCurrentUser();
-        $name = $this->getRequest()->getPost("name");
-        $size = (int)$this->getRequest()->getPost("size");
-
-        if (!Strings::match($name, self::FILENAME_PATTERN)) {
-            throw new CannotReceiveUploadedFileException(
-                "File name '$name' contains invalid characters",
-                IResponse::S400_BAD_REQUEST,
-                FrontendErrorMappings::E400_003__UPLOADED_FILE_INVALID_CHARACTERS,
-                ["filename" => $name, "pattern" => self::FILENAME_PATTERN]
-            );
-        }
-
-        $maxSize = 1024 * 1024 * 1024;
-        if ($size < 0 || $size > $maxSize) {
-            // TODO: in the future, we might want to employ more sophisticated quota checking
-            throw new CannotReceiveUploadedFileException(
-                "Invalid declared file size ($size) for per-partes upload",
-                IResponse::S400_BAD_REQUEST,
-                FrontendErrorMappings::E400_004__UPLOADED_FILE_INVALID_SIZE,
-                ["size" => $size, "maximum" => $maxSize]
-            );
-        }
-
-        // create the partial file record in database
-        $partialFile = new UploadedPartialFile($name, $size, $user);
-        $this->uploadedPartialFiles->persist($partialFile);
-        $this->uploadedPartialFiles->flush();
-        $this->sendSuccessResponse($partialFile);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAppendPartial(string $id)
+    public function noncheckAppendPartial(string $id)
     {
         $file = $this->uploadedPartialFiles->findOrThrow($id);
         if (!$this->uploadedPartialFileAcl->canAppendPartial($file)) {
@@ -421,37 +281,10 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionAppendPartial(string $id, int $offset)
     {
-        $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
-
-        if ($partialFile->getUploadedSize() !== $offset) {
-            throw new InvalidArgumentException(
-                'offset',
-                "The offset must corresponds with the actual upload size of the partial file."
-            );
-        }
-
-        try {
-            // the store function takes the chunk directly from request body
-            $size = $this->fileStorage->storeUploadedPartialFileChunk($partialFile);
-        } catch (Exception $e) {
-            throw new InternalServerException(
-                "Cannot save a data chunk of per-partes upload",
-                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
-                null,
-                $e
-            );
-        }
-
-        if ($size > 0) {
-            $partialFile->addChunk($size);
-            $this->uploadedPartialFiles->persist($partialFile);
-            $this->uploadedPartialFiles->flush();
-        }
-
-        $this->sendSuccessResponse($partialFile);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCancelPartial(string $id)
+    public function noncheckCancelPartial(string $id)
     {
         $file = $this->uploadedPartialFiles->findOrThrow($id);
         if (!$this->uploadedPartialFileAcl->canCancelPartial($file)) {
@@ -465,35 +298,10 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionCancelPartial(string $id)
     {
-        $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
-        try {
-            $deletedFiles = $this->fileStorage->deleteUploadedPartialFileChunks($partialFile);
-        } catch (Exception $e) {
-            throw new InternalServerException(
-                "Cannot save a data chunk of per-partes upload",
-                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
-                null,
-                $e
-            );
-        }
-
-        if ($deletedFiles !== $partialFile->getChunks()) {
-            $this->logger->log(
-                sprintf(
-                    "Per-partes upload was canceled, but only %d chunk files out of %d was deleted.",
-                    $deletedFiles,
-                    $partialFile->getChunks()
-                ),
-                ILogger::WARNING
-            );
-        }
-
-        $this->uploadedPartialFiles->remove($partialFile);
-        $this->uploadedPartialFiles->flush();
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkCompletePartial(string $id)
+    public function noncheckCompletePartial(string $id)
     {
         $file = $this->uploadedPartialFiles->findOrThrow($id);
         if (!$this->uploadedPartialFileAcl->canCompletePartial($file)) {
@@ -508,55 +316,10 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionCompletePartial(string $id)
     {
-        $partialFile = $this->uploadedPartialFiles->findOrThrow($id);
-        if (!$partialFile->isUploadComplete()) {
-            throw new CannotReceiveUploadedFileException(
-                "Unable to finalize incomplete per-partes upload.",
-                IResponse::S400_BAD_REQUEST,
-                FrontendErrorMappings::E400_005__UPLOADED_FILE_PARTIAL,
-                [
-                    "chunks" => $partialFile->getChunks(),
-                    "totalSize" => $partialFile->getTotalSize(),
-                    "uploadedSize" => $partialFile->getUploadedSize(),
-                ]
-            );
-        }
-
-        // create uploaded file entity from partial file data
-        $uploadedFile = new UploadedFile(
-            $partialFile->getName(),
-            new DateTime(),
-            $partialFile->getTotalSize(),
-            $partialFile->getUser()
-        );
-        $this->uploadedFiles->persist($uploadedFile);
-
-        // assemble chunks in file storage
-        try {
-            $this->fileStorage->assembleUploadedPartialFile($partialFile, $uploadedFile);
-        } catch (Exception $e) {
-            $this->uploadedFiles->remove($uploadedFile);
-            $this->uploadedFiles->flush();
-
-            $this->uploadedPartialFiles->remove($partialFile);
-            $this->uploadedPartialFiles->flush();
-            throw new InternalServerException(
-                "Cannot concatenate data chunks of per-partes upload into uploaded file",
-                FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
-                null,
-                $e
-            );
-        }
-
-        // partial file no longer needed (and its file chunks has been removed)
-        $this->uploadedPartialFiles->remove($partialFile);
-
-        $this->uploadedFiles->flush();
-        $this->uploadedPartialFiles->flush();
-        $this->sendSuccessResponse($uploadedFile);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadSupplementaryFile(string $id)
+    public function noncheckDownloadSupplementaryFile(string $id)
     {
         $file = $this->supplementaryFiles->findOrThrow($id);
         if (!$this->uploadedFileAcl->canDownloadSupplementaryFile($file)) {
@@ -574,11 +337,6 @@ class UploadedFilesPresenter extends BasePresenter
      */
     public function actionDownloadSupplementaryFile(string $id)
     {
-        $fileEntity = $this->supplementaryFiles->findOrThrow($id);
-        $file = $fileEntity->getFile($this->fileStorage);
-        if (!$file) {
-            throw new NotFoundException("Supplementary file not found in the storage");
-        }
-        $this->sendStorageFileResponse($file, $fileEntity->getName());
+        $this->sendSuccessResponse("OK");
     }
 }

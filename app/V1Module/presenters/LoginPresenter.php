@@ -116,19 +116,7 @@ class LoginPresenter extends BasePresenter
      */
     public function actionDefault()
     {
-        $req = $this->getRequest();
-        $username = $req->getPost("username");
-        $password = $req->getPost("password");
-
-        $user = $this->credentialsAuthenticator->authenticate($username, $password);
-        $this->verifyUserIpLock($user);
-        $user->updateLastAuthenticationAt();
-        $this->users->flush();
-
-        $event = SecurityEvent::createLoginEvent($this->getHttpRequest()->getRemoteAddress(), $user);
-        $this->securityEvents->persist($event);
-
-        $this->sendAccessTokenResponse($user);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -144,19 +132,10 @@ class LoginPresenter extends BasePresenter
      */
     public function actionExternal($authenticatorName)
     {
-        $req = $this->getRequest();
-        $user = $this->externalServiceAuthenticator->authenticate($authenticatorName, $req->getPost("token"));
-        $this->verifyUserIpLock($user);
-        $user->updateLastAuthenticationAt();
-        $this->users->flush();
-
-        $event = SecurityEvent::createExternalLoginEvent($this->getHttpRequest()->getRemoteAddress(), $user);
-        $this->securityEvents->persist($event);
-
-        $this->sendAccessTokenResponse($user);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkTakeOver($userId)
+    public function noncheckTakeOver($userId)
     {
         $user = $this->users->findOrThrow($userId);
         if (!$this->userAcl->canTakeOver($user)) {
@@ -175,14 +154,13 @@ class LoginPresenter extends BasePresenter
      */
     public function actionTakeOver($userId)
     {
-        $user = $this->users->findOrThrow($userId);
-        $this->sendAccessTokenResponse($user);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
      * @throws ForbiddenRequestException
      */
-    public function checkRefresh()
+    public function noncheckRefresh()
     {
         if (!$this->isInScope(TokenScope::REFRESH)) {
             throw new ForbiddenRequestException(
@@ -199,32 +177,10 @@ class LoginPresenter extends BasePresenter
      */
     public function actionRefresh()
     {
-        $token = $this->getAccessToken();
-
-        $user = $this->getCurrentUser();
-        if (!$user->isAllowed()) {
-            throw new ForbiddenRequestException(
-                "Forbidden Request - User account was disabled",
-                IResponse::S403_Forbidden,
-                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
-            );
-        }
-
-        $user->updateLastAuthenticationAt();
-        $this->users->flush();
-
-        $event = SecurityEvent::createRefreshTokenEvent($this->getHttpRequest()->getRemoteAddress(), $user);
-        $this->securityEvents->persist($event);
-
-        $this->sendSuccessResponse(
-            [
-                "accessToken" => $this->accessManager->issueRefreshedToken($token),
-                "user" => $this->userViewFactory->getFullUser($user)
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkIssueRestrictedToken()
+    public function noncheckIssueRestrictedToken()
     {
         if (!$this->getAccessToken()->isInScope(TokenScope::MASTER)) {
             throw new ForbiddenRequestException("Restricted tokens cannot be used to issue new tokens");
@@ -246,36 +202,7 @@ class LoginPresenter extends BasePresenter
      */
     public function actionIssueRestrictedToken()
     {
-        $request = $this->getRequest();
-        // The scopes are not filtered in any way - ACL won't allow anything that the user cannot do in a full session
-        $scopes = $request->getPost("scopes");
-        $effectiveRole = $request->getPost("effectiveRole");
-
-        $expiration = $request->getPost("expiration") !== null ? intval($request->getPost("expiration")) : null;
-        $this->validateScopeRoles($scopes, $expiration);
-        $this->validateEffectiveRole($effectiveRole);
-
-        $user = $this->getCurrentUser();
-        if (!$user->isAllowed()) {
-            throw new ForbiddenRequestException(
-                "Forbidden Request - User account was disabled",
-                IResponse::S403_Forbidden,
-                FrontendErrorMappings::E403_002__USER_NOT_ALLOWED
-            );
-        }
-
-        $user->updateLastAuthenticationAt();
-        $this->users->flush();
-
-        $event = SecurityEvent::createIssueTokenEvent($this->getHttpRequest()->getRemoteAddress(), $user);
-        $this->securityEvents->persist($event);
-
-        $this->sendSuccessResponse(
-            [
-                "accessToken" => $this->accessManager->issueToken($user, $effectiveRole, $scopes, $expiration),
-                "user" => $this->userViewFactory->getFullUser($user),
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
     private function validateScopeRoles(?array $scopes, $expiration)
@@ -286,7 +213,7 @@ class LoginPresenter extends BasePresenter
             TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail",
         ];
 
-        // check if any of given scopes is among the forbidden ones
+        // noncheck if any of given scopes is among the forbidden ones
         $violations = array_intersect(array_keys($forbiddenScopes), $scopes);
         if ($violations) {
             throw new ForbiddenRequestException($forbiddenScopes[$violations[0]]);

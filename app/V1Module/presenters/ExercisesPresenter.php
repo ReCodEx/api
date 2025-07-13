@@ -173,7 +173,7 @@ class ExercisesPresenter extends BasePresenter
         );
     }
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->exerciseAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -197,38 +197,10 @@ class ExercisesPresenter extends BasePresenter
         array $filters = null,
         string $locale = null
     ) {
-        $pagination = $this->getPagination(
-            $offset,
-            $limit,
-            $locale,
-            $orderBy,
-            ($filters === null) ? [] : $filters,
-            ['search', 'instanceId', 'groupsIds', 'authorsIds', 'tags', 'runtimeEnvironments', 'archived']
-        );
-
-        // Get all matching exercises and filter them by ACLs...
-        $exercises = $this->exercises->getPreparedForPagination($pagination, $this->groups, $this->getCurrentUser());
-        $exercises = array_filter(
-            $exercises,
-            function (Exercise $exercise) {
-                return $this->exerciseAcl->canViewDetail($exercise);
-            }
-        );
-
-        // Pre-slice the exercises, so only relevant part is sent to the view factory.
-        $totalCount = count($exercises);
-        $exercises = array_slice(
-            array_values($exercises),
-            $pagination->getOffset(),
-            $pagination->getLimit() ? $pagination->getLimit() : null
-        );
-
-        // Format and post paginated output ...
-        $exercises = array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises));
-        $this->sendPaginationSuccessResponse($exercises, $pagination, false, $totalCount);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAuthors()
+    public function noncheckAuthors()
     {
         if (!$this->exerciseAcl->canViewAllAuthors()) {
             throw new ForbiddenRequestException();
@@ -243,11 +215,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionAuthors(string $instanceId = null, string $groupId = null)
     {
-        $authors = $this->exercises->getAuthors($instanceId, $groupId, $this->groups);
-        $this->sendSuccessResponse($this->userViewFactory->getUsers($authors));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkListByIds()
+    public function noncheckListByIds()
     {
         if (!$this->exerciseAcl->canViewList()) {
             throw new ForbiddenRequestException();
@@ -261,17 +232,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionListByIds()
     {
-        $exercises = $this->exercises->findByIds($this->getRequest()->getPost("ids"));
-        $exercises = array_filter(
-            $exercises,
-            function (Exercise $exercise) {
-                return $this->exerciseAcl->canViewDetail($exercise);
-            }
-        );
-        $this->sendSuccessResponse(array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises)));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDetail(string $id)
+    public function noncheckDetail(string $id)
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
@@ -287,12 +251,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionDetail(string $id)
     {
-        /** @var Exercise $exercise */
-        $exercise = $this->exercises->findOrThrow($id);
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateDetail(string $id)
+    public function noncheckUpdateDetail(string $id)
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
@@ -329,108 +291,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionUpdateDetail(string $id)
     {
-        $req = $this->getRequest();
-        $difficulty = $req->getPost("difficulty");
-        $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-        $isLocked = filter_var($req->getPost("isLocked"), FILTER_VALIDATE_BOOLEAN);
-        $mergeJudgeLogs = filter_var($req->getPost("mergeJudgeLogs"), FILTER_VALIDATE_BOOLEAN);
-
-        /** @var Exercise $exercise */
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $version = intval($req->getPost("version"));
-        if ($version !== $exercise->getVersion()) {
-            $v = $exercise->getVersion();
-            throw new BadRequestException(
-                "The exercise was edited in the meantime and the version has changed. Current version is $v.",
-                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
-                [
-                    'entity' => 'exercise',
-                    'id' => $id,
-                    'version' => $v
-                ]
-            );
-        }
-
-        // make changes to the exercise
-        $exercise->setDifficulty($difficulty);
-        $exercise->setIsPublic($isPublic);
-        $exercise->updatedNow();
-        $exercise->incrementVersion();
-        $exercise->setLocked($isLocked);
-        $exercise->setSolutionFilesLimit($req->getPost("solutionFilesLimit"));
-        $exercise->setSolutionSizeLimit($req->getPost("solutionSizeLimit"));
-        $exercise->setMergeJudgeLogs($mergeJudgeLogs);
-
-        $configurationType = $req->getPost("configurationType");
-        if ($configurationType) {
-            if (!Compiler::checkConfigurationType($configurationType)) {
-                throw new InvalidArgumentException("Invalid configuration type '{$configurationType}'");
-            }
-            $exercise->setConfigurationType($configurationType);
-        }
-
-        // retrieve localizations and prepare some temp variables
-        $localizedTexts = $req->getPost("localizedTexts");
-        $localizations = [];
-
-        // localized texts cannot be empty
-        if (count($localizedTexts) == 0) {
-            throw new InvalidArgumentException("No entry for localized texts given.");
-        }
-
-        // go through given localizations and construct database entities
-        foreach ($localizedTexts as $localization) {
-            if (
-                !array_key_exists("locale", $localization) || !array_key_exists(
-                    "name",
-                    $localization
-                ) || !array_key_exists("text", $localization)
-            ) {
-                throw new InvalidArgumentException("Malformed localized text entry");
-            }
-
-            $lang = $localization["locale"];
-
-            if (array_key_exists($lang, $localizations)) {
-                throw new InvalidArgumentException("Duplicate entry for language $lang");
-            }
-
-            // create all new localized texts
-            $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
-            if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
-                throw new InvalidArgumentException("External assignment link is not a valid URL");
-            }
-
-            $localization["description"] = $localization["description"] ?? "";
-
-            $localized = new LocalizedExercise(
-                $lang,
-                trim(Arrays::get($localization, "name", "")),
-                trim(Arrays::get($localization, "text", "")),
-                trim(Arrays::get($localization, "description", "")),
-                $externalAssignmentLink ?: null
-            );
-
-            $localizations[$lang] = $localized;
-        }
-
-        // make changes to database
-        Localizations::updateCollection($exercise->getLocalizedTexts(), $localizations);
-
-        foreach ($exercise->getLocalizedTexts() as $localizedText) {
-            $this->exercises->persist($localizedText, false);
-        }
-
-        $this->exercises->flush();
-
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
-
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkValidate($id)
+    public function noncheckValidate($id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -446,19 +310,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionValidate($id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $req = $this->getHttpRequest();
-        $version = intval($req->getPost("version"));
-
-        $this->sendSuccessResponse(
-            [
-                "versionIsUpToDate" => $exercise->getVersion() === $version
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAssignments(string $id)
+    public function noncheckAssignments(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
 
@@ -476,15 +331,7 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionAssignments(string $id, bool $archived = false)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $assignments = $exercise->getAssignments()->filter(
-            function (Assignment $assignment) use ($archived) {
-                return $this->assignmentAcl->canViewDetail($assignment) && $assignment->getGroup()
-                    && ($archived || !$assignment->getGroup()->isArchived());
-            }
-        )->getValues();
-        $this->sendSuccessResponse($this->assignmentViewFactory->getAssignments($assignments));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -499,42 +346,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionCreate()
     {
-        $user = $this->getCurrentUser();
-        $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
-        if (!$this->groupAcl->canCreateExercise($group)) {
-            throw new ForbiddenRequestException();
-        }
-
-        // create default score configuration without tests
-        $calculator = $this->calculators->getDefaultCalculator();
-        $scoreConfig = new ExerciseScoreConfig($calculator->getId(), $calculator->getDefaultConfig([]));
-
-        // create exercise and fill some predefined details
-        $exercise = Exercise::create($user, $group, $scoreConfig, $this->exercisesConfigParams);
-        $localizedExercise = new LocalizedExercise(
-            $user->getSettings()->getDefaultLanguage(),
-            "Exercise by " . $user->getName(),
-            "",
-            "",
-            null
-        );
-        $this->exercises->persist($localizedExercise, false);
-        $exercise->addLocalizedText($localizedExercise);
-
-        // create and store basic exercise configuration
-        $exerciseConfig = new ExerciseConfig((string)new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);
-        $exercise->setExerciseConfig($exerciseConfig);
-
-        // and finally make changes to database
-        $this->exercises->persist($exercise);
-
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
-
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkHardwareGroups(string $id)
+    public function noncheckHardwareGroups(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -553,35 +368,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionHardwareGroups(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        // load all new hardware groups
-        $req = $this->getRequest();
-        $groups = [];
-        foreach ($req->getPost("hwGroups") as $groupId) {
-            $groups[] = $this->hardwareGroups->findOrThrow($groupId);
-        }
-
-        // ... and after clearing the old ones assign new ones
-        $exercise->getHardwareGroups()->clear();
-        foreach ($groups as $group) {
-            $exercise->addHardwareGroup($group);
-        }
-
-        // update configurations
-        $this->exerciseConfigUpdater->hwGroupsUpdated($exercise, $this->getCurrentUser(), false);
-
-        // update and return
-        $exercise->updatedNow();
-        $this->exercises->flush();
-
-        // check exercise configuration
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove(string $id)
+    public function noncheckRemove(string $id)
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
@@ -597,10 +387,6 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionRemove(string $id)
     {
-        /** @var Exercise $exercise */
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $this->exercises->remove($exercise);
         $this->sendSuccessResponse("OK");
     }
 
@@ -616,31 +402,14 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionForkFrom(string $id)
     {
-        $user = $this->getCurrentUser();
-        $forkFrom = $this->exercises->findOrThrow($id);
-
-        $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
-        if (
-            !$this->exerciseAcl->canFork($forkFrom) ||
-            !$this->groupAcl->canCreateExercise($group)
-        ) {
-            throw new ForbiddenRequestException("Exercise cannot be forked");
-        }
-
-        $exercise = Exercise::forkFrom($forkFrom, $user, $group);
-        $this->exercises->persist($exercise);
-
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
-
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
     // ************************************************
     // ******************** GROUPS ********************
     // ************************************************
 
-    public function checkAttachGroup(string $id, string $groupId)
+    public function noncheckAttachGroup(string $id, string $groupId)
     {
         $exercise = $this->exercises->findOrThrow($id);
         $group = $this->groups->findOrThrow($groupId);
@@ -658,19 +427,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionAttachGroup(string $id, string $groupId)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $group = $this->groups->findOrThrow($groupId);
-
-        if ($exercise->getGroups()->contains($group)) {
-            throw new InvalidArgumentException("groupId", "group is already attached to the exercise");
-        }
-
-        $exercise->addGroup($group);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDetachGroup(string $id, string $groupId)
+    public function noncheckDetachGroup(string $id, string $groupId)
     {
         $exercise = $this->exercises->findOrThrow($id);
         $group = $this->groups->findOrThrow($groupId);
@@ -692,23 +452,14 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionDetachGroup(string $id, string $groupId)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $group = $this->groups->findOrThrow($groupId);
-
-        if (!$exercise->getGroups()->contains($group)) {
-            throw new InvalidArgumentException("groupId", "given group is not attached to the exercise");
-        }
-
-        $exercise->removeGroup($group);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
     // **********************************************
     // ******************** TAGS ********************
     // **********************************************
 
-    public function checkAllTags()
+    public function noncheckAllTags()
     {
         if (!$this->exerciseAcl->canViewAllTags()) {
             throw new ForbiddenRequestException("You are not allowed to view all tags");
@@ -721,11 +472,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionAllTags()
     {
-        $tags = $this->exerciseTags->findAllDistinctNames();
-        $this->sendSuccessResponse($tags);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkTagsStats()
+    public function noncheckTagsStats()
     {
         if (!$this->exerciseAcl->canViewTagsStats()) {
             throw new ForbiddenRequestException("You are not allowed to view tags statistics");
@@ -738,11 +488,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionTagsStats()
     {
-        $stats = $this->exerciseTags->getStatistics();
-        $this->sendSuccessResponse($stats);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkTagsUpdateGlobal(string $tag)
+    public function noncheckTagsUpdateGlobal(string $tag)
     {
         if (!$this->exerciseAcl->canUpdateTagsGlobal()) {
             throw new ForbiddenRequestException("You are not allowed to update tags globally");
@@ -762,34 +511,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionTagsUpdateGlobal(string $tag, string $renameTo = null, bool $force = false)
     {
-        // Check whether at least one modification action is present (so far, we have only renameTo)
-        if ($renameTo === null) {
-            throw new BadRequestException("Nothing to update.");
-        }
-
-        if (!$this->exerciseTags->verifyTagName($renameTo)) {
-            throw new InvalidArgumentException("renameTo", "tag name contains illicit characters");
-        }
-
-        if (!$force && $this->exerciseTags->tagExists($renameTo)) {
-            throw new InvalidArgumentException(
-                "renameTo",
-                "new tag name collides with existing name (use force to override)"
-            );
-        }
-
-        $renameCount = $this->exerciseTags->renameTag($tag, $renameTo);
-
-        $this->sendSuccessResponse(
-            [
-                'tag' => $renameTo,
-                'oldName' => $tag,
-                'count' => $renameCount,
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkTagsRemoveGlobal(string $tag)
+    public function noncheckTagsRemoveGlobal(string $tag)
     {
         if (!$this->exerciseAcl->canRemoveTagsGlobal()) {
             throw new ForbiddenRequestException("You are not allowed to remove tags globally");
@@ -803,16 +528,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionTagsRemoveGlobal(string $tag)
     {
-        $removeCount = $this->exerciseTags->removeTag($tag);
-        $this->sendSuccessResponse(
-            [
-                'tag' => $tag,
-                'count' => $removeCount,
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAddTag(string $id)
+    public function noncheckAddTag(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canAddTag($exercise)) {
@@ -834,23 +553,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionAddTag(string $id, string $name)
     {
-        if (!$this->exerciseTags->verifyTagName($name)) {
-            throw new InvalidArgumentException("name", "tag name contains illicit characters");
-        }
-
-        $exercise = $this->exercises->findOrThrow($id);
-        $tag = $this->exerciseTags->findByNameAndExercise($name, $exercise);
-        if ($tag !== null) {
-            throw new BadRequestException("Tag already exists on exercise");
-        }
-
-        $tag = new ExerciseTag($name, $this->getCurrentUser(), $exercise);
-        $exercise->addTag($tag);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemoveTag(string $id)
+    public function noncheckRemoveTag(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canRemoveTag($exercise)) {
@@ -867,18 +573,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionRemoveTag(string $id, string $name)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $tag = $this->exerciseTags->findByNameAndExercise($name, $exercise);
-        if ($tag === null) {
-            throw new NotFoundException("Tag '{$name}' was not found");
-        }
-
-        $exercise->removeTag($tag);
-        $this->exercises->flush();
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetArchived(string $id)
+    public function noncheckSetArchived(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canArchive($exercise)) {
@@ -896,19 +594,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionSetArchived(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $req = $this->getRequest();
-        $archived = filter_var($req->getPost("archived"), FILTER_VALIDATE_BOOLEAN);
-
-        if ($exercise->isArchived() !== $archived) {
-            $exercise->setArchivedAt($archived ? new DateTime() : null);
-            $this->exercises->persist($exercise);
-        }
-
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetAuthor(string $id)
+    public function noncheckSetAuthor(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canChangeAuthor($exercise)) {
@@ -927,26 +616,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionSetAuthor(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $newAuthorId = $this->getRequest()->getPost("author");
-
-        if ($exercise->getAuthor()->getId() !== $newAuthorId) {
-            $newAuthor = $this->users->findOrThrow($newAuthorId);
-            if (!$this->getExercisePermissionsOfUser($newAuthor)->canCreate()) {
-                throw new ForbiddenRequestException("Given user is not allowed to be an author of an exercise.");
-            }
-
-            $exercise->setAuthor($newAuthor);
-            if ($exercise->getAdmins()->contains($newAuthor)) {
-                $exercise->removeAdmin($newAuthor); // author is promoted from admins
-            }
-            $this->exercises->persist($exercise);
-        }
-
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetAdmins(string $id)
+    public function noncheckSetAdmins(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdateAdmins($exercise)) {
@@ -964,46 +637,10 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionSetAdmins(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        // prepare a list of new admins
-        $newAdmins = [];
-        foreach ($this->getRequest()->getPost("admins") as $id) {
-            $user = $this->users->findOrThrow($id);
-            if (!$this->getExercisePermissionsOfUser($user)->canCreate()) {
-                throw new ForbiddenRequestException("Given user is not allowed to be administrator of an exercise.");
-            }
-            if ($id === $exercise->getAuthor()->getId()) {
-                throw new ForbiddenRequestException("Given user is already the author (cannot become also and admin).");
-            }
-            $newAdmins[$id] = $user;
-        }
-
-        // create a list of admins to be removed and prune current admins from newAdmins
-        $toRemove = [];
-        foreach ($exercise->getAdmins() as $admin) {
-            if (!array_key_exists($admin->getId(), $newAdmins)) {
-                $toRemove[] = $admin; // not on the new list, needs to be removed
-            } else {
-                unset($newAdmins[$admin->getId()]); // no need to add, already present
-            }
-        }
-
-        // update the exercise
-        foreach ($toRemove as $admin) {
-            $exercise->removeAdmin($admin);
-        }
-        foreach ($newAdmins as $newAdmin) {
-            $exercise->addAdmin($newAdmin);
-        }
-        if ($toRemove || $newAdmins) {
-            $this->exercises->persist($exercise);
-        }
-
-        $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSendNotification(string $id)
+    public function noncheckSendNotification(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -1023,9 +660,6 @@ class ExercisesPresenter extends BasePresenter
      */
     public function actionSendNotification(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $message = trim($this->getRequest()->getPost("message"));
-        $notified = $this->notificationSender->sendNotification($exercise, $this->getCurrentUser(), $message);
-        $this->sendSuccessResponse($notified);
+        $this->sendSuccessResponse("OK");
     }
 }

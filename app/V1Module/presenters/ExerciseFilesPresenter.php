@@ -74,7 +74,7 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public $configChecker;
 
-    public function checkUploadSupplementaryFiles(string $id)
+    public function noncheckUploadSupplementaryFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -93,73 +93,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionUploadSupplementaryFiles(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-        $currentSupplementaryFiles = [];
-        $totalFileSize = 0;
-
-        /** @var SupplementaryExerciseFile $file */
-        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
-            $currentSupplementaryFiles[$file->getName()] = $file;
-            $totalFileSize += $file->getFileSize();
-        }
-
-        $totalFileCount = count($exercise->getSupplementaryEvaluationFiles());
-
-        /** @var UploadedFile $file */
-        foreach ($files as $file) {
-            if (get_class($file) !== UploadedFile::class) {
-                throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
-            }
-
-            if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
-                /** @var SupplementaryExerciseFile $currentFile */
-                $currentFile = $currentSupplementaryFiles[$file->getName()];
-                $exercise->getSupplementaryEvaluationFiles()->removeElement($currentFile);
-                $totalFileSize -= $currentFile->getFileSize();
-            } else {
-                $totalFileCount += 1;
-            }
-
-            $totalFileSize += $file->getFileSize();
-        }
-
-        $fileCountLimit = $this->restrictionsConfig->getSupplementaryFileCountLimit();
-        if ($totalFileCount > $fileCountLimit) {
-            throw new InvalidArgumentException(
-                "files",
-                "The number of files would exceed the configured limit ($fileCountLimit)"
-            );
-        }
-
-        $sizeLimit = $this->restrictionsConfig->getSupplementaryFileSizeLimit();
-        if ($totalFileSize > $sizeLimit) {
-            throw new InvalidArgumentException(
-                "files",
-                "The total size of files would exceed the configured limit ($sizeLimit)"
-            );
-        }
-
-        /** @var UploadedFile $file */
-        foreach ($files as $file) {
-            $hash = $this->fileStorage->storeUploadedSupplementaryFile($file);
-            $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndExercise($file, $exercise, $hash);
-            $this->uploadedFiles->persist($exerciseFile, false);
-            $this->uploadedFiles->remove($file, false);
-        }
-
-        $exercise->updatedNow();
-        $this->exercises->flush();
-        $this->uploadedFiles->flush();
-
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
-
-        $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkGetSupplementaryFiles(string $id)
+    public function noncheckGetSupplementaryFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
@@ -174,11 +111,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionGetSupplementaryFiles(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteSupplementaryFile(string $id, string $fileId)
+    public function noncheckDeleteSupplementaryFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -195,20 +131,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionDeleteSupplementaryFile(string $id, string $fileId)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $file = $this->supplementaryFiles->findOrThrow($fileId);
-
-        $exercise->updatedNow();
-        $exercise->removeSupplementaryEvaluationFile($file);
-        $this->exercises->flush();
-
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadSupplementaryFilesArchive(string $id)
+    public function noncheckDownloadSupplementaryFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
@@ -227,17 +153,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionDownloadSupplementaryFilesArchive(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $files = [];
-        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
-            $files[$file->getName()] = $file->getFile($this->fileStorage);
-        }
-
-        $this->sendZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUploadAttachmentFiles(string $id)
+    public function noncheckUploadAttachmentFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -254,45 +173,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionUploadAttachmentFiles(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-        $currentAttachmentFiles = [];
-
-        /** @var AttachmentFile $file */
-        foreach ($exercise->getAttachmentFiles() as $file) {
-            $currentAttachmentFiles[$file->getName()] = $file;
-        }
-
-        /** @var UploadedFile $file */
-        foreach ($files as $file) {
-            if (!($file instanceof UploadedFile)) {
-                throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
-            }
-
-            if (array_key_exists($file->getName(), $currentAttachmentFiles)) {
-                $currentFile = $currentAttachmentFiles[$file->getName()];
-                $exercise->getAttachmentFiles()->removeElement($currentFile);
-            }
-
-            $attachmentFile = AttachmentFile::fromUploadedFile($file, $exercise);
-            $this->uploadedFiles->persist($attachmentFile);
-            try {
-                $this->fileStorage->storeUploadedAttachmentFile($file, $attachmentFile);
-            } catch (Exception $e) {
-                $this->uploadedFiles->remove($attachmentFile);
-                throw $e;
-            }
-            $this->uploadedFiles->remove($file, false);
-        }
-
-        $exercise->updatedNow();
-        $this->exercises->flush();
-        $this->uploadedFiles->flush();
-        $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkGetAttachmentFiles(string $id)
+    public function noncheckGetAttachmentFiles(string $id)
     {
         /** @var Exercise $exercise */
         $exercise = $this->exercises->findOrThrow($id);
@@ -309,13 +193,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionGetAttachmentFiles(string $id)
     {
-        /** @var Exercise $exercise */
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteAttachmentFile(string $id, string $fileId)
+    public function noncheckDeleteAttachmentFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -333,19 +214,10 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionDeleteAttachmentFile(string $id, string $fileId)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-        $file = $this->attachmentFiles->findOrThrow($fileId);
-
-        $exercise->updatedNow();
-        $exercise->removeAttachmentFile($file);
-        $this->exercises->flush();
-
-        $this->fileStorage->deleteAttachmentFile($file);
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadAttachmentFilesArchive(string $id)
+    public function noncheckDownloadAttachmentFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
@@ -363,12 +235,6 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public function actionDownloadAttachmentFilesArchive(string $id)
     {
-        $exercise = $this->exercises->findOrThrow($id);
-
-        $files = [];
-        foreach ($exercise->getAttachmentFiles() as $file) {
-            $files[$file->getName()] = $file->getFile($this->fileStorage);
-        }
-        $this->sendZipFilesResponse($files, "exercise-attachment-{$id}.zip");
+        $this->sendSuccessResponse("OK");
     }
 }

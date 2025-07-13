@@ -42,7 +42,7 @@ class NotificationsPresenter extends BasePresenter
     public $roles;
 
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->notificationAcl->canViewCurrent()) {
             throw new ForbiddenRequestException();
@@ -58,19 +58,10 @@ class NotificationsPresenter extends BasePresenter
      */
     public function actionDefault(array $groupsIds)
     {
-        $ancestralGroupsIds = $this->groups->groupsIdsAncestralClosure($groupsIds);
-        $notifications = $this->notifications->findAllCurrent($ancestralGroupsIds);
-        $notifications = array_filter(
-            $notifications,
-            function (Notification $notification) {
-                return $this->notificationAcl->canViewDetail($notification);
-            }
-        );
-
-        $this->sendSuccessResponse(array_values($notifications));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAll()
+    public function noncheckAll()
     {
         if (!$this->notificationAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -83,18 +74,10 @@ class NotificationsPresenter extends BasePresenter
      */
     public function actionAll()
     {
-        $notifications = $this->notifications->findAll();
-        $notifications = array_filter(
-            $notifications,
-            function (Notification $notification) {
-                return $this->notificationAcl->canViewDetail($notification);
-            }
-        );
-
-        $this->sendSuccessResponse(array_values($notifications));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreate()
+    public function noncheckCreate()
     {
         if (!$this->notificationAcl->canCreate()) {
             throw new ForbiddenRequestException("You are not allowed to create notification.");
@@ -120,10 +103,7 @@ class NotificationsPresenter extends BasePresenter
      */
     public function actionCreate()
     {
-        $notification = new Notification($this->getCurrentUser());
-        $this->updateNotification($notification);
-        $this->notifications->persist($notification);
-        $this->sendSuccessResponse($notification);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -209,7 +189,7 @@ class NotificationsPresenter extends BasePresenter
         Localizations::updateCollection($notification->getLocalizedTexts(), $localizations);
     }
 
-    public function checkUpdate(string $id)
+    public function noncheckUpdate(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);
         if (!$this->notificationAcl->canUpdate($notification)) {
@@ -236,13 +216,10 @@ class NotificationsPresenter extends BasePresenter
      */
     public function actionUpdate(string $id)
     {
-        $notification = $this->notifications->findOrThrow($id);
-        $this->updateNotification($notification);
-        $this->notifications->flush();
-        $this->sendSuccessResponse($notification);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove(string $id)
+    public function noncheckRemove(string $id)
     {
         $notification = $this->notifications->findOrThrow($id);
         if (!$this->notificationAcl->canRemove($notification)) {
@@ -258,8 +235,6 @@ class NotificationsPresenter extends BasePresenter
      */
     public function actionRemove(string $id)
     {
-        $notification = $this->notifications->findOrThrow($id);
-        $this->notifications->remove($notification);
         $this->sendSuccessResponse("OK");
     }
 }
