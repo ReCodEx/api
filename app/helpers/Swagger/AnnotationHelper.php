@@ -424,6 +424,28 @@ class AnnotationHelper
         );
     }
 
+    public static function extractAttributeDataTesting(string $className, string $methodName): array
+    {
+        $methodAnnotations = self::getMethodAnnotations($className, $methodName);
+
+        $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
+        $reflectionMethod = self::getMethod($className, $methodName);
+
+        // extract loose attributes
+        $attributeData = MetaFormatHelper::extractRequestParamData($reflectionMethod);
+
+        // if the endpoint is linked to a format, add the format class attributes
+        $format = MetaFormatHelper::extractFormatFromAttribute($reflectionMethod);
+        if ($format !== null) {
+            $attributeData = array_merge($attributeData, FormatCache::getFieldDefinitions($format));
+        }
+
+        return [
+            "httpMethod" => $httpMethod,
+            "data" => $attributeData,
+        ];
+    }
+
     /**
      * Filters annotation lines starting with a prefix.
      * @param array $annotations An array of annotations.

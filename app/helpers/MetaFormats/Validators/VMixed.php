@@ -15,4 +15,9 @@ class VMixed extends BaseValidator
     {
         return true;
     }
+
+    public function getExampleValue(): string
+    {
+        return "string";
+    }
 }
