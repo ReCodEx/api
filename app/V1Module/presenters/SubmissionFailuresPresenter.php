@@ -44,7 +44,7 @@ class SubmissionFailuresPresenter extends BasePresenter
      */
     public $failureResolutionEmailsSender;
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->submissionFailureAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -57,10 +57,10 @@ class SubmissionFailuresPresenter extends BasePresenter
      */
     public function actionDefault()
     {
-        $this->sendSuccessResponse($this->submissionFailures->findAll());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUnresolved()
+    public function noncheckUnresolved()
     {
         if (!$this->submissionFailureAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -73,10 +73,10 @@ class SubmissionFailuresPresenter extends BasePresenter
      */
     public function actionUnresolved()
     {
-        $this->sendSuccessResponse($this->submissionFailures->findUnresolved());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDetail(string $id)
+    public function noncheckDetail(string $id)
     {
         $failure = $this->submissionFailures->findOrThrow($id);
         if (!$this->submissionFailureAcl->canView($failure)) {
@@ -91,11 +91,10 @@ class SubmissionFailuresPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the failure", required: true)]
     public function actionDetail(string $id)
     {
-        $failure = $this->submissionFailures->findOrThrow($id);
-        $this->sendSuccessResponse($failure);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkResolve(string $id)
+    public function noncheckResolve(string $id)
     {
         $failure = $this->submissionFailures->findOrThrow($id);
         if (!$this->submissionFailureAcl->canResolve($failure)) {
@@ -112,14 +111,6 @@ class SubmissionFailuresPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the failure", required: true)]
     public function actionResolve(string $id)
     {
-        $failure = $this->submissionFailures->findOrThrow($id);
-        $req = $this->getRequest();
-
-        $failure->resolve($req->getPost("note") ?: "", new DateTime());
-        $this->submissionFailures->persist($failure);
-        if ($req->getPost("sendEmail")) {
-            $this->failureResolutionEmailsSender->failureResolved($failure);
-        }
-        $this->sendSuccessResponse($failure);
+        $this->sendSuccessResponse("OK");
     }
 }

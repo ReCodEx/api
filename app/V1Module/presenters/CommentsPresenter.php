@@ -82,20 +82,20 @@ class CommentsPresenter extends BasePresenter
         return $thread;
     }
 
-    public function checkDefault($id)
-    {
-        $thread = $this->comments->getThread($id);
+    // public function checkDefault($id)
+    // {
+    //     $thread = $this->comments->getThread($id);
 
-        if ($thread) {
-            if (!$this->commentAcl->canViewThread($thread)) {
-                throw new ForbiddenRequestException();
-            }
-        } else {
-            if (!$this->commentAcl->canCreateThread()) {
-                throw new ForbiddenRequestException();
-            }
-        }
-    }
+    //     if ($thread) {
+    //         if (!$this->commentAcl->canViewThread($thread)) {
+    //             throw new ForbiddenRequestException();
+    //         }
+    //     } else {
+    //         if (!$this->commentAcl->canCreateThread()) {
+    //             throw new ForbiddenRequestException();
+    //         }
+    //     }
+    // }
 
     /**
      * Get a comment thread
@@ -105,25 +105,21 @@ class CommentsPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the comment thread", required: true)]
     public function actionDefault($id)
     {
-        $thread = $this->findThreadOrCreateIt($id);
-        $this->comments->flush();
-        $user = $this->getCurrentUser();
-        $thread->filterPublic($user);
-        $this->sendSuccessResponse($thread);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkAddComment(string $id)
-    {
-        $thread = $this->comments->getThread($id);
+    // public function checkAddComment(string $id)
+    // {
+    //     $thread = $this->comments->getThread($id);
 
-        if (!$thread && !$this->commentAcl->canCreateThread()) {
-            throw new ForbiddenRequestException();
-        }
+    //     if (!$thread && !$this->commentAcl->canCreateThread()) {
+    //         throw new ForbiddenRequestException();
+    //     }
 
-        if ($thread && !$this->commentAcl->canAddComment($thread)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+    //     if ($thread && !$this->commentAcl->canAddComment($thread)) {
+    //         throw new ForbiddenRequestException();
+    //     }
+    // }
 
     /**
      * Add a comment to a thread
@@ -135,48 +131,22 @@ class CommentsPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the comment thread", required: true)]
     public function actionAddComment(string $id)
     {
-        $thread = $this->findThreadOrCreateIt($id);
-
-        $user = $this->getCurrentUser();
-        $text = $this->getRequest()->getPost("text");
-        $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
-        $comment = Comment::createComment($thread, $user, $text, $isPrivate);
-
-        $this->comments->persist($comment, false);
-        $this->comments->persist($thread, false);
-        $this->comments->flush();
-
-        // send email to all participants in comment thread
-        $assignment = $this->assignments->get($id);
-        $assignmentSolution = $this->assignmentSolutions->get($id);
-        $referenceSolution = $this->referenceExerciseSolutions->get($id);
-        if ($assignment) {
-            $this->assignmentCommentsEmailsSender->assignmentComment($assignment, $comment);
-        } elseif ($assignmentSolution) {
-            $this->solutionCommentsEmailsSender->assignmentSolutionComment($assignmentSolution, $comment);
-        } elseif ($referenceSolution) {
-            $this->solutionCommentsEmailsSender->referenceSolutionComment($referenceSolution, $comment);
-        } else {
-            // Nothing to do at the moment...
-        }
-
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkTogglePrivate(string $threadId, string $commentId)
-    {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
+    // public function checkTogglePrivate(string $threadId, string $commentId)
+    // {
+    //     /** @var Comment $comment */
+    //     $comment = $this->comments->findOrThrow($commentId);
 
-        if ($comment->getThread()->getId() !== $threadId) {
-            throw new NotFoundException();
-        }
+    //     if ($comment->getThread()->getId() !== $threadId) {
+    //         throw new NotFoundException();
+    //     }
 
-        if (!$this->commentAcl->canAlter($comment)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+    //     if (!$this->commentAcl->canAlter($comment)) {
+    //         throw new ForbiddenRequestException();
+    //     }
+    // }
 
     /**
      * Make a private comment public or vice versa
@@ -188,29 +158,22 @@ class CommentsPresenter extends BasePresenter
     #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
     public function actionTogglePrivate(string $threadId, string $commentId)
     {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
-
-        $comment->togglePrivate();
-        $this->comments->persist($comment);
-        $this->comments->flush();
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSetPrivate(string $threadId, string $commentId)
-    {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
+    // public function checkSetPrivate(string $threadId, string $commentId)
+    // {
+    //     /** @var Comment $comment */
+    //     $comment = $this->comments->findOrThrow($commentId);
 
-        if ($comment->getThread()->getId() !== $threadId) {
-            throw new NotFoundException();
-        }
+    //     if ($comment->getThread()->getId() !== $threadId) {
+    //         throw new NotFoundException();
+    //     }
 
-        if (!$this->commentAcl->canAlter($comment)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+    //     if (!$this->commentAcl->canAlter($comment)) {
+    //         throw new ForbiddenRequestException();
+    //     }
+    // }
 
     /**
      * Set the private flag of a comment
@@ -222,32 +185,22 @@ class CommentsPresenter extends BasePresenter
     #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
     public function actionSetPrivate(string $threadId, string $commentId)
     {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
-        $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
-
-        if ($comment->isPrivate() !== $isPrivate) {
-            $comment->setPrivate($isPrivate);
-            $this->comments->persist($comment);
-            $this->comments->flush();
-        }
-
-        $this->sendSuccessResponse($comment);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDelete(string $threadId, string $commentId)
-    {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
+    // public function checkDelete(string $threadId, string $commentId)
+    // {
+    //     /** @var Comment $comment */
+    //     $comment = $this->comments->findOrThrow($commentId);
 
-        if ($comment->getThread()->getId() !== $threadId) {
-            throw new NotFoundException();
-        }
+    //     if ($comment->getThread()->getId() !== $threadId) {
+    //         throw new NotFoundException();
+    //     }
 
-        if (!$this->commentAcl->canDelete($comment)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+    //     if (!$this->commentAcl->canDelete($comment)) {
+    //         throw new ForbiddenRequestException();
+    //     }
+    // }
 
     /**
      * Delete a comment
@@ -259,10 +212,6 @@ class CommentsPresenter extends BasePresenter
     #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
     public function actionDelete(string $threadId, string $commentId)
     {
-        /** @var Comment $comment */
-        $comment = $this->comments->findOrThrow($commentId);
-
-        $this->comments->remove($comment, true);
         $this->sendSuccessResponse("OK");
     }
 }

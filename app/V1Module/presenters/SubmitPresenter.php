@@ -193,14 +193,6 @@ class SubmitPresenter extends BasePresenter
         return $userId !== null ? $this->users->findOrThrow($userId) : $this->getCurrentUser();
     }
 
-    public function checkCanSubmit(string $id)
-    {
-        $assignment = $this->assignments->findOrThrow($id);
-
-        if (!$this->assignmentAcl->canViewDetail($assignment)) {
-            throw new ForbiddenRequestException("You cannot access this assignment.");
-        }
-    }
 
     /**
      * Check if the given user can submit solutions to the assignment
@@ -212,18 +204,7 @@ class SubmitPresenter extends BasePresenter
     #[Query("userId", new VString(), "Identification of the user", required: false, nullable: true)]
     public function actionCanSubmit(string $id, ?string $userId = null)
     {
-        $assignment = $this->assignments->findOrThrow($id);
-        $user = $this->getUserOrCurrent($userId);
-
-        $response = $this->assignmentSolutions->getSolutionStats($assignment, $user);
-        $response['canSubmit'] = $this->canReceiveSubmissions($assignment, $user);
-        $response['submittedCount'] = $response['evaluated']; // BC, DEPRECATED, will be removed in future
-        if ($this->submissionHelper->isLocked()) {
-            $response['canSubmit'] = false;  // override
-            $response['lockedReason'] = $this->submissionHelper->getLockedReason();
-        }
-
-        $this->sendSuccessResponse($response);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -247,53 +228,7 @@ class SubmitPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionSubmit(string $id)
     {
-        $this->assignments->beginTransaction();
-        try {
-            $assignment = $this->assignments->findOrThrow($id);
-            $req = $this->getRequest();
-            $user = $this->getUserOrCurrent($req->getPost("userId"));
-
-            if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
-                throw new ForbiddenRequestException();
-            }
-
-            if (!$this->canReceiveSubmissions($assignment, $user)) {
-                throw new ForbiddenRequestException(
-                    "User '{$user->getId()}' cannot submit solutions for this assignment anymore."
-                );
-            }
-
-            // get all uploaded files based on given ID list and verify them
-            $uploadedFiles = $this->submissionHelper->getUploadedFiles(
-                $req->getPost("files"),
-                $assignment->getSolutionFilesLimit(),
-                $assignment->getSolutionSizeLimit()
-            );
-
-            // create Solution object
-            $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
-            $solution = new Solution($user, $runtimeEnvironment);
-            $solution->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
-
-            // this may not be entirely atomic (depending on the isolation level), but hey, the worst thing
-            // that might happen is that the attempt counting will be a little off ... no big deal
-            $attemptIndex = $this->assignmentSolvers->getNextAttemptIndex($assignment, $user);
-
-            // create and fill assignment solution
-            $note = $req->getPost("note");
-            $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution, $attemptIndex);
-            $this->assignmentSolutions->persist($assignmentSolution);
-
-            // convert uploaded files into solutions files and manage them in the storage correctly
-            $this->submissionHelper->prepareUploadedFilesForSubmit($uploadedFiles, $assignmentSolution->getSolution());
-
-            $this->assignments->commit();
-        } catch (Exception $e) {
-            $this->assignments->rollback();
-            throw $e;
-        }
-
-        $this->sendSuccessResponse($this->finishSubmission($assignmentSolution));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -330,13 +265,6 @@ class SubmitPresenter extends BasePresenter
         ];
     }
 
-    public function checkResubmit(string $id)
-    {
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-        if (!$this->assignmentAcl->canResubmitSubmissions($solution->getAssignment())) {
-            throw new ForbiddenRequestException("You cannot resubmit this submission");
-        }
-    }
 
     /**
      * Resubmit a solution (i.e., create a new submission)
@@ -350,20 +278,10 @@ class SubmitPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the solution", required: true)]
     public function actionResubmit(string $id)
     {
-        $req = $this->getRequest();
-        $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
-        $solution = $this->assignmentSolutions->findOrThrow($id);
-
-        $this->sendSuccessResponse($this->finishSubmission($solution, $isDebug));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkResubmitAllAsyncJobStatus(string $id)
-    {
-        $assignment = $this->assignments->findOrThrow($id);
-        if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
-            throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
-        }
-    }
+
 
     /**
      * Return a list of all pending resubmit async jobs associated with given assignment.
@@ -375,19 +293,9 @@ class SubmitPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionResubmitAllAsyncJobStatus(string $id)
     {
-        $assignment = $this->assignments->findOrThrow($id);
-        $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
-        $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
-        $this->sendSuccessResponse(['pending' => $asyncJobs, 'failed' => $failedJobs]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkResubmitAll(string $id)
-    {
-        $assignment = $this->assignments->findOrThrow($id);
-        if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
-            throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
-        }
-    }
 
     /**
      * Start async job that resubmits all submissions of an assignment.
@@ -400,29 +308,7 @@ class SubmitPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
     public function actionResubmitAll(string $id)
     {
-        $assignment = $this->assignments->findOrThrow($id);
-        $asyncJobs = $this->asyncJobs->findPendingJobs(ResubmitAllAsyncJobHandler::ID, false, null, $assignment);
-        $failedJobs = $this->asyncJobs->findFailedJobs(ResubmitAllAsyncJobHandler::ID, null, $assignment);
-        if (!$asyncJobs) {
-            // new job is started only if no async jobs are pending
-            $asyncJob = ResubmitAllAsyncJobHandler::dispatchAsyncJob(
-                $this->dispatcher,
-                $this->getCurrentUser(),
-                $assignment
-            );
-            $asyncJobs = [$asyncJob];
-        }
-        $this->sendSuccessResponse(['pending' => $asyncJobs, 'failed' => $failedJobs]);
-    }
-
-    public function checkPreSubmit(string $id, ?string $userId = null)
-    {
-        $assignment = $this->assignments->findOrThrow($id);
-        $user = $this->getUserOrCurrent($userId);
-
-        if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
-            throw new ForbiddenRequestException("You cannot submit this assignment.");
-        }
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -440,30 +326,6 @@ class SubmitPresenter extends BasePresenter
     #[Query("userId", new VString(), "Identifier of the submission author", required: false, nullable: true)]
     public function actionPreSubmit(string $id, string $userId = null)
     {
-        $assignment = $this->assignments->findOrThrow($id);
-
-        // retrieve and check uploaded files
-        $uploadedFiles = $this->submissionHelper->getUploadedFiles($this->getRequest()->getPost("files"));
-
-        // prepare file names into separate array
-        $filenames = array_values(
-            array_map(
-                function (UploadedFile $uploadedFile) {
-                    return $uploadedFile->getName();
-                },
-                $uploadedFiles
-            )
-        );
-
-        $this->sendSuccessResponse(
-            [
-                "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($assignment, $filenames),
-                "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($assignment),
-                "countLimitOK" => $assignment->getSolutionFilesLimit() === null
-                    || count($uploadedFiles) <= $assignment->getSolutionFilesLimit(),
-                "sizeLimitOK" => $assignment->getSolutionSizeLimit() === null
-                    || $this->submissionHelper->getFilesSize($uploadedFiles) <= $assignment->getSolutionSizeLimit(),
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 }

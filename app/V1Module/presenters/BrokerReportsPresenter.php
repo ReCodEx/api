@@ -84,15 +84,15 @@ class BrokerReportsPresenter extends BasePresenter
      */
     public function startup()
     {
-        $req = $this->getHttpRequest();
-        list($username, $password) = BasicAuthHelper::getCredentials($req);
+        // $req = $this->getHttpRequest();
+        // list($username, $password) = BasicAuthHelper::getCredentials($req);
 
-        $isAuthCorrect = $username === $this->brokerConfig->getAuthUsername()
-            && $password === $this->brokerConfig->getAuthPassword();
+        // $isAuthCorrect = $username === $this->brokerConfig->getAuthUsername()
+        //     && $password === $this->brokerConfig->getAuthPassword();
 
-        if (!$isAuthCorrect) {
-            throw new WrongCredentialsException();
-        }
+        // if (!$isAuthCorrect) {
+        //     throw new WrongCredentialsException();
+        // }
 
         parent::startup();
     }
@@ -206,14 +206,6 @@ class BrokerReportsPresenter extends BasePresenter
     #[Post("message", new VMixed(), "A textual description of the error", nullable: true)]
     public function actionError()
     {
-        $req = $this->getRequest();
-        $message = $req->getPost("message");
-        if (!$this->failureHelper->report(FailureHelper::TYPE_BACKEND_ERROR, $message)) {
-            throw new InternalServerException(
-                "Error could not have been reported to the admin because of an internal server error."
-            );
-        }
-
-        $this->sendSuccessResponse("Error was reported.");
+        $this->sendSuccessResponse("OK");
     }
 }

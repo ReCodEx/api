@@ -92,29 +92,10 @@ class SisPresenter extends BasePresenter
      */
     public function actionStatus()
     {
-        $login = $this->externalLogins->findByUser($this->getCurrentUser(), "cas-uk");
-        $now = new DateTime();
-        $terms = [];
-
-        /** @var SisValidTerm $term */
-        foreach ($this->sisValidTerms->findAll() as $term) {
-            $month = intval($now->format('w'));
-            $terms[] = [
-                'year' => $term->getYear(),
-                'term' => $term->getTerm(),
-                'isAdvertised' => $term->isAdvertised($now)
-            ];
-        }
-
-        $this->sendSuccessResponse(
-            [
-                "accessible" => $login !== null,
-                "terms" => $terms
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkGetTerms()
+    public function noncheckGetTerms()
     {
         if (!$this->sisAcl->canViewTerms()) {
             throw new ForbiddenRequestException();
@@ -127,10 +108,10 @@ class SisPresenter extends BasePresenter
      */
     public function actionGetTerms()
     {
-        $this->sendSuccessResponse($this->sisValidTerms->findAll());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkRegisterTerm()
+    public function noncheckRegisterTerm()
     {
         if (!$this->sisAcl->canCreateTerm()) {
             throw new ForbiddenRequestException();
@@ -148,23 +129,10 @@ class SisPresenter extends BasePresenter
     #[Post("term", new VMixed(), nullable: true)]
     public function actionRegisterTerm()
     {
-        $year = intval($this->getRequest()->getPost("year"));
-        $term = intval($this->getRequest()->getPost("term"));
-
-        if ($this->sisValidTerms->isValid($year, $term)) {
-            $this->sendSuccessResponse("OK");
-        }
-
-        // Throws InvalidApiArgumentException when given term is invalid
-        $this->sisHelper->getCourses($this->getSisUserIdOrThrow($this->getCurrentUser()), $year, $term);
-
-        $termEntity = new SisValidTerm($year, $term);
-        $this->sisValidTerms->persist($termEntity);
-
-        $this->sendSuccessResponse($termEntity);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkEditTerm(string $id)
+    public function noncheckEditTerm(string $id)
     {
         $term = $this->sisValidTerms->findOrThrow($id);
 
@@ -185,36 +153,10 @@ class SisPresenter extends BasePresenter
     #[Path("id", new VString(), required: true)]
     public function actionEditTerm(string $id)
     {
-        $term = $this->sisValidTerms->findOrThrow($id);
-
-        $beginning = DateTime::createFromFormat("U", $this->getRequest()->getPost("beginning"));
-        $end = DateTime::createFromFormat("U", $this->getRequest()->getPost("end"));
-
-        $advertiseUntil = null;
-        if ($this->getRequest()->getPost("advertiseUntil") !== null) {
-            $advertiseUntil = DateTime::createFromFormat("U", $this->getRequest()->getPost("advertiseUntil"));
-        }
-
-        if ($beginning > $end) {
-            throw new InvalidApiArgumentException('beginning', "The beginning must precede the end");
-        }
-
-        if ($advertiseUntil !== null && ($advertiseUntil > $end || $advertiseUntil < $beginning)) {
-            throw new InvalidApiArgumentException(
-                'advertiseUntil',
-                "The 'advertiseUntil' timestamp must be within the semester"
-            );
-        }
-
-        $term->setBeginning($beginning);
-        $term->setEnd($end);
-        $term->setAdvertiseUntil($advertiseUntil);
-
-        $this->sisValidTerms->persist($term);
-        $this->sendSuccessResponse($term);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteTerm(string $id)
+    public function noncheckDeleteTerm(string $id)
     {
         $term = $this->sisValidTerms->findOrThrow($id);
         if (!$this->sisAcl->canDeleteTerm($term)) {
@@ -230,13 +172,10 @@ class SisPresenter extends BasePresenter
     #[Path("id", new VString(), required: true)]
     public function actionDeleteTerm(string $id)
     {
-        $term = $this->sisValidTerms->findOrThrow($id);
-
-        $this->sisValidTerms->remove($term);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubscribedGroups($userId, $year, $term)
+    public function noncheckSubscribedGroups($userId, $year, $term)
     {
         $user = $this->users->findOrThrow($userId);
         $sisUserId = $this->getSisUserIdOrThrow($user);
@@ -260,51 +199,10 @@ class SisPresenter extends BasePresenter
     #[Path("term", new VInt(), required: true)]
     public function actionSubscribedCourses($userId, $year, $term)
     {
-        $user = $this->users->findOrThrow($userId);
-        $sisUserId = $this->getSisUserIdOrThrow($user);
-
-        // we separate groups and courses (courses hold only groupIds), to avoid duplicit groups in the output
-        $groups = [];
-        $courses = [];
-
-        foreach ($this->sisHelper->getCourses($sisUserId, $year, $term) as $course) {
-            if (!$course->isOwnerStudent()) {
-                continue;
-            }
-
-            $bindings = $this->sisGroupBindings->findByCode($course->getCode());
-            $courseGroupIds = [];
-            foreach ($bindings as $binding) {
-                if ($binding->getGroup() !== null && !$binding->getGroup()->isArchived()) {
-                    /** @var Group $group */
-                    $group = $binding->getGroup();
-
-                    if (
-                        !array_key_exists($group->getId(), $groups)
-                        && !$group->isOrganizational() && !$group->isArchived()
-                    ) {
-                        $groups[$group->getId()] = $group;
-                        $courseGroupIds[] = $group->getId();
-                    }
-                }
-            }
-
-            $courses[] = [
-                'course' => $course,
-                'groups' => $courseGroupIds,
-            ];
-        }
-
-        // and we need to perform ancestral closure to make sure the student can assemlbe complete hiarichal names
-        $groups = $this->groups->groupsAncestralClosure($groups);
-
-        $this->sendSuccessResponse([
-            'courses' => $courses,  // courses info + bound groups (referenced by ids)
-            'groups' => $this->groupViewFactory->getGroups($groups),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSupervisedCourses($userId, $year, $term)
+    public function noncheckSupervisedCourses($userId, $year, $term)
     {
         $user = $this->users->findOrThrow($userId);
         $sisUserId = $this->getSisUserIdOrThrow($user);
@@ -328,42 +226,7 @@ class SisPresenter extends BasePresenter
     #[Path("term", new VInt(), required: true)]
     public function actionSupervisedCourses($userId, $year, $term)
     {
-        $user = $this->users->findOrThrow($userId);
-        $sisUserId = $this->getSisUserIdOrThrow($user);
-
-        $groups = [];
-        $courses = [];
-
-        foreach ($this->sisHelper->getCourses($sisUserId, $year, $term) as $course) {
-            if (!$course->isOwnerSupervisor()) {
-                continue;
-            }
-
-            $bindings = $this->sisGroupBindings->findByCode($course->getCode());
-            $courseGroupIds = [];
-            foreach ($bindings as $binding) {
-                if ($binding->getGroup() !== null && !$binding->getGroup()->isArchived()) {
-                    /** @var Group $group */
-                    $group = $binding->getGroup();
-
-                    $groups[$group->getId()] = $group;
-                    $courseGroupIds[] = $group->getId();
-                }
-            }
-
-            $courses[] = [
-                'course' => $course,
-                'groups' => $courseGroupIds,
-            ];
-        }
-
-        // and we need to perform ancestral closure to make sure the student can assemble complete hierarchical names
-        $groups = $this->groups->groupsAncestralClosure($groups);
-
-        $this->sendSuccessResponse([
-            'courses' => $courses,  // courses info + bound groups (referenced by ids)
-            'groups' => $this->groupViewFactory->getGroups($groups),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -420,69 +283,7 @@ class SisPresenter extends BasePresenter
     #[Path("courseId", new VString(), required: true)]
     public function actionCreateGroup($courseId)
     {
-        $user = $this->getCurrentUser();
-        $sisUserId = $this->getSisUserIdOrThrow($user);
-        $request = $this->getRequest();
-        $parentGroupId = $request->getPost("parentGroupId");
-        $parentGroup = $this->groups->findOrThrow($parentGroupId);
-
-        if ($parentGroup->isArchived()) {
-            throw new InvalidApiArgumentException(
-                'parentGroupId',
-                "It is not permitted to create subgroups in archived groups"
-            );
-        }
-
-        $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
-
-        if (!$this->sisAcl->canCreateGroup(new SisGroupContext($parentGroup, $remoteCourse), $remoteCourse)) {
-            throw new ForbiddenRequestException();
-        }
-
-        $group = new Group($remoteCourse->getCourseId(), $parentGroup->getInstance(), $user, $parentGroup);
-
-        $captions = [];
-        foreach (["en", "cs"] as $language) {
-            // Assemble new group name from course data....
-            $schedulingInfo = [];
-            if ($remoteCourse->getDayOfWeek() !== null) {
-                $schedulingInfo[] = $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language);
-            }
-            if ($remoteCourse->getTime() !== null) {
-                $schedulingInfo[] = $remoteCourse->getTime();
-            }
-            if ($remoteCourse->isFortnightly()) {
-                $schedulingInfo[] = $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
-            }
-            if ($remoteCourse->getRoom() !== null) {
-                $schedulingInfo[] = $remoteCourse->getRoom();
-            }
-
-            if ($schedulingInfo) {
-                $captions[$language] = sprintf(
-                    "%s (%s)",
-                    $remoteCourse->getCaption($language),
-                    join(', ', $schedulingInfo)
-                );
-            } else {
-                $captions[$language] = $remoteCourse->getCaption($language);
-            }
-        }
-
-        $this->makeCaptionsUnique($captions, $parentGroup);
-
-        foreach ($captions as $language => $caption) {
-            $localization = new LocalizedGroup($language, $caption, $remoteCourse->getAnnotation($language));
-            $group->addLocalizedText($localization);
-            $this->groups->persist($localization, false);
-        }
-
-        $this->groups->persist($group, false);
-
-        $binding = new SisGroupBinding($group, $remoteCourse->getCode());
-        $this->sisGroupBindings->persist($binding, true);
-
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -496,29 +297,7 @@ class SisPresenter extends BasePresenter
     #[Path("courseId", new VString(), required: true)]
     public function actionBindGroup($courseId)
     {
-        $user = $this->getCurrentUser();
-        $sisUserId = $this->getSisUserIdOrThrow($user);
-        $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
-        $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
-
-        if ($group->isArchived()) {
-            throw new InvalidApiArgumentException(
-                'groupId',
-                "It is not permitted to create subgroups in archived groups"
-            );
-        }
-
-        if (!$this->sisAcl->canBindGroup($group, $remoteCourse)) {
-            throw new ForbiddenRequestException();
-        }
-
-        if ($this->sisGroupBindings->findByGroupAndCode($group, $remoteCourse->getCode())) {
-            throw new ApiException("The group is already bound to the course");
-        }
-
-        $binding = new SisGroupBinding($group, $remoteCourse->getCode());
-        $this->sisGroupBindings->persist($binding);
-        $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -533,21 +312,6 @@ class SisPresenter extends BasePresenter
     #[Path("groupId", new VString(), "an identifier of a local group", required: true)]
     public function actionUnbindGroup($courseId, $groupId)
     {
-        $user = $this->getCurrentUser();
-        $sisUserId = $this->getSisUserIdOrThrow($user);
-        $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
-        $group = $this->groups->findOrThrow($groupId);
-
-        if (!$this->sisAcl->canUnbindGroup($group, $remoteCourse)) {
-            throw new ForbiddenRequestException();
-        }
-
-        $groupBinding = $this->sisGroupBindings->findByGroupAndCode($group, $remoteCourse->getCode());
-        if (!$groupBinding) {
-            throw new NotFoundException();
-        }
-
-        $this->sisGroupBindings->remove($groupBinding);
         $this->sendSuccessResponse("OK");
     }
 
@@ -561,21 +325,7 @@ class SisPresenter extends BasePresenter
     #[Path("courseId", new VString(), required: true)]
     public function actionPossibleParents($courseId)
     {
-        $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
-        $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
-
-        $groups = array_values(
-            array_filter(
-                $this->groups->findAll(),
-                function (Group $group) use ($remoteCourse) {
-                    return $this->sisAcl->canCreateGroup(
-                        new SisGroupContext($group, $remoteCourse),
-                        $remoteCourse
-                    ) && !$group->isArchived();
-                }
-            )
-        );
-        $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
+        $this->sendSuccessResponse("OK");
     }
 
     /**

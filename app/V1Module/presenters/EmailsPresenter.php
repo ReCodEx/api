@@ -49,7 +49,7 @@ class EmailsPresenter extends BasePresenter
     public $groupAcl;
 
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->emailAcl->canSendToAll()) {
             throw new ForbiddenRequestException();
@@ -64,22 +64,10 @@ class EmailsPresenter extends BasePresenter
     #[Post("message", new VString(1), "Message which will be sent, can be html code")]
     public function actionDefault()
     {
-        $users = $this->users->findAll();
-        $req = $this->getRequest();
-        $subject = $req->getPost("subject");
-        $message = $req->getPost("message");
-
-        $this->emailLocalizationHelper->sendLocalizedEmail(
-            $users,
-            function ($toUsers, $emails, $locale) use ($subject, $message) {
-                return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
-            }
-        );
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSendToSupervisors()
+    public function noncheckSendToSupervisors()
     {
         if (!$this->emailAcl->canSendToSupervisors()) {
             throw new ForbiddenRequestException();
@@ -94,28 +82,10 @@ class EmailsPresenter extends BasePresenter
     #[Post("message", new VString(1), "Message which will be sent, can be html code")]
     public function actionSendToSupervisors()
     {
-        $supervisors = $this->users->findByRoles(
-            Roles::SUPERVISOR_ROLE,
-            Roles::SUPERVISOR_STUDENT_ROLE,
-            Roles::EMPOWERED_SUPERVISOR_ROLE,
-            Roles::SUPERADMIN_ROLE
-        );
-
-        $req = $this->getRequest();
-        $subject = $req->getPost("subject");
-        $message = $req->getPost("message");
-
-        $this->emailLocalizationHelper->sendLocalizedEmail(
-            $supervisors,
-            function ($toUsers, $emails, $locale) use ($subject, $message) {
-                return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
-            }
-        );
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSendToRegularUsers()
+    public function noncheckSendToRegularUsers()
     {
         if (!$this->emailAcl->canSendToRegularUsers()) {
             throw new ForbiddenRequestException();
@@ -130,22 +100,10 @@ class EmailsPresenter extends BasePresenter
     #[Post("message", new VString(1), "Message which will be sent, can be html code")]
     public function actionSendToRegularUsers()
     {
-        $users = $this->users->findByRoles(Roles::STUDENT_ROLE, Roles::SUPERVISOR_STUDENT_ROLE);
-        $req = $this->getRequest();
-        $subject = $req->getPost("subject");
-        $message = $req->getPost("message");
-
-        $this->emailLocalizationHelper->sendLocalizedEmail(
-            $users,
-            function ($toUsers, $emails, $locale) use ($subject, $message) {
-                return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
-            }
-        );
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSendToGroupMembers(string $groupId)
+    public function noncheckSendToGroupMembers(string $groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
         if (!$this->groupAcl->canSendEmail($group)) {
@@ -169,46 +127,6 @@ class EmailsPresenter extends BasePresenter
     #[Path("groupId", new VString(), required: true)]
     public function actionSendToGroupMembers(string $groupId)
     {
-        $user = $this->getCurrentUser();
-        $group = $this->groups->findOrThrow($groupId);
-        $req = $this->getRequest();
-
-        $subject = $req->getPost("subject");
-        $message = $req->getPost("message");
-        $toSupervisors = filter_var($req->getPost("toSupervisors"), FILTER_VALIDATE_BOOLEAN);
-        $toAdmins = filter_var($req->getPost("toAdmins"), FILTER_VALIDATE_BOOLEAN);
-        $toObservers = filter_var($req->getPost("toObservers"), FILTER_VALIDATE_BOOLEAN);
-        $toMe = filter_var($req->getPost("toMe"), FILTER_VALIDATE_BOOLEAN);
-
-        $users = $group->getStudents()->getValues();
-        if ($toSupervisors) {
-            $users = array_merge($users, $group->getSupervisors()->getValues());
-        }
-        if ($toAdmins) {
-            $users = array_merge($users, $group->getPrimaryAdmins()->getValues());
-        }
-        if ($toObservers) {
-            $users = array_merge($users, $group->getObservers()->getValues());
-        }
-
-        // user requested copy of the email to his/hers email address
-        $foundMes = array_filter(
-            $users,
-            function (User $user) {
-                return $user->getId() === $user->getId();
-            }
-        );
-        if ($toMe && count($foundMes) === 0) {
-            $users[] = $user;
-        }
-
-        $this->emailLocalizationHelper->sendLocalizedEmail(
-            $users,
-            function ($toUsers, $emails, $locale) use ($subject, $message) {
-                return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
-            }
-        );
-
         $this->sendSuccessResponse("OK");
     }
 }

@@ -5,6 +5,9 @@ namespace App\Console;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\RequestParamData;
 use App\Helpers\MetaFormats\Type;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VMixed;
+use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\Swagger\TempAnnotationFileBuilder;
 use App\Helpers\Swagger\AnnotationHelper;
 use Symfony\Component\Console\Command\Command;
@@ -60,7 +63,14 @@ class SwaggerAnnotator extends Command
                 if ($requestParamData->type == Type::Path || $requestParamData->type == Type::Query) {
                     $paramsLine .= ' "' . $requestParamData->name . '" => "' . $requestParamData->validators[0]->getExampleValue() . '",';
                 } elseif ($requestParamData->type == Type::Post) {
-                    $postLine .= ' "' . $requestParamData->name . '" => "' . $requestParamData->validators[0]->getExampleValue() . '",';
+                    $validator = $requestParamData->validators[0];
+                    if ($validator instanceof VString || $validator instanceof VMixed) {
+                        $postLine .= ' "' . $requestParamData->name . '" => "' . $validator->getExampleValue() . '",';
+                    } elseif ($validator instanceof VArray) {
+                        $postLine .= ' "' . $requestParamData->name . '" => [],';
+                    } else {
+                        $postLine .= ' "' . $requestParamData->name . '" => ' . $validator->getExampleValue() . ',';
+                    }
                 }
             }
             $paramsLine .= "],";

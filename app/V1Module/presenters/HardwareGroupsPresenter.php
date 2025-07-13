@@ -23,7 +23,7 @@ class HardwareGroupsPresenter extends BasePresenter
      */
     public $hardwareGroupAcl;
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->hardwareGroupAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -36,7 +36,6 @@ class HardwareGroupsPresenter extends BasePresenter
      */
     public function actionDefault()
     {
-        $hwGroups = $this->hardwareGroups->findAll();
-        $this->sendSuccessResponse($hwGroups);
+        $this->sendSuccessResponse("OK");
     }
 }

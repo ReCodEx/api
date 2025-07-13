@@ -79,12 +79,6 @@ class InstancesPresenter extends BasePresenter
     public $instanceViewFactory;
 
 
-    public function checkDefault()
-    {
-        if (!$this->instanceAcl->canViewAll()) {
-            throw new ForbiddenRequestException();
-        }
-    }
 
     /**
      * Get a list of all instances
@@ -92,22 +86,7 @@ class InstancesPresenter extends BasePresenter
      */
     public function actionDefault()
     {
-        $instances = array_filter(
-            $this->instances->findAll(),
-            function (Instance $instance) {
-                return $instance->isAllowed();
-            }
-        );
-        $this->sendSuccessResponse(
-            $this->instanceViewFactory->getInstances($instances, $this->getCurrentUserOrNull())
-        );
-    }
-
-    public function checkCreateInstance()
-    {
-        if (!$this->instanceAcl->canAdd()) {
-            throw new ForbiddenRequestException();
-        }
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -120,32 +99,9 @@ class InstancesPresenter extends BasePresenter
     #[Post("isOpen", new VBool(), "Should the instance be open for registration?")]
     public function actionCreateInstance()
     {
-        $req = $this->getRequest();
-        $user = $this->getCurrentUser();
-        $name = $req->getPost("name");
-        $description = $req->getPost("description") ?: "";
-
-        $localizedRootGroup = new LocalizedGroup($this->getCurrentUserLocale(), $name, $description);
-        $instance = Instance::createInstance(
-            [$localizedRootGroup],
-            $req->getPost("isOpen"),
-            $user
-        );
-
-        $this->instances->persist($instance->getRootGroup(), false);
-        $this->instances->persist($localizedRootGroup, false);
-        $this->instances->persist($instance);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $user), IResponse::S201_Created);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateInstance(string $id)
-    {
-        $instance = $this->instances->findOrThrow($id);
-
-        if (!$this->instanceAcl->canUpdate($instance)) {
-            throw new ForbiddenRequestException();
-        }
-    }
 
     /**
      * Update an instance
@@ -155,24 +111,10 @@ class InstancesPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the updated instance", required: true)]
     public function actionUpdateInstance(string $id)
     {
-        $instance = $this->instances->findOrThrow($id);
-
-        $req = $this->getRequest();
-        $isOpen = $req->getPost("isOpen");
-        if ($isOpen !== null) {
-            $instance->setIsOpen($isOpen);
-        }
-        $this->instances->persist($instance);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $this->getCurrentUser()));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteInstance(string $id)
-    {
-        $instance = $this->instances->findOrThrow($id);
-        if (!$this->instanceAcl->canRemove($instance)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Delete an instance
@@ -181,28 +123,10 @@ class InstancesPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the instance to be deleted", required: true)]
     public function actionDeleteInstance(string $id)
     {
-        $instance = $this->instances->findOrThrow($id);
-
-        $this->instances->remove($instance);
-        $this->instances->flush();
         $this->sendSuccessResponse("OK");
     }
 
-    /**
-     * @throws BadRequestException if the instance is not allowed
-     * @throws ForbiddenRequestException
-     */
-    public function checkDetail(string $id)
-    {
-        $instance = $this->instances->findOrThrow($id);
-        if (!$this->instanceAcl->canViewDetail($instance)) {
-            throw new ForbiddenRequestException();
-        }
 
-        if (!$instance->isAllowed()) {
-            throw new BadRequestException("This instance is not allowed.");
-        }
-    }
 
     /**
      * Get details of an instance
@@ -211,17 +135,9 @@ class InstancesPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the instance", required: true)]
     public function actionDetail(string $id)
     {
-        $instance = $this->instances->findOrThrow($id);
-        $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance, $this->getCurrentUser()));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkLicences(string $id)
-    {
-        $instance = $this->instances->findOrThrow($id);
-        if (!$this->instanceAcl->canViewLicences($instance)) {
-            throw new ForbiddenRequestException();
-        }
-    }
 
     /**
      * Get a list of licenses associated with an instance
@@ -230,17 +146,10 @@ class InstancesPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the instance", required: true)]
     public function actionLicences(string $id)
     {
-        $instance = $this->instances->findOrThrow($id);
-        $this->sendSuccessResponse($instance->getLicences()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkCreateLicence(string $id)
-    {
-        $instance = $this->instances->findOrThrow($id);
-        if (!$this->instanceAcl->canAddLicence($instance)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Create a new license for an instance
@@ -251,23 +160,10 @@ class InstancesPresenter extends BasePresenter
     #[Path("id", new VUuid(), "An identifier of the instance", required: true)]
     public function actionCreateLicence(string $id)
     {
-        $instance = $this->instances->findOrThrow($id);
-        $req = $this->getRequest();
-        $validUntil = (new \DateTime())->setTimestamp($req->getPost("validUntil"));
-        $note = $req->getPost("note");
-
-        $licence = Licence::createLicence($note, $validUntil, $instance);
-        $this->licences->persist($licence);
-        $this->sendSuccessResponse($licence);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdateLicence(string $licenceId)
-    {
-        $licence = $this->licences->findOrThrow($licenceId);
-        if (!$this->instanceAcl->canUpdateLicence($licence)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Update an existing license for an instance
@@ -280,31 +176,10 @@ class InstancesPresenter extends BasePresenter
     #[Path("licenceId", new VString(), "Identifier of the license", required: true)]
     public function actionUpdateLicence(string $licenceId)
     {
-        $licence = $this->licences->findOrThrow($licenceId);
-        $req = $this->getRequest();
-        $validUntil = $req->getPost("validUntil") ? new \DateTime(
-            $req->getPost("validUntil")
-        ) : $licence->getValidUntil();
-        $isValid = $req->getPost("isValid") ? filter_var(
-            $req->getPost("isValid"),
-            FILTER_VALIDATE_BOOLEAN
-        ) : $licence->isValid();
-
-        $licence->setNote($req->getPost("note") ?: $licence->getNote());
-        $licence->setValidUntil($validUntil);
-        $licence->setIsValid($isValid);
-
-        $this->licences->persist($licence);
-        $this->sendSuccessResponse($licence);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteLicence(string $licenceId)
-    {
-        $licence = $this->licences->findOrThrow($licenceId);
-        if (!$this->instanceAcl->canRemoveLicence($licence)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Remove existing license for an instance
@@ -314,9 +189,6 @@ class InstancesPresenter extends BasePresenter
     #[Path("licenceId", new VString(), "Identifier of the license", required: true)]
     public function actionDeleteLicence(string $licenceId)
     {
-        $licence = $this->licences->findOrThrow($licenceId);
-        $this->licences->remove($licence);
-        $this->licences->flush();
         $this->sendSuccessResponse("OK");
     }
 }

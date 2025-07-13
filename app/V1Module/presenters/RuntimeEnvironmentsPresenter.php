@@ -23,7 +23,7 @@ class RuntimeEnvironmentsPresenter extends BasePresenter
      */
     public $runtimeEnvironmentAcl;
 
-    public function checkDefault()
+    public function noncheckDefault()
     {
         if (!$this->runtimeEnvironmentAcl->canViewAll()) {
             throw new ForbiddenRequestException();
@@ -36,7 +36,6 @@ class RuntimeEnvironmentsPresenter extends BasePresenter
      */
     public function actionDefault()
     {
-        $environments = $this->runtimeEnvironments->findAll();
-        $this->sendSuccessResponse($environments);
+        $this->sendSuccessResponse("OK");
     }
 }

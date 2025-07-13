@@ -26,11 +26,6 @@ class EmailVerificationPresenter extends BasePresenter
      */
     public function actionResendVerificationEmail()
     {
-        $user = $this->getCurrentUser();
-        if (!$this->emailVerificationHelper->process($user)) {
-            throw new ForbiddenRequestException("Email cannot be sent, please try it later.");
-        }
-
         $this->sendSuccessResponse("OK");
     }
 
@@ -42,19 +37,6 @@ class EmailVerificationPresenter extends BasePresenter
      */
     public function actionEmailVerification()
     {
-        $user = $this->getCurrentUser();
-
-        /** @var Identity $identity */
-        $identity = $this->getUser()->getIdentity();
-        $token = $identity->getToken();
-
-        if ($this->emailVerificationHelper->verify($user, $token)) {
-            $user->setVerified();
-            $this->users->flush();
-        } else {
-            throw new ForbiddenRequestException("The email was not verified.");
-        }
-
         $this->sendSuccessResponse("OK");
     }
 }

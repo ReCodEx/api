@@ -25,7 +25,7 @@ class StandardAnnotationConverter
      */
     public static function convertStandardAnnotations(string $path): string
     {
-        // initialize the metadata structure
+        // // initialize the metadata structure
         if (self::$routesMetadata == null) {
             self::$routesMetadata = AnnotationHelper::getRoutesMetadata();
         }
@@ -56,23 +56,40 @@ class StandardAnnotationConverter
         $lines = Utils::fileStringToLines($content);
 
         // creates a list of replacement annotation blocks and their extends, keyed by original annotation start lines
-        $annotationReplacements = self::convertEndpointAnnotations($endpoints, $lines);
+        // $annotationReplacements = self::convertEndpointAnnotations($endpoints, $lines);
 
         // replace original annotations with the new ones
         $newLines = [];
         for ($i = 0; $i < count($lines); $i++) {
-            // copy non-annotation lines
-            if (!array_key_exists($i, $annotationReplacements)) {
-                $newLines[] = $lines[$i];
-                continue;
-            }
+            foreach ($endpoints as $endpoint) {
+                if ($i == $endpoint["startLine"] + 2) {
+                    $line = $lines[$i];
+                    while (!str_contains($line, ")")) {
+                        $line = $lines[$i];
+                        $newLines[] = $line;
+                        $i++;
+                    }
 
-            // add new annotations
-            foreach ($annotationReplacements[$i]["annotations"] as $replacementLine) {
-                $newLines[] = $replacementLine;
+                    $newLines[] = '        $this->sendSuccessResponse("OK");';
+                    $i = $endpoint["endLine"];
+                    break;
+                }
             }
-            // move $i to the original annotation end line (skip original annotations)
-            $i = $annotationReplacements[$i]["originalAnnotationEndLine"];
+            $newLines[] = $lines[$i];
+
+
+            // // copy non-annotation lines
+            // if (!array_key_exists($i, $annotationReplacements)) {
+            //     $newLines[] = $lines[$i];
+            //     continue;
+            // }
+
+            // // add new annotations
+            // foreach ($annotationReplacements[$i]["annotations"] as $replacementLine) {
+            //     $newLines[] = $replacementLine;
+            // }
+            // // move $i to the original annotation end line (skip original annotations)
+            // $i = $annotationReplacements[$i]["originalAnnotationEndLine"];
         }
 
         return implode("\n", $newLines);

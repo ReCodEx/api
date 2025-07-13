@@ -160,13 +160,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     public $failureHelper;
 
 
-    public function checkSolutions(string $exerciseId)
-    {
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        if (!$this->exerciseAcl->canViewDetail($exercise)) {
-            throw new ForbiddenRequestException("You cannot access this exercise solutions");
-        }
-    }
+
 
     /**
      * Get reference solutions for an exercise
@@ -175,28 +169,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionSolutions(string $exerciseId)
     {
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        $solutions = array_filter(
-            $exercise->getReferenceSolutions()->getValues(),
-            function ($solution) {
-                return $this->referenceSolutionAcl->canViewDetail($solution);
-            }
-        );
-
-        $this->sendSuccessResponse(
-            $this->referenceSolutionViewFactory->getReferenceSolutionList(
-                array_values($solutions)
-            )
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDetail(string $solutionId)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Get details of a reference solution
@@ -206,17 +182,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("solutionId", new VString(), "An identifier of the solution", required: true)]
     public function actionDetail(string $solutionId)
     {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkUpdate(string $solutionId)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->referenceSolutionAcl->canUpdate($solution)) {
-            throw new ForbiddenRequestException("You cannot update the ref. solution");
-        }
-    }
+
 
     /**
      * Update details about the ref. solution (note, etc...)
@@ -228,21 +197,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("solutionId", new VString(), "Identifier of the solution", required: true)]
     public function actionUpdate(string $solutionId)
     {
-        $req = $this->getRequest();
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        $solution->setDescription($req->getPost("note"));
-
-        $this->referenceSolutions->flush();
-        $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteReferenceSolution(string $solutionId)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->referenceSolutionAcl->canDelete($solution)) {
-            throw new ForbiddenRequestException("You cannot delete reference solution of this exercise");
-        }
-    }
+
 
     /**
      * Delete reference solution with given identification.
@@ -251,32 +209,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("solutionId", new VString(), "identifier of reference solution", required: true)]
     public function actionDeleteReferenceSolution(string $solutionId)
     {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-
-        // delete files of submissions that will be deleted in cascade
-        $submissions = $solution->getSubmissions()->getValues();
-        foreach ($submissions as $submission) {
-            $this->fileStorage->deleteResultsArchive($submission);
-            $this->fileStorage->deleteJobConfig($submission);
-        }
-
-        // delete source codes
-        $this->fileStorage->deleteSolutionArchive($solution->getSolution());
-
-        $solution->setLastSubmission(null); // break cyclic dependency, so submissions may be deleted on cascade
-        $this->referenceSolutions->flush();
-        $this->referenceSolutions->remove($solution);
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubmissions(string $solutionId)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
-            throw new ForbiddenRequestException("You cannot access this reference solution submissions");
-        }
-    }
 
     /**
      * Get a list of submissions for given reference solution.
@@ -286,24 +221,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("solutionId", new VString(), "identifier of the reference exercise solution", required: true)]
     public function actionSubmissions(string $solutionId)
     {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-
-        /** @var ReferenceSolutionSubmission $submission */
-        foreach ($solution->getSubmissions() as $submission) {
-            $this->evaluationLoadingHelper->loadEvaluation($submission);
-        }
-
-        $this->sendSuccessResponse($solution->getSubmissions()->getValues());
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubmission(string $submissionId)
-    {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $solution = $submission->getReferenceSolution();
-        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
-            throw new ForbiddenRequestException("You cannot access this exercise evaluations");
-        }
-    }
+
 
     /**
      * Get reference solution evaluation (i.e., submission) for an exercise solution.
@@ -314,22 +235,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("submissionId", new VString(), "identifier of the reference exercise submission", required: true)]
     public function actionSubmission(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $this->evaluationLoadingHelper->loadEvaluation($submission);
-        $this->sendSuccessResponse($submission);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDeleteSubmission(string $submissionId)
-    {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $solution = $submission->getReferenceSolution();
-        if (!$this->referenceSolutionAcl->canDeleteEvaluation($solution)) {
-            throw new ForbiddenRequestException("You cannot delete this submission");
-        }
-        if ($solution->getSubmissions()->count() < 2) {
-            throw new BadRequestException("You cannot delete last submission of a solution");
-        }
-    }
 
     /**
      * Remove reference solution evaluation (submission) permanently.
@@ -338,23 +246,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("submissionId", new VString(), "Identifier of the reference solution submission", required: true)]
     public function actionDeleteSubmission(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $solution = $submission->getReferenceSolution();
-        $solution->setLastSubmission($this->referenceSubmissions->getLastSubmission($solution, $submission));
-        $this->referenceSubmissions->remove($submission);
-        $this->referenceSubmissions->flush();
-        $this->fileStorage->deleteResultsArchive($submission);
-        $this->fileStorage->deleteJobConfig($submission);
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkPreSubmit(string $exerciseId)
-    {
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        if (!$this->exerciseAcl->canAddReferenceSolution($exercise)) {
-            throw new ForbiddenRequestException("You cannot create reference solutions for this exercise");
-        }
-    }
+
 
     /**
      * Pre submit action which will, based on given files, detect possible runtime
@@ -370,45 +265,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("exerciseId", new VString(), "identifier of exercise", required: true)]
     public function actionPreSubmit(string $exerciseId)
     {
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-
-        if ($exercise->isBroken()) {
-            throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
-        }
-
-        // retrieve and check uploaded files
-        $uploadedFiles = $this->files->findAllById($this->getRequest()->getPost("files"));
-        if (count($uploadedFiles) === 0) {
-            throw new InvalidApiArgumentException('files', "No files were uploaded");
-        }
-
-        // prepare file names into separate array and sum total upload size
-        $filenames = [];
-        $uploadedSize = 0;
-        foreach ($uploadedFiles as $uploadedFile) {
-            $filenames[] = $uploadedFile->getName();
-            $uploadedSize += $uploadedFile->getFileSize();
-        }
-
-        $this->sendSuccessResponse(
-            [
-                "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($exercise, $filenames),
-                "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($exercise),
-                "countLimitOK" => $exercise->getSolutionFilesLimit() === null
-                    || count($uploadedFiles) <= $exercise->getSolutionFilesLimit(),
-                "sizeLimitOK" => $exercise->getSolutionSizeLimit() === null
-                    || $uploadedSize <= $exercise->getSolutionSizeLimit(),
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkSubmit(string $exerciseId)
-    {
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        if (!$this->exerciseAcl->canAddReferenceSolution($exercise)) {
-            throw new ForbiddenRequestException("You cannot create reference solutions for this exercise");
-        }
-    }
+
 
     /**
      * Add new reference solution to an exercise
@@ -426,39 +286,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionSubmit(string $exerciseId)
     {
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        $user = $this->getCurrentUser();
-
-        $req = $this->getRequest();
-        $note = $req->getPost("note");
-        $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
-
-        if ($exercise->isBroken()) {
-            throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
-        }
-
-        // get all uploaded files based on given ID list and verify them
-        $uploadedFiles = $this->submissionHelper->getUploadedFiles($req->getPost("files"));
-
-        // create reference solution
-        $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment);
-        $referenceSolution->getSolution()->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
-        $this->referenceSolutions->persist($referenceSolution);
-
-        // convert uploaded files into solutions files and manage them in the storage correctly
-        $this->submissionHelper->prepareUploadedFilesForSubmit($uploadedFiles, $referenceSolution->getSolution());
-
-        $this->sendSuccessResponse($this->finishSubmission($referenceSolution));
-    }
-
-    public function checkResubmit(string $id)
-    {
-        /** @var ReferenceExerciseSolution $referenceSolution */
-        $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-
-        if (!$this->referenceSolutionAcl->canEvaluate($referenceSolution)) {
-            throw new ForbiddenRequestException();
-        }
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -472,39 +300,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the reference solution", required: true)]
     public function actionResubmit(string $id)
     {
-        $req = $this->getRequest();
-        $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
-
-        /** @var ReferenceExerciseSolution $referenceSolution */
-        $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-        if ($referenceSolution->getExercise() === null) {
-            throw new NotFoundException("Exercise for solution '$id' was deleted");
-        }
-
-        if ($referenceSolution->getExercise()->isBroken()) {
-            throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
-        }
-
-        $this->sendSuccessResponse($this->finishSubmission($referenceSolution, $isDebug));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkResubmitAll($exerciseId)
-    {
-        /** @var Exercise $exercise */
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        $solutions = array_filter(
-            $exercise->getReferenceSolutions()->getValues(),
-            function ($solution) {
-                return $this->referenceSolutionAcl->canViewDetail($solution);
-            }
-        );
-
-        foreach ($solutions as $referenceSolution) {
-            if (!$this->referenceSolutionAcl->canEvaluate($referenceSolution)) {
-                throw new ForbiddenRequestException();
-            }
-        }
-    }
 
     /**
      * Evaluate all reference solutions for an exercise (and for all configured hardware groups).
@@ -518,28 +316,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
     public function actionResubmitAll($exerciseId)
     {
-        $req = $this->getRequest();
-        $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
-
-        /** @var Exercise $exercise */
-        $exercise = $this->exercises->findOrThrow($exerciseId);
-        $result = [];
-
-        if ($exercise->isBroken()) {
-            throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
-        }
-
-        $solutions = array_filter(
-            $exercise->getReferenceSolutions()->getValues(),
-            function ($solution) {
-                return $this->referenceSolutionAcl->canViewDetail($solution);
-            }
-        );
-        foreach ($solutions as $referenceSolution) {
-            $result[] = $this->finishSubmission($referenceSolution, $isDebug);
-        }
-
-        $this->sendSuccessResponse($result);
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -596,13 +373,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         ];
     }
 
-    public function checkDownloadSolutionArchive(string $solutionId)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
-            throw new ForbiddenRequestException("You cannot access archive of reference solution files");
-        }
-    }
 
     /**
      * Download archive containing all solution files for particular reference solution.
@@ -614,21 +384,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("solutionId", new VString(), "of reference solution", required: true)]
     public function actionDownloadSolutionArchive(string $solutionId)
     {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        $zipFile = $this->fileStorage->getSolutionFile($solution->getSolution());
-        if (!$zipFile) {
-            throw new NotFoundException("Reference solution archive not found.");
-        }
-        $this->sendStorageFileResponse($zipFile, "reference-solution-{$solutionId}.zip", "application/zip");
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkFiles(string $id)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($id);
-        if (!$this->referenceSolutionAcl->canViewDetail($solution)) {
-            throw new ForbiddenRequestException("You cannot access the reference solution files metadata");
-        }
-    }
+
 
     /**
      * Get the list of submitted files of the solution.
@@ -639,20 +398,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("id", new VUuid(), "of reference solution", required: true)]
     public function actionFiles(string $id)
     {
-        $solution = $this->referenceSolutions->findOrThrow($id)->getSolution();
-        $this->sendSuccessResponse($this->solutionFilesViewFactory->getSolutionFilesData($solution));
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadResultArchive(string $submissionId)
-    {
-        /** @var ReferenceSolutionSubmission $submission */
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $refSolution = $submission->getReferenceSolution();
-
-        if (!$this->referenceSolutionAcl->canViewDetail($refSolution)) {
-            throw new ForbiddenRequestException();
-        }
-    }
 
     /**
      * Download result archive from backend for a reference solution evaluation
@@ -666,27 +414,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("submissionId", new VString(), required: true)]
     public function actionDownloadResultArchive(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-        if (!$submission->hasEvaluation()) {
-            throw new NotReadyException("Submission is not evaluated yet");
-        }
-
-        $file = $this->fileStorage->getResultsArchive($submission);
-        if (!$file) {
-            throw new NotFoundException("Archive for reference submission '$submissionId' not found in file storage");
-        }
-
-        $this->sendStorageFileResponse($file, "results-{$submissionId}.zip", "application/zip");
-    }
-
-    public function checkEvaluationScoreConfig(string $submissionId)
-    {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        if (!$this->referenceSolutionAcl->canViewDetail($submission->getReferenceSolution())) {
-            throw new ForbiddenRequestException("You cannot access this exercise evaluations");
-        }
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -698,20 +426,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("submissionId", new VString(), "identifier of the reference exercise submission", required: true)]
     public function actionEvaluationScoreConfig(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
-        $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-        $evaluation = $submission->getEvaluation();
-        $scoreConfig = $evaluation !== null ? $evaluation->getScoreConfig() : null;
-        $this->sendSuccessResponse($scoreConfig);
-    }
-
-    public function checkSetVisibility(string $solutionId)
-    {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        if (!$this->referenceSolutionAcl->canSetVisibility($solution)) {
-            throw new ForbiddenRequestException("You cannot change visibility of given reference solution");
-        }
+        $this->sendSuccessResponse("OK");
     }
 
     /**
@@ -725,30 +440,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Path("solutionId", new VString(), "of reference solution", required: true)]
     public function actionSetVisibility(string $solutionId)
     {
-        $solution = $this->referenceSolutions->findOrThrow($solutionId);
-        $visibility = (int)$this->getRequest()->getPost("visibility");
-        if (
-            $visibility < ReferenceExerciseSolution::VISIBILITY_TEMP
-            || $visibility > ReferenceExerciseSolution::VISIBILITY_PROMOTED
-        ) {
-            throw new ForbiddenRequestException("Invalid visibility level ($visibility) given");
-        }
-
-        if (
-            $visibility >= ReferenceExerciseSolution::VISIBILITY_PROMOTED
-            && !$this->referenceSolutionAcl->canPromote($solution)
-        ) {
-            throw new ForbiddenRequestException(
-                "You cannot change visibility of given reference solution to the promoted level"
-            );
-        }
-
-        $solution->setVisibility($visibility);
-        $this->referenceSolutions->persist($solution);
-
-        $this->sendSuccessResponse(
-            $this->referenceSolutionAcl->canViewDetail($solution) ?
-                $this->referenceSolutionViewFactory->getReferenceSolution($solution) : null
-        );
+        $this->sendSuccessResponse("OK");
     }
 }

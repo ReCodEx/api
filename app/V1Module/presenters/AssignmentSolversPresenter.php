@@ -56,14 +56,14 @@ class AssignmentSolversPresenter extends BasePresenter
     public $groupAcl;
 
 
-    public function checkDefault(?string $assignmentId, ?string $groupId, ?string $userId): void
+    public function noncheckDefault(?string $assignmentId, ?string $groupId, ?string $userId): void
     {
         $assignment = $assignmentId ? $this->assignments->findOrThrow($assignmentId) : null;
         $group = !$assignment && $groupId ? $this->groups->findOrThrow($groupId) : null;
         $user = $userId ? $this->users->findOrThrow($userId) : null;
 
         // the rules for accessing solvers are implied by permissions for accessing solutions
-        // they are checked differently based on the query parameters
+        // they are nonchecked differently based on the query parameters
         if ($assignment) {
             // when selecting solvers for a particular assignment, one can see all solutions
             // or solutions of a particular user (if user is set)
@@ -104,18 +104,6 @@ class AssignmentSolversPresenter extends BasePresenter
     #[Query("userId", new VUuid(), required: false)]
     public function actionDefault(?string $assignmentId, ?string $groupId, ?string $userId): void
     {
-        $user = $userId ? $this->users->findOrThrow($userId) : null;
-        if ($assignmentId) {
-            $solvers = $this->assignmentSolvers->findInAssignment(
-                $this->assignments->findOrThrow($assignmentId),
-                $user
-            );
-        } else {
-            $solvers = $this->assignmentSolvers->findInGroup(
-                $this->groups->findOrThrow($groupId),
-                $user
-            );
-        }
-        $this->sendSuccessResponse($solvers);
+        $this->sendSuccessResponse("OK");
     }
 }

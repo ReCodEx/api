@@ -46,12 +46,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
      */
     public $groupViewFactory;
 
-    public function checkDefault()
-    {
-        if (!$this->groupAcl->canViewExternalAttributes()) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Return all attributes that correspond to given filtering parameters.
@@ -69,36 +64,11 @@ class GroupExternalAttributesPresenter extends BasePresenter
     #[Query("filter", new VString(), "JSON-encoded filter query in DNF as [clause OR clause...]", required: true)]
     public function actionDefault(?string $filter)
     {
-        $filterStruct = json_decode($filter ?? '', true);
-        if (!$filterStruct || !is_array($filterStruct)) {
-            throw new BadRequestException("Invalid filter format.");
-        }
-
-        try {
-            $attributes = $this->groupExternalAttributes->findByFilter($filterStruct);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestException($e->getMessage(), '', null, $e);
-        }
-
-        $groupIds = [];
-        foreach ($attributes as $attribute) {
-            $groupIds[$attribute->getGroup()->getId()] = true; // id is key to make it unique
-        }
-
-        $groups = $this->groups->groupsAncestralClosure(array_keys($groupIds));
-        $this->sendSuccessResponse([
-            "attributes" => $attributes,
-            "groups" => $this->groupViewFactory->getGroups($groups),
-        ]);
+        $this->sendSuccessResponse("OK");
     }
 
 
-    public function checkAdd()
-    {
-        if (!$this->groupAcl->canSetExternalAttributes()) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Create an external attribute for given group.
@@ -110,24 +80,10 @@ class GroupExternalAttributesPresenter extends BasePresenter
     #[Path("groupId", new VString(), required: true)]
     public function actionAdd(string $groupId)
     {
-        $group = $this->groups->findOrThrow($groupId);
-
-        $req = $this->getRequest();
-        $service = $req->getPost("service");
-        $key = $req->getPost("key");
-        $value = $req->getPost("value");
-        $attribute = new GroupExternalAttribute($group, $service, $key, $value);
-        $this->groupExternalAttributes->persist($attribute);
-
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove()
-    {
-        if (!$this->groupAcl->canSetExternalAttributes()) {
-            throw new ForbiddenRequestException();
-        }
-    }
+
 
     /**
      * Remove selected attribute
@@ -136,8 +92,6 @@ class GroupExternalAttributesPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the external attribute.", required: true)]
     public function actionRemove(string $id)
     {
-        $attribute = $this->groupExternalAttributes->findOrThrow($id);
-        $this->groupExternalAttributes->remove($attribute);
         $this->sendSuccessResponse("OK");
     }
 }

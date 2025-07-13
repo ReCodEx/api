@@ -32,58 +32,7 @@ class SecurityPresenter extends BasePresenter
     #[Post("method", new VMixed(), "The HTTP method", required: true, nullable: true)]
     public function actionCheck()
     {
-        $requestParams = $this->router->match(
-            new Http\Request(
-                new Http\UrlScript("https://foo.tld/" . ltrim($this->getRequest()->getPost("url"), "/"), "/"),
-                [],
-                [],
-                [],
-                [],
-                $this->getRequest()->getPost("method")
-            )
-        );
-
-        if (!$requestParams) {
-            throw new InvalidApiArgumentException("url");
-        }
-
-        $presenterName = $requestParams["presenter"] ?? null;
-        if (!$presenterName) {
-            throw new InvalidApiArgumentException("url");
-        }
-
-        $presenter = $this->presenterFactory->createPresenter($presenterName);
-        if (!($presenter instanceof BasePresenter)) {
-            $this->checkFailed();
-            return;
-        }
-
-        $action = $requestParams["action"] ?? Presenter::DefaultAction;
-        $methodName = $presenter->formatPermissionCheckMethod($action);
-        if (!method_exists($presenter, $methodName)) {
-            $this->checkFailed();
-            return;
-        }
-
-        $presenterReflection = $presenter->getReflection();
-        $arguments = $presenterReflection->combineArgs(
-            $presenterReflection->getMethod($methodName),
-            $requestParams
-        );
-        $result = true;
-
-        try {
-            call_user_func_array([$presenter, $methodName], $arguments);
-        } catch (Exception $e) {
-            $result = false;
-        }
-
-        $this->sendSuccessResponse(
-            [
-                "result" => $result,
-                "isResultReliable" => true
-            ]
-        );
+        $this->sendSuccessResponse("OK");
     }
 
     protected function checkFailed()

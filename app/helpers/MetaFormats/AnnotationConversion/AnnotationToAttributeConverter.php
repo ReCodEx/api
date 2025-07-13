@@ -14,50 +14,50 @@ class AnnotationToAttributeConverter
     public static function convertFile(string $path): string
     {
         $content = StandardAnnotationConverter::convertStandardAnnotations($path);
-        $nettePreprocess = NetteAnnotationConverter::regexReplaceAnnotations($content);
+        // $nettePreprocess = NetteAnnotationConverter::regexReplaceAnnotations($content);
 
-        $netteCapturesList = $nettePreprocess["captures"];
-        $contentWithPlaceholders = $nettePreprocess["contentWithPlaceholders"];
+        // $netteCapturesList = $nettePreprocess["captures"];
+        // $contentWithPlaceholders = $nettePreprocess["contentWithPlaceholders"];
 
-        // move the attribute lines below the comment block
-        $lines = [];
-        $netteAttributeLinesCount = 0;
-        $usingsAdded = false;
-        $paramAttributeClasses = Utils::getParamAttributeClassNames();
-        $paramTypeClass = Type::class;
-        foreach (Utils::fileStringToLines($contentWithPlaceholders) as $line) {
-            // detected the initial "use" block, add usings for new types
-            if (!$usingsAdded && strlen($line) > 3 && str_starts_with($line, "use")) {
-                // add usings for attributes
-                foreach ($paramAttributeClasses as $class) {
-                    $lines[] = "use {$class};";
-                }
-                $lines[] = "use {$paramTypeClass};";
-                foreach (Utils::getValidatorNames() as $validator) {
-                    $lines[] = "use App\\Helpers\\MetaFormats\\Validators\\{$validator};";
-                }
-                // write the detected line (the first detected "use" line)
-                $lines[] = $line;
-                $usingsAdded = true;
-            // detected an attribute line placeholder, increment the counter and remove the line
-            } elseif (str_contains($line, NetteAnnotationConverter::$attributePlaceholder)) {
-                $netteAttributeLinesCount++;
-            // detected the end of the comment block "*/", flush attribute lines
-            } elseif (trim($line) === "*/") {
-                $lines[] = $line;
-                for ($i = 0; $i < $netteAttributeLinesCount; $i++) {
-                    $lines[] = NetteAnnotationConverter::convertCapturesToAttributeString($netteCapturesList[$i]);
-                }
+        // // move the attribute lines below the comment block
+        // $lines = [];
+        // $netteAttributeLinesCount = 0;
+        // $usingsAdded = false;
+        // $paramAttributeClasses = Utils::getParamAttributeClassNames();
+        // $paramTypeClass = Type::class;
+        // foreach (Utils::fileStringToLines($contentWithPlaceholders) as $line) {
+        //     // detected the initial "use" block, add usings for new types
+        //     if (!$usingsAdded && strlen($line) > 3 && str_starts_with($line, "use")) {
+        //         // add usings for attributes
+        //         foreach ($paramAttributeClasses as $class) {
+        //             $lines[] = "use {$class};";
+        //         }
+        //         $lines[] = "use {$paramTypeClass};";
+        //         foreach (Utils::getValidatorNames() as $validator) {
+        //             $lines[] = "use App\\Helpers\\MetaFormats\\Validators\\{$validator};";
+        //         }
+        //         // write the detected line (the first detected "use" line)
+        //         $lines[] = $line;
+        //         $usingsAdded = true;
+        //     // detected an attribute line placeholder, increment the counter and remove the line
+        //     } elseif (str_contains($line, NetteAnnotationConverter::$attributePlaceholder)) {
+        //         $netteAttributeLinesCount++;
+        //     // detected the end of the comment block "*/", flush attribute lines
+        //     } elseif (trim($line) === "*/") {
+        //         $lines[] = $line;
+        //         for ($i = 0; $i < $netteAttributeLinesCount; $i++) {
+        //             $lines[] = NetteAnnotationConverter::convertCapturesToAttributeString($netteCapturesList[$i]);
+        //         }
 
-                // remove the captures used in this endpoint
-                $netteCapturesList = array_slice($netteCapturesList, $netteAttributeLinesCount);
-                // reset the counters for the next detected endpoint
-                $netteAttributeLinesCount = 0;
-            } else {
-                $lines[] = $line;
-            }
-        }
+        //         // remove the captures used in this endpoint
+        //         $netteCapturesList = array_slice($netteCapturesList, $netteAttributeLinesCount);
+        //         // reset the counters for the next detected endpoint
+        //         $netteAttributeLinesCount = 0;
+        //     } else {
+        //         $lines[] = $line;
+        //     }
+        // }
 
-        return implode("\n", $lines);
+        return $content;
     }
 }

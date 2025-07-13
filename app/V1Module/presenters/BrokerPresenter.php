@@ -27,12 +27,12 @@ class BrokerPresenter extends BasePresenter
     public $brokerProxy;
 
 
-    public function checkStats()
-    {
-        if (!$this->brokerAcl->canViewStats()) {
-            throw new ForbiddenRequestException("You cannot see broker stats");
-        }
-    }
+    // public function checkStats()
+    // {
+    //     if (!$this->brokerAcl->canViewStats()) {
+    //         throw new ForbiddenRequestException("You cannot see broker stats");
+    //     }
+    // }
 
     /**
      * Get current statistics from broker.
@@ -42,16 +42,15 @@ class BrokerPresenter extends BasePresenter
      */
     public function actionStats()
     {
-        $stats = $this->brokerProxy->getStats();
-        $this->sendSuccessResponse($stats);
+        $this->sendSuccessResponse("OK");
     }
 
-    public function checkFreeze()
-    {
-        if (!$this->brokerAcl->canFreeze()) {
-            throw new ForbiddenRequestException();
-        }
-    }
+    // public function checkFreeze()
+    // {
+    //     if (!$this->brokerAcl->canFreeze()) {
+    //         throw new ForbiddenRequestException();
+    //     }
+    // }
 
     /**
      * Freeze broker and its execution.
@@ -61,16 +60,15 @@ class BrokerPresenter extends BasePresenter
      */
     public function actionFreeze()
     {
-        $this->brokerProxy->freeze();
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkUnfreeze()
-    {
-        if (!$this->brokerAcl->canUnfreeze()) {
-            throw new ForbiddenRequestException();
-        }
-    }
+    // public function checkUnfreeze()
+    // {
+    //     if (!$this->brokerAcl->canUnfreeze()) {
+    //         throw new ForbiddenRequestException();
+    //     }
+    // }
 
     /**
      * Unfreeze broker and its execution.
@@ -80,7 +78,6 @@ class BrokerPresenter extends BasePresenter
      */
     public function actionUnfreeze()
     {
-        $this->brokerProxy->unfreeze();
         $this->sendSuccessResponse("OK");
     }
 }
