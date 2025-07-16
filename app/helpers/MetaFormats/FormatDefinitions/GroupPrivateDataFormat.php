@@ -8,14 +8,13 @@ use App\Helpers\MetaFormats\Attributes\FPost;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VDouble;
-use App\Helpers\MetaFormats\Validators\VEmail;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
-use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
-use ArrayAccess;
 
+/**
+ * Nested Format definition used by the GroupFormat.
+ */
 #[Format(GroupPrivateDataFormat::class)]
 class GroupPrivateDataFormat extends MetaFormat
 {

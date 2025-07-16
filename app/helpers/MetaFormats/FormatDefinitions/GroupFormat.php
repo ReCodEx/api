@@ -7,15 +7,15 @@ use App\Helpers\MetaFormats\MetaFormat;
 use App\Helpers\MetaFormats\Attributes\FPost;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
-use App\Helpers\MetaFormats\Validators\VEmail;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
-use ArrayAccess;
 
+/**
+ * Format definition used by the GroupsPresenter.
+ */
 #[Format(GroupFormat::class)]
-class GroupFormat extends MetaFormat// implements ArrayAccess
+class GroupFormat extends MetaFormat
 {
     #[FPost(new VUuid(), "An identifier of the group")]
     public string $id;
@@ -71,39 +71,4 @@ class GroupFormat extends MetaFormat// implements ArrayAccess
 
     #[FPost(new VArray())]
     public ?array $permissionHints;
-
-
-    // public function offsetExists(mixed $offset): bool
-    // {
-    //     return isset($this->$offset);
-    // }
-
-    // /**
-    //  * Offset to retrieve
-    //  * @param mixed $offset The offset to retrieve.
-    //  * @return mixed Can return all value types.
-    //  */
-    // public function offsetGet(mixed $offset): mixed
-    // {
-    //     return $this->$offset ?? null;
-    // }
-
-    // /**
-    //  * Offset to set
-    //  * @param mixed $offset The offset to assign the value to.
-    //  * @param mixed $value The value to set.
-    //  */
-    // public function offsetSet(mixed $offset, mixed $value): void
-    // {
-    //     $this->$offset = $value;
-    // }
-
-    // /**
-    //  * Offset to unset
-    //  * @param mixed $offset The offset to unset.
-    //  */
-    // public function offsetUnset(mixed $offset): void
-    // {
-    //     $this->$offset = null;
-    // }
 }
