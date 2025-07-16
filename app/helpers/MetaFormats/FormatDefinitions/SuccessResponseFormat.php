@@ -9,6 +9,10 @@ use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VMixed;
 
+/**
+ * Wrapper Format definition of the common output schema.
+ * The ResponseFormat attribute has a flag that can automatically wrap any Format with this one.
+ */
 #[Format(SuccessResponseFormat::class)]
 class SuccessResponseFormat extends MetaFormat
 {
