@@ -207,8 +207,15 @@ class BasePresenter extends \App\Presenters\BasePresenter
 
     private function processParams(ReflectionMethod $reflection)
     {
+        $actionPath = get_class($this) . $reflection->name;
+
+        // cache whether the action has a Format attribute
+        if (!FormatCache::formatAttributeStringCached($actionPath)) {
+            $extractedFormat = MetaFormatHelper::extractFormatFromAttribute($reflection);
+            FormatCache::cacheFormatAttributeString($actionPath, $extractedFormat);
+        }
         // use a method specialized for formats if there is a format available
-        $format = MetaFormatHelper::extractFormatFromAttribute($reflection);
+        $format = FormatCache::getFormatAttributeString($actionPath);
         if ($format !== null) {
             $this->requestFormatInstance = $this->processParamsFormat($format, null);
         }
@@ -216,7 +223,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
         // handle loose parameters
 
         // cache the data from the loose attributes to improve performance
-        $actionPath = get_class($this) . $reflection->name;
         if (!FormatCache::looseParametersCached($actionPath)) {
             $newParamData = MetaFormatHelper::extractRequestParamData($reflection);
             FormatCache::cacheLooseParameters($actionPath, $newParamData);

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Swagger;
 
+use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\FormatCache;
 use App\Helpers\MetaFormats\MetaFormatHelper;
 use App\V1Module\Router\MethodRoute;
@@ -289,7 +290,8 @@ class AnnotationHelper
         string $methodName,
         HttpMethods $httpMethod,
         array $params,
-        ?string $description
+        array $responseDataList,
+        ?string $description,
     ): AnnotationData {
         $pathParams = [];
         $queryParams = [];
@@ -318,7 +320,8 @@ class AnnotationHelper
             $queryParams,
             $bodyParams,
             $fileParams,
-            $description
+            $responseDataList,
+            $description,
         );
     }
 
@@ -348,6 +351,7 @@ class AnnotationHelper
             $methodName,
             $httpMethod,
             $params,
+            [], // there are no reponse params defined in the old annotations
             $description
         );
     }
@@ -377,6 +381,34 @@ class AnnotationHelper
             $attributeData = array_merge($attributeData, FormatCache::getFieldDefinitions($format));
         }
 
+        // if the endpoint uses response formats, extract their parameters
+        $responseAttributes = MetaFormatHelper::extractResponseFormatFromAttribute($reflectionMethod);
+        $responseDataList = [];
+        $statusCodes = [];
+        foreach ($responseAttributes as $responseAttribute) {
+            $responseFieldDefinitions = FormatCache::getFieldDefinitions($responseAttribute->format);
+            $responseParams = array_map(function ($data) {
+                return $data->toAnnotationParameterData();
+            }, $responseFieldDefinitions);
+
+            // check if all response status codes are unique
+            if (array_key_exists($responseAttribute->statusCode, $statusCodes)) {
+                throw new InternalServerException(
+                    "The method " . $reflectionMethod->name . " contains duplicate response codes."
+                );
+            }
+            $statusCodes[] = $responseAttribute->statusCode;
+
+            $responseData = new ResponseData(
+                $responseParams,
+                $responseAttribute->description,
+                $responseAttribute->statusCode,
+                $responseAttribute->useSuccessWrapper
+            );
+
+            $responseDataList[] = $responseData;
+        }
+
         $params = array_map(function ($data) {
             return $data->toAnnotationParameterData();
         }, $attributeData);
@@ -387,7 +419,8 @@ class AnnotationHelper
             $methodName,
             $httpMethod,
             $params,
-            $description
+            $responseDataList,
+            $description,
         );
     }
 
