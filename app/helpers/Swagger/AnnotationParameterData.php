@@ -153,6 +153,12 @@ class AnnotationParameterData
         $body->addKeyValue("in", $this->location);
         $body->addKeyValue("required", $this->required);
 
+        // add flags for query parameters with objects that make the client generate correct endpoints
+        if ($this->nestedObjectParameterData !== null) {
+            $body->addKeyValue("style", "deepObject");
+            $body->addKeyValue("explode", true);
+        }
+
         if ($this->description !== null) {
             $body->addKeyValue("description", $this->description);
         }
