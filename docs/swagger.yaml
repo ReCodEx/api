@@ -4624,9 +4624,26 @@ paths:
           description: 'Named filters that prune the result.'
           required: false
           schema:
-            type: array
-            items: {  }
+            properties:
+              search:
+                description: ''
+                type: string
+                example: text
+                nullable: false
+              instanceId:
+                description: ''
+                type: string
+                example: text
+                nullable: false
+              roles:
+                description: ''
+                type: string
+                example: text
+                nullable: false
+            type: object
             nullable: true
+          style: deepObject
+          explode: true
         -
           name: locale
           in: query
