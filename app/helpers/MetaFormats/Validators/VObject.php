@@ -28,6 +28,11 @@ class VObject extends BaseValidator
 
     public function validate(mixed $value): bool
     {
+        // query parameters can contain arrays
+        if (!$this->strict && is_array($value)) {
+            return true;
+        }
+
         // fine-grained checking is done in the properties
         return $value instanceof MetaFormat;
     }

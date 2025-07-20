@@ -136,6 +136,7 @@ class AnnotationParameterData
         }
 
         $this->addArrayItemsIfArray($body);
+        $this->addObjectParamsIfObject($body);
 
         return $head . $body->toString();
     }

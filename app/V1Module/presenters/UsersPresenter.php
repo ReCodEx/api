@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
+use App\Helpers\MetaFormats\FormatDefinitions\UserFilterFormat;
 use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VEmail;
@@ -29,6 +30,7 @@ use App\Model\Repository\SecurityEvents;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\AnonymizationHelper;
+use App\Helpers\MetaFormats\Validators\VObject;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;
@@ -130,7 +132,7 @@ class UsersPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    #[Query("filters", new VArray(), "Named filters that prune the result.", required: false, nullable: true)]
+    #[Query("filters", new VObject(UserFilterFormat::class), "Named filters that prune the result.", required: false, nullable: true)]
     #[Query(
         "locale",
         new VString(),
