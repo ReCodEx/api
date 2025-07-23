@@ -3,6 +3,8 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MetaFormats\MetaFormatHelper;
+use App\Helpers\MetaFormats\Validators\VArray;
+use App\Helpers\MetaFormats\Validators\VObject;
 use App\Helpers\Pagination;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
@@ -241,8 +243,20 @@ class BasePresenter extends \App\Presenters\BasePresenter
         foreach ($paramData as $param) {
             $paramValue = $this->getValueFromParamData($param);
 
-            // this throws when it does not conform
-            $param->conformsToDefinition($paramValue);
+            // special case when the request parameter is an object (the raw request data is an array that needs to
+            // be mapped to the Format definition)
+            $mainValidator = $param->validators[0];
+            if ($mainValidator instanceof VObject) {
+                // first check whether the raw request data is an array
+                $param->conformsToDefinition($paramValue, [new VArray(strict: false)]);
+
+                // map the content of the array to the format
+                // (the created format instance is not used, because that feature is reserved for POST bodies)
+                $format = $mainValidator->format;
+                $this->processParamsFormat($format, $paramValue);
+            } else {
+                $param->conformsToDefinition($paramValue);
+            }
         }
     }
 

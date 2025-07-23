@@ -248,13 +248,10 @@ class TestValidators extends Tester\TestCase
     public function testVObject()
     {
         // accepts all formats (content is not validated, that is done with the checkedAssign method)
-        // permissive validation accepts arrays as well
         $validator = new VObject(UserFormat::class);
-        $strictValid = [new UserFormat()];
-        $strictInvalid = [0, 1.2, -1, "", false, [], new VMixed()];
-        $permissiveValid = [new UserFormat(), [], [[]]];
-        $permissiveInvalid = [0, 1.2, -1, "", false, new VMixed()];
-        self::validatorTester($validator, $strictValid, $strictInvalid, $permissiveValid, $permissiveInvalid);
+        $valid = [new UserFormat()];
+        $invalid = [0, 1.2, -1, "", false, [], new VMixed()];
+        self::validatorTester($validator, $valid, $invalid, $valid, $invalid);
     }
 }
 

@@ -45,10 +45,16 @@ class RequestParamData
      * Checks whether a value meets this definition. If the definition is not met, an exception is thrown.
      * The method has no return value.
      * @param mixed $value The value to be checked.
+     * @param ?array $validators If set, these validators will be used instead of the ones defined for the parameter.
      * @throws InvalidApiArgumentException Thrown when the value does not meet the definition.
      */
-    public function conformsToDefinition(mixed $value)
+    public function conformsToDefinition(mixed $value, ?array $validators = null)
     {
+        // use custom validators if provided
+        if ($validators == null) {
+            $validators = $this->validators;
+        }
+
         // check if null
         if ($value === null) {
             // optional parameters can be null
@@ -70,7 +76,7 @@ class RequestParamData
         }
 
         // use every provided validator
-        foreach ($this->validators as $validator) {
+        foreach ($validators as $validator) {
             if (!$validator->validate($value)) {
                 $type = $validator::SWAGGER_TYPE;
                 throw new InvalidApiArgumentException(
