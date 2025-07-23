@@ -132,7 +132,13 @@ class UsersPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    #[Query("filters", new VObject(UserFilterFormat::class), "Named filters that prune the result.", required: false, nullable: true)]
+    #[Query(
+        "filters",
+        new VObject(UserFilterFormat::class),
+        "Named filters that prune the result.",
+        required: false,
+        nullable: true,
+    )]
     #[Query(
         "locale",
         new VString(),
