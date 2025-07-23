@@ -30,10 +30,10 @@ class GroupPrivateDataFormat extends MetaFormat
     #[FPost(new VArray(new VUuid()), "IDs of the students of this group")]
     public array $students;
 
-    #[FPost(new VUuid(), "The instance ID of the group", required: false)]
+    #[FPost(new VUuid(), "ID of an instance in which the group belongs", required: false)]
     public string $instanceId;
 
-    #[FPost(new VBool(), "Whether the group has a valid license")]
+    #[FPost(new VBool(), "Whether the instance where the group belongs has a valid license")]
     public bool $hasValidLicence;
 
     #[FPost(new VArray(new VUuid()), "IDs of all group assignments")]
@@ -42,30 +42,38 @@ class GroupPrivateDataFormat extends MetaFormat
     #[FPost(new VArray(new VUuid()), "IDs of all group shadow assignments")]
     public array $shadowAssignments;
 
-    #[FPost(new VBool(), "Whether the group statistics are public")]
+    #[FPost(new VBool(), "Whether the student's results are visible to other students")]
     public bool $publicStats;
 
-    #[FPost(new VBool(), "Whether the group is detaining")]
+    #[FPost(new VBool(), "Whether the group detains the students (so they can be released only by the teacher)")]
     public bool $detaining;
 
-    #[FPost(new VDouble(), "The group assignment point threshold", required: false)]
+    #[FPost(
+        new VDouble(),
+        "A relative number of points a student must receive from assignments to fulfill the requirements of the group",
+        required: false,
+    )]
     public ?float $threshold;
 
-    #[FPost(new VInt(), "The group points limit", required: false)]
+    #[FPost(
+        new VInt(),
+        "A minimal number of points that a student must receive to fulfill the group's requirements",
+        required: false,
+    )]
     public ?int $pointsLimit;
 
     #[FPost(new VArray(), "Entities bound to the group")]
     public array $bindings;
 
-    #[FPost(new VTimestamp(), "The time when the exam starts if there is an exam", required: false)]
+    #[FPost(new VTimestamp(), "The time when the exam starts if there is an exam scheduled", required: false)]
     public ?int $examBegin;
 
-    #[FPost(new VTimestamp(), "The time when the exam ends if there is an exam", required: false)]
+    #[FPost(new VTimestamp(), "The time when the exam ends if there is an exam scheduled", required: false)]
     public ?int $examEnd;
 
-    #[FPost(new VBool(), "Whether there is a strict exam lock", required: false)]
+    #[FPost(new VBool(), "Whether the scheduled exam requires a strict access lock", required: false)]
     public ?bool $examLockStrict;
 
-    #[FPost(new VArray(), "All group exams")]
+    #[FPost(new VArray(), "All past exams (with at least one student locked)")]
     public array $exams;
 }
