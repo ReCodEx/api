@@ -16,12 +16,12 @@ use App\Helpers\MetaFormats\Validators\VMixed;
 #[Format(SuccessResponseFormat::class)]
 class SuccessResponseFormat extends MetaFormat
 {
-    #[FPost(new VBool())]
+    #[FPost(new VBool(), "Whether the request was processed successfully.")]
     public bool $success;
 
-    #[FPost(new VInt())]
+    #[FPost(new VInt(), "HTTP response code.")]
     public int $code;
 
-    #[FPost(new VMixed())]
+    #[FPost(new VMixed(), "The payload of the response.")]
     public mixed $payload;
 }
