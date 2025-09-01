@@ -3,6 +3,8 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\GroupExternalAttributesPresenter;
+use App\Model\Repository\Users;
+use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Security\TokenScope;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +29,12 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
     /** @var Nette\Security\User */
     private $user;
 
+    /** @var Users */
+    private $users;
+
+    /** @var GroupMemberships */
+    private $groupMemberships;
+
     /** @var App\Security\AccessManager */
     private $accessManager;
 
@@ -37,6 +45,8 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->users = $container->getByType(Users::class);
+        $this->groupMemberships = $container->getByType(GroupMemberships::class);
         $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
     }
 
@@ -54,142 +64,126 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
         Mockery::close();
     }
 
-    private function checkFilterResults(array $payload, int $attrCount, int $groupCount)
+    public function testGetGroupsNoUser()
     {
-        Assert::count(2, $payload);
-        Assert::true(array_key_exists('attributes', $payload));
-        Assert::true(array_key_exists('groups', $payload));
-        Assert::count($attrCount, $payload['attributes']);
-        Assert::count($groupCount, $payload['groups']);
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        $groups = $this->presenter->groups->findBy(['archivedAt' => null]);
+        Assert::true(count($groups) > 0);
+        $instanceId = $groups[0]->getInstance()->getId();
 
-        $indexedGroups = [];
-        foreach ($payload['groups'] as $group) {
-            $indexedGroups[$group['id']] = $group['parentGroupId'];
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:GroupExternalAttributes',
+            'GET',
+            ['action' => 'default', 'instance' => $instanceId, 'service' => 'test'],
+        );
+
+        Assert::count(count($groups), $payload);
+        $indexedPayload = [];
+        foreach ($payload as $group) {
+            $indexedPayload[$group['id']] = $group;
         }
 
-        foreach ($payload['attributes'] as $attribute) {
-            $groupId = $attribute->getGroup()->getId();
-            while ($groupId) {
-                Assert::true(array_key_exists($groupId, $indexedGroups));
-                $groupId = $indexedGroups[$groupId];
+        foreach ($groups as $group) {
+            Assert::true(array_key_exists($group->getId(), $indexedPayload));
+            $groupPayload = $indexedPayload[$group->getId()];
+
+            // check basic group parameters
+            Assert::count(count($group->getPrimaryAdmins()), $groupPayload['admins']);
+            Assert::equal($group->isOrganizational(), $groupPayload['organizational']);
+            Assert::equal($group->isExam(), $groupPayload['exam']);
+            Assert::equal($group->isPublic(), $groupPayload['public']);
+            Assert::equal($group->isDetaining(), $groupPayload['detaining']);
+
+            // attributes
+            Assert::true(array_key_exists('attributes', $groupPayload));
+            $testAttributesCount = 0;
+            foreach ($group->getExternalAttributes() as $attribute) {
+                if ($attribute->getService() !== 'test') {
+                    continue; // only 'test' attributes were requested
+                }
+                ++$testAttributesCount;
+                $values = $groupPayload['attributes'][$attribute->getService()][$attribute->getKey()] ?? null;
+                Assert::true(in_array($attribute->getValue(), $values));
+            }
+
+            $actualCount = 0;
+            foreach ($groupPayload['attributes']['test'] ?? [] as $values) {
+                $actualCount += count($values);
+            }
+            Assert::equal($testAttributesCount, $actualCount);
+
+            // user membership
+            Assert::null($groupPayload['membership']);
+        }
+    }
+
+    public function testGetGroupsStudent()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        $users = $this->users->findBy(['email' => PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN]);
+        Assert::count(1, $users);
+        $user = current($users);
+
+        $groups = $this->presenter->groups->findBy(['archivedAt' => null]);
+        Assert::true(count($groups) > 0);
+        $instanceId = $groups[0]->getInstance()->getId();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:GroupExternalAttributes',
+            'GET',
+            ['action' => 'default', 'instance' => $instanceId, 'service' => 'test', 'user' => $user->getId()],
+        );
+
+        Assert::count(count($groups), $payload);
+        $total = 0;
+        foreach ($payload as $group) {
+            $memberships = $this->groupMemberships->findBy(['group' => $group['id'], 'user' => $user->getId()]);
+            if (empty($memberships)) {
+                Assert::null($group['membership']);
+            } else {
+                Assert::count(1, $memberships);
+                Assert::equal(current($memberships)->getType(), $group['membership']);
+                ++$total;
             }
         }
+        Assert::true($total > 0);
     }
 
-    /*
-    public function testGetAttributesSemester()
+    public function testGetGroupsTeacher()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        $users = $this->users->findBy(['email' => PresenterTestHelper::GROUP_SUPERVISOR_LOGIN]);
+        Assert::count(1, $users);
+        $user = current($users);
 
-        $filter = [["key" => "semester", "value" => "summer"]];
+        $groups = $this->presenter->groups->findBy(['archivedAt' => null]);
+        Assert::true(count($groups) > 0);
+        $instanceId = $groups[0]->getInstance()->getId();
+
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:GroupExternalAttributes',
             'GET',
-            ['action' => 'default', 'filter' => json_encode($filter)],
+            ['action' => 'default', 'instance' => $instanceId, 'service' => 'test', 'user' => $user->getId()],
         );
 
-        $this->checkFilterResults($payload, 1, 3);
-        Assert::equal('test', $payload['attributes'][0]->getService());
-        Assert::equal('semester', $payload['attributes'][0]->getKey());
-        Assert::equal('summer', $payload['attributes'][0]->getValue());
-    }
-
-    public function testGetAttributesLecture()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
-
-        $filter = [["key" => "lecture", "value" => "demo"]];
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:GroupExternalAttributes',
-            'GET',
-            ['action' => 'default', 'filter' => json_encode($filter)],
-        );
-
-        $this->checkFilterResults($payload, 1, 2);
-        Assert::equal('test', $payload['attributes'][0]->getService());
-        Assert::equal('lecture', $payload['attributes'][0]->getKey());
-        Assert::equal('demo', $payload['attributes'][0]->getValue());
-    }
-
-    public function testGetAttributesMulti()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
-
-        $filter = [
-            ["service" => "test", "key" => "semester",],
-            ["key" => "lecture", "value" => "demo"],
-        ];
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:GroupExternalAttributes',
-            'GET',
-            ['action' => 'default', 'filter' => json_encode($filter)],
-        );
-
-        $this->checkFilterResults($payload, 3, 4);
-        $attrs = [];
-        foreach ($payload['attributes'] as $attr) {
-            Assert::equal('test', $attr->getService());
-            $attrs[] = $attr->getKey() . '=' . $attr->getValue();
+        Assert::count(count($groups), $payload);
+        $total = 0;
+        foreach ($payload as $group) {
+            $memberships = $this->groupMemberships->findBy(['group' => $group['id'], 'user' => $user->getId()]);
+            if (empty($memberships)) {
+                Assert::null($group['membership']);
+            } else {
+                Assert::count(1, $memberships);
+                Assert::equal(current($memberships)->getType(), $group['membership']);
+                ++$total;
+            }
         }
-        sort($attrs);
-        Assert::equal(['lecture=demo', 'semester=summer', 'semester=winter'], $attrs);
+        Assert::true($total > 0);
     }
 
-    public function testGetAttributesEmpty()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
-
-        $filter = [["key" => "lecture", "value" => "sleeping"]];
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:GroupExternalAttributes',
-            'GET',
-            ['action' => 'default', 'filter' => json_encode($filter)],
-        );
-
-        $this->checkFilterResults($payload, 0, 0);
-    }
-
-    public function testGetAttributesEmpty2()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
-
-        $filter = [["service" => "3rdparty", "key" => "lecture"]];
-        $payload = PresenterTestHelper::performPresenterRequest(
-            $this->presenter,
-            'V1:GroupExternalAttributes',
-            'GET',
-            ['action' => 'default', 'filter' => json_encode($filter)],
-        );
-
-        $this->checkFilterResults($payload, 0, 0);
-    }
-
-    public function testGetAttributesFails()
-    {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
-
-        $filters = [
-            ["key" => "semester", "value" => "summer"],
-            "semester: summer",
-            [["semester" => "summer"]],
-            [["key" => "semester", "value" => 1]],
-        ];
-        foreach ($filters as $filter) {
-            Assert::exception(function () use ($filter) {
-                PresenterTestHelper::performPresenterRequest(
-                    $this->presenter,
-                    'V1:GroupExternalAttributes',
-                    'GET',
-                    ['action' => 'default', 'filter' => json_encode($filter)],
-                );
-            }, BadRequestException::class);
-        }
-    }
-*/
     public function testGetAttributesAdd()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
