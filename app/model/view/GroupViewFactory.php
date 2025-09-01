@@ -382,7 +382,8 @@ class GroupViewFactory
             $attributesMap[$gid][$service] = $attributesMap[$gid][$service] ?? [];
 
             $key = $attribute->getKey();
-            $attributesMap[][$service][$key] = $attribute->getValue();
+            $attributesMap[$gid][$service][$key] = $attributesMap[$gid][$service][$key] ?? [];
+            $attributesMap[$gid][$service][$key][] = $attribute->getValue();
         }
 
         // create membership mapping group-id => membership-type
