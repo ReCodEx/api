@@ -11,7 +11,7 @@ Business logic core of the application and a REST API that provides access to ot
 
 ### Prerequisites
 
-You need a web server with PHP (8.1+) and MySQL or MariaDB database.
+You need a web server with PHP (8.2+, 8.3 currently used in development) and MySQL or MariaDB database.
 
 We recommend installing PHP from remi repository:
 
@@ -28,7 +28,7 @@ You may list the PHP modules thusly:
 ...and select the right module:
 
 ```
-# dnf module enable php:remi-8.1
+# dnf module enable php:remi-8.3
 ```
 
 If you install core-api as a package, the PHP will be installed as dependencies.
@@ -65,7 +65,7 @@ installation to the end.
 
 ### Manual Installation
 
-The web API requires a PHP runtime version at least 8.1. Which one depends on
+The web API requires a PHP runtime version at least 8.2. Which one depends on
 actual configuration, there is a choice between _mod_php_ inside Apache,
 _php-fpm_ with Apache or Nginx proxy or running it as standalone uWSGI script.
 Also see the required PHP modules in the prerequisites section.
