@@ -8,13 +8,12 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\BadRequestException;
 use App\Model\Repository\GroupExternalAttributes;
+use App\Model\Repository\GroupMemberships;
 use App\Model\Repository\Groups;
 use App\Model\Entity\GroupExternalAttribute;
 use App\Model\View\GroupViewFactory;
 use App\Security\ACL\IGroupPermissions;
-use InvalidArgumentException;
 
 /**
  * Additional attributes used by 3rd parties to keep relations between groups and entities in external systems.
@@ -27,6 +26,12 @@ class GroupExternalAttributesPresenter extends BasePresenter
      * @inject
      */
     public $groupExternalAttributes;
+
+    /**
+     * @var GroupMemberships
+     * @inject
+     */
+    public $groupMemberships;
 
     /**
      * @var Groups
@@ -54,42 +59,34 @@ class GroupExternalAttributesPresenter extends BasePresenter
     }
 
     /**
-     * Return all attributes that correspond to given filtering parameters.
+     * Return special brief groups entities with injected external attributes and given user affiliation.
      * @GET
-     *
-     * The filter is encoded as array of objects (logically represented as disjunction of clauses)
-     * -- i.e., [clause1 OR clause2 ...]. Each clause is an object with the following keys:
-     * "group", "service", "key", "value" that match properties of GroupExternalAttribute entity.
-     * The values are expected values matched with == in the search. Any of the keys may be omitted or null
-     * which indicate it should not be matched in the particular clause.
-     * A clause must contain at least one of the four keys.
-     *
-     * The endpoint will return a list of matching attributes and all related group entities.
      */
-    #[Query("filter", new VString(), "JSON-encoded filter query in DNF as [clause OR clause...]", required: true)]
-    public function actionDefault(?string $filter)
+    #[Query("instance", new VUuid(), "ID of the instance, whose groups are returned.", required: true)]
+    #[Query(
+        "service",
+        new VString(),
+        "ID of the external service, of which the attributes are returned. If missing, all attributes are returned.",
+        required: false
+    )]
+    #[Query(
+        "user",
+        new VUuid(),
+        "Relationship info of this user is included for each returned group.",
+        required: false
+    )]
+    public function actionDefault(string $instance, ?string $service, ?string $user)
     {
-        $filterStruct = json_decode($filter ?? '', true);
-        if (!$filterStruct || !is_array($filterStruct)) {
-            throw new BadRequestException("Invalid filter format.");
-        }
+        $filter = $service ? [['service' => $service]] : [];
+        $attributes = $this->groupExternalAttributes->findByFilter($filter); // all attributes of selected service
+        $groups = $this->groups->findFiltered(null, $instance, null, false); // all but archived groups
+        $memberships = $user ? $this->groupMemberships->findByUser($user) : [];
 
-        try {
-            $attributes = $this->groupExternalAttributes->findByFilter($filterStruct);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestException($e->getMessage(), '', null, $e);
-        }
-
-        $groupIds = [];
-        foreach ($attributes as $attribute) {
-            $groupIds[$attribute->getGroup()->getId()] = true; // id is key to make it unique
-        }
-
-        $groups = $this->groups->groupsAncestralClosure(array_keys($groupIds));
-        $this->sendSuccessResponse([
-            "attributes" => $attributes,
-            "groups" => $this->groupViewFactory->getGroups($groups),
-        ]);
+        $this->sendSuccessResponse($this->groupViewFactory->getGroupsForExtension(
+            $groups,
+            $attributes,
+            $memberships,
+        ));
     }
 
 
