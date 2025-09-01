@@ -57,7 +57,7 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->assignments = $container->getByType(Assignments::class);
         $this->assignmentSolvers = $container->getByType(AssignmentSolvers::class);
 
-        // patch container, since we cannot create actual file storage manarer
+        // patch container, since we cannot create actual file storage manager
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
         $this->container->addService($fsName, new FileStorageManager(
@@ -270,7 +270,7 @@ class TestSubmitPresenter extends Tester\TestCase
         Assert::equal($tasksCount, $webSocketChannel['expectedTasksCount']);
 
         $author = $this->presenter->users->findOrThrow($solution['authorId']);
-        $solvers = $this->assignmentSolvers->findBy([ "assignment" => $assignment, "solver" => $author ]);
+        $solvers = $this->assignmentSolvers->findBy(["assignment" => $assignment, "solver" => $author]);
         Assert::count(1, $solvers);
         Assert::equal($solvers[0]->getLastAttemptIndex(), $solution['attemptIndex']);
     }

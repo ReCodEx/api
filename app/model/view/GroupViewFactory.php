@@ -9,6 +9,8 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
 use App\Model\Entity\GroupExamLock;
+use App\Model\Entity\GroupExternalAttribute;
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentPoints;
 use App\Model\Entity\User;
@@ -325,5 +327,89 @@ class GroupViewFactory
             }
             return $res;
         }, $locks);
+    }
+
+    /**
+     * Get a subset of group data relevant (available) for ReCodEx extensions (plugins).
+     * @param Group $group to be rendered
+     * @param array $injectAttributes [service][key] => value
+     * @param string|null $membershipType GroupMembership::TYPE_* value for user who made the search
+     * @return array
+     */
+    public function getGroupForExtension(
+        Group $group,
+        array $injectAttributes = [],
+        ?string $membershipType = null,
+        array $adminUsers = [],
+    ): array {
+        $admins = [];
+        foreach ($group->getPrimaryAdminsIds() as $id) {
+            $admins[$id] = null;
+            if (array_key_exists($id, $adminUsers)) {
+                $admins[$id] = $adminUsers[$id]->getNameParts(); // an array with name and title components
+                $admins[$id]['email'] = $adminUsers[$id]->getEmail();
+            }
+        }
+        return [
+            "id" => $group->getId(),
+            "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
+            "admins" => $admins,
+            "localizedTexts" => $group->getLocalizedTexts()->getValues(),
+            "organizational" => $group->isOrganizational(),
+            "exam" => $group->isExam(),
+            "public" => $group->isPublic(),
+            "detaining" => $group->isDetaining(),
+            "attributes" => $injectAttributes,
+            "membership" => $membershipType,
+        ];
+    }
+
+    /**
+     * Get a subset of groups data relevant (available) for ReCodEx extensions (plugins).
+     * @param Group[] $groups
+     * @param GroupExternalAttribute[] $attributes
+     * @param GroupMembership[] $memberships GroupMembership[] to filter by
+     */
+    public function getGroupsForExtension(array $groups, array $attributes = [], array $memberships = []): array
+    {
+        // create a multi-dimensional map [groupId][attr-service][attr-key] => attr-value
+        $attributesMap = [];
+        foreach ($attributes as $attribute) {
+            $gid = $attribute->getGroup()->getId();
+            $attributesMap[$gid] = $attributesMap[$gid] ?? [];
+
+            $service = $attribute->getService();
+            $attributesMap[$gid][$service] = $attributesMap[$gid][$service] ?? [];
+
+            $key = $attribute->getKey();
+            $attributesMap[][$service][$key] = $attribute->getValue();
+        }
+
+        // create membership mapping group-id => membership-type
+        $membershipsMap = [];
+        foreach ($memberships as $membership) {
+            $gid = $membership->getGroup()->getId();
+            $membershipsMap[$gid] = $membership->getType();
+        }
+
+        $admins = [];
+        foreach ($groups as $group) {
+            foreach ($group->getPrimaryAdmins() as $admin) {
+                $admins[$admin->getId()] = $admin;
+            }
+        }
+
+        return array_map(
+            function (Group $group) use ($attributesMap, $membershipsMap, $admins) {
+                $id = $group->getId();
+                return $this->getGroupForExtension(
+                    $group,
+                    $attributesMap[$id] ?? [],
+                    $membershipsMap[$id] ?? null,
+                    $admins
+                );
+            },
+            $groups
+        );
     }
 }
