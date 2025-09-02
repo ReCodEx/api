@@ -66,7 +66,7 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
 
     public function testGetGroupsNoUser()
     {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL]);
         $groups = $this->presenter->groups->findBy(['archivedAt' => null]);
         Assert::true(count($groups) > 0);
         $instanceId = $groups[0]->getInstance()->getId();
@@ -120,7 +120,7 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
 
     public function testGetGroupsStudent()
     {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL]);
         $users = $this->users->findBy(['email' => PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN]);
         Assert::count(1, $users);
         $user = current($users);
@@ -153,7 +153,7 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
 
     public function testGetGroupsTeacher()
     {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL]);
         $users = $this->users->findBy(['email' => PresenterTestHelper::GROUP_SUPERVISOR_LOGIN]);
         Assert::count(1, $users);
         $user = current($users);
@@ -186,7 +186,7 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
 
     public function testGetAttributesAdd()
     {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL]);
         $attributes = $this->presenter->groupExternalAttributes->findAll();
         Assert::count(5, $attributes);
         $attribute = current($attributes);
@@ -214,7 +214,7 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
 
     public function testGetAttributesRemove()
     {
-        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL_ATTRIBUTES]);
+        PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL]);
         $attributes = $this->presenter->groupExternalAttributes->findAll();
         Assert::count(5, $attributes);
         $attribute = current($attributes);

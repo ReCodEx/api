@@ -75,15 +75,11 @@ permissions:
           - viewDetail
 
     - allow: true
-      role: scope-group-external-attributes
+      role: scope-group-external
       resource: group
       actions:
           - viewExternalAttributes
           - setExternalAttributes
-          - viewStudents
-          - viewAll
-          - viewPublicDetail
-          - viewDetail
           - addStudent
           - removeStudent
           - addMember

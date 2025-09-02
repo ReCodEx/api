@@ -43,9 +43,9 @@ class TokenScope
     public const EMAIL_VERIFICATION = "email-verification";
 
     /**
-     * Scope used for 3rd party tools designed to externally manage groups and student memeberships.
+     * Scope used for 3rd party tools designed to externally manage groups and student memberships.
      */
-    public const GROUP_EXTERNAL_ATTRIBUTES = "group-external-attributes";
+    public const GROUP_EXTERNAL = "group-external";
 
     /**
      * Scope for managing the users. Used in case the user data needs to be updated from an external database.
