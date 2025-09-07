@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Query;
 use App\Helpers\MetaFormats\Attributes\Path;
@@ -16,6 +17,7 @@ use App\Model\Repository\Groups;
 use App\Model\Entity\GroupExternalAttribute;
 use App\Model\View\GroupViewFactory;
 use App\Security\ACL\IGroupPermissions;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 /**
  * Additional attributes used by 3rd parties to keep relations between groups and entities in external systems.
@@ -106,7 +108,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
     #[Post("service", new VString(1, 32), "Identifier of the external service creating the attribute", required: true)]
     #[Post("key", new VString(1, 32), "Key of the attribute (must be valid identifier)", required: true)]
     #[Post("value", new VString(0, 255), "Value of the attribute (arbitrary string)", required: true)]
-    #[Path("groupId", new VString(), required: true)]
+    #[Path("groupId", new VUuid(), required: true)]
     public function actionAdd(string $groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
@@ -115,8 +117,13 @@ class GroupExternalAttributesPresenter extends BasePresenter
         $service = $req->getPost("service");
         $key = $req->getPost("key");
         $value = $req->getPost("value");
-        $attribute = new GroupExternalAttribute($group, $service, $key, $value);
-        $this->groupExternalAttributes->persist($attribute);
+
+        try {
+            $attribute = new GroupExternalAttribute($group, $service, $key, $value);
+            $this->groupExternalAttributes->persist($attribute);
+        } catch (UniqueConstraintViolationException) {
+            throw new BadRequestException("Attribute already exists.");
+        }
 
         $this->sendSuccessResponse("OK");
     }
@@ -135,7 +142,7 @@ class GroupExternalAttributesPresenter extends BasePresenter
     #[Query("service", new VString(1, 32), "Identifier of the external service creating the attribute", required: true)]
     #[Query("key", new VString(1, 32), "Key of the attribute (must be valid identifier)", required: true)]
     #[Query("value", new VString(0, 255), "Value of the attribute (arbitrary string)", required: true)]
-    #[Path("groupId", new VString(), required: true)]
+    #[Path("groupId", new VUuid(), required: true)]
     public function actionRemove(string $groupId, string $service, string $key, string $value)
     {
         $attributes = $this->groupExternalAttributes->findBy(
