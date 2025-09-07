@@ -224,7 +224,13 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
             $this->presenter,
             'V1:GroupExternalAttributes',
             'DELETE',
-            ['action' => 'remove', 'id' => $id],
+            [
+                'action' => 'remove',
+                'groupId' => $attribute->getGroup()->getId(),
+                'service' => $attribute->getService(),
+                'key' => $attribute->getKey(),
+                'value' => $attribute->getValue()
+            ],
         );
 
         Assert::equal("OK", $payload);

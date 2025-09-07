@@ -312,7 +312,7 @@ class RouterFactory
 
         $router[] = new GetRoute($prefix, "GroupExternalAttributes:");
         $router[] = new PostRoute("$prefix/<groupId>", "GroupExternalAttributes:add");
-        $router[] = new DeleteRoute("$prefix/<id>", "GroupExternalAttributes:remove");
+        $router[] = new DeleteRoute("$prefix/<groupId>", "GroupExternalAttributes:remove");
         return $router;
     }
 
