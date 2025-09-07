@@ -38,7 +38,7 @@ class GroupExternalAttribute implements JsonSerializable
     protected $service;
 
     /**
-     * @ORM\Column(type="string", length=32)
+     * @ORM\Column(name="`key`", type="string", length=32)
      * Key of the attribute under which it can be searched.
      */
     protected $key;
