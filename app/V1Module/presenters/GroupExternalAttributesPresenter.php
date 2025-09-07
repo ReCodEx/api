@@ -8,6 +8,8 @@ use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\InternalServerException;
 use App\Model\Repository\GroupExternalAttributes;
 use App\Model\Repository\GroupMemberships;
 use App\Model\Repository\Groups;
@@ -130,11 +132,26 @@ class GroupExternalAttributesPresenter extends BasePresenter
      * Remove selected attribute
      * @DELETE
      */
-    #[Path("id", new VUuid(), "Identifier of the external attribute.", required: true)]
-    public function actionRemove(string $id)
+    #[Query("service", new VString(1, 32), "Identifier of the external service creating the attribute", required: true)]
+    #[Query("key", new VString(1, 32), "Key of the attribute (must be valid identifier)", required: true)]
+    #[Query("value", new VString(0, 255), "Value of the attribute (arbitrary string)", required: true)]
+    #[Path("groupId", new VString(), required: true)]
+    public function actionRemove(string $groupId, string $service, string $key, string $value)
     {
-        $attribute = $this->groupExternalAttributes->findOrThrow($id);
-        $this->groupExternalAttributes->remove($attribute);
+        $attributes = $this->groupExternalAttributes->findBy(
+            ['group' => $groupId, 'service' => $service, 'key' => $key, 'value' => $value]
+        );
+        if (!$attributes) {
+            throw new NotFoundException("Specified attribute not found at selected group");
+        }
+        if (count($attributes) > 1) {
+            throw new InternalServerException(
+                "Unique constraint violation "
+                    . "(multiple '$key' => '$value' attributes found at $groupId from service $service)"
+            );
+        }
+
+        $this->groupExternalAttributes->remove($attributes[0]);
         $this->sendSuccessResponse("OK");
     }
 }
