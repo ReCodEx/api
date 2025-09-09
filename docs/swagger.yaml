@@ -3145,6 +3145,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3179,20 +3180,48 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/group-attributes/{id}':
     delete:
       summary: 'Remove selected attribute'
       description: 'Remove selected attribute'
       operationId: groupExternalAttributesPresenterActionRemove
       parameters:
         -
-          name: id
+          name: groupId
           in: path
-          description: 'Identifier of the external attribute.'
+          description: ''
           required: true
           schema:
             type: string
             pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+        -
+          name: service
+          in: query
+          description: 'Identifier of the external service creating the attribute'
+          required: true
+          schema:
+            type: string
+            maxLength: 32
+            minLength: 1
+            nullable: false
+        -
+          name: key
+          in: query
+          description: 'Key of the attribute (must be valid identifier)'
+          required: true
+          schema:
+            type: string
+            maxLength: 32
+            minLength: 1
+            nullable: false
+        -
+          name: value
+          in: query
+          description: 'Value of the attribute (arbitrary string)'
+          required: true
+          schema:
+            type: string
+            maxLength: 255
             nullable: false
       responses:
         '200':
