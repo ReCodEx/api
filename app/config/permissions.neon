@@ -79,11 +79,28 @@ permissions:
       resource: group
       actions:
           - viewExternalAttributes
+
+    - allow: true
+      role: scope-group-external
+      resource: group
+      actions:
           - setExternalAttributes
           - addStudent
           - removeStudent
           - addMember
           - removeMember
+          - addSubgroup
+      conditions:
+          - group.isNotArchived
+
+    - allow: true
+      resource: group
+      role: scope-group-external
+      actions:
+          - addSubgroup
+      conditions:
+          - group.isNotArchived
+          - group.isNotExam
 
     - allow: true
       role: student

@@ -78,5 +78,5 @@ interface IGroupPermissions
 
     public function canViewExternalAttributes(): bool;
 
-    public function canSetExternalAttributes(): bool;
+    public function canSetExternalAttributes(Group $group): bool;
 }

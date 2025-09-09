@@ -94,9 +94,10 @@ class GroupExternalAttributesPresenter extends BasePresenter
     }
 
 
-    public function checkAdd()
+    public function checkAdd(string $groupId)
     {
-        if (!$this->groupAcl->canSetExternalAttributes()) {
+        $group = $this->groups->findOrThrow($groupId);
+        if (!$this->groupAcl->canSetExternalAttributes($group)) {
             throw new ForbiddenRequestException();
         }
     }
@@ -128,9 +129,10 @@ class GroupExternalAttributesPresenter extends BasePresenter
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkRemove()
+    public function checkRemove(string $groupId)
     {
-        if (!$this->groupAcl->canSetExternalAttributes()) {
+        $group = $this->groups->findOrThrow($groupId);
+        if (!$this->groupAcl->canSetExternalAttributes($group)) {
             throw new ForbiddenRequestException();
         }
     }
