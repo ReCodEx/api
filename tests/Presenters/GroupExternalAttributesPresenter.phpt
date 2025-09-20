@@ -184,6 +184,33 @@ class TestGroupExternalAttributesPresenter extends Tester\TestCase
         Assert::true($total > 0);
     }
 
+    public function testGetGroupAttributes()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $groups = array_filter($this->presenter->groups->findAll(), function ($g) {
+            return !$g->isArchived() && count($g->getExternalAttributes()) > 1;
+        });
+        Assert::true(count($groups) > 0);
+        $group = reset($groups);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:GroupExternalAttributes',
+            'GET',
+            ['action' => 'get', 'groupId' => $group->getId()],
+        );
+
+        Assert::count(count($group->getExternalAttributes()), $payload);
+        $attributes = array_map(function ($a) {
+            return join('|', [$a->getService(), $a->getKey(), $a->getValue()]);
+        }, $group->getExternalAttributes()->toArray());
+        foreach ($payload as $a) {
+            $id = join('|', [$a->getService(), $a->getKey(), $a->getValue()]);
+            Assert::true(in_array($id, $attributes));
+        }
+    }
+
     public function testGetAttributesAdd()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container, [TokenScope::GROUP_EXTERNAL]);
