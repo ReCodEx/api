@@ -93,6 +93,24 @@ class GroupExternalAttributesPresenter extends BasePresenter
         ));
     }
 
+    public function checkGet(string $groupId)
+    {
+        $group = $this->groups->findOrThrow($groupId);
+        if (!$this->groupAcl->canViewDetail($group)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Get all external attributes for a group. This endpoint is meant to be used by webapp to display the attributes.
+     * @GET
+     */
+    #[Path("groupId", new VUuid(), required: true)]
+    public function actionGet(string $groupId)
+    {
+        $attributes = $this->groupExternalAttributes->findBy(['group' => $groupId]);
+        $this->sendSuccessResponse($attributes);
+    }
 
     public function checkAdd(string $groupId)
     {
