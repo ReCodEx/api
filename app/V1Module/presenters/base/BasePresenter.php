@@ -127,11 +127,11 @@ class BasePresenter extends \App\Presenters\BasePresenter
             $this->verifyUserIpLock($user);
         }
 
-        // ACL-checking method
-        $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
-
         Validators::init();
         $this->processParams($actionReflection);
+
+        // ACL-checking method
+        $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
     }
 
     protected function isRequestJson(): bool

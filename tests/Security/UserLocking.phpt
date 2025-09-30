@@ -572,7 +572,7 @@ class UserLocking extends Tester\TestCase
                     'V1:Comments',
                     'POST',
                     ['action' => 'addComment', 'id' => $solution->getId()],
-                    ['text' => 'some comment text', 'isPrivate' => 'false']
+                    ['text' => 'some comment text', 'isPrivate' => false]
                 );
             },
             App\Exceptions\ForbiddenRequestException::class
@@ -610,7 +610,7 @@ class UserLocking extends Tester\TestCase
                     'V1:Comments',
                     'POST',
                     ['action' => 'addComment', 'id' => $solution->getId()],
-                    ['text' => 'some comment text', 'isPrivate' => 'false']
+                    ['text' => 'some comment text', 'isPrivate' => false]
                 );
             },
             App\Exceptions\ForbiddenRequestException::class
@@ -639,7 +639,7 @@ class UserLocking extends Tester\TestCase
                     'V1:Comments',
                     'POST',
                     ['action' => 'addComment', 'id' => $assignment->getId()],
-                    ['text' => 'some comment text', 'isPrivate' => 'false']
+                    ['text' => 'some comment text', 'isPrivate' => false]
                 );
             },
             App\Exceptions\ForbiddenRequestException::class
@@ -671,7 +671,7 @@ class UserLocking extends Tester\TestCase
                     'V1:Comments',
                     'POST',
                     ['action' => 'addComment', 'id' => $assignment->getId()],
-                    ['text' => 'some comment text', 'isPrivate' => 'false']
+                    ['text' => 'some comment text', 'isPrivate' => false]
                 );
             },
             App\Exceptions\ForbiddenRequestException::class

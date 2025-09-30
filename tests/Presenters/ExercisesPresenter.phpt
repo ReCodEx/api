@@ -1106,15 +1106,32 @@ class TestExercisesPresenter extends Tester\TestCase
         });
         $exercise = current($exercises);
 
+        $postBody = [
+            'version' => 1,
+            'difficulty' => 'super hard',
+            'isPublic' => false,
+            'localizedTexts' => [
+                [
+                    'locale' => 'cs',
+                    'text' => 'new descr',
+                    'name' => 'new name',
+                    'description' => 'some neaty description'
+                ]
+            ],
+            'solutionFilesLimit' => 3,
+            'solutionSizeLimit' => 42,
+            'mergeJudgeLogs' => false,
+        ];
+
         // another supervisor cannot update this exercise
         Assert::exception(
-            function () use ($exercise) {
+            function () use ($exercise, $postBody) {
                 PresenterTestHelper::performPresenterRequest(
                     $this->presenter,
                     'V1:Exercises',
                     'POST',
                     ['action' => 'updateDetail', 'id' => $exercise->getId()],
-                    []
+                    $postBody
                 );
             },
             ForbiddenRequestException::class
@@ -1130,22 +1147,7 @@ class TestExercisesPresenter extends Tester\TestCase
             'V1:Exercises',
             'POST',
             ['action' => 'updateDetail', 'id' => $exercise->getId()],
-            [
-                'version' => 1,
-                'difficulty' => 'super hard',
-                'isPublic' => false,
-                'localizedTexts' => [
-                    [
-                        'locale' => 'cs',
-                        'text' => 'new descr',
-                        'name' => 'new name',
-                        'description' => 'some neaty description'
-                    ]
-                ],
-                'solutionFilesLimit' => 3,
-                'solutionSizeLimit' => 42,
-                'mergeJudgeLogs' => false,
-            ]
+            $postBody
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
