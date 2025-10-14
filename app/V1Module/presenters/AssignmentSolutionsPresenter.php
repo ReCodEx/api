@@ -281,7 +281,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws InternalServerException
      */
-    #[Path("submissionId", new VString(), "Identifier of the submission", required: true)]
+    #[Path("submissionId", new VUuid(), "Identifier of the submission", required: true)]
     public function actionSubmission(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -309,7 +309,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * Remove the submission permanently
      * @DELETE
      */
-    #[Path("submissionId", new VString(), "Identifier of the submission", required: true)]
+    #[Path("submissionId", new VUuid(), "Identifier of the submission", required: true)]
     public function actionDeleteSubmission(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -366,7 +366,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
 
         $solution->setBonusPoints($newBonusPoints);
 
-        // TODO: validations 'null|numericint' for overriddenPoints cannot be used, because null is converted to empty
+        // TODO: validations 'null|int' for overriddenPoints cannot be used, because null is converted to empty
         // TODO: string which immediately breaks stated validation... in the future, this behavior has to change
         // TODO: lucky third TODO
         if (Validators::isNumericInt($overriddenPoints)) {
@@ -377,7 +377,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
             } else {
                 throw new InvalidApiArgumentException(
                     'overriddenPoints',
-                    "The value '$overriddenPoints' is not null|numericint"
+                    "The value '$overriddenPoints' is not null nor integer"
                 );
             }
         }
@@ -613,7 +613,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws InternalServerException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("submissionId", new VString(), required: true)]
+    #[Path("submissionId", new VUuid(), required: true)]
     public function actionDownloadResultArchive(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
@@ -646,7 +646,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws InternalServerException
      */
-    #[Path("submissionId", new VString(), "Identifier of the submission", required: true)]
+    #[Path("submissionId", new VUuid(), "Identifier of the submission", required: true)]
     public function actionEvaluationScoreConfig(string $submissionId)
     {
         $submission = $this->assignmentSolutionSubmissions->findOrThrow($submissionId);
