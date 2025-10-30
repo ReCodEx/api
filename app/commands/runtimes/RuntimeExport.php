@@ -9,16 +9,16 @@ use App\Helpers\FileStorageManager;
 use ZipArchive;
 use Exception;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
+#[AsCommand(name: 'runtimes:export', description: 'Export runtime environment and its pipelines into a ZIP package.')]
 class RuntimeExport extends Command
 {
-    protected static $defaultName = 'runtimes:export';
-
     /** @var RuntimeEnvironments */
     private $runtimeEnvironments;
 
@@ -42,9 +42,7 @@ class RuntimeExport extends Command
 
     protected function configure()
     {
-        $this->setName(self::$defaultName)->setDescription(
-            'Export runtime environment and its pipelines into a ZIP package.'
-        )->addArgument('runtime', InputArgument::REQUIRED, 'ID of the runtime environment to be exported.')
+        $this->addArgument('runtime', InputArgument::REQUIRED, 'ID of the runtime environment to be exported.')
             ->addArgument('saveAs', InputArgument::REQUIRED, 'Path to the output ZIP archive.');
     }
 
@@ -82,7 +80,7 @@ class RuntimeExport extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $stderr = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 

@@ -5,14 +5,17 @@ namespace App\Console;
 use App\Helpers\WorkerFilesConfig;
 use App\Helpers\FileStorageManager;
 use DateTime;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'db:cleanup:worker',
+    description: 'Remove old worker files (tmp solution archives and lingering results archives).'
+)]
 class CleanupWorkerTmpFiles extends Command
 {
-    protected static $defaultName = 'fs:cleanup:worker';
-
     /**
      * @var FileStorageManager
      */
@@ -30,13 +33,7 @@ class CleanupWorkerTmpFiles extends Command
         $this->workerFilesConfig = $config;
     }
 
-    protected function configure()
-    {
-        $this->setName('fs:cleanup:worker')
-            ->setDescription('Remove old worker files (tmp solution archives and lingering results archives).');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $thresholdDate = new DateTime();
         $thresholdDate->modify("-" . $this->workerFilesConfig->getRemovalThreshold());

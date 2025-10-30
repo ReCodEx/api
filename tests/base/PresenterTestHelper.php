@@ -16,7 +16,7 @@ use Nette\DI\Container;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
-use Nettrine\ORM\EntityManagerDecorator;
+use Nettrine\ORM\Decorator\SimpleEntityManagerDecorator;
 use Symfony\Component\Process\Process;
 
 class PresenterTestHelper
@@ -33,8 +33,8 @@ class PresenterTestHelper
         string $dbPath,
         Configuration $configuration,
         EventManager $eventManager
-    ): EntityManagerDecorator {
-        return new EntityManagerDecorator(EntityManager::create(
+    ): SimpleEntityManagerDecorator {
+        return new SimpleEntityManagerDecorator(EntityManager::create(
             ["driver" => "pdo_sqlite", "path" => $dbPath],
             $configuration,
             $eventManager
@@ -98,7 +98,7 @@ class PresenterTestHelper
                 $originalEm->getConfiguration(),
                 $originalEm->getEventManager()
             );
-            static::replaceService($container, $schemaEm, EntityManagerDecorator::class);
+            static::replaceService($container, $schemaEm, SimpleEntityManagerDecorator::class);
 
             $schemaTool = new Doctrine\ORM\Tools\SchemaTool($schemaEm);
             $schemaTool->dropSchema($schemaEm->getMetadataFactory()->getAllMetadata());
@@ -126,7 +126,7 @@ class PresenterTestHelper
             file_put_contents($dumpPath, $sqliteProcess->getOutput());
 
             // Replace the temporary entity manager with the original one
-            static::replaceService($container, $originalEm, EntityManagerDecorator::class);
+            static::replaceService($container, $originalEm, SimpleEntityManagerDecorator::class);
         }
 
         flock($lockHandle, LOCK_UN);

@@ -5,15 +5,18 @@ namespace App\Console;
 use App\Helpers\Notifications\ReviewsEmailsSender;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Entity\Group;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use DateTime;
 
+#[AsCommand(
+    name: 'notifications:pending-reviews',
+    description: 'Send notifications for pending (not closed) code reviews to group admins.'
+)]
 class SendPendingReviewsNotification extends Command
 {
-    protected static $defaultName = 'notifications:pending-reviews';
-
     /** @var ReviewsEmailsSender */
     private $sender;
 
@@ -34,13 +37,6 @@ class SendPendingReviewsNotification extends Command
         $this->assignmentSolutions = $assignmentSolutions;
     }
 
-    protected function configure()
-    {
-        $this->setName(self::$defaultName)->setDescription(
-            'Send notifications for pending (not closed) code reviews to group admins.'
-        );
-    }
-
     private $groupAdminsCache = [];
 
     private function getGroupAdmins(Group $group): array
@@ -55,7 +51,7 @@ class SendPendingReviewsNotification extends Command
         return $this->groupAdminsCache[$group->getId()];
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $threshold = new DateTime();
         if ($this->threshold) {

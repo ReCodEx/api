@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Helpers\Notifications\AsyncJobsStuckEmailsSender;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,10 +11,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
 use DateTime;
 
+#[AsCommand(
+    name: 'asyncJobs:upkeep',
+    description: 'Performs periodic upkeep for async jobs (cleanup, send warning emails)'
+)]
 class AsyncJobsUpkeep extends Command
 {
-    protected static $defaultName = 'asyncJobs:upkeep';
-
     /** @var AsyncJobsStuckEmailsSender */
     private $sender;
 
@@ -44,13 +47,6 @@ class AsyncJobsUpkeep extends Command
         $this->cleanupFailedThreshold = Arrays::get($params, ["cleanupFailedThreshold"], $this->cleanupThreshold);
         $this->stuckThreshold = Arrays::get($params, ["stuckThreshold"], $this->period);
         $this->entityManager = $entityManager;
-    }
-
-    protected function configure()
-    {
-        $this->setName(self::$defaultName)->setDescription(
-            'Performs periodic upkeep for async jobs (cleanup, send warning emails)'
-        );
     }
 
     /**
@@ -110,7 +106,7 @@ class AsyncJobsUpkeep extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->cleanupOldCompleted();
         $this->sendStuckNotifications();

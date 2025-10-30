@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Model\Entity\GroupExamLock;
 use App\Model\Repository\GroupExamLocks;
 use Exception;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,10 +15,9 @@ use Symfony\Component\Console\Input\InputOption;
  * Lists all group exam lock records that occurred in given time interval.
  * Locks are listed with related data in CSV format on the stdout.
  */
+#[AsCommand(name: 'sec:examEvents', description: 'List all exam events in given date/time interval in CSV format.')]
 class ListExamEvents extends BaseCommand
 {
-    protected static $defaultName = 'sec:examEvents';
-
     protected static $csvDelimiter = ',';
     protected static $csvColumns = [
         'id',
@@ -47,8 +47,6 @@ class ListExamEvents extends BaseCommand
 
     protected function configure()
     {
-        $this->setName(self::$defaultName)
-            ->setDescription('List all exam events in given date/time interval in CSV format.');
         $this->addOption(
             'from',
             null,
@@ -107,7 +105,7 @@ class ListExamEvents extends BaseCommand
         fputcsv($fp, $line, self::$csvDelimiter);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // just to save time (we do not have to pass this down to every other method invoked)
         $this->input = $input;
