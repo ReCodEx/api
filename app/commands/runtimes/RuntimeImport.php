@@ -17,6 +17,7 @@ use ZipArchive;
 use DateTime;
 use Exception;
 use RuntimeException;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -24,10 +25,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
+#[AsCommand(name: 'runtimes:import', description: 'Import runtime environment and its pipelines from a ZIP package.')]
 class RuntimeImport extends BaseCommand
 {
-    protected static $defaultName = 'runtimes:import';
-
     /** @var bool */
     private $silent = false;
 
@@ -75,26 +75,21 @@ class RuntimeImport extends BaseCommand
 
     protected function configure()
     {
-        $this->setName(self::$defaultName)->setDescription(
-            'Import runtime environment and its pipelines from a ZIP package.'
-        )
-            ->addArgument(
-                'zipFile',
-                InputArgument::REQUIRED,
-                'Path to the ZIP package from which the data will be loaded.'
-            )
-            ->addOption(
-                'yes',
-                'y',
-                InputOption::VALUE_NONE,
-                "Assume 'yes' to all inquiries (run in non-interactive mode)"
-            )
-            ->addOption(
-                'silent',
-                's',
-                InputOption::VALUE_NONE,
-                "Silent mode (no outputs except for errors)"
-            );
+        $this->addArgument(
+            'zipFile',
+            InputArgument::REQUIRED,
+            'Path to the ZIP package from which the data will be loaded.'
+        )->addOption(
+            'yes',
+            'y',
+            InputOption::VALUE_NONE,
+            "Assume 'yes' to all inquiries (run in non-interactive mode)"
+        )->addOption(
+            'silent',
+            's',
+            InputOption::VALUE_NONE,
+            "Silent mode (no outputs except for errors)"
+        );
     }
 
     /*
@@ -477,7 +472,7 @@ class RuntimeImport extends BaseCommand
      * Finally, the main function of command!
      */
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // just to save time (we do not have to pass this down to every other method invoked)
         $this->input = $input;

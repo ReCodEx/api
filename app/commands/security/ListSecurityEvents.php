@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Model\Entity\SecurityEvent;
 use App\Model\Repository\SecurityEvents;
 use Exception;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,10 +15,12 @@ use Symfony\Component\Console\Input\InputOption;
  * List security events (login, token refresh, ...) from given time interval.
  * Events are printed to stdout in CSV format.
  */
+#[AsCommand(
+    name: 'sec:securityEvents',
+    description: 'List all security events in given date/time interval in CSV format.'
+)]
 class ListSecurityEvents extends BaseCommand
 {
-    protected static $defaultName = 'sec:securityEvents';
-
     protected static $csvDelimiter = ',';
     protected static $csvColumns = [
         'id',
@@ -43,8 +46,6 @@ class ListSecurityEvents extends BaseCommand
 
     protected function configure()
     {
-        $this->setName(self::$defaultName)
-            ->setDescription('List all security events in given date/time interval in CSV format.');
         $this->addOption(
             'from',
             null,
@@ -99,7 +100,7 @@ class ListSecurityEvents extends BaseCommand
         fputcsv($fp, $line, self::$csvDelimiter);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // just to save time (we do not have to pass this down to every other method invoked)
         $this->input = $input;

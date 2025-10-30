@@ -6,6 +6,7 @@ use App\Model\Repository\Users;
 use App\Helpers\AnonymizationHelper;
 use DateTime;
 use DateInterval;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,10 +18,9 @@ use Symfony\Component\Console\Helper\QuestionHelper;
  * A console command that removes inactive users.
  * A user is inactive if no authentication (nor token renewal) is recorded for given period of time.
  */
+#[AsCommand(name: 'users:remove-inactive', description: 'Remove inactive users from the database.')]
 class RemoveInactiveUsers extends Command
 {
-    protected static $defaultName = 'users:remove-inactive';
-
     /** @var DateTime|null */
     private $disableThreshold = null;
 
@@ -66,7 +66,6 @@ class RemoveInactiveUsers extends Command
 
     protected function configure()
     {
-        $this->setName('users:remove-inactive')->setDescription('Remove users who has not been active for some time.');
         $this->addOption(
             'report',
             null,
@@ -82,7 +81,7 @@ class RemoveInactiveUsers extends Command
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $report = $input->getOption('report');
         $silent = !$report && $input->getOption('silent');

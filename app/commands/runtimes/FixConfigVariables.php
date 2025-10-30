@@ -5,13 +5,12 @@ namespace App\Console;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\ExerciseConfigs;
-use App\Model\Entity\Pipeline;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
-use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use Exception;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,10 +18,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
+#[AsCommand(
+    name: 'runtimes:fixConfigVariables',
+    description: 'Scan exercise configs of given runtime environment and attempt to fix the variables. ' .
+        'The variables lists are extracted from pipelines, new variables are added (with defaults), ' .
+        'unidentified variables are removed.'
+)]
 class FixConfigVariables extends BaseCommand
 {
-    protected static $defaultName = 'runtimes:fixConfigVariables';
-
     /** @var bool */
     private $silent = false;
 
@@ -66,28 +69,21 @@ class FixConfigVariables extends BaseCommand
 
     protected function configure()
     {
-        $this->setName(self::$defaultName)->setDescription(
-            'Scan exercise configs of given runtime environment and attempt to fix the variables. ' .
-                'The variables lists are extracted from pipelines, new variables are added (with defaults), ' .
-                'unidentified variables are removed.'
-        )
-            ->addArgument(
-                'runtime',
-                InputArgument::REQUIRED,
-                'Identifier of the runtime environment of which the exercises will be updated.'
-            )
-            ->addOption(
-                'yes',
-                'y',
-                InputOption::VALUE_NONE,
-                "Assume 'yes' to all inquiries (run in non-interactive mode)"
-            )
-            ->addOption(
-                'silent',
-                's',
-                InputOption::VALUE_NONE,
-                "Silent mode (no outputs except for errors)"
-            );
+        $this->addArgument(
+            'runtime',
+            InputArgument::REQUIRED,
+            'Identifier of the runtime environment of which the exercises will be updated.'
+        )->addOption(
+            'yes',
+            'y',
+            InputOption::VALUE_NONE,
+            "Assume 'yes' to all inquiries (run in non-interactive mode)"
+        )->addOption(
+            'silent',
+            's',
+            InputOption::VALUE_NONE,
+            "Silent mode (no outputs except for errors)"
+        );
     }
 
     private function writeln(...$lines): void
@@ -300,7 +296,7 @@ class FixConfigVariables extends BaseCommand
      * Finally, the main function of command!
      */
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // just to save time (we do not have to pass this down to every other method invoked)
         $this->input = $input;

@@ -5,16 +5,18 @@ namespace App\Console;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\ShadowAssignments;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use DateTime;
 
+#[AsCommand(
+    name: 'notifications:assignment-deadlines',
+    description: 'Send notifications for assignments with imminent deadlines.'
+)]
 class SendAssignmentDeadlineNotification extends Command
 {
-    protected static $defaultName = 'notifications:assignment-deadlines';
-
     /** @var AssignmentEmailsSender */
     private $sender;
 
@@ -45,14 +47,7 @@ class SendAssignmentDeadlineNotification extends Command
         $this->thresholdTo = $thresholdTo;
     }
 
-    protected function configure()
-    {
-        $this->setName(self::$defaultName)->setDescription(
-            'Send notifications for assignments with imminent deadlines.'
-        );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $from = new DateTime();
         if ($this->thresholdFrom) {

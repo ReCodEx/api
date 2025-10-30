@@ -6,15 +6,19 @@ use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\FileStorageException;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\AttachmentFiles;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tracy\ILogger;
 
+#[AsCommand(
+    name: 'db:cleanup:exercise-files',
+    description: 'Remove unused supplementary and attachment files '
+        . '(only DB records are removed in case of supplementary files).'
+)]
 class CleanupExercisesFiles extends Command
 {
-    protected static $defaultName = 'db:cleanup:exercise-files';
-
     /**
      * @var SupplementaryExerciseFiles
      */
@@ -47,13 +51,6 @@ class CleanupExercisesFiles extends Command
         $this->attachmentFiles = $attachmentFiles;
         $this->logger = $logger;
         $this->fileStorage = $fileStorage;
-    }
-
-    protected function configure()
-    {
-        $this->setName('db:cleanup:exercise-files')
-            ->setDescription('Remove unused supplementary and attachment files "
-                . "(only DB records are removed in case of supplementary files).');
     }
 
     private function removeUnusedSupplementaryFiles(OutputInterface $output)

@@ -6,6 +6,7 @@ use App\Model\Repository\Users;
 use App\Security\AccessManager;
 use App\Security\TokenScope;
 use App\Security\Roles;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,10 +19,12 @@ use Exception;
  * A console command that generates token restricted for plagiarism detection tools.
  * This token can be used to create plagiarism detection batches and upload their data regarding detected similarities.
  */
+#[AsCommand(
+    name: 'plagiarism:create-access-token',
+    description: 'Generate token restricted for plagiarism scope (for 3rd party tools).'
+)]
 class PlagiarismDetectionAccessToken extends Command
 {
-    protected static $defaultName = 'plagiarism:create-access-token';
-
     /** @var AccessManager */
     public $accessManager;
 
@@ -37,8 +40,6 @@ class PlagiarismDetectionAccessToken extends Command
 
     protected function configure()
     {
-        $this->setName(self::$defaultName)
-            ->setDescription('Generate token restricted for plagiarism scope (for 3rd party tools).');
         $this->addArgument('userId', InputArgument::REQUIRED, 'ID of the admin owning the token.');
         $this->addOption(
             'expiration',
@@ -49,7 +50,7 @@ class PlagiarismDetectionAccessToken extends Command
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // get user by given ID
         $userId = $input->getArgument('userId');

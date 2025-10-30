@@ -7,6 +7,7 @@ use App\Model\Repository\Pipelines;
 use DateTime;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,10 +16,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  * A console command that removes pipeline configurations that are not associated with any pipeline and were created
  * before more than a given amount of days
  */
+#[AsCommand(
+    name: 'db:cleanup:pipeline-configs',
+    description: 'Remove unused pipeline configs that are older than 14 days.'
+)]
 class CleanupPipelineConfigs extends Command
 {
-    protected static $defaultName = 'db:cleanup:pipeline-configs';
-
     /** @var Pipelines */
     private $pipelines;
 
@@ -32,14 +35,7 @@ class CleanupPipelineConfigs extends Command
         $this->entityManager = $entityManager;
     }
 
-    protected function configure()
-    {
-        $this->setName('db:cleanup:pipeline-configs')->setDescription(
-            'Remove unused pipeline configs that are older than 14 days.'
-        );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $now = new DateTime();
         $deleted = 0;

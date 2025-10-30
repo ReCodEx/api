@@ -8,16 +8,16 @@ use App\Helpers\FileStorage\FileStorageException;
 use App\Model\Repository\BaseRepository;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\UploadedPartialFiles;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tracy\ILogger;
 use DateTime;
 
+#[AsCommand(name: 'db:cleanup:uploads', description: 'Remove unused uploaded files and corresponding DB records.')]
 class CleanupUploads extends Command
 {
-    protected static $defaultName = 'db:cleanup:uploads';
-
     /**
      * @var UploadsConfig
      */
@@ -57,12 +57,6 @@ class CleanupUploads extends Command
         $this->uploadedPartialFiles = $uploadedPartialFiles;
         $this->logger = $logger;
         $this->fileStorage = $fileStorage;
-    }
-
-    protected function configure()
-    {
-        $this->setName('db:cleanup:uploads')
-            ->setDescription('Remove unused uploaded files and corresponding DB records.');
     }
 
     /**
@@ -110,7 +104,7 @@ class CleanupUploads extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $now = new DateTime();
         $threshold = $this->uploadsConfig->getRemovalThreshold();

@@ -9,6 +9,7 @@ use App\Model\Repository\Exercises;
 use DateTime;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,10 +18,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  * A console command that removes localized texts that are not associated with any entity and were created before more
  * than a given amount of days
  */
+#[AsCommand(
+    name: 'db:cleanup:localized-texts',
+    description: 'Remove unused localized texts that are older than 14 days.'
+)]
 class CleanupLocalizedTexts extends Command
 {
-    protected static $defaultName = 'db:cleanup:localized-texts';
-
     /** @var Exercises */
     private $exercises;
 
@@ -38,14 +41,7 @@ class CleanupLocalizedTexts extends Command
         $this->entityManager = $entityManager;
     }
 
-    protected function configure()
-    {
-        $this->setName('db:cleanup:localized-texts')->setDescription(
-            'Remove unused localized texts that are older than 14 days.'
-        );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $now = new DateTime();
         $deleted = 0;

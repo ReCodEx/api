@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Helpers\MetaFormats\AnnotationConversion\AnnotationToAttributeConverter;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -12,18 +13,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  * parameter annotations are converted into attributes.
  * The new folder is named 'presenters2'.
  */
+#[AsCommand(name: 'meta:convert', description: 'Convert endpoint parameter annotations to attributes.')]
 class MetaConverter extends Command
 {
-    protected static $defaultName = 'meta:convert';
-
-    protected function configure()
-    {
-        $this->setName(self::$defaultName)->setDescription(
-            'Convert endpoint parameter annotations to attributes..'
-        );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->generatePresenters();
         return Command::SUCCESS;

@@ -11,6 +11,7 @@ use App\Model\Repository\Pipelines;
 use App\Model\Repository\RuntimeEnvironments;
 use Nette\Neon\Neon;
 use Nette\Utils\FileSystem;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,10 +21,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * YAML file in fixtures/generated directory. Also, 'db:export' command is
  * registered to provide convenient usage of this function.
  */
+#[AsCommand(name: 'db:export', description: 'Export some of the data from database.')]
 class ExportDatabase extends Command
 {
-    protected static $defaultName = 'db:export';
-
     private const EXTENSION = ".neon";
     private const PARAMETERS_KEY = "parameters";
 
@@ -60,20 +60,12 @@ class ExportDatabase extends Command
     }
 
     /**
-     * Register the 'db:export' command in the framework
-     */
-    protected function configure()
-    {
-        $this->setName('db:export')->setDescription('Export some of the data from database.');
-    }
-
-    /**
      * Execute the database exporting.
      * @param InputInterface $input Console input, not used
      * @param OutputInterface $output Console output for logging
      * @return int 0 on success, 1 on error
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $fixtureDir = __DIR__ . '/../../fixtures/generated/';
         FileSystem::createDir($fixtureDir);

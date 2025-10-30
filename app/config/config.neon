@@ -526,8 +526,8 @@ nettrine.extensions.atlantic18:
 nettrine.migrations:
   table: doctrine_migrations # database table for applied migrations
   column: version # database column for applied migrations
-  directory: %appDir%/../migrations # directory, where all migrations are stored
-  namespace: Migrations # namespace of migration classes
+  directories:
+    Migrations: %appDir%/../migrations # directory, where all migrations are stored
 
 fixtures:
   locale: "en_US"

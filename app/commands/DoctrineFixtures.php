@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AssignedGenerator;
 use Nette\Utils\Finder;
 use SplFileInfo;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +21,7 @@ use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
  * in add/fixtures directory. Also, 'db:fill' command is registered to provide
  * convenient usage of this function.
  */
+#[AsCommand(name: 'db:fill', description: 'Clear the database and fill it with initial data.')]
 class DoctrineFixtures extends Command
 {
     protected static $defaultName = 'db:fill';
@@ -64,7 +66,6 @@ class DoctrineFixtures extends Command
      */
     protected function configure()
     {
-        $this->setName('db:fill')->setDescription('Clear the database and fill it with initial data.');
         $this->addOption(
             'test',
             't',
@@ -81,7 +82,7 @@ class DoctrineFixtures extends Command
      * @param OutputInterface $output Console output for logging
      * @return int 0 on success, 1 on error
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->clearDatabase();
 
