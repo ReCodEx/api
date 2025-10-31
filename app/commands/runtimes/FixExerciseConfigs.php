@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
 #[AsCommand(
-    name: 'runtimes:fixExerciseConfigs',
+    name: 'runtimes:fix-exercise-configs',
     description: 'Scan exercise configs of given runtime environment and attempts to fix them. ' .
         'This feature may be used when runtime was updated and some of its pipelines replaced.'
 )]
