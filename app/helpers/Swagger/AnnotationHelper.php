@@ -109,7 +109,7 @@ class AnnotationHelper
         // if the type is not specified, default to a string
         $type = 'string';
         $typename = $annotationType;
-        if ($typename !== null) {
+        if ($typename) {
             if (self::isDatatypeNullable($annotationType)) {
                 $typename = substr($typename, 0, -strlen(self::$nullableSuffix));
             }

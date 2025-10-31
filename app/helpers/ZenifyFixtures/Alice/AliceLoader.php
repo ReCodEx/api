@@ -12,7 +12,7 @@ namespace Zenify\DoctrineFixtures\Alice;
 use App\Helpers\ZenifyFixtures\Alice\CustomNativeLoader;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Finder;
-use SplFileInfo;
+use Nette\Utils\FileInfo;
 use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
 use Zenify\DoctrineFixtures\Exception\MissingSourceException;
 
@@ -79,7 +79,7 @@ final class AliceLoader implements AliceLoaderInterface
     {
         $files = [];
         foreach (Finder::find('*.neon', '*.yaml', '*.yml')->from($path) as $file) {
-            /** @var SplFileInfo $file */
+            /** @var FileInfo $file */
             $files[] = $file->getPathname();
         }
         return $files;

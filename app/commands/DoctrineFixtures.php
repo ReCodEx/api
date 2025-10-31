@@ -7,6 +7,7 @@ use Doctrine\DBAL;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Id\AssignedGenerator;
 use Nette\Utils\Finder;
+use Nette\Utils\FileInfo;
 use SplFileInfo;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -98,7 +99,7 @@ class DoctrineFixtures extends Command
         foreach ($input->getArgument("groups") as $group) {
             $groupFiles = [];
 
-            /** @var SplFileInfo $file */
+            /** @var FileInfo $file */
             foreach (
                 Finder::findFiles("*.neon", "*.yml", "*.yaml", "*.json")
                     ->in($fixtureDir . "/" . $group) as $file

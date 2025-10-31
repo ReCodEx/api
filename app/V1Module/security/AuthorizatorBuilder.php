@@ -5,9 +5,7 @@ namespace App\Security;
 use LogicException;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Dumper;
-use Nette\PhpGenerator\PhpLiteral;
-use Nette\PhpGenerator\Helpers;
-use Nette\Security\Permission;
+use Nette\PhpGenerator\Literal;
 use Nette\Utils\Arrays;
 use ReflectionClass;
 use ReflectionException;
@@ -48,7 +46,7 @@ class AuthorizatorBuilder
             $allow = Arrays::get($rule, "allow", true);
             $role = Arrays::get($rule, "role", null);
             $resource = Arrays::get($rule, "resource", null);
-            $interface = $resource !== null ? new ReflectionClass(Arrays::get($aclInterfaces, $resource)) : null;
+            $interface = $resource !== null ? new ReflectionClass(Arrays::get($aclInterfaces, $resource) ?? '') : null;
             $actions = (array)Arrays::get($rule, "actions", []);
 
             $assertion = null;
@@ -61,10 +59,10 @@ class AuthorizatorBuilder
                 $condition = $this->loadConditionClauses($conditions, $interface, $actions, $checkVariables);
 
                 foreach ($checkVariables as $variableName => $variableValue) {
-                    $assertion->addBody("? = ?;", [new PhpLiteral($variableName), new PhpLiteral($variableValue)]);
+                    $assertion->addBody("? = ?;", [new Literal($variableName), new Literal($variableValue)]);
                 }
 
-                $assertion->addBody("return ?;", [new PhpLiteral($condition)]);
+                $assertion->addBody("return ?;", [new Literal($condition)]);
             }
 
             $actionsString = '"' . implode('", "', $actions) . '"';
@@ -72,10 +70,10 @@ class AuthorizatorBuilder
             $check->addBody(
                 'if (? && ? && ? && ?) {',
                 [
-                    $role !== null ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : true,
-                    $resource !== null ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : true,
-                    count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : true,
-                    $assertion !== null ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : true
+                    $role !== null ? new Literal(sprintf('$this->isInRole($role, "%s")', $role)) : true,
+                    $resource !== null ? new Literal(sprintf('$resource === "%s"', $resource)) : true,
+                    count($actions) > 0 ? new Literal(sprintf('in_array($privilege, [%s])', $actionsString)) : true,
+                    $assertion !== null ? new Literal(sprintf('$this->%s()', $assertion->getName())) : true
                 ]
             );
             $check->addBody('return ?;', [$allow]);
@@ -108,7 +106,7 @@ class AuthorizatorBuilder
             $checkVariable = "\$check_" . $this->checkCounter++;
             $checkValues[$checkVariable] = $this->dumper->format(
                 '$this->policy->check(?, ?, $this->queriedIdentity)',
-                $conditionTarget ? new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)) : null,
+                $conditionTarget ? new Literal(sprintf('$this->queriedContext["%s"]', $conditionTarget)) : null,
                 $condition
             );
 
@@ -136,11 +134,11 @@ class AuthorizatorBuilder
         }
 
         if ($type === "and") {
-            return $this->dumper->format("(?)", new PhpLiteral(join(" && ", $children)));
-        } elseif ($type === "or") {
-            return $this->dumper->format("(?)", new PhpLiteral(join(" || ", $children)));
+            return $this->dumper->format("(?)", new Literal(join(" && ", $children)));
+        } /* @phpstan-ignore identical.alwaysTrue */ elseif ($type === "or") {
+            return $this->dumper->format("(?)", new Literal(join(" || ", $children)));
         } else {
-            return new PhpLiteral("true");
+            return new Literal("true");
         }
     }
 

@@ -19,7 +19,7 @@ use Tester\Assert;
  */
 class TestUserStorage extends Tester\TestCase
 {
-    use MockeryTrait;
+    use \MockeryTrait;
 
     /** @var Container */
     private $container;

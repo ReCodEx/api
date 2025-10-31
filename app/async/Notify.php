@@ -21,6 +21,7 @@ class Notify
     {
         $requirements = ['inotify_init', 'inotify_add_watch', 'inotify_read', 'inotify_queue_len', 'stream_select'];
         foreach ($requirements as $reqFnc) {
+            // @phpstan-ignore-next-line
             if (!function_exists($reqFnc)) {
                 return false;
             }
@@ -31,6 +32,7 @@ class Notify
     /**
      * @var string|null path to the inotify file used to wake up the worker (null = no inotify)
      */
+    // @phpstan-ignore property.unusedType
     private $inotifyFile = null;
 
     /**

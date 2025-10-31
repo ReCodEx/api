@@ -10,13 +10,9 @@ use App\Security\Roles;
 use Tester\Assert;
 use Mockery\Mock;
 
-class Resource1
-{
-}
+class Resource1 {}
 
-class Resource2
-{
-}
+class Resource2 {}
 
 interface ITestResource1Permissions
 {
@@ -33,7 +29,7 @@ interface ITestResource2Permissions
  */
 class TestAuthorizatorBasic extends Tester\TestCase
 {
-    use MockeryTrait;
+    use \MockeryTrait;
 
     /** @var PolicyRegistry */
     private $policies;
@@ -56,10 +52,13 @@ class TestAuthorizatorBasic extends Tester\TestCase
     public function __construct()
     {
         $this->loader = new Loader(
-            TEMP_DIR . '/security', __DIR__ . '/config/basic.neon', [
-            'resource1' => ITestResource1Permissions::class,
-            'resource2' => ITestResource2Permissions::class
-        ], Mockery::mock(\App\Security\UserStorage::class)
+            TEMP_DIR . '/security',
+            __DIR__ . '/config/basic.neon',
+            [
+                'resource1' => ITestResource1Permissions::class,
+                'resource2' => ITestResource2Permissions::class
+            ],
+            Mockery::mock(\App\Security\UserStorage::class)
         );
     }
 

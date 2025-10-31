@@ -165,7 +165,7 @@ class ExerciseConfigChecker
      */
     private function validateEnvironmentConfigurations(Exercise $exercise): bool
     {
-        /** @var RuntimeEnvironment $environment */
+        /** @var RuntimeEnvironment|null $environment */
         $environment = null;
         try {
             foreach ($exercise->getRuntimeEnvironments() as $environment) {
@@ -243,7 +243,7 @@ class ExerciseConfigChecker
         ) {
             $errors[] = "@score The score configuration is invalid";
         }
-                
+
         if ($errors) {
             $exercise->setBroken(implode("\n", $errors));
             return;

@@ -9,9 +9,7 @@ use App\Security\Roles;
 use App\Security\UserStorage;
 use Tester\Assert;
 
-class Resource1
-{
-}
+class Resource1 {}
 
 interface ITestResource1Permissions
 {
@@ -25,7 +23,7 @@ interface ITestResource1Permissions
  */
 class TestAuthorizatorWithEffectiveRole extends Tester\TestCase
 {
-    use MockeryTrait;
+    use \MockeryTrait;
 
     /** @var PolicyRegistry */
     private $policies;
@@ -42,9 +40,12 @@ class TestAuthorizatorWithEffectiveRole extends Tester\TestCase
     public function __construct()
     {
         $this->loader = new Loader(
-            TEMP_DIR . '/security', __DIR__ . '/config/with_effective_role.neon', [
-            'resource1' => ITestResource1Permissions::class
-        ], Mockery::mock(UserStorage::class)
+            TEMP_DIR . '/security',
+            __DIR__ . '/config/with_effective_role.neon',
+            [
+                'resource1' => ITestResource1Permissions::class
+            ],
+            Mockery::mock(UserStorage::class)
         );
     }
 
