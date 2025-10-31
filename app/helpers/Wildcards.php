@@ -44,6 +44,7 @@ class Wildcards
             $start = strpos($pattern, "{", $offset);
 
             if ($start === false) {
+                // @phpstan-ignore identical.alwaysTrue
                 if ($offset === 0) {
                     yield $pattern;
                 }
@@ -59,7 +60,8 @@ class Wildcards
                         $counter -= 1;
 
                         if ($counter === 0) {
-                            $end = $offset = $i;
+                            $end = $i;
+                            $offset = $i;
                             $head = substr($pattern, 0, $start);
                             $tail = substr($pattern, $end + 1);
                             $subPatterns = static::splitPattern(substr($pattern, $start + 1, $end - $start - 1));

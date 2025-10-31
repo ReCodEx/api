@@ -42,7 +42,7 @@ class UserStorage implements Nette\Security\UserStorage
     /**
      * @inheritDoc
      */
-    public function saveAuthentication(IIdentity $identity): void
+    public function saveAuthentication(?IIdentity $identity): void
     {
         if ($identity !== null && !($identity instanceof Identity)) {
             throw new InvalidArgumentException("Wrong identity class");

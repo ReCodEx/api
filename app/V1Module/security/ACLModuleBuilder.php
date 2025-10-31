@@ -3,7 +3,7 @@
 namespace App\Security;
 
 use Nette\PhpGenerator\ClassType;
-use Nette\PhpGenerator\PhpLiteral;
+use Nette\PhpGenerator\Literal;
 use Nette\Utils\Strings;
 use ReflectionClass;
 use ReflectionMethod;
@@ -72,7 +72,7 @@ class ACLModuleBuilder
                 'return $this->check(?, ?);',
                 [
                     $action,
-                    new PhpLiteral("[" . implode(", ", $contextStrings) . "]")
+                    new Literal("[" . implode(", ", $contextStrings) . "]")
                 ]
             );
         }

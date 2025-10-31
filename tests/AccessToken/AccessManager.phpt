@@ -7,7 +7,6 @@ use App\Security\AccessManager;
 use Tester\Assert;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Model\Repository\Users;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -19,7 +18,7 @@ use Nette\Http\Request;
  */
 class TestAccessManager extends Tester\TestCase
 {
-    use MockeryTrait;
+    use \MockeryTrait;
 
     /*
      * Token decoding

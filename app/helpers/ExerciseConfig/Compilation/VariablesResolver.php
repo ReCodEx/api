@@ -21,7 +21,6 @@ use App\Helpers\Wildcards;
  */
 class VariablesResolver
 {
-
     /**
      * Variables defined in exercise config or environment config can contain
      * references, these references are resolved against user submitted variable
@@ -310,13 +309,11 @@ class VariablesResolver
         // check if the ports was processed and processed correctly
         if ($inPort->getVariableValue() !== null) {
             return; // this port was already processed
-        } else {
-            if ($inPort->getVariableValue() === null && $outPort && $outPort->getVariableValue() !== null) {
-                // only input value is assigned... this means it was process before with
-                // some other child, so just assign value and return
-                $inPort->setVariableValue($outPort->getVariableValue());
-                return;
-            }
+        } elseif ($outPort && $outPort->getVariableValue() !== null) {
+            // only input value is assigned... this means it was process before with
+            // some other child, so just assign value and return
+            $inPort->setVariableValue($outPort->getVariableValue());
+            return;
         }
 
         $variableName = $inPort->getVariable();
