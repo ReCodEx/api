@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0f6f7362ed74c3854e7238308ab60e37",
+    "content-hash": "2d0456d40067884acbf20b7c367a11b1",
     "packages": [
         {
             "name": "bjeavons/zxcvbn-php",
@@ -267,38 +267,6 @@
                 "source": "https://github.com/dflydev/dflydev-dot-access-data/tree/v3.0.3"
             },
             "time": "2024-07-08T12:26:09+00:00"
-        },
-        {
-            "name": "dg/adminer-custom",
-            "version": "v3.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/dg/adminer.git",
-                "reference": "2193036f6e19f1416bdbd8c8baa09e52a237278d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/dg/adminer/zipball/2193036f6e19f1416bdbd8c8baa09e52a237278d",
-                "reference": "2193036f6e19f1416bdbd8c8baa09e52a237278d",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "description": "Customization for Adminer, the best database management tool written in PHP.",
-            "keywords": [
-                "database",
-                "elasticsearch",
-                "mongodb",
-                "mssql",
-                "mysql",
-                "oracle",
-                "postgresql",
-                "sqlite"
-            ],
-            "support": {
-                "source": "https://github.com/dg/adminer/tree/v3.3.0"
-            },
-            "time": "2025-09-24T17:21:32+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -7985,16 +7953,16 @@
         },
         {
             "name": "zircote/swagger-php",
-            "version": "5.5.1",
+            "version": "5.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zircote/swagger-php.git",
-                "reference": "a1b6fba7695bed5ba8a0052f615fe828912e3f5a"
+                "reference": "0ca908380414596f5ed3a7ad33a04abb4cffe613"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/a1b6fba7695bed5ba8a0052f615fe828912e3f5a",
-                "reference": "a1b6fba7695bed5ba8a0052f615fe828912e3f5a",
+                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/0ca908380414596f5ed3a7ad33a04abb4cffe613",
+                "reference": "0ca908380414596f5ed3a7ad33a04abb4cffe613",
                 "shasum": ""
             },
             "require": {
@@ -8067,9 +8035,9 @@
             ],
             "support": {
                 "issues": "https://github.com/zircote/swagger-php/issues",
-                "source": "https://github.com/zircote/swagger-php/tree/5.5.1"
+                "source": "https://github.com/zircote/swagger-php/tree/5.5.2"
             },
-            "time": "2025-10-17T21:07:41+00:00"
+            "time": "2025-10-27T04:40:08+00:00"
         }
     ],
     "packages-dev": [
@@ -8451,6 +8419,70 @@
                 "source": "https://github.com/phpstan/phpstan-nette/tree/2.0.6"
             },
             "time": "2025-09-19T19:54:10+00:00"
+        },
+        {
+            "name": "vrana/adminer",
+            "version": "v5.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vrana/adminer.git",
+                "reference": "eaad45a781a3e0d9fa04e3431c1826e81c061699"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vrana/adminer/zipball/eaad45a781a3e0d9fa04e3431c1826e81c061699",
+                "reference": "eaad45a781a3e0d9fa04e3431c1826e81c061699",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "plugins/"
+                ],
+                "exclude-from-classmap": [
+                    "adminer/drivers/",
+                    "plugins/drivers/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0",
+                "GPL-2.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "Jakub Vrána",
+                    "homepage": "https://www.vrana.cz/"
+                }
+            ],
+            "description": "Database management in a single PHP file.",
+            "homepage": "https://www.adminer.org/",
+            "keywords": [
+                "database"
+            ],
+            "support": {
+                "forum": "https://github.com/vrana/adminer/discussions",
+                "issues": "https://github.com/vrana/adminer/issues",
+                "source": "https://github.com/vrana/adminer/"
+            },
+            "funding": [
+                {
+                    "url": "https://www.paypal.com/donate/?hosted_button_id=6PK5VNUCFT3FG",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/vrana",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/jakubvrana",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2025-09-26T15:38:02+00:00"
         }
     ],
     "aliases": [],
