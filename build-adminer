@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ ! -d vendor/vrana/adminer ]; then
+    echo "Please run 'composer install' first."
+    exit 1
+fi
+
+cd www/adminer || exit 1
+php ../../vendor/vrana/adminer/compile.php || exit 2
+git add adminer-*.php
+
+echo "There are following adminer version built:"
+ls -1 adminer-*.php
+echo "Consider removing old versions and do not forget to commit the changes."

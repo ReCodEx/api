@@ -29,7 +29,6 @@
         "php": ">=8.2",
         "bjeavons/zxcvbn-php": "^1.4",
         "contributte/console": "^0.10.0",
-        "dg/adminer-custom": "^3.3",
         "firebase/php-jwt": "^6.11",
         "forxer/gravatar": "^5.0",
         "guzzlehttp/guzzle": "^7.10",
@@ -70,7 +69,8 @@
         "mikey179/vfsstream": "@stable",
         "nette/tester": "^2.4",
         "phpstan/phpstan": "^2.1",
-        "phpstan/phpstan-nette": "^2.0"
+        "phpstan/phpstan-nette": "^2.0",
+        "vrana/adminer": "^5.4"
     },
     "minimum-stability": "dev",
     "prefer-stable": true
