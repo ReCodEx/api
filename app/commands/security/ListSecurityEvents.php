@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputOption;
  * Events are printed to stdout in CSV format.
  */
 #[AsCommand(
-    name: 'sec:securityEvents',
+    name: 'sec:security-events',
     description: 'List all security events in given date/time interval in CSV format.'
 )]
 class ListSecurityEvents extends BaseCommand

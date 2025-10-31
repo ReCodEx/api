@@ -15,7 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
  * Lists all group exam lock records that occurred in given time interval.
  * Locks are listed with related data in CSV format on the stdout.
  */
-#[AsCommand(name: 'sec:examEvents', description: 'List all exam events in given date/time interval in CSV format.')]
+#[AsCommand(name: 'sec:exam-events', description: 'List all exam events in given date/time interval in CSV format.')]
 class ListExamEvents extends BaseCommand
 {
     protected static $csvDelimiter = ',';

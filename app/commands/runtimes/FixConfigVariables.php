@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
 #[AsCommand(
-    name: 'runtimes:fixConfigVariables',
+    name: 'runtimes:fix-config-variables',
     description: 'Scan exercise configs of given runtime environment and attempt to fix the variables. ' .
         'The variables lists are extracted from pipelines, new variables are added (with defaults), ' .
         'unidentified variables are removed.'
