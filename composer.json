@@ -63,7 +63,7 @@
         "ramsey/uuid-doctrine": "^2.0",
         "symfony/process": "^7.3",
         "tracy/tracy": "^2.11",
-        "zircote/swagger-php": "^4.10"
+        "zircote/swagger-php": "^5.5"
     },
     "require-dev": {
         "mockery/mockery": "@stable",

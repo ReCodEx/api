@@ -1,10 +1,12 @@
 openapi: 3.0.0
 info:
   title: 'ReCodEx API'
+  description: '* @OA\Info(version="1.0", title="ReCodEx API")'
   version: '1.0'
 paths:
   /v1/security/check:
     post:
+      summary: '* @OA\Post(path="/v1/security/check", operationId="securityPresenterActionCheck", @OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema(@OA\Property(property="url", type="string", nullable=true, description="URL of the resource that we are checking"), @OA\Property(property="method", type="string", nullable=true, description="The HTTP method"), required={"url","method"}))), @OA\Response(response="200",description="Placeholder response"))'
       operationId: securityPresenterActionCheck
       requestBody:
         content:
@@ -3065,6 +3067,7 @@ paths:
         '200':
           description: 'Placeholder response'
     delete:
+      summary: '* @OA\Delete(path="/v1/group-invitations/{id}", operationId="groupInvitationsPresenterActionRemove", @OA\Parameter(name="id", in="path", required=true, description="Identifier of the group invitation", @OA\Schema(type="string", nullable=false, pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")), @OA\Response(response="200",description="Placeholder response"))'
       operationId: groupInvitationsPresenterActionRemove
       parameters:
         -
@@ -3133,6 +3136,23 @@ paths:
         '200':
           description: 'Placeholder response'
   '/v1/group-attributes/{groupId}':
+    get:
+      summary: 'Get all external attributes for a group. This endpoint is meant to be used by webapp to display the attributes.'
+      description: 'Get all external attributes for a group. This endpoint is meant to be used by webapp to display the attributes.'
+      operationId: groupExternalAttributesPresenterActionGet
+      parameters:
+        -
+          name: groupId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
     post:
       summary: 'Create an external attribute for given group.'
       description: 'Create an external attribute for given group.'
@@ -4035,6 +4055,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -4051,6 +4072,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -4068,6 +4090,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -4085,6 +4108,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -5883,6 +5907,7 @@ paths:
           description: 'Placeholder response'
   /v1/extensions/sis/status/:
     get:
+      summary: '* @OA\Get(path="/v1/extensions/sis/status/", operationId="sisPresenterActionStatus", @OA\Response(response="200",description="Placeholder response"))'
       operationId: sisPresenterActionStatus
       responses:
         '200':
