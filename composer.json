@@ -58,7 +58,6 @@
         "nettrine/extensions-atlantic18": "^0.6.0",
         "nettrine/migrations": "^0.10",
         "nettrine/orm": "^0.9",
-        "mrdm-nl/ldap": "^1.1",
         "ramsey/uuid-doctrine": "^2.0",
         "symfony/process": "^7.3",
         "tracy/tracy": "^2.11",
