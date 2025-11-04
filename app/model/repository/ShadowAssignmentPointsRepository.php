@@ -26,6 +26,10 @@ class ShadowAssignmentPointsRepository extends BaseRepository
      */
     public function findPointsForAssignments(array $shadowAssignments, User $awardee): array
     {
+        if (!$shadowAssignments) {
+            return []; // we should not ask a query with empty IN ()
+        }
+
         $pointsList = $this->findBy(
             [
                 "awardee" => $awardee,
