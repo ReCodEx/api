@@ -13,7 +13,7 @@ use DateTime;
 /**
  * @ORM\Entity
  */
-class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
+class ExerciseFile extends UploadedFile implements JsonSerializable
 {
     /**
      * @ORM\Column(type="string")
@@ -21,7 +21,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     protected $hashName;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
+     * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseFiles")
      */
     protected $exercises;
 
@@ -38,7 +38,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="supplementaryEvaluationFiles")
+     * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="exerciseFiles")
      */
     protected $assignments;
 
@@ -55,13 +55,13 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="supplementaryEvaluationFiles")
+     * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="exerciseFiles")
      */
     protected $pipelines;
 
 
     /**
-     * SupplementaryExerciseFile constructor.
+     * ExerciseFile constructor.
      * @param string $name
      * @param DateTime $uploadedAt
      * @param int $fileSize
@@ -88,12 +88,12 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 
         if ($exercise) {
             $this->exercises->add($exercise);
-            $exercise->addSupplementaryEvaluationFile($this);
+            $exercise->addExerciseFile($this);
         }
 
         if ($pipeline) {
             $this->pipelines->add($pipeline);
-            $pipeline->addSupplementaryEvaluationFile($this);
+            $pipeline->addExerciseFile($this);
         }
     }
 
@@ -132,7 +132,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 
     public function getFile(FileStorageManager $manager): ?IImmutableFile
     {
-        return $manager->getSupplementaryFileByHash($this->getHashName());
+        return $manager->getExerciseFileByHash($this->getHashName());
     }
 
     /*

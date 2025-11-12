@@ -2,27 +2,27 @@
 
 namespace App\Model\Repository;
 
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * @extends BaseRepository<SupplementaryExerciseFile>
+ * @extends BaseRepository<ExerciseFile>
  */
-class SupplementaryExerciseFiles extends BaseRepository
+class ExerciseFiles extends BaseRepository
 {
     public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($em, SupplementaryExerciseFile::class);
+        parent::__construct($em, ExerciseFile::class);
     }
 
     /**
-     * Find supplementary files that are not used in any exercise nor assignment.
-     * @return SupplementaryExerciseFile[]
+     * Find exercise files that are not used in any exercise nor assignment.
+     * @return ExerciseFile[]
      */
     public function findUnused(): array
     {
         $query = $this->em->createQuery("
-            SELECT f FROM App\Model\Entity\SupplementaryExerciseFile f
+            SELECT f FROM App\Model\Entity\ExerciseFile f
             WHERE NOT EXISTS
                 (SELECT e FROM App\Model\Entity\Exercise e WHERE e MEMBER OF f.exercises AND e.deletedAt IS NULL)
             AND NOT EXISTS

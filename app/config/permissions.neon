@@ -1030,7 +1030,7 @@ permissions:
       actions:
           - download
           - viewDetail
-          - downloadSupplementaryFile
+          - downloadExerciseFile
 
     - allow: true
       role: scope-ref-solutions
@@ -1038,7 +1038,7 @@ permissions:
       actions:
           - download
           - viewDetail
-          - downloadSupplementaryFile
+          - downloadExerciseFile
           - upload
 
     - allow: true
@@ -1095,11 +1095,11 @@ permissions:
       resource: uploadedFile
       actions:
           - viewDetail
-          - downloadSupplementaryFile
+          - downloadExerciseFile
       conditions:
           or:
-            - file.isAuthorOfSupplementaryFileExercises
-            - file.isSupplementaryInGroupUserSupervises
+            - file.isAuthorOfFileExercises
+            - file.isExerciseFileInGroupUserSupervises
 
     #####################################
     # Runtime environments permissions #

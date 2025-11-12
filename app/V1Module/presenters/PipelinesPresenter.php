@@ -22,9 +22,9 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\FileStorageManager;
 use App\Model\Entity\PipelineConfig;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
-use App\Model\Repository\SupplementaryExerciseFiles;
+use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
@@ -97,10 +97,10 @@ class PipelinesPresenter extends BasePresenter
     public $uploadedFiles;
 
     /**
-     * @var SupplementaryExerciseFiles
+     * @var ExerciseFiles
      * @inject
      */
-    public $supplementaryFiles;
+    public $exerciseFiles;
 
     /**
      * @var PipelineViewFactory
@@ -453,7 +453,7 @@ class PipelinesPresenter extends BasePresenter
         );
     }
 
-    public function checkUploadSupplementaryFiles(string $id)
+    public function checkUploadExerciseFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         if (!$this->pipelineAcl->canUpdate($pipeline)) {
@@ -462,24 +462,24 @@ class PipelinesPresenter extends BasePresenter
     }
 
     /**
-     * Associate supplementary files with a pipeline and upload them to remote file server
+     * Associate exercise files with a pipeline and upload them to remote file server
      * @POST
      * @throws ForbiddenRequestException
      * @throws SubmissionFailedException
      * @throws NotFoundException
      */
-    #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
+    #[Post("files", new VMixed(), "Identifiers of exercise files", nullable: true)]
     #[Path("id", new VUuid(), "identification of pipeline", required: true)]
-    public function actionUploadSupplementaryFiles(string $id)
+    public function actionUploadExerciseFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-        $supplementaryFiles = [];
-        $currentSupplementaryFiles = [];
+        $exerciseFiles = [];
+        $currentFiles = [];
 
-        /** @var SupplementaryExerciseFile $file */
-        foreach ($pipeline->getSupplementaryEvaluationFiles() as $file) {
-            $currentSupplementaryFiles[$file->getName()] = $file;
+        /** @var ExerciseFile $file */
+        foreach ($pipeline->getExerciseFiles() as $file) {
+            $currentFiles[$file->getName()] = $file;
         }
 
         /** @var UploadedFile $file */
@@ -488,15 +488,15 @@ class PipelinesPresenter extends BasePresenter
                 throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
             }
 
-            if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
-                /** @var SupplementaryExerciseFile $currentFile */
-                $currentFile = $currentSupplementaryFiles[$file->getName()];
-                $pipeline->getSupplementaryEvaluationFiles()->removeElement($currentFile);
+            if (array_key_exists($file->getName(), $currentFiles)) {
+                /** @var ExerciseFile $currentFile */
+                $currentFile = $currentFiles[$file->getName()];
+                $pipeline->getExerciseFiles()->removeElement($currentFile);
             }
 
-            $hash = $this->fileStorage->storeUploadedSupplementaryFile($file);
-            $pipelineFile = SupplementaryExerciseFile::fromUploadedFileAndPipeline($file, $pipeline, $hash);
-            $supplementaryFiles[] = $pipelineFile;
+            $hash = $this->fileStorage->storeUploadedExerciseFile($file);
+            $pipelineFile = ExerciseFile::fromUploadedFileAndPipeline($file, $pipeline, $hash);
+            $exerciseFiles[] = $pipelineFile;
 
             $this->uploadedFiles->persist($pipelineFile, false);
             $this->uploadedFiles->remove($file, false);
@@ -506,51 +506,51 @@ class PipelinesPresenter extends BasePresenter
         $this->pipelines->flush();
         $this->uploadedFiles->flush();
 
-        $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse($pipeline->getExerciseFiles()->getValues());
     }
 
-    public function checkGetSupplementaryFiles(string $id)
+    public function checkGetExerciseFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         if (!$this->pipelineAcl->canViewDetail($pipeline)) {
-            throw new ForbiddenRequestException("You cannot view supplementary files for this pipeline.");
+            throw new ForbiddenRequestException("You cannot view exercise files for this pipeline.");
         }
     }
 
     /**
-     * Get list of all supplementary files for a pipeline
+     * Get list of all exercise files for a pipeline
      * @GET
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "identification of pipeline", required: true)]
-    public function actionGetSupplementaryFiles(string $id)
+    public function actionGetExerciseFiles(string $id)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
-        $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse($pipeline->getExerciseFiles()->getValues());
     }
 
-    public function checkDeleteSupplementaryFile(string $id, string $fileId)
+    public function checkDeleteExerciseFile(string $id, string $fileId)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
         if (!$this->pipelineAcl->canUpdate($pipeline)) {
-            throw new ForbiddenRequestException("You cannot delete supplementary files for this pipeline.");
+            throw new ForbiddenRequestException("You cannot delete exercise files for this pipeline.");
         }
     }
 
     /**
-     * Delete supplementary pipeline file with given id
+     * Delete exercise file with given id
      * @DELETE
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "identification of pipeline", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
-    public function actionDeleteSupplementaryFile(string $id, string $fileId)
+    public function actionDeleteExerciseFile(string $id, string $fileId)
     {
         $pipeline = $this->pipelines->findOrThrow($id);
-        $file = $this->supplementaryFiles->findOrThrow($fileId);
+        $file = $this->exerciseFiles->findOrThrow($fileId);
 
         $pipeline->updatedNow();
-        $pipeline->getSupplementaryEvaluationFiles()->removeElement($file);
+        $pipeline->getExerciseFiles()->removeElement($file);
         $this->pipelines->flush();
 
         $this->sendSuccessResponse("OK");

@@ -281,7 +281,7 @@ class PipelinesMerger
         try {
             $pipelineEntity = $this->pipelinesCache->getPipeline($pipelineId);
             $pipelineConfig = $this->pipelinesCache->getNewPipelineConfig($pipelineId);
-            $pipelineFiles = $pipelineEntity->getHashedSupplementaryFiles();
+            $pipelineFiles = $pipelineEntity->getHashedExerciseFiles();
         } catch (NotFoundException $e) {
             throw new ExerciseCompilationException("Pipeline '$pipelineId' not found in environment");
         }

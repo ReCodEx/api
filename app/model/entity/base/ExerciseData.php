@@ -39,6 +39,7 @@ trait ExerciseData
     {
         $result = [];
         foreach ($this->getLocalizedTexts() as $text) {
+            /** @var LocalizedExercise $text */
             $result[$text->getLocale()] = $text;
         }
         return $result;
@@ -278,48 +279,48 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile")
+     * @ORM\ManyToMany(targetEntity="ExerciseFile")
      * @var Collection
      */
-    protected $supplementaryEvaluationFiles;
+    protected $exerciseFiles;
 
-    public function getSupplementaryEvaluationFiles(): Collection
+    public function getExerciseFiles(): Collection
     {
-        return $this->supplementaryEvaluationFiles;
+        return $this->exerciseFiles;
     }
 
-    public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile)
+    public function addExerciseFile(ExerciseFile $exerciseFile)
     {
-        $this->supplementaryEvaluationFiles->add($exerciseFile);
+        $this->exerciseFiles->add($exerciseFile);
     }
 
     /**
-     * @param SupplementaryExerciseFile $file
+     * @param ExerciseFile $file
      * @return bool
      */
-    public function removeSupplementaryEvaluationFile(SupplementaryExerciseFile $file)
+    public function removeExerciseFile(ExerciseFile $file)
     {
-        return $this->supplementaryEvaluationFiles->removeElement($file);
+        return $this->exerciseFiles->removeElement($file);
     }
 
     /**
-     * Get identifications of supplementary evaluation files.
+     * Get identifications of exercise files.
      * @return array
      */
-    public function getSupplementaryFilesIds()
+    public function getExerciseFilesIds()
     {
-        return $this->supplementaryEvaluationFiles->map(
-            function (SupplementaryExerciseFile $file) {
+        return $this->exerciseFiles->map(
+            function (ExerciseFile $file) {
                 return $file->getId();
             }
         )->getValues();
     }
 
-    public function getHashedSupplementaryFiles(): array
+    public function getHashedExerciseFiles(): array
     {
         $files = [];
-        /** @var SupplementaryExerciseFile $file */
-        foreach ($this->supplementaryEvaluationFiles as $file) {
+        /** @var ExerciseFile $file */
+        foreach ($this->exerciseFiles as $file) {
             $files[$file->getName()] = $file->getHashName();
         }
         return $files;

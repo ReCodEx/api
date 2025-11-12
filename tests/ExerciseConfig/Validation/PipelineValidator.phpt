@@ -16,7 +16,7 @@ use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Model\Entity\Instance;
 use App\Model\Entity\Pipeline as PipelineEntity;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use Tester\Assert;
@@ -283,7 +283,7 @@ class TestPipelineValidator extends Tester\TestCase
         $pipeline = PipelineEntity::create($user);
 
         $uploadedFile = new UploadedFile("input.name", new DateTime(), 234, $user);
-        SupplementaryExerciseFile::fromUploadedFileAndPipeline(
+        ExerciseFile::fromUploadedFileAndPipeline(
             $uploadedFile,
             $pipeline,
             "input.hash",

@@ -57,7 +57,7 @@ class ExerciseViewFactory
             "groupsIds" => $exercise->getGroupsIds(),
             "mergeJudgeLogs" => $exercise->getMergeJudgeLogs(),
             "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC
-            "supplementaryFilesIds" => $exercise->getSupplementaryFilesIds(),
+            "supplementaryFilesIds" => $exercise->getExerciseFilesIds(),
             "attachmentFilesIds" => $exercise->getAttachmentFilesIds(),
             "configurationType" => $exercise->getConfigurationType(),
             "isPublic" => $exercise->isPublic(),

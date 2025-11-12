@@ -3,11 +3,9 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
-use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
-use App\Helpers\ExerciseConfig\PipelinesCache;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
@@ -19,7 +17,6 @@ use App\Model\Entity\ExerciseEnvironmentConfig;
  */
 class ExerciseConfigValidator
 {
-
     /**
      * @var Loader
      */
@@ -121,7 +118,7 @@ class ExerciseConfigValidator
         VariablesTable $environmentVariables,
         ?string $environment = null
     ) {
-        $exerciseFiles = $exercise->getHashedSupplementaryFiles();
+        $exerciseFiles = $exercise->getHashedExerciseFiles();
 
         // load pipeline configurations from database
         $pipelinesIds = [];
@@ -166,7 +163,7 @@ class ExerciseConfigValidator
                     }
                 );
 
-                // check supplementary remote files if exists in exercise entity
+                // check exercise files if exists in exercise entity
                 ValidationUtils::checkRemoteFilePresence($variable, $exerciseFiles, "exercise");
             }
 

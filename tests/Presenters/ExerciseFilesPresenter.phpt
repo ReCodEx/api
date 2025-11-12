@@ -2,7 +2,6 @@
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Exceptions\NotFoundException;
 use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
@@ -12,7 +11,7 @@ use App\Helpers\TmpFilesHelper;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExerciseFilesPresenter;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
@@ -32,8 +31,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     /** @var  Nette\DI\Container */
     protected $container;
 
-    /** @var App\Model\Repository\SupplementaryExerciseFiles */
-    protected $supplementaryFiles;
+    /** @var App\Model\Repository\ExerciseFiles */
+    protected $exerciseFiles;
 
     /** @var App\Model\Repository\Logins */
     protected $logins;
@@ -53,7 +52,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
-        $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryExerciseFiles::class);
+        $this->exerciseFiles = $container->getByType(\App\Model\Repository\ExerciseFiles::class);
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
         $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
         $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
@@ -85,7 +84,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         }
     }
 
-    public function testSupplementaryFilesUpload()
+    public function testExerciseFilesUpload()
     {
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
@@ -99,8 +98,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->presenter->uploadedFiles->flush();
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
-        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file1)->once();
-        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file2)->once();
+        $fileStorage->shouldReceive("storeUploadedExerciseFile")->with($file1)->once();
+        $fileStorage->shouldReceive("storeUploadedExerciseFile")->with($file2)->once();
         $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
@@ -109,7 +108,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $exercise = current(array_filter(
             $this->presenter->exercises->findAll(),
             function ($exercise) {
-                return $exercise->getSupplementaryEvaluationFiles()->count() === 0;
+                return $exercise->getExerciseFiles()->count() === 0;
             }
         ));
         Assert::truthy($exercise);
@@ -122,7 +121,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                 "V1:ExerciseFiles",
                 "POST",
                 [
-                    "action" => 'uploadSupplementaryFiles',
+                    "action" => 'uploadExerciseFiles',
                     'id' => $exercise->getId()
                 ],
                 [
@@ -137,18 +136,18 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         Assert::count(2, $payload);
 
         foreach ($payload as $item) {
-            Assert::type(App\Model\Entity\SupplementaryExerciseFile::class, $item);
+            Assert::type(App\Model\Entity\ExerciseFile::class, $item);
         }
     }
 
-    public function testUploadTooManySupplementaryFiles()
+    public function testUploadTooManyExerciseFiles()
     {
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $fileLimit = 10;
 
         $restrictions = new ExercisesConfig(
             [
-                "supplementaryFileCountLimit" => $fileLimit
+                "exerciseFileCountLimit" => $fileLimit
             ]
         );
 
@@ -162,7 +161,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
         $fileStorage->makePartial();
-        $fileStorage->shouldNotReceive("storeUploadedSupplementaryFile");
+        $fileStorage->shouldNotReceive("storeUploadedExerciseFile");
         $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
@@ -184,7 +183,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                         "V1:ExerciseFiles",
                         "POST",
                         [
-                            "action" => 'uploadSupplementaryFiles',
+                            "action" => 'uploadExerciseFiles',
                             'id' => $exercise->getId()
                         ],
                         [
@@ -197,14 +196,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         );
     }
 
-    public function testUploadTooBigSupplementaryFiles()
+    public function testUploadTooBigExerciseFiles()
     {
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $sizeLimit = 5 * 1024;
 
         $restrictions = new ExercisesConfig(
             [
-                "supplementaryFileSizeLimit" => $sizeLimit
+                "exerciseFileSizeLimit" => $sizeLimit
             ]
         );
 
@@ -218,7 +217,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
         $fileStorage->makePartial();
-        $fileStorage->shouldNotReceive("storeUploadedSupplementaryFile");
+        $fileStorage->shouldNotReceive("storeUploadedExerciseFile");
         $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
@@ -240,7 +239,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
                         "V1:ExerciseFiles",
                         "POST",
                         [
-                            "action" => 'uploadSupplementaryFiles',
+                            "action" => 'uploadExerciseFiles',
                             'id' => $exercise->getId()
                         ],
                         [
@@ -253,7 +252,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         );
     }
 
-    public function testGetSupplementaryFiles()
+    public function testGetExerciseFiles()
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -262,12 +261,12 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $exercise = current(array_filter(
             $this->presenter->exercises->findAll(),
             function ($exercise) {
-                return $exercise->getSupplementaryEvaluationFiles()->count() === 0;
+                return $exercise->getExerciseFiles()->count() === 0;
             }
         ));
         Assert::truthy($exercise);
 
-        $expectedFile1 = new SupplementaryExerciseFile(
+        $expectedFile1 = new ExerciseFile(
             "name1",
             new DateTime(),
             1,
@@ -275,7 +274,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             $user,
             $exercise
         );
-        $expectedFile2 = new SupplementaryExerciseFile(
+        $expectedFile2 = new ExerciseFile(
             "name2",
             new DateTime(),
             2,
@@ -283,14 +282,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             $user,
             $exercise
         );
-        $this->supplementaryFiles->persist($expectedFile1, false);
-        $this->supplementaryFiles->persist($expectedFile2, false);
-        $this->supplementaryFiles->flush();
+        $this->exerciseFiles->persist($expectedFile1, false);
+        $this->exerciseFiles->persist($expectedFile2, false);
+        $this->exerciseFiles->flush();
 
         $request = new Nette\Application\Request(
             "V1:ExerciseFiles",
             'GET',
-            ['action' => 'getSupplementaryFiles', 'id' => $exercise->getId()]
+            ['action' => 'getExerciseFiles', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -305,14 +304,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         Assert::equal($expectedFiles, $result['payload']);
     }
 
-    public function testDeleteSupplementaryFile()
+    public function testDeleteExerciseFile()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $exercise = current($this->presenter->exercises->findAll());
-        $filesCount = $exercise->getSupplementaryEvaluationFiles()->count();
-        $file = new SupplementaryExerciseFile(
+        $filesCount = $exercise->getExerciseFiles()->count();
+        $file = new ExerciseFile(
             "name1",
             new DateTime(),
             1,
@@ -320,14 +319,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
             $user,
             $exercise
         );
-        $this->supplementaryFiles->persist($file);
-        Assert::count($filesCount + 1, $exercise->getSupplementaryEvaluationFiles());
+        $this->exerciseFiles->persist($file);
+        Assert::count($filesCount + 1, $exercise->getExerciseFiles());
 
         $request = new Nette\Application\Request(
             "V1:ExerciseFiles",
             'DELETE',
             [
-                'action' => 'deleteSupplementaryFile',
+                'action' => 'deleteExerciseFile',
                 'id' => $exercise->getId(),
                 'fileId' => $file->getId()
             ]
@@ -338,35 +337,35 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $result = $response->getPayload();
         Assert::equal(200, $result['code']);
         Assert::equal("OK", $result['payload']);
-        Assert::count($filesCount, $exercise->getSupplementaryEvaluationFiles());
+        Assert::count($filesCount, $exercise->getExerciseFiles());
     }
 
-    public function testDownloadSupplementaryFilesArchive()
+    public function testDownloadExerciseFilesArchive()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercise = current(array_filter(
             $this->presenter->exercises->findAll(),
             function ($exercise) {
-                return $exercise->getSupplementaryEvaluationFiles()->count() > 0;
+                return $exercise->getExerciseFiles()->count() > 0;
             }
         ));
         Assert::truthy($exercise);
 
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
-        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
+        foreach ($exercise->getExerciseFiles() as $file) {
             $mockFile = Mockery::mock(LocalImmutableFile::class);
-            $mockFileStorage->shouldReceive("getSupplementaryFileByHash")->with($file->getHashName())->andReturn($mockFile)->once();
+            $mockFileStorage->shouldReceive("getExerciseFileByHash")->with($file->getHashName())->andReturn($mockFile)->once();
         }
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new Nette\Application\Request(
             "V1:ExerciseFiles",
             'GET',
-            ['action' => 'downloadSupplementaryFilesArchive', 'id' => $exercise->getId()]
+            ['action' => 'downloadExerciseFilesArchive', 'id' => $exercise->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\ZipFilesResponse::class, $response);
-        Assert::equal("exercise-supplementary-" . $exercise->getId() . '.zip', $response->getName());
+        Assert::equal("exercise-files-" . $exercise->getId() . '.zip', $response->getName());
     }
 
     public function testGetAttachmentFiles()

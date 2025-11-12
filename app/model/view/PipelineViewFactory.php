@@ -43,7 +43,7 @@ class PipelineViewFactory
             "description" => $pipeline->getDescription(),
             "author" => $pipeline->getAuthor() ? $pipeline->getAuthor()->getId() : null,
             "forkedFrom" => $pipeline->getCreatedFrom() ? $pipeline->getCreatedFrom()->getId() : null,
-            "supplementaryFilesIds" => $pipeline->getSupplementaryFilesIds(),
+            "supplementaryFilesIds" => $pipeline->getExerciseFilesIds(),
             "pipeline" => $pipeline->getPipelineConfig()->getParsedPipeline(),
             "parameters" => array_merge(Pipeline::DEFAULT_PARAMETERS, $pipeline->getParameters()->toArray()),
             "runtimeEnvironmentIds" => $pipeline->getRuntimeEnvironments()->map(

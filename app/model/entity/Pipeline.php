@@ -87,10 +87,10 @@ class Pipeline
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="pipelines")
+     * @ORM\ManyToMany(targetEntity="ExerciseFile", inversedBy="pipelines")
      * @var Collection
      */
-    protected $supplementaryEvaluationFiles;
+    protected $exerciseFiles;
 
     /**
      * @ORM\OneToMany(targetEntity="PipelineParameter", mappedBy="pipeline", indexBy="name",
@@ -121,7 +121,7 @@ class Pipeline
      * @param int $version
      * @param string $description
      * @param PipelineConfig $pipelineConfig
-     * @param Collection $supplementaryEvaluationFiles
+     * @param Collection $exerciseFiles
      * @param User $author
      * @param Pipeline|null $createdFrom
      * @param Collection|null $runtimeEnvironments
@@ -132,7 +132,7 @@ class Pipeline
         int $version,
         string $description,
         PipelineConfig $pipelineConfig,
-        Collection $supplementaryEvaluationFiles,
+        Collection $exerciseFiles,
         ?User $author = null,
         ?Pipeline $createdFrom = null,
         ?Collection $runtimeEnvironments = null
@@ -146,7 +146,7 @@ class Pipeline
         $this->pipelineConfig = $pipelineConfig;
         $this->author = $author;
         $this->createdFrom = $createdFrom;
-        $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
+        $this->exerciseFiles = $exerciseFiles;
         $this->parameters = new ArrayCollection();
         $this->runtimeEnvironments = new ArrayCollection();
         if ($runtimeEnvironments) {
@@ -156,28 +156,28 @@ class Pipeline
         }
     }
 
-    public function getSupplementaryEvaluationFiles(): Collection
+    public function getExerciseFiles(): Collection
     {
-        return $this->supplementaryEvaluationFiles;
+        return $this->exerciseFiles;
     }
 
     /**
-     * Add supplementary file which should be accessible within pipeline.
-     * @param SupplementaryExerciseFile $exerciseFile
+     * Add exercise file which should be accessible within pipeline.
+     * @param ExerciseFile $exerciseFile
      */
-    public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile)
+    public function addExerciseFile(ExerciseFile $exerciseFile)
     {
-        $this->supplementaryEvaluationFiles->add($exerciseFile);
+        $this->exerciseFiles->add($exerciseFile);
     }
 
     /**
-     * Get array of identifications of supplementary files
+     * Get array of identifications of exercise files
      * @return array
      */
-    public function getSupplementaryFilesIds()
+    public function getExerciseFilesIds()
     {
-        return $this->supplementaryEvaluationFiles->map(
-            function (SupplementaryExerciseFile $file) {
+        return $this->exerciseFiles->map(
+            function (ExerciseFile $file) {
                 return $file->getId();
             }
         )->getValues();
@@ -187,11 +187,11 @@ class Pipeline
      * Get array containing hashes of files indexed by the name.
      * @return array
      */
-    public function getHashedSupplementaryFiles(): array
+    public function getHashedExerciseFiles(): array
     {
         $files = [];
-        /** @var SupplementaryExerciseFile $file */
-        foreach ($this->supplementaryEvaluationFiles as $file) {
+        /** @var ExerciseFile $file */
+        foreach ($this->exerciseFiles as $file) {
             $files[$file->getName()] = $file->getHashName();
         }
         return $files;
@@ -255,7 +255,7 @@ class Pipeline
             $pipeline->getVersion(),
             $pipeline->getDescription(),
             $pipeline->getPipelineConfig(),
-            $pipeline->getSupplementaryEvaluationFiles(),
+            $pipeline->getExerciseFiles(),
             $user,
             $pipeline,
         );

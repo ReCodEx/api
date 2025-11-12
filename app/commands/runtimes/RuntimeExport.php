@@ -48,9 +48,9 @@ class RuntimeExport extends Command
 
     protected static function preprocessPipeline(Pipeline $pipeline)
     {
-        $supplementaryFiles = [];
-        foreach ($pipeline->getSupplementaryEvaluationFiles()->getValues() as $file) {
-            $supplementaryFiles[] = [
+        $files = [];
+        foreach ($pipeline->getExerciseFiles()->getValues() as $file) {
+            $files[] = [
                 "name" => $file->getName(),
                 "uploadedAt" => $file->getUploadedAt()->getTimestamp(),
                 "size" => $file->getFileSize(),
@@ -65,7 +65,7 @@ class RuntimeExport extends Command
             "createdAt" => $pipeline->getCreatedAt()->getTimestamp(),
             "updatedAt" => $pipeline->getUpdatedAt()->getTimestamp(),
             "description" => $pipeline->getDescription(),
-            "supplementaryFiles" => $supplementaryFiles,
+            "supplementaryFiles" => $files,
             "parameters" => array_merge(Pipeline::DEFAULT_PARAMETERS, $pipeline->getParameters()->toArray()),
         ];
     }
@@ -122,9 +122,9 @@ class RuntimeExport extends Command
                 self::addJsonFile($zip, $pipeline->getId() . ".json", $config);
             }
 
-            // Add supplementary pipeline files
+            // Add pipeline evaluation files
             foreach ($pipelines as $pipeline) {
-                $files = $pipeline->getSupplementaryEvaluationFiles()->getValues();
+                $files = $pipeline->getExerciseFiles()->getValues();
                 foreach ($files as $supFile) {
                     $name = $supFile->getName();
                     $pid = $pipeline->getId();

@@ -65,9 +65,9 @@ class TestPipelinesMerger extends Tester\TestCase
 
         // mock entities and stuff
         $this->mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-        $this->mockCompilationPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
+        $this->mockCompilationPipeline->shouldReceive("getHashedExerciseFiles")->andReturn(self::$pipelineFiles);
         $this->mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-        $this->mockTestPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
+        $this->mockTestPipeline->shouldReceive("getHashedExerciseFiles")->andReturn(self::$pipelineFiles);
     }
 
     protected function setUp()

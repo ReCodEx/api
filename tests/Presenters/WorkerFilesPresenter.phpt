@@ -113,9 +113,9 @@ class TestWorkerFilesPresenter extends Tester\TestCase
             $request = new \Nette\Application\Request(
                 $this->presenterPath,
                 'GET',
-                ['action' => 'downloadSupplementaryFile', 'hash' => 'a123']
+                ['action' => 'downloadExerciseFile', 'hash' => 'a123']
             );
-                $response = $this->presenter->run($request);
+            $response = $this->presenter->run($request);
         }, WrongCredentialsException::class, '');
     }
 
@@ -133,35 +133,35 @@ class TestWorkerFilesPresenter extends Tester\TestCase
             $request = new \Nette\Application\Request(
                 $this->presenterPath,
                 'GET',
-                ['action' => 'downloadSupplementaryFile', 'hash' => 'a123']
+                ['action' => 'downloadExerciseFile', 'hash' => 'a123']
             );
-                $response = $this->presenter->run($request);
+            $response = $this->presenter->run($request);
         }, ForbiddenRequestException::class, 'Worker files interface is disabled in the configuration.');
     }
 
-    public function testDownloadSupplementaryFile()
+    public function testDownloadExerciseFile()
     {
         // mock file and storage
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
-        $mockFileStorage->shouldReceive("getSupplementaryFileByHash")
+        $mockFileStorage->shouldReceive("getExerciseFileByHash")
             ->withArgs(['a123'])->andReturn(Mockery::mock(LocalImmutableFile::class))->once();
         $this->presenter->fileStorage = $mockFileStorage;
 
         $request = new \Nette\Application\Request(
             $this->presenterPath,
             'GET',
-            ['action' => 'downloadSupplementaryFile', 'hash' => 'a123']
+            ['action' => 'downloadExerciseFile', 'hash' => 'a123']
         );
         $response = $this->presenter->run($request);
 
         Assert::type(StorageFileResponse::class, $response);
     }
 
-    public function testDownloadSupplementaryFileNonexist()
+    public function testDownloadExerciseFileNonExist()
     {
         // mock file and storage
         $mockFileStorage = Mockery::mock(FileStorageManager::class);
-        $mockFileStorage->shouldReceive("getSupplementaryFileByHash")
+        $mockFileStorage->shouldReceive("getExerciseFileByHash")
             ->withArgs(['a123'])->andReturn(null)->once();
         $this->presenter->fileStorage = $mockFileStorage;
 
@@ -169,10 +169,10 @@ class TestWorkerFilesPresenter extends Tester\TestCase
             $request = new \Nette\Application\Request(
                 $this->presenterPath,
                 'GET',
-                ['action' => 'downloadSupplementaryFile', 'hash' => 'a123']
+                ['action' => 'downloadExerciseFile', 'hash' => 'a123']
             );
-                $response = $this->presenter->run($request);
-        }, NotFoundException::class, 'Not Found - Supplementary file not found in the storage');
+            $response = $this->presenter->run($request);
+        }, NotFoundException::class);
     }
 
     public function testDownloadSubmissionArchive()

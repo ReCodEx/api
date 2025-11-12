@@ -112,15 +112,15 @@ class WorkerFilesPresenter extends BasePresenter
     }
 
     /**
-     * Sends over an exercise supplementary file (a data file required by the tests).
+     * Sends over an exercise file (a data file required by the tests).
      * @GET
      */
-    #[Path("hash", new VString(), "identification of the supplementary file", required: true)]
-    public function actionDownloadSupplementaryFile(string $hash)
+    #[Path("hash", new VString(), "identification of the exercise file", required: true)]
+    public function actionDownloadExerciseFile(string $hash)
     {
-        $file = $this->fileStorage->getSupplementaryFileByHash($hash);
+        $file = $this->fileStorage->getExerciseFileByHash($hash);
         if (!$file) {
-            throw new NotFoundException("Supplementary file not found in the storage");
+            throw new NotFoundException("Exercise file not found in the storage");
         }
         $this->sendStorageFileResponse($file, $hash);
     }

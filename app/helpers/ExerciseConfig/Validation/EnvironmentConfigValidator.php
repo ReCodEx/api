@@ -21,7 +21,7 @@ class EnvironmentConfigValidator
      */
     public function validate(Exercise $exercise, VariablesTable $table)
     {
-        $exerciseFiles = $exercise->getHashedSupplementaryFiles();
+        $exerciseFiles = $exercise->getHashedExerciseFiles();
         foreach ($table->getAll() as $variable) {
             ValidationUtils::checkRemoteFilePresence($variable, $exerciseFiles, "exercise");
         }

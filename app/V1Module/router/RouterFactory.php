@@ -162,16 +162,29 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/admins", "Exercises:setAdmins");
         $router[] = new PostRoute("$prefix/<id>/notification", "Exercises:sendNotification");
 
-        $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getSupplementaryFiles");
-        $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadSupplementaryFiles");
+        $router[] = new GetRoute("$prefix/<id>/exercise-files", "ExerciseFiles:getExerciseFiles");
+        $router[] = new PostRoute("$prefix/<id>/exercise-files", "ExerciseFiles:uploadExerciseFiles");
+        $router[] = new DeleteRoute(
+            "$prefix/<id>/exercise-files/<fileId>",
+            "ExerciseFiles:deleteExerciseFile"
+        );
+        $router[] = new GetRoute(
+            "$prefix/<id>/exercise-files/download-archive",
+            "ExerciseFiles:downloadExerciseFilesArchive"
+        );
+
+        // deprecated routes for supplementary files
+        $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getExerciseFiles");
+        $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadExerciseFiles");
         $router[] = new DeleteRoute(
             "$prefix/<id>/supplementary-files/<fileId>",
-            "ExerciseFiles:deleteSupplementaryFile"
+            "ExerciseFiles:deleteExerciseFile"
         );
         $router[] = new GetRoute(
             "$prefix/<id>/supplementary-files/download-archive",
-            "ExerciseFiles:downloadSupplementaryFilesArchive"
+            "ExerciseFiles:downloadExerciseFilesArchive"
         );
+
         $router[] = new GetRoute("$prefix/<id>/attachment-files", "ExerciseFiles:getAttachmentFiles");
         $router[] = new PostRoute("$prefix/<id>/attachment-files", "ExerciseFiles:uploadAttachmentFiles");
         $router[] = new DeleteRoute("$prefix/<id>/attachment-files/<fileId>", "ExerciseFiles:deleteAttachmentFile");
@@ -457,7 +470,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/partial/<id>", "UploadedFiles:completePartial");
 
         $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
-        $router[] = new GetRoute("$prefix/supplementary-file/<id>/download", "UploadedFiles:downloadSupplementaryFile");
+        $router[] = new GetRoute("$prefix/supplementary-file/<id>/download", "UploadedFiles:downloadExerciseFile");
         $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
         $router[] = new GetRoute("$prefix/<id>/download", "UploadedFiles:download");
         $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");
@@ -571,10 +584,15 @@ class RouterFactory
         $router[] = new DeleteRoute("$prefix/<id>", "Pipelines:removePipeline");
         $router[] = new PostRoute("$prefix/<id>/runtime-environments", "Pipelines:updateRuntimeEnvironments");
         $router[] = new PostRoute("$prefix/<id>/validate", "Pipelines:validatePipeline");
-        $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Pipelines:getSupplementaryFiles");
-        $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Pipelines:uploadSupplementaryFiles");
-        $router[] = new DeleteRoute("$prefix/<id>/supplementary-files/<fileId>", "Pipelines:deleteSupplementaryFile");
+        $router[] = new GetRoute("$prefix/<id>/exercise-files", "Pipelines:getExerciseFiles");
+        $router[] = new PostRoute("$prefix/<id>/exercise-files", "Pipelines:uploadExerciseFiles");
+        $router[] = new DeleteRoute("$prefix/<id>/exercise-files/<fileId>", "Pipelines:deleteExerciseFile");
         $router[] = new GetRoute("$prefix/<id>/exercises", "Pipelines:getPipelineExercises");
+
+        // deprecated routes for supplementary files
+        $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Pipelines:getExerciseFiles");
+        $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Pipelines:uploadExerciseFiles");
+        $router[] = new DeleteRoute("$prefix/<id>/supplementary-files/<fileId>", "Pipelines:deleteExerciseFile");
         return $router;
     }
 
@@ -642,8 +660,11 @@ class RouterFactory
     {
         $router = new RouteList();
         $router[] = new GetRoute("$prefix/submission-archive/<type>/<id>", "WorkerFiles:downloadSubmissionArchive");
-        $router[] = new GetRoute("$prefix/supplementary-file/<hash>", "WorkerFiles:downloadSupplementaryFile");
+        $router[] = new GetRoute("$prefix/exercise-file/<hash>", "WorkerFiles:downloadExerciseFile");
         $router[] = new PutRoute("$prefix/result/<type>/<id>", "WorkerFiles:uploadResultsFile");
+
+        // deprecated route for supplementary files
+        $router[] = new GetRoute("$prefix/supplementary-file/<hash>", "WorkerFiles:downloadExerciseFile");
         return $router;
     }
 

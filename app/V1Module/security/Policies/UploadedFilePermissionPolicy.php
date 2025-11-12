@@ -5,7 +5,7 @@ namespace App\Security\Policies;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
@@ -49,9 +49,9 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         );
     }
 
-    public function isAuthorOfSupplementaryFileExercises(Identity $identity, UploadedFile $file)
+    public function isAuthorOfFileExercises(Identity $identity, UploadedFile $file)
     {
-        if (!($file instanceof SupplementaryExerciseFile)) {
+        if (!($file instanceof ExerciseFile)) {
             return false;
         }
 
@@ -70,9 +70,9 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
     }
 
 
-    public function isSupplementaryInGroupUserSupervises(Identity $identity, UploadedFile $file)
+    public function isExerciseFileInGroupUserSupervises(Identity $identity, UploadedFile $file)
     {
-        if (!($file instanceof SupplementaryExerciseFile)) {
+        if (!($file instanceof ExerciseFile)) {
             return false;
         }
 

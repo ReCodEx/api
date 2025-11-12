@@ -986,11 +986,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/exercises/{id}/supplementary-files':
+  '/v1/exercises/{id}/exercise-files':
     get:
-      summary: 'Get list of all supplementary files for an exercise'
-      description: 'Get list of all supplementary files for an exercise'
-      operationId: exerciseFilesPresenterActionGetSupplementaryFiles
+      summary: 'Get list of all exercise files for an exercise'
+      description: 'Get list of all exercise files for an exercise'
+      operationId: exerciseFilesPresenterActionGetExerciseFiles
       parameters:
         -
           name: id
@@ -1005,9 +1005,9 @@ paths:
         '200':
           description: 'Placeholder response'
     post:
-      summary: 'Associate supplementary files with an exercise and upload them to remote file server'
-      description: 'Associate supplementary files with an exercise and upload them to remote file server'
-      operationId: exerciseFilesPresenterActionUploadSupplementaryFiles
+      summary: 'Associate exercise files with an exercise and upload them to remote file server'
+      description: 'Associate exercise files with an exercise and upload them to remote file server'
+      operationId: exerciseFilesPresenterActionUploadExerciseFiles
       parameters:
         -
           name: id
@@ -1026,7 +1026,98 @@ paths:
                 - files
               properties:
                 files:
-                  description: 'Identifiers of supplementary files'
+                  description: 'Identifiers of exercise files'
+                  type: string
+                  nullable: true
+              type: object
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/exercises/{id}/exercise-files/{fileId}':
+    delete:
+      summary: 'Delete exercise file with given id'
+      description: 'Delete exercise file with given id'
+      operationId: exerciseFilesPresenterActionDeleteExerciseFile
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'identification of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+        -
+          name: fileId
+          in: path
+          description: 'identification of file'
+          required: true
+          schema:
+            type: string
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/exercises/{id}/exercise-files/download-archive':
+    get:
+      summary: 'Download archive containing all files for exercise.'
+      description: 'Download archive containing all files for exercise.'
+      operationId: exerciseFilesPresenterActionDownloadExerciseFilesArchive
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/exercises/{id}/supplementary-files':
+    get:
+      summary: 'Get list of all exercise files for an exercise'
+      description: 'Get list of all exercise files for an exercise'
+      operationId: exerciseFilesPresenterActionGetExerciseFiles
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'identification of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+    post:
+      summary: 'Associate exercise files with an exercise and upload them to remote file server'
+      description: 'Associate exercise files with an exercise and upload them to remote file server'
+      operationId: exerciseFilesPresenterActionUploadExerciseFiles
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'identification of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - files
+              properties:
+                files:
+                  description: 'Identifiers of exercise files'
                   type: string
                   nullable: true
               type: object
@@ -1035,9 +1126,9 @@ paths:
           description: 'Placeholder response'
   '/v1/exercises/{id}/supplementary-files/{fileId}':
     delete:
-      summary: 'Delete supplementary exercise file with given id'
-      description: 'Delete supplementary exercise file with given id'
-      operationId: exerciseFilesPresenterActionDeleteSupplementaryFile
+      summary: 'Delete exercise file with given id'
+      description: 'Delete exercise file with given id'
+      operationId: exerciseFilesPresenterActionDeleteExerciseFile
       parameters:
         -
           name: id
@@ -1061,9 +1152,9 @@ paths:
           description: 'Placeholder response'
   '/v1/exercises/{id}/supplementary-files/download-archive':
     get:
-      summary: 'Download archive containing all supplementary files for exercise.'
-      description: 'Download archive containing all supplementary files for exercise.'
-      operationId: exerciseFilesPresenterActionDownloadSupplementaryFilesArchive
+      summary: 'Download archive containing all files for exercise.'
+      description: 'Download archive containing all files for exercise.'
+      operationId: exerciseFilesPresenterActionDownloadExerciseFilesArchive
       parameters:
         -
           name: id
@@ -4535,9 +4626,9 @@ paths:
           description: 'Placeholder response'
   '/v1/uploaded-files/supplementary-file/{id}/download':
     get:
-      summary: 'Download supplementary file'
-      description: 'Download supplementary file'
-      operationId: uploadedFilesPresenterActionDownloadSupplementaryFile
+      summary: 'Download exercise file'
+      description: 'Download exercise file'
+      operationId: uploadedFilesPresenterActionDownloadExerciseFile
       parameters:
         -
           name: id
@@ -5814,11 +5905,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/pipelines/{id}/supplementary-files':
+  '/v1/pipelines/{id}/exercise-files':
     get:
-      summary: 'Get list of all supplementary files for a pipeline'
-      description: 'Get list of all supplementary files for a pipeline'
-      operationId: pipelinesPresenterActionGetSupplementaryFiles
+      summary: 'Get list of all exercise files for a pipeline'
+      description: 'Get list of all exercise files for a pipeline'
+      operationId: pipelinesPresenterActionGetExerciseFiles
       parameters:
         -
           name: id
@@ -5833,9 +5924,9 @@ paths:
         '200':
           description: 'Placeholder response'
     post:
-      summary: 'Associate supplementary files with a pipeline and upload them to remote file server'
-      description: 'Associate supplementary files with a pipeline and upload them to remote file server'
-      operationId: pipelinesPresenterActionUploadSupplementaryFiles
+      summary: 'Associate exercise files with a pipeline and upload them to remote file server'
+      description: 'Associate exercise files with a pipeline and upload them to remote file server'
+      operationId: pipelinesPresenterActionUploadExerciseFiles
       parameters:
         -
           name: id
@@ -5854,18 +5945,18 @@ paths:
                 - files
               properties:
                 files:
-                  description: 'Identifiers of supplementary files'
+                  description: 'Identifiers of exercise files'
                   type: string
                   nullable: true
               type: object
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/pipelines/{id}/supplementary-files/{fileId}':
+  '/v1/pipelines/{id}/exercise-files/{fileId}':
     delete:
-      summary: 'Delete supplementary pipeline file with given id'
-      description: 'Delete supplementary pipeline file with given id'
-      operationId: pipelinesPresenterActionDeleteSupplementaryFile
+      summary: 'Delete exercise file with given id'
+      description: 'Delete exercise file with given id'
+      operationId: pipelinesPresenterActionDeleteExerciseFile
       parameters:
         -
           name: id
@@ -5901,6 +5992,79 @@ paths:
           schema:
             type: string
             pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/pipelines/{id}/supplementary-files':
+    get:
+      summary: 'Get list of all exercise files for a pipeline'
+      description: 'Get list of all exercise files for a pipeline'
+      operationId: pipelinesPresenterActionGetExerciseFiles
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'identification of pipeline'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+    post:
+      summary: 'Associate exercise files with a pipeline and upload them to remote file server'
+      description: 'Associate exercise files with a pipeline and upload them to remote file server'
+      operationId: pipelinesPresenterActionUploadExerciseFiles
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'identification of pipeline'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - files
+              properties:
+                files:
+                  description: 'Identifiers of exercise files'
+                  type: string
+                  nullable: true
+              type: object
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/pipelines/{id}/supplementary-files/{fileId}':
+    delete:
+      summary: 'Delete exercise file with given id'
+      description: 'Delete exercise file with given id'
+      operationId: pipelinesPresenterActionDeleteExerciseFile
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'identification of pipeline'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+        -
+          name: fileId
+          in: path
+          description: 'identification of file'
+          required: true
+          schema:
+            type: string
             nullable: false
       responses:
         '200':
@@ -6726,16 +6890,33 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/worker-files/supplementary-file/{hash}':
+  '/v1/worker-files/exercise-file/{hash}':
     get:
-      summary: 'Sends over an exercise supplementary file (a data file required by the tests).'
-      description: 'Sends over an exercise supplementary file (a data file required by the tests).'
-      operationId: workerFilesPresenterActionDownloadSupplementaryFile
+      summary: 'Sends over an exercise file (a data file required by the tests).'
+      description: 'Sends over an exercise file (a data file required by the tests).'
+      operationId: workerFilesPresenterActionDownloadExerciseFile
       parameters:
         -
           name: hash
           in: path
-          description: 'identification of the supplementary file'
+          description: 'identification of the exercise file'
+          required: true
+          schema:
+            type: string
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/worker-files/supplementary-file/{hash}':
+    get:
+      summary: 'Sends over an exercise file (a data file required by the tests).'
+      description: 'Sends over an exercise file (a data file required by the tests).'
+      operationId: workerFilesPresenterActionDownloadExerciseFile
+      parameters:
+        -
+          name: hash
+          in: path
+          description: 'identification of the exercise file'
           required: true
           schema:
             type: string

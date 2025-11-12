@@ -109,7 +109,7 @@ class Compiler
             $exerciseConfig,
             $environmentConfigVariables,
             $limits,
-            $exercise->getHashedSupplementaryFiles(),
+            $exercise->getHashedExerciseFiles(),
             $exercise->getExerciseTestsNames(),
             $runtimeEnvironment->getId()
         );
