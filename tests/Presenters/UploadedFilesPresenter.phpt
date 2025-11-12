@@ -402,8 +402,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenterPath,
             'GET',
             [
-            'action' => 'download',
-            'id' => $file->getId()
+                'action' => 'download',
+                'id' => $file->getId()
             ]
         );
         $response = $this->presenter->run($request);
@@ -428,8 +428,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenterPath,
             'GET',
             [
-            'action' => 'download',
-            'id' => $file->getId()
+                'action' => 'download',
+                'id' => $file->getId()
             ]
         );
         $response = $this->presenter->run($request);
@@ -453,13 +453,13 @@ class TestUploadedFilesPresenter extends Tester\TestCase
             $this->presenterPath,
             'GET',
             [
-            'action' => 'download',
-            'id' => $file->getId()
+                'action' => 'download',
+                'id' => $file->getId()
             ]
         );
 
         Assert::exception(function () use ($request) {
-                $this->presenter->run($request);
+            $this->presenter->run($request);
         }, NotFoundException::class, "Not Found - File not found in the storage");
     }
 
@@ -467,20 +467,20 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
-        $file = new \App\Model\Entity\SupplementaryExerciseFile("hefty name", new DateTime(), 1, "hash", $user);
-        $this->presenter->supplementaryFiles->persist($file);
-        $this->presenter->supplementaryFiles->flush();
+        $file = new \App\Model\Entity\ExerciseFile("hefty name", new DateTime(), 1, "hash", $user);
+        $this->presenter->exerciseFiles->persist($file);
+        $this->presenter->exerciseFiles->flush();
 
         // mock everything you can
         $fileMock = Mockery::mock(LocalImmutableFile::class);
         $mockStorage = Mockery::mock(FileStorageManager::class);
-        $mockStorage->shouldReceive("getSupplementaryFileByHash")->withArgs([ "hash" ])->andReturn($fileMock)->once();
+        $mockStorage->shouldReceive("getExerciseFileByHash")->withArgs(["hash"])->andReturn($fileMock)->once();
         $this->presenter->fileStorage = $mockStorage;
 
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
-            ['action' => 'downloadSupplementaryFile', 'id' => $file->getId()]
+            ['action' => 'downloadExerciseFile', 'id' => $file->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
@@ -726,8 +726,11 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
-            ['action' => 'download', 'id' => $file->getId(),
-                'similarSolutionId' => $similarity->getTestedSolution()->getId()]
+            [
+                'action' => 'download',
+                'id' => $file->getId(),
+                'similarSolutionId' => $similarity->getTestedSolution()->getId()
+            ]
         );
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);

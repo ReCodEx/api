@@ -22,7 +22,7 @@ use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
-use App\Model\Repository\SupplementaryExerciseFiles;
+use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\UploadedPartialFiles;
 use App\Model\Repository\PlagiarismDetectedSimilarFiles;
@@ -95,10 +95,10 @@ class UploadedFilesPresenter extends BasePresenter
     public $assignmentSolutionAcl;
 
     /**
-     * @var SupplementaryExerciseFiles
+     * @var ExerciseFiles
      * @inject
      */
-    public $supplementaryFiles;
+    public $exerciseFiles;
 
     /**
      * @var PlagiarismDetectedSimilarFiles
@@ -583,28 +583,28 @@ class UploadedFilesPresenter extends BasePresenter
         $this->sendSuccessResponse($uploadedFile);
     }
 
-    public function checkDownloadSupplementaryFile(string $id)
+    public function checkDownloadExerciseFile(string $id)
     {
-        $file = $this->supplementaryFiles->findOrThrow($id);
-        if (!$this->uploadedFileAcl->canDownloadSupplementaryFile($file)) {
+        $file = $this->exerciseFiles->findOrThrow($id);
+        if (!$this->uploadedFileAcl->canDownloadExerciseFile($file)) {
             throw new ForbiddenRequestException("You are not allowed to download file '{$file->getId()}");
         }
     }
 
     /**
-     * Download supplementary file
+     * Download exercise file
      * @GET
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException
      */
     #[Path("id", new VUuid(), "Identifier of the file", required: true)]
-    public function actionDownloadSupplementaryFile(string $id)
+    public function actionDownloadExerciseFile(string $id)
     {
-        $fileEntity = $this->supplementaryFiles->findOrThrow($id);
+        $fileEntity = $this->exerciseFiles->findOrThrow($id);
         $file = $fileEntity->getFile($this->fileStorage);
         if (!$file) {
-            throw new NotFoundException("Supplementary file not found in the storage");
+            throw new NotFoundException("Exercise file not found in the storage");
         }
         $this->sendStorageFileResponse($file, $fileEntity->getName());
     }

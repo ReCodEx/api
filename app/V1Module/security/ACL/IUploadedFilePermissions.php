@@ -2,7 +2,7 @@
 
 namespace App\Security\ACL;
 
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
 
 interface IUploadedFilePermissions
@@ -13,5 +13,5 @@ interface IUploadedFilePermissions
 
     public function canUpload(): bool;
 
-    public function canDownloadSupplementaryFile(SupplementaryExerciseFile $file): bool;
+    public function canDownloadExerciseFile(ExerciseFile $file): bool;
 }

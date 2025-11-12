@@ -12,20 +12,19 @@ use App\Model\Entity\Pipeline as PipelineEntity;
  */
 class PipelineValidator
 {
-
     /**
      * Validate pipeline.
      * For more detailed description look at @ref App\Helpers\ExerciseConfig\Validator
      * @param PipelineEntity $pipeline
      * @param Pipeline $pipelineConfig
-     * @param array|null $pipelineFiles supplementary files of pipeline [ fileName => fileHash]
+     * @param array|null $pipelineFiles exercise files of pipeline [ fileName => fileHash]
      *                                  if null, the array is automatically loaded from the pipeline entity
      * @throws ExerciseConfigException
      */
     public function validate(PipelineEntity $pipeline, Pipeline $pipelineConfig, ?array $pipelineFiles = null): void
     {
         $variables = $pipelineConfig->getVariablesTable();
-        $pipelineFiles = $pipelineFiles ?? $pipeline->getHashedSupplementaryFiles();
+        $pipelineFiles = $pipelineFiles ?? $pipeline->getHashedExerciseFiles();
 
         // Check ports of all boxes
         foreach ($pipelineConfig->getAll() as $box) {
@@ -100,7 +99,7 @@ class PipelineValidator
                 throw new ExerciseConfigException(sprintf("No port uses variable %s", $variableName));
             }
 
-            // check supplementary remote files if exists in pipeline entity
+            // check exercise remote files if exists in pipeline entity
             ValidationUtils::checkRemoteFilePresence($variable, $pipelineFiles, "pipeline");
         }
     }

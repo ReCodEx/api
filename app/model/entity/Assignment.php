@@ -74,7 +74,7 @@ class Assignment extends AssignmentBase implements IExercise
         $this->updatedAt = $this->createdAt;
         $this->syncedAt = $this->createdAt;
         $this->configurationType = $exercise->getConfigurationType();
-        $this->supplementaryEvaluationFiles = $exercise->getSupplementaryEvaluationFiles();
+        $this->exerciseFiles = $exercise->getExerciseFiles();
         $this->attachmentFiles = $exercise->getAttachmentFiles();
         $this->solutionFilesLimit = $exercise->getSolutionFilesLimit();
         $this->solutionSizeLimit = $exercise->getSolutionSizeLimit();
@@ -450,15 +450,15 @@ class Assignment extends AssignmentBase implements IExercise
             );
     }
 
-    public function areSupplementaryFilesInSync(): bool
+    public function areExerciseFilesInSync(): bool
     {
         $exercise = $this->getExercise();
         return $exercise
-            && $this->getSupplementaryEvaluationFiles()->count()
-            === $exercise->getSupplementaryEvaluationFiles()->count()
-            && $this->getSupplementaryEvaluationFiles()->forAll(
-                function ($key, SupplementaryExerciseFile $file) use ($exercise) {
-                    return $exercise->getSupplementaryEvaluationFiles()->contains($file);
+            && $this->getExerciseFiles()->count()
+            === $exercise->getExerciseFiles()->count()
+            && $this->getExerciseFiles()->forAll(
+                function ($key, ExerciseFile $file) use ($exercise) {
+                    return $exercise->getExerciseFiles()->contains($file);
                 }
             );
     }
@@ -526,9 +526,9 @@ class Assignment extends AssignmentBase implements IExercise
             $this->exerciseTests->add($test);
         }
 
-        $this->supplementaryEvaluationFiles->clear();
-        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
-            $this->supplementaryEvaluationFiles->add($file);
+        $this->exerciseFiles->clear();
+        foreach ($exercise->getExerciseFiles() as $file) {
+            $this->exerciseFiles->add($file);
         }
 
         $this->attachmentFiles->clear();

@@ -102,7 +102,7 @@ class AssignmentViewFactory
                     "upToDate" => $assignment->areExerciseTestsInSync()
                 ],
                 "supplementaryFiles" => [
-                    "upToDate" => $assignment->areSupplementaryFilesInSync()
+                    "upToDate" => $assignment->areExerciseFilesInSync()
                 ],
                 "attachmentFiles" => [
                     "upToDate" => $assignment->areAttachmentFilesInSync()

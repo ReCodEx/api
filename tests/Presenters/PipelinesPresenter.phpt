@@ -9,7 +9,7 @@ use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Model\Entity\Pipeline;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\PipelinesPresenter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -363,7 +363,7 @@ class TestPipelinesPresenter extends Tester\TestCase
         Assert::false($payload["versionIsUpToDate"]);
     }
 
-    public function testSupplementaryFilesUpload()
+    public function testExerciseFilesUpload()
     {
         // Mock file server setup
         $filename1 = "task1.txt";
@@ -386,8 +386,8 @@ class TestPipelinesPresenter extends Tester\TestCase
 
         $fileStorage = Mockery::mock(FileStorageManager::class);
         $fileStorage->makePartial();
-        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file1)->once();
-        $fileStorage->shouldReceive("storeUploadedSupplementaryFile")->with($file2)->once();
+        $fileStorage->shouldReceive("storeUploadedExerciseFile")->with($file1)->once();
+        $fileStorage->shouldReceive("storeUploadedExerciseFile")->with($file2)->once();
         $this->presenter->fileStorage = $fileStorage;
 
         // Finally, the test itself
@@ -402,7 +402,7 @@ class TestPipelinesPresenter extends Tester\TestCase
                 "V1:Pipelines",
                 "POST",
                 [
-                    "action" => 'uploadSupplementaryFiles',
+                    "action" => 'uploadExerciseFiles',
                     'id' => $pipeline->getId()
                 ],
                 [
@@ -417,18 +417,18 @@ class TestPipelinesPresenter extends Tester\TestCase
         Assert::count(2, $payload);
 
         foreach ($payload as $item) {
-            Assert::type(App\Model\Entity\SupplementaryExerciseFile::class, $item);
+            Assert::type(App\Model\Entity\ExerciseFile::class, $item);
         }
     }
 
-    public function testGetSupplementaryFiles()
+    public function testGetExerciseFiles()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         // prepare files into exercise
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $pipeline = current($this->presenter->pipelines->findAll());
-        $expectedFile1 = new SupplementaryExerciseFile(
+        $expectedFile1 = new ExerciseFile(
             "name1",
             new DateTime(),
             1,
@@ -437,7 +437,7 @@ class TestPipelinesPresenter extends Tester\TestCase
             null,
             $pipeline
         );
-        $expectedFile2 = new SupplementaryExerciseFile(
+        $expectedFile2 = new ExerciseFile(
             "name2",
             new DateTime(),
             2,
@@ -453,7 +453,7 @@ class TestPipelinesPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             "V1:Pipelines",
             'GET',
-            ['action' => 'getSupplementaryFiles', 'id' => $pipeline->getId()]
+            ['action' => 'getExerciseFiles', 'id' => $pipeline->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::type(Nette\Application\Responses\JsonResponse::class, $response);

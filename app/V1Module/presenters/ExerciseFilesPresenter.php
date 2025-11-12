@@ -15,14 +15,15 @@ use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\FileStorageManager;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\Assignment;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AttachmentFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Model\Repository\SupplementaryExerciseFiles;
+use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IExercisePermissions;
 use Exception;
@@ -52,10 +53,10 @@ class ExerciseFilesPresenter extends BasePresenter
     public $uploadedFiles;
 
     /**
-     * @var SupplementaryExerciseFiles
+     * @var ExerciseFiles
      * @inject
      */
-    public $supplementaryFiles;
+    public $exerciseFiles;
 
     /**
      * @var AttachmentFiles
@@ -87,7 +88,7 @@ class ExerciseFilesPresenter extends BasePresenter
      */
     public $configChecker;
 
-    public function checkUploadSupplementaryFiles(string $id)
+    public function checkUploadExerciseFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
@@ -96,29 +97,29 @@ class ExerciseFilesPresenter extends BasePresenter
     }
 
     /**
-     * Associate supplementary files with an exercise and upload them to remote file server
+     * Associate exercise files with an exercise and upload them to remote file server
      * @POST
      * @throws ForbiddenRequestException
      * @throws InvalidApiArgumentException
      * @throws SubmissionFailedException
      */
-    #[Post("files", new VMixed(), "Identifiers of supplementary files", nullable: true)]
+    #[Post("files", new VMixed(), "Identifiers of exercise files", nullable: true)]
     #[Path("id", new VUuid(), "identification of exercise", required: true)]
-    public function actionUploadSupplementaryFiles(string $id)
+    public function actionUploadExerciseFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
 
         $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-        $currentSupplementaryFiles = [];
+        $currentFiles = [];
         $totalFileSize = 0;
 
-        /** @var SupplementaryExerciseFile $file */
-        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
-            $currentSupplementaryFiles[$file->getName()] = $file;
+        /** @var ExerciseFile $file */
+        foreach ($exercise->getExerciseFiles() as $file) {
+            $currentFiles[$file->getName()] = $file;
             $totalFileSize += $file->getFileSize();
         }
 
-        $totalFileCount = count($exercise->getSupplementaryEvaluationFiles());
+        $totalFileCount = count($exercise->getExerciseFiles());
 
         /** @var UploadedFile $file */
         foreach ($files as $file) {
@@ -126,10 +127,10 @@ class ExerciseFilesPresenter extends BasePresenter
                 throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
             }
 
-            if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
-                /** @var SupplementaryExerciseFile $currentFile */
-                $currentFile = $currentSupplementaryFiles[$file->getName()];
-                $exercise->getSupplementaryEvaluationFiles()->removeElement($currentFile);
+            if (array_key_exists($file->getName(), $currentFiles)) {
+                /** @var ExerciseFile $currentFile */
+                $currentFile = $currentFiles[$file->getName()];
+                $exercise->getExerciseFiles()->removeElement($currentFile);
                 $totalFileSize -= $currentFile->getFileSize();
             } else {
                 $totalFileCount += 1;
@@ -138,7 +139,7 @@ class ExerciseFilesPresenter extends BasePresenter
             $totalFileSize += $file->getFileSize();
         }
 
-        $fileCountLimit = $this->restrictionsConfig->getSupplementaryFileCountLimit();
+        $fileCountLimit = $this->restrictionsConfig->getExerciseFileCountLimit();
         if ($totalFileCount > $fileCountLimit) {
             throw new InvalidApiArgumentException(
                 'files',
@@ -146,7 +147,7 @@ class ExerciseFilesPresenter extends BasePresenter
             );
         }
 
-        $sizeLimit = $this->restrictionsConfig->getSupplementaryFileSizeLimit();
+        $sizeLimit = $this->restrictionsConfig->getExerciseFileSizeLimit();
         if ($totalFileSize > $sizeLimit) {
             throw new InvalidApiArgumentException(
                 'files',
@@ -156,8 +157,8 @@ class ExerciseFilesPresenter extends BasePresenter
 
         /** @var UploadedFile $file */
         foreach ($files as $file) {
-            $hash = $this->fileStorage->storeUploadedSupplementaryFile($file);
-            $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndExercise($file, $exercise, $hash);
+            $hash = $this->fileStorage->storeUploadedExerciseFile($file);
+            $exerciseFile = ExerciseFile::fromUploadedFileAndExercise($file, $exercise, $hash);
             $this->uploadedFiles->persist($exerciseFile, false);
             $this->uploadedFiles->remove($file, false);
         }
@@ -169,50 +170,50 @@ class ExerciseFilesPresenter extends BasePresenter
         $this->configChecker->check($exercise);
         $this->exercises->flush();
 
-        $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse($exercise->getExerciseFiles()->getValues());
     }
 
-    public function checkGetSupplementaryFiles(string $id)
+    public function checkGetExerciseFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
-            throw new ForbiddenRequestException("You cannot view supplementary files for this exercise.");
+            throw new ForbiddenRequestException("You cannot view exercise files for this exercise.");
         }
     }
 
     /**
-     * Get list of all supplementary files for an exercise
+     * Get list of all exercise files for an exercise
      * @GET
      */
     #[Path("id", new VUuid(), "identification of exercise", required: true)]
-    public function actionGetSupplementaryFiles(string $id)
+    public function actionGetExerciseFiles(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
-        $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+        $this->sendSuccessResponse($exercise->getExerciseFiles()->getValues());
     }
 
-    public function checkDeleteSupplementaryFile(string $id, string $fileId)
+    public function checkDeleteExerciseFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canUpdate($exercise)) {
-            throw new ForbiddenRequestException("You cannot delete supplementary files for this exercise.");
+            throw new ForbiddenRequestException("You cannot delete exercise files for this exercise.");
         }
     }
 
     /**
-     * Delete supplementary exercise file with given id
+     * Delete exercise file with given id
      * @DELETE
      * @throws ForbiddenRequestException
      */
     #[Path("id", new VUuid(), "identification of exercise", required: true)]
     #[Path("fileId", new VString(), "identification of file", required: true)]
-    public function actionDeleteSupplementaryFile(string $id, string $fileId)
+    public function actionDeleteExerciseFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
-        $file = $this->supplementaryFiles->findOrThrow($fileId);
+        $file = $this->exerciseFiles->findOrThrow($fileId);
 
         $exercise->updatedNow();
-        $exercise->removeSupplementaryEvaluationFile($file);
+        $exercise->removeExerciseFile($file);
         $this->exercises->flush();
 
         $this->configChecker->check($exercise);
@@ -221,16 +222,16 @@ class ExerciseFilesPresenter extends BasePresenter
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkDownloadSupplementaryFilesArchive(string $id)
+    public function checkDownloadExerciseFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
-            throw new ForbiddenRequestException("You cannot access archive of exercise supplementary files");
+            throw new ForbiddenRequestException("You cannot access archive of exercise files");
         }
     }
 
     /**
-     * Download archive containing all supplementary files for exercise.
+     * Download archive containing all files for exercise.
      * @GET
      * @throws ForbiddenRequestException
      * @throws NotFoundException
@@ -238,16 +239,17 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws \Nette\Application\AbortException
      */
     #[Path("id", new VUuid(), "of exercise", required: true)]
-    public function actionDownloadSupplementaryFilesArchive(string $id)
+    public function actionDownloadExerciseFilesArchive(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
 
         $files = [];
-        foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
+        foreach ($exercise->getExerciseFiles() as $file) {
+            /** @var ExerciseFile $file */
             $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
 
-        $this->sendZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true);
+        $this->sendZipFilesResponse($files, "exercise-files-{$id}.zip", true);
     }
 
     public function checkUploadAttachmentFiles(string $id)
@@ -362,6 +364,7 @@ class ExerciseFilesPresenter extends BasePresenter
             // file has no attachments to exercises, let's check the assignments
             $isUsed = false;
             foreach ($file->getAssignments() as $assignment) {
+                /** @var Assignment $assignment */
                 $group = $assignment->getGroup();
                 if ($group && !$group->isArchived()) {
                     $isUsed = true;  // only non-archived assignments are considered relevant
@@ -376,10 +379,12 @@ class ExerciseFilesPresenter extends BasePresenter
                     // only if no attachments exists (except for deleted ones)
                     // remove all links to deleted entities and remove the file record
                     foreach ($file->getExercisesAndIReallyMeanAllOkay() as $exercise) {
+                        /** @var Exercise $exercise */
                         $exercise->removeAttachmentFile($file);
                         $this->exercises->persist($exercise, false);
                     }
                     foreach ($file->getAssignmentsAndIReallyMeanAllOkay() as $assignment) {
+                        /** @var Assignment $assignment */
                         $assignment->removeAttachmentFile($file);
                         $this->assignments->persist($assignment, false);
                     }
@@ -414,6 +419,7 @@ class ExerciseFilesPresenter extends BasePresenter
 
         $files = [];
         foreach ($exercise->getAttachmentFiles() as $file) {
+            /** @var AttachmentFile $file */
             $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
         $this->sendZipFilesResponse($files, "exercise-attachment-{$id}.zip");

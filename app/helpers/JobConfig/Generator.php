@@ -61,7 +61,7 @@ class Generator
     ): JobConfig {
         $jobConfig = $this->compiler->compile($exerciseAssignment, $runtimeEnvironment, $params);
         $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType($submission::JOB_TYPE);
-        $jobConfig->setFileCollector($this->fileStorage->getWorkerSupplementaryFilesExternalUrlPrefix());
+        $jobConfig->setFileCollector($this->fileStorage->getWorkerExerciseFilesExternalUrlPrefix());
         $this->fileStorage->storeJobConfig($submission, (string)$jobConfig);
         return $jobConfig;
     }

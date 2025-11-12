@@ -118,7 +118,7 @@ class Exercise implements IExercise
      * @param Collection $localizedTexts
      * @param Collection $runtimeEnvironments
      * @param Collection $hardwareGroups
-     * @param Collection $supplementaryEvaluationFiles
+     * @param Collection $exerciseFiles
      * @param Collection $attachmentFiles
      * @param Collection $exerciseLimits
      * @param Collection $exerciseEnvironmentConfigs
@@ -139,7 +139,7 @@ class Exercise implements IExercise
         Collection $localizedTexts,
         Collection $runtimeEnvironments,
         Collection $hardwareGroups,
-        Collection $supplementaryEvaluationFiles,
+        Collection $exerciseFiles,
         Collection $attachmentFiles,
         Collection $exerciseLimits,
         Collection $exerciseEnvironmentConfigs,
@@ -164,7 +164,7 @@ class Exercise implements IExercise
         $this->exercise = $exercise;
         $this->author = $user;
         $this->admins = new ArrayCollection();
-        $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
+        $this->exerciseFiles = $exerciseFiles;
         $this->isPublic = $isPublic;
         $this->isLocked = $isLocked;
         $this->isBroken = false;
@@ -224,7 +224,7 @@ class Exercise implements IExercise
             $exercise->localizedTexts,
             $exercise->runtimeEnvironments,
             $exercise->hardwareGroups,
-            $exercise->supplementaryEvaluationFiles,
+            $exercise->exerciseFiles,
             $exercise->attachmentFiles,
             $exercise->exerciseLimits,
             $exercise->exerciseEnvironmentConfigs,

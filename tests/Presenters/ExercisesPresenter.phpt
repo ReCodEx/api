@@ -42,8 +42,8 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var App\Model\Repository\HardwareGroups */
     protected $hardwareGroups;
 
-    /** @var App\Model\Repository\SupplementaryExerciseFiles */
-    protected $supplementaryFiles;
+    /** @var App\Model\Repository\ExerciseFiles */
+    protected $exerciseFiles;
 
     /** @var App\Model\Repository\Logins */
     protected $logins;
@@ -80,7 +80,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->runtimeEnvironments = $container->getByType(\App\Model\Repository\RuntimeEnvironments::class);
         $this->hardwareGroups = $container->getByType(\App\Model\Repository\HardwareGroups::class);
-        $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryExerciseFiles::class);
+        $this->exerciseFiles = $container->getByType(\App\Model\Repository\ExerciseFiles::class);
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
         $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
         $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);

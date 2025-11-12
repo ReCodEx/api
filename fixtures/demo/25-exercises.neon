@@ -207,8 +207,8 @@ App\Model\Entity\AttachmentFile:
             - @demoAdmin
             - @demoExercise
 
-App\Model\Entity\SupplementaryExerciseFile:
-    demoSupplementaryExerciseFile:
+App\Model\Entity\ExerciseFile:
+    demoExerciseFile:
         __construct:
             - "input.txt"
             - "<dateTimeBetween('-3 years', '-1 years')>"

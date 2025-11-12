@@ -65,8 +65,8 @@ parameters:
   exercises:
     # Restrictions
     testCountLimit: 100                    # maximal number of tests in one exercise
-    supplementaryFileCountLimit: 200       # maximal number of test files 
-    supplementaryFileSizeLimit: 268435456  # 256 MiB, max. total size of all test files 
+    exerciseFileCountLimit: 200       # maximal number of test files 
+    exerciseFileSizeLimit: 268435456  # 256 MiB, max. total size of all test files 
     # Default values for newly created exercises
     solutionFilesLimitDefault: 10          # at most 10 files per solution (default, configurable per assignment)
     solutionSizeLimitDefault: 262144       # 256 KiB, max. size for all submitted files (default, configurable per assignment)

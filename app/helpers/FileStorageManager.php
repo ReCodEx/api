@@ -311,23 +311,23 @@ class FileStorageManager
     }
 
     /**
-     * Save a regular file to persistent hash storage for supplementary files.
-     * Used for special situations, storeUploadedSupplementaryFile() is used in most cases.
+     * Save a regular file to persistent hash storage for exercise files.
+     * Used for special situations, storeUploadedExerciseFile() is used in most cases.
      * @param string $pathToFile file to be stored
      * @param bool $move whether the file should be moved instead of copied (may save time)
-     * @return string hash identifying stored supplementary file
+     * @return string hash identifying stored exercise file
      */
-    public function storeSupplementaryFile(string $pathToFile, bool $move = false): string
+    public function storeExerciseFile(string $pathToFile, bool $move = false): string
     {
         return $this->hashStorage->storeFile($pathToFile, $move);
     }
 
     /**
-     * Move uploaded file to persistent hash storage for supplementary files.
+     * Move uploaded file to persistent hash storage for exercise files.
      * @param UploadedFile $uploadedFile to be moved from tmp upload storage to hash storage
-     * @return string hash identifying stored supplementary file
+     * @return string hash identifying stored exercise file
      */
-    public function storeUploadedSupplementaryFile(UploadedFile $uploadedFile): string
+    public function storeUploadedExerciseFile(UploadedFile $uploadedFile): string
     {
         $tmp = $this->tmpFilesHelper->createTmpFile('rexfsm');
         $this->fileStorage->extract($this->getUploadedFilePath($uploadedFile), $tmp, true);
@@ -335,11 +335,11 @@ class FileStorageManager
     }
 
     /**
-     * Retrieve a supplementary file by its hash and return an immutable file object.
+     * Retrieve an exercise file by its hash and return an immutable file object.
      * @param string $hash hash identification of the file
      * @return IImmutableFile|null a file object or null if no such file exists
      */
-    public function getSupplementaryFileByHash(string $hash): ?IImmutableFile
+    public function getExerciseFileByHash(string $hash): ?IImmutableFile
     {
         return $this->hashStorage->fetch($hash);
     }
@@ -682,12 +682,12 @@ class FileStorageManager
     }
 
     /**
-     * Generator for external URL prefixes for downloading supplementary files.
+     * Generator for external URL prefixes for downloading exercise files.
      * The worker only appends /<hash> to the URL prefix.
      * @return string URL prefix
      */
-    public function getWorkerSupplementaryFilesExternalUrlPrefix(): string
+    public function getWorkerExerciseFilesExternalUrlPrefix(): string
     {
-        return "$this->apiUrl/v1/worker-files/supplementary-file";
+        return "$this->apiUrl/v1/worker-files/exercise-file";
     }
 }

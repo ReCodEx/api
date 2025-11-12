@@ -11,8 +11,8 @@ class ExercisesConfig
 
     // Restrictions
     private $testCountLimit;
-    private $supplementaryFileCountLimit;
-    private $supplementaryFileSizeLimit;
+    private $exerciseFileCountLimit;
+    private $exerciseFileSizeLimit;
 
     // Defaults
     private $solutionFilesLimitDefault;
@@ -22,8 +22,8 @@ class ExercisesConfig
     public function __construct(array $config)
     {
         $this->testCountLimit = Arrays::get($config, "testCountLimit", 100);
-        $this->supplementaryFileCountLimit = Arrays::get($config, "supplementaryFileCountLimit", 200);
-        $this->supplementaryFileSizeLimit = Arrays::get($config, "supplementaryFileSizeLimit", 256 * 1024 * 1024);
+        $this->exerciseFileCountLimit = Arrays::get($config, "exerciseFileCountLimit", 200);
+        $this->exerciseFileSizeLimit = Arrays::get($config, "exerciseFileSizeLimit", 256 * 1024 * 1024);
         $this->solutionFilesLimitDefault = Arrays::get($config, "solutionFilesLimitDefault", 10);
         $this->solutionSizeLimitDefault = Arrays::get($config, "solutionSizeLimitDefault", 256 * 1024);
     }
@@ -33,14 +33,14 @@ class ExercisesConfig
         return $this->testCountLimit;
     }
 
-    public function getSupplementaryFileCountLimit(): int
+    public function getExerciseFileCountLimit(): int
     {
-        return $this->supplementaryFileCountLimit;
+        return $this->exerciseFileCountLimit;
     }
 
-    public function getSupplementaryFileSizeLimit()
+    public function getExerciseFileSizeLimit()
     {
-        return $this->supplementaryFileSizeLimit;
+        return $this->exerciseFileSizeLimit;
     }
 
     public function getSolutionFilesLimitDefault(): ?int

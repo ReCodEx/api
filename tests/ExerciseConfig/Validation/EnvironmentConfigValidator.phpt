@@ -10,7 +10,7 @@ use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use Tester\Assert;
@@ -102,7 +102,7 @@ class TestEnvironmentConfigValidator extends Tester\TestCase
         $exercise = Exercise::create($user, new Group("ext", new Instance()));
 
         $uploadedFile = new UploadedFile("input.name", new DateTime(), 234, $user);
-        SupplementaryExerciseFile::fromUploadedFileAndExercise(
+        ExerciseFile::fromUploadedFileAndExercise(
             $uploadedFile,
             $exercise,
             "input.hash"
@@ -110,7 +110,6 @@ class TestEnvironmentConfigValidator extends Tester\TestCase
 
         return $exercise;
     }
-
 }
 
 $testCase = new TestEnvironmentConfigValidator();

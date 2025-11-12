@@ -75,7 +75,7 @@ class Validator
      * database entity.
      * @param PipelineEntity $pipeline
      * @param Pipeline $pipelineConfig
-     * @param array|null $pipelineFiles supplementary files of pipeline [ fileName => fileHash]
+     * @param array|null $pipelineFiles exercise files of pipeline [ fileName => fileHash ]
      *                                  if null, the array is automatically loaded from the pipeline entity
      * @throws ExerciseConfigException
      */

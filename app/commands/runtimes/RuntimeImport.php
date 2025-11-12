@@ -7,7 +7,7 @@ use App\Model\Repository\Pipelines;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\Pipeline;
-use App\Model\Entity\SupplementaryExerciseFile;
+use App\Model\Entity\ExerciseFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorageManager;
 use App\Helpers\FileStorage\ZipFileStorage;
@@ -130,7 +130,7 @@ class RuntimeImport extends BaseCommand
         ],
     ];
 
-    private const SUPPLEMENTARY_FILE_SCHEMA = [
+    private const FILE_SCHEMA = [
         'name' => 'string',
         'uploadedAt' => 'integer',
         'size' => 'integer',
@@ -212,13 +212,13 @@ class RuntimeImport extends BaseCommand
             foreach ($pipeline['supplementaryFiles'] as $fidx => $file) {
                 self::validate(
                     $file,
-                    self::SUPPLEMENTARY_FILE_SCHEMA,
+                    self::FILE_SCHEMA,
                     ['pipelines', $pidx, 'supplementaryFiles', $fidx]
                 );
             }
         }
 
-        // verify existence of pipelines and supplementary files
+        // verify existence of pipelines and exercise files
         foreach ($manifest['pipelines'] as $pipeline) {
             $pipelineEntry = $pipeline['id'] . '.json';
             if ($zip->statName($pipelineEntry) === false) {
@@ -393,11 +393,11 @@ class RuntimeImport extends BaseCommand
         $pipeline->overrideCreatedFrom(null);
         $pipeline->addRuntimeEnvironment($runtime);
 
-        // make sure list of supplementary files is empty (they will be added later)
-        foreach ($pipeline->getSupplementaryEvaluationFiles()->toArray() as $file) {
+        // make sure list of exercise files is empty (they will be added later)
+        foreach ($pipeline->getExerciseFiles()->toArray() as $file) {
             $this->uploadedFiles->remove($file, false);
         }
-        $pipeline->getSupplementaryEvaluationFiles()->clear();
+        $pipeline->getExerciseFiles()->clear();
 
         $this->pipelines->persist($pipeline);
         return $pipeline;
@@ -435,25 +435,25 @@ class RuntimeImport extends BaseCommand
     }
 
     /**
-     * Save supplementary files in file storage and update their DB records associated with pipeline.
+     * Save exercise files in file storage and update their DB records associated with pipeline.
      * @param ZipArchive $zip
      * @param array $data of pipeline loaded from manifest
-     * @param Pipeline $pipeline entity to which the supplementary files are associated
+     * @param Pipeline $pipeline entity to which the exercise files are associated
      */
-    protected function updatePipelineSupplementaryFiles(ZipArchive $zip, array $data, Pipeline $pipeline): void
+    protected function updatePipelineExerciseFiles(ZipArchive $zip, array $data, Pipeline $pipeline): void
     {
         // copy all files from zip to hash storage
         $id = $data['id'];
         foreach ($data['supplementaryFiles'] as &$supFile) {
             $tmp = $this->tmpFilesHelper->createTmpFile('rexcmd');
             ZipFileStorage::extractZipEntryToFile($zip, '', "$id/{$supFile['name']}", $tmp);
-            $supFile['hash'] = $this->fileManager->storeSupplementaryFile($tmp, true); // true = move (to save time)
+            $supFile['hash'] = $this->fileManager->storeExerciseFile($tmp, true); // true = move (to save time)
         }
         unset($supFile); // safely dispose of a reference
 
-        // create new supplementary files records
+        // create new exercise files records
         foreach ($data['supplementaryFiles'] as $supFile) {
-            $file = new SupplementaryExerciseFile(
+            $file = new ExerciseFile(
                 $supFile['name'],
                 DateTime::createFromFormat('U', $supFile['uploadedAt']),
                 $supFile['size'],
@@ -519,7 +519,7 @@ class RuntimeImport extends BaseCommand
                 $pipeline = $this->updatePipeline($pipeline, $pipelineData, $runtime);
 
                 // files must go first, so they are up to date for pipeline verification
-                $this->updatePipelineSupplementaryFiles($zip, $pipelineData, $pipeline);
+                $this->updatePipelineExerciseFiles($zip, $pipelineData, $pipeline);
 
                 // update config structure
                 $pipelineConfigData = $this->loadPipeline($zip, $pipelineData['id'], $pipeline);
