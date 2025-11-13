@@ -173,7 +173,7 @@ class RouterFactory
             "ExerciseFiles:downloadExerciseFilesArchive"
         );
 
-        // deprecated routes for supplementary files
+        // deprecated routes for supplementary files (replaced with exercise-files)
         $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getExerciseFiles");
         $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadExerciseFiles");
         $router[] = new DeleteRoute(
@@ -185,6 +185,7 @@ class RouterFactory
             "ExerciseFiles:downloadExerciseFilesArchive"
         );
 
+        // deprecated (will be removed with AttachmentFile entity, unified with exercise-files)
         $router[] = new GetRoute("$prefix/<id>/attachment-files", "ExerciseFiles:getAttachmentFiles");
         $router[] = new PostRoute("$prefix/<id>/attachment-files", "ExerciseFiles:uploadAttachmentFiles");
         $router[] = new DeleteRoute("$prefix/<id>/attachment-files/<fileId>", "ExerciseFiles:deleteAttachmentFile");
@@ -470,11 +471,13 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/partial/<id>", "UploadedFiles:completePartial");
 
         $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
-        $router[] = new GetRoute("$prefix/supplementary-file/<id>/download", "UploadedFiles:downloadExerciseFile");
         $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
         $router[] = new GetRoute("$prefix/<id>/download", "UploadedFiles:download");
         $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");
         $router[] = new GetRoute("$prefix/<id>/digest", "UploadedFiles:digest");
+
+        // deprecated (should be handled by generic download)
+        $router[] = new GetRoute("$prefix/supplementary-file/<id>/download", "UploadedFiles:downloadExerciseFile");
         return $router;
     }
 
