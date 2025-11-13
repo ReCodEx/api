@@ -2,10 +2,10 @@
 
 namespace App\Security\Policies;
 
-use App\Model\Entity\Assignment;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseFile;
+use App\Model\Entity\Group;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
@@ -61,6 +61,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         }
 
         foreach ($file->getExercises() as $exercise) {
+            /** @var Exercise $exercise */
             if ($exercise->isAuthor($user)) {
                 return true;
             }
@@ -82,7 +83,9 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         }
 
         foreach ($file->getExercises() as $exercise) {
+            /** @var Exercise $exercise */
             foreach ($exercise->getGroups() as $group) {
+                /** @var Group $group */
                 if ($group->isAdminOrSupervisorOfSubgroup($user)) {
                     return true;  // The user can assign one of the corresponding exercises in hir group.
                 }
@@ -103,7 +106,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         return $file->getUser() && $file->getUser()->getId() === $user->getId();
     }
 
-    public function isReferenceSolutionInSupervisedOrObserverdSubGroup(Identity $identity, UploadedFile $file)
+    public function isReferenceSolutionInSupervisedOrObservedSubGroup(Identity $identity, UploadedFile $file)
     {
         $user = $identity->getUserData();
         if ($user === null) {
@@ -140,6 +143,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
 
         if ($file instanceof AttachmentFile) {
             foreach ($file->getExercises() as $exercise) {
+                /** @var Exercise $exercise */
                 foreach ($user->getGroups() as $group) {
                     if ($this->assignments->isAssignedToGroup($exercise, $group)) {
                         return true;

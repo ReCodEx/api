@@ -353,7 +353,7 @@ class UploadedFilesPresenter extends BasePresenter
             );
         }
 
-        // In theory, this may create race condition (DB record is commited before file is moved).
+        // In theory, this may create race condition (DB record is committed before file is moved).
         // But we need the ID from the database so we can save the file.
         $uploadedFile = new UploadedFile($file->getName(), new DateTime(), $file->getSize(), $user);
         $this->uploadedFiles->persist($uploadedFile);
@@ -528,8 +528,8 @@ class UploadedFilesPresenter extends BasePresenter
     }
 
     /**
-     * Finalize partial upload and convert the partial file into UploadFile.
-     * All data chunks are extracted from the store, assembled into one file, and is moved back into the store.
+     * Finalize partial upload and convert the partial file into UploadedFile entity.
+     * All data chunks are extracted from the store, assembled into one file, and that is moved back into the store.
      * @POST
      */
     #[Path("id", new VUuid(), "Identifier of the partial file", required: true)]
@@ -594,6 +594,7 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Download exercise file
      * @GET
+     * @DEPRECATED use generic uploaded-file download endpoint instead
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException

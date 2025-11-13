@@ -43,7 +43,7 @@ permissions:
       actions:
         - takeOver
 
-    - allow: false  # A safety mechanism that prevents us from accidentaly allowing account takeover to non-admins (e.g. by wildcard rules)
+    - allow: false  # A safety mechanism that prevents us from accidentally allowing account takeover to non-admins (e.g. by wildcard rules)
       actions:
         - takeOver
 
@@ -743,7 +743,7 @@ permissions:
       actions:
           - viewThread
           - addComment
-      conditions:  # TODO - make sure only apropriate group members/authors can do this
+      conditions:  # TODO - make sure only appropriate group members/authors can do this
           - userIsNotGroupLocked
 
     - allow: true
@@ -1030,7 +1030,7 @@ permissions:
       actions:
           - download
           - viewDetail
-          - downloadExerciseFile
+          - downloadExerciseFile  # deprecated (replaced with generic download)
 
     - allow: true
       role: scope-ref-solutions
@@ -1038,7 +1038,7 @@ permissions:
       actions:
           - download
           - viewDetail
-          - downloadExerciseFile
+          - downloadExerciseFile  # deprecated (replaced with generic download)
           - upload
 
     - allow: true
@@ -1075,11 +1075,14 @@ permissions:
       conditions:
           or:
             - file.isSolutionInSupervisedOrObservedGroup
-            - file.isReferenceSolutionInSupervisedOrObserverdSubGroup
+            - file.isReferenceSolutionInSupervisedOrObservedSubGroup
             - file.isPublic
             - file.isOwner
-            - file.isRelatedToAssignment
+            - file.isRelatedToAssignment  # deprecated (will be removed with Attachment files)
+            - file.isAuthorOfFileExercises
+            - file.isExerciseFileInGroupUserSupervises
 
+    # deprecated (will be removed with Attachment files)
     - allow: true
       role: supervisor-student
       resource: uploadedFile
@@ -1094,8 +1097,7 @@ permissions:
       role: supervisor-student
       resource: uploadedFile
       actions:
-          - viewDetail
-          - downloadExerciseFile
+          - downloadExerciseFile  # deprecated (replaced with generic download)
       conditions:
           or:
             - file.isAuthorOfFileExercises
