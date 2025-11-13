@@ -76,8 +76,8 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
         int $fileSize,
         string $hashName,
         ?User $user,
-        Exercise $exercise = null,
-        Pipeline $pipeline = null
+        ?Exercise $exercise = null,
+        ?Pipeline $pipeline = null
     ) {
         parent::__construct($name, $uploadedAt, $fileSize, $user);
         $this->hashName = $hashName;

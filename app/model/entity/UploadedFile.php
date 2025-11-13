@@ -47,8 +47,18 @@ class UploadedFile implements JsonSerializable
 
     /**
      * @ORM\Column(type="boolean")
+     * If true, the file is accessible to all logged-in users.
+     * This is useful for files associated with entries like exercises.
      */
     protected $isPublic;
+
+    /**
+     * External identification (used in URL) that allows for accessing the file without authentication.
+     * If empty, the file is not accessible this way.
+     * The identifier should be a generated random string.
+     * @ORM\Column(type="string", length=16, nullable=true, unique=true)
+     */
+    protected $external = null;
 
     /**
      * @ORM\Column(type="integer")
@@ -111,6 +121,31 @@ class UploadedFile implements JsonSerializable
     public function isPublic()
     {
         return $this->isPublic;
+    }
+
+    public function setPublic(bool $isPublic): void
+    {
+        $this->isPublic = $isPublic;
+    }
+
+    public function getExternal(): ?string
+    {
+        return $this->external;
+    }
+
+    public function setExternal(?string $external): void
+    {
+        $this->external = $external;
+    }
+
+    /**
+     * Generate a random external ID for this file which uses only URL-safe characters.
+     */
+    public function generateRandomExternalId(): void
+    {
+        // the + and / characters are replaced to make the string URL-safe without the need for encoding
+        // (base64 encoding uses A-Z, a-z, 0-9, +, /)
+        $this->external = str_replace(['+', '/'], ['-', '$'], base64_encode(random_bytes(12)));
     }
 
     /**
