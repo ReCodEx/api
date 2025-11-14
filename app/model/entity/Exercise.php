@@ -219,7 +219,7 @@ class Exercise implements IExercise
 
     public static function forkFrom(Exercise $exercise, User $user, Group $group): Exercise
     {
-        return new self(
+        $newExercise = new self(
             1,
             $exercise->difficulty,
             $exercise->localizedTexts,
@@ -242,7 +242,19 @@ class Exercise implements IExercise
             $exercise->solutionSizeLimit
         );
 
-        // TODO handle file link duplication
+        // handle file link duplication
+        foreach ($exercise->fileLinks as $link) {
+            $newLink = ExerciseFileLink::createForExercise(
+                $link->getKey(),
+                $link->getExerciseFile(),
+                $newExercise,
+                $link->getRequiredRole(),
+                $link->getSaveName()
+            );
+            $newExercise->fileLinks->add($newLink);
+        }
+
+        return $newExercise;
     }
 
     public function setRuntimeEnvironments(Collection $runtimeEnvironments): void

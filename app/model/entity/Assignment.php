@@ -76,9 +76,15 @@ class Assignment extends AssignmentBase implements IExercise
         $this->configurationType = $exercise->getConfigurationType();
         $this->exerciseFiles = $exercise->getExerciseFiles();
         $this->attachmentFiles = $exercise->getAttachmentFiles();
-        $this->fileLinks = new ArrayCollection(); // TODO properly copy from exercise
+        $this->fileLinks = new ArrayCollection();
         $this->solutionFilesLimit = $exercise->getSolutionFilesLimit();
         $this->solutionSizeLimit = $exercise->getSolutionSizeLimit();
+
+        // copy file links from exercise
+        foreach ($exercise->getFileLinks() as $link) {
+            $newLink = ExerciseFileLink::copyForAssignment($link, $this);
+            $this->fileLinks->add($newLink);
+        }
     }
 
     public static function assignToGroup(
@@ -454,14 +460,41 @@ class Assignment extends AssignmentBase implements IExercise
     public function areExerciseFilesInSync(): bool
     {
         $exercise = $this->getExercise();
-        return $exercise
-            && $this->getExerciseFiles()->count()
-            === $exercise->getExerciseFiles()->count()
+        return $exercise && $this->getExerciseFiles()->count() === $exercise->getExerciseFiles()->count()
             && $this->getExerciseFiles()->forAll(
                 function ($key, ExerciseFile $file) use ($exercise) {
                     return $exercise->getExerciseFiles()->contains($file);
                 }
             );
+    }
+
+    public function areExerciseFileLinksInSync(): bool
+    {
+        $exercise = $this->getExercise();
+        if (!$exercise || $this->getFileLinks()->count() !== $exercise->getFileLinks()->count()) {
+            return false;
+        }
+
+        // build index where keys are exercise file IDs
+        $fileIndex = [];
+        foreach ($this->getFileLinks() as $link) {
+            $fileIndex[$link->getExerciseFile()->getId()] = $link;
+        }
+
+        // verify that all exercise links are present and has the same data
+        foreach ($exercise->getFileLinks() as $link) {
+            $ourLink = $fileIndex[$link->getExerciseFile()->getId()] ?? null;
+            if (
+                $ourLink === null
+                || $ourLink->getKey() !== $link->getKey()
+                || $ourLink->getRequiredRole() !== $link->getRequiredRole()
+                || $ourLink->getSaveName() !== $link->getSaveName()
+            ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function areAttachmentFilesInSync(): bool
@@ -535,6 +568,12 @@ class Assignment extends AssignmentBase implements IExercise
         $this->attachmentFiles->clear();
         foreach ($exercise->getAttachmentFiles() as $file) {
             $this->attachmentFiles->add($file);
+        }
+
+        $this->fileLinks->clear();
+        foreach ($exercise->getFileLinks() as $link) {
+            $newLink = ExerciseFileLink::copyForAssignment($link, $this);
+            $this->fileLinks->add($newLink);
         }
 
         $this->runtimeEnvironments->clear();
