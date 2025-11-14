@@ -1076,7 +1076,6 @@ permissions:
           or:
             - file.isSolutionInSupervisedOrObservedGroup
             - file.isReferenceSolutionInSupervisedOrObservedSubGroup
-            - file.isPublic
             - file.isOwner
             - file.isRelatedToAssignment  # deprecated (will be removed with Attachment files)
             - file.isAuthorOfFileExercises

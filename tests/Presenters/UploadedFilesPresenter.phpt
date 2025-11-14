@@ -95,8 +95,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     public function testUserCannotAccessDetail()
     {
-        $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
-        $file = current($this->presenter->uploadedFiles->findBy(["isPublic" => false]));
+        PresenterTestHelper::login($this->container, $this->otherUserLogin);
+        $file = current($this->presenter->uploadedFiles->findAll());
         $request = new Nette\Application\Request(
             $this->presenterPath,
             'GET',
@@ -112,8 +112,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     public function testDetail()
     {
-        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $file = current($this->presenter->uploadedFiles->findAll());
 
         $request = new Nette\Application\Request(
@@ -435,32 +434,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal($file->getName(), $response->getName());
-    }
-
-    public function testOutsiderCannotAccessAttachmentFiles()
-    {
-        $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
-
-        /** @var EntityManagerInterface $em */
-        $em = $this->container->getByType(EntityManagerInterface::class);
-        $file = current($em->getRepository(AttachmentFile::class)->findAll());
-
-        $mockStorage = Mockery::mock(FileStorageManager::class);
-        $mockStorage->shouldReceive("getAttachmentFile")->withArgs([$file])->andReturn(null)->once();
-        $this->presenter->fileStorage = $mockStorage;
-
-        $request = new Nette\Application\Request(
-            $this->presenterPath,
-            'GET',
-            [
-                'action' => 'download',
-                'id' => $file->getId()
-            ]
-        );
-
-        Assert::exception(function () use ($request) {
-            $this->presenter->run($request);
-        }, NotFoundException::class, "Not Found - File not found in the storage");
     }
 
     public function testDownloadResultArchive()
