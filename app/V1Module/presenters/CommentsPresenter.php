@@ -180,7 +180,7 @@ class CommentsPresenter extends BasePresenter
 
     /**
      * Make a private comment public or vice versa
-     * @DEPRECATED
+     * @deprecated
      * @POST
      * @throws NotFoundException
      */

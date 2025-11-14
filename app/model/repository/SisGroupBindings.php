@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @extends BaseRepository<SisGroupBinding>
+ * @deprecated
  */
 class SisGroupBindings extends BaseRepository implements IGroupBindingProvider
 {

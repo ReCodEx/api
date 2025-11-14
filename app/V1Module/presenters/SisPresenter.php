@@ -34,6 +34,7 @@ use Exception;
 
 /**
  * @LoggedIn
+ * @deprecated Use the new SIS extension instead
  */
 class SisPresenter extends BasePresenter
 {

@@ -365,6 +365,30 @@ trait ExerciseData
     }
 
     /**
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exerciseFile", cascade={"persist", "remove"})
+     * @var Collection<ExerciseFileLink>
+     */
+    protected $fileLinks;
+
+    /**
+     * @return Collection<ExerciseFileLink>
+     */
+    public function getFileLinks(): Collection
+    {
+        return $this->fileLinks;
+    }
+
+    public function addFileLink(ExerciseFileLink $fileLink): void
+    {
+        $this->fileLinks->add($fileLink);
+    }
+
+    public function removeFileLink(ExerciseFileLink $fileLink): bool
+    {
+        return $this->fileLinks->removeElement($fileLink);
+    }
+
+    /**
      * @ORM\Column(type="integer", nullable=true)
      * How many files may one submit in a solution.
      */

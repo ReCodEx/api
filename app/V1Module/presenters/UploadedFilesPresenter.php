@@ -594,7 +594,7 @@ class UploadedFilesPresenter extends BasePresenter
     /**
      * Download exercise file
      * @GET
-     * @DEPRECATED use generic uploaded-file download endpoint instead
+     * @deprecated use generic uploaded-file download endpoint instead
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws \Nette\Application\AbortException

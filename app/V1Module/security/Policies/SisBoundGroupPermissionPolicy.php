@@ -6,10 +6,12 @@ use App\Helpers\SisHelper;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\Group;
 use App\Model\Repository\ExternalLogins;
-use App\Model\Repository\Groups;
 use App\Model\Repository\SisGroupBindings;
 use App\Security\Identity;
 
+/**
+ * @deprecated Use the new SIS extension instead
+ */
 class SisBoundGroupPermissionPolicy implements IPermissionPolicy
 {
     /** @var SisGroupBindings */

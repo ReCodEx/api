@@ -11,7 +11,6 @@ use App\Model\Entity\Exercise;
  */
 class EnvironmentConfigValidator
 {
-
     /**
      * Validate exercise environment configuration.
      * For more detailed description look at @ref App\Helpers\ExerciseConfig\Validator

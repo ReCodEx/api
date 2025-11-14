@@ -16,19 +16,21 @@ use DateTime;
 class ExerciseFile extends UploadedFile implements JsonSerializable
 {
     /**
+     * Identifier used to store/retrieve the file in/from the storage.
      * @ORM\Column(type="string")
      */
     protected $hashName;
 
     /**
      * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseFiles")
+     * @var Collection<Exercise>
      */
     protected $exercises;
 
     /**
-     * @return Collection
+     * @return Collection<Exercise>
      */
-    public function getExercises()
+    public function getExercises(): Collection
     {
         return $this->exercises->filter(
             function (Exercise $exercise) {
@@ -39,6 +41,7 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
 
     /**
      * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="exerciseFiles")
+     * @var Collection<Assignment>
      */
     protected $assignments;
 
@@ -56,8 +59,15 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
 
     /**
      * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="exerciseFiles")
+     * @var Collection<Pipeline>
      */
     protected $pipelines;
+
+    /**
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exerciseFile")
+     * @var Collection<ExerciseFileLink>
+     */
+    protected $links;
 
 
     /**
@@ -85,6 +95,7 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
         $this->exercises = new ArrayCollection();
         $this->assignments = new ArrayCollection();
         $this->pipelines = new ArrayCollection();
+        $this->links = new ArrayCollection();
 
         if ($exercise) {
             $this->exercises->add($exercise);

@@ -12,6 +12,9 @@ namespace App\Security\Policies;
 use App\Security\ACL\SisGroupContext;
 use App\Security\Identity;
 
+/**
+ * @deprecated Use the new SIS extension instead
+ */
 class SisGroupContextPermissionPolicy implements IPermissionPolicy
 {
     public function getAssociatedClass()

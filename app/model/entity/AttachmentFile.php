@@ -21,7 +21,7 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
     protected $exercises;
 
     /**
-     * @return Collection
+     * @return Collection<Exercise>
      */
     public function getExercises()
     {

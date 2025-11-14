@@ -83,7 +83,6 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         }
 
         foreach ($file->getExercises() as $exercise) {
-            /** @var Exercise $exercise */
             foreach ($exercise->getGroups() as $group) {
                 /** @var Group $group */
                 if ($group->isAdminOrSupervisorOfSubgroup($user)) {
@@ -143,7 +142,6 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
 
         if ($file instanceof AttachmentFile) {
             foreach ($file->getExercises() as $exercise) {
-                /** @var Exercise $exercise */
                 foreach ($user->getGroups() as $group) {
                     if ($this->assignments->isAssignedToGroup($exercise, $group)) {
                         return true;
