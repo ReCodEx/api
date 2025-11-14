@@ -46,13 +46,6 @@ class UploadedFile implements JsonSerializable
     protected $uploadedAt;
 
     /**
-     * @ORM\Column(type="boolean")
-     * If true, the file is accessible to all logged-in users.
-     * This is useful for files associated with entries like exercises.
-     */
-    protected $isPublic;
-
-    /**
      * @ORM\Column(type="integer")
      */
     protected $fileSize;
@@ -82,20 +75,17 @@ class UploadedFile implements JsonSerializable
      * @param DateTime $uploadedAt Time of the upload
      * @param int $fileSize Size of the file
      * @param User|null $user The user who uploaded the file
-     * @param bool $isPublic
      */
     public function __construct(
         string $name,
         DateTime $uploadedAt,
         int $fileSize,
-        ?User $user,
-        $isPublic = false
+        ?User $user
     ) {
         $this->name = $name;
         $this->uploadedAt = $uploadedAt;
         $this->fileSize = $fileSize;
         $this->user = $user;
-        $this->isPublic = $isPublic;
     }
 
     public function jsonSerialize(): mixed
@@ -106,18 +96,7 @@ class UploadedFile implements JsonSerializable
             "size" => $this->fileSize,
             "uploadedAt" => $this->uploadedAt->getTimestamp(),
             "userId" => $this->getUserId(),
-            "isPublic" => $this->isPublic
         ];
-    }
-
-    public function isPublic()
-    {
-        return $this->isPublic;
-    }
-
-    public function setPublic(bool $isPublic): void
-    {
-        $this->isPublic = $isPublic;
     }
 
     /**

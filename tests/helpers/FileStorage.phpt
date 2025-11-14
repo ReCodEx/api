@@ -125,7 +125,7 @@ class TestFileStorage extends Tester\TestCase
             self::rmdirRecursive($hashDir);
         }
         @mkdir($hashDir);
-        $storage = new LocalHashFileStorage([ 'root' => $hashDir ]);
+        $storage = new LocalHashFileStorage(['root' => $hashDir]);
 
         foreach ($files as $file) {
             $hash = sha1($file);
@@ -147,7 +147,7 @@ class TestFileStorage extends Tester\TestCase
             self::rmdirRecursive($rootDir);
         }
         @mkdir($rootDir);
-        $storage = new LocalFileStorage(new TmpFilesHelper($this->tmpDir), [ 'root' => $rootDir ]);
+        $storage = new LocalFileStorage(new TmpFilesHelper($this->tmpDir), ['root' => $rootDir]);
 
         foreach ($files as $file => $contents) {
             if (str_contains($file, '/')) {
@@ -190,7 +190,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $contents = "Lorem ipsum et sepsum!";
         $hash = sha1($contents);
-        $hashStorage = $this->prepareHashStorage([ $contents ]);
+        $hashStorage = $this->prepareHashStorage([$contents]);
         $file = $hashStorage->fetchOrThrow($hash);
         Assert::type(IImmutableFile::class, $file);
         Assert::equal($hash, $file->getStoragePath());
@@ -204,7 +204,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $contents = "Lorem ipsum et sepsum!";
         $hash = sha1($contents);
-        $hashStorage = $this->prepareHashStorage([ $contents ]);
+        $hashStorage = $this->prepareHashStorage([$contents]);
         $file = $hashStorage->fetch(sha1('no aint here'));
         Assert::null($file);
         Assert::exception(function () use ($hashStorage) {
@@ -263,7 +263,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $contents = "Lorem ipsum et sepsum!";
         $hash = sha1($contents);
-        $hashStorage = $this->prepareHashStorage([ $contents ]);
+        $hashStorage = $this->prepareHashStorage([$contents]);
         Assert::type(IImmutableFile::class, $hashStorage->fetch($hash));
         Assert::true($hashStorage->delete($hash));
         Assert::null($hashStorage->fetch($hash));
@@ -275,7 +275,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $entry = 'foo/bar';
         $data = 'abcde';
-        $zip = $this->createZipFile([ $entry => $data ]);
+        $zip = $this->createZipFile([$entry => $data]);
         $file = new ArchivedImmutableFile($zip, $entry);
         Assert::equal("$zip#$entry", $file->getStoragePath());
         Assert::equal(strlen($data), $file->getSize());
@@ -287,7 +287,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageFetch()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
         $fileA = $storage->fetch('a.txt');
         Assert::equal('AAAAA', $fileA->getContents());
@@ -300,7 +300,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageFetchNonexist()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
         $fileC = $storage->fetch('c.txt');
         Assert::null($fileC);
@@ -312,7 +312,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageStoreFile()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $tmpX = $this->createTmpFile('XXX');
@@ -337,7 +337,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageStoreContents()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->storeContents('XXX', 'x.txt', false);
@@ -356,7 +356,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageStoreStream()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $tmpX = $this->createTmpFile('XXX');
@@ -385,7 +385,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageStoreCopy()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->copy('a.txt', 'c.txt');
@@ -403,7 +403,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageStoreMove()
     {
-        $zip = $this->createZipFile([ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ]);
+        $zip = $this->createZipFile(['a.txt' => 'AAAAA', 'b.txt' => 'BBBB']);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
         $storage->move('a.txt', 'c.txt');
@@ -427,7 +427,7 @@ class TestFileStorage extends Tester\TestCase
 
     public function testZipFileStorageStoreDelete()
     {
-        $files = [ 'a.txt' => 'AAAAA', 'b.txt' => 'BBBB' ];
+        $files = ['a.txt' => 'AAAAA', 'b.txt' => 'BBBB'];
         $zip = $this->createZipFile($files);
         $storage = new ZipFileStorage(new TmpFilesHelper($this->tmpDir), $zip);
 
@@ -444,7 +444,7 @@ class TestFileStorage extends Tester\TestCase
         $storage = $this->prepareLocalStorage([
             'a.txt' => 'AAAAA',
             'b.txt' => 'BBB',
-            'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR']
+            'z/z.zip' => ['foo.md' => 'FOO', 'bar/bar' => 'BAR']
         ]);
 
         $fileA = $storage->fetch('a.txt');
@@ -481,7 +481,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $storage = $this->prepareLocalStorage([
             'a.txt' => 'AAA',
-            'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR']
+            'z/z.zip' => ['foo.md' => 'FOO', 'bar/bar' => 'BAR']
         ]);
 
         // regular files
@@ -518,7 +518,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $storage = $this->prepareLocalStorage([
             'a.txt' => 'AAA',
-            'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR']
+            'z/z.zip' => ['foo.md' => 'FOO', 'bar/bar' => 'BAR']
         ]);
 
         // regular files
@@ -548,7 +548,7 @@ class TestFileStorage extends Tester\TestCase
     {
         $storage = $this->prepareLocalStorage([
             'a.txt' => 'AAA',
-            'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR']
+            'z/z.zip' => ['foo.md' => 'FOO', 'bar/bar' => 'BAR']
         ]);
 
         // regular files
@@ -589,8 +589,8 @@ class TestFileStorage extends Tester\TestCase
         $storage = $this->prepareLocalStorage([
             'a.txt' => 'AAA',
             'b.txt' => 'BBB',
-            'z/z.zip' => [ 'foo.md' => 'FOO', 'bar/bar' => 'BAR'],
-            'z2.zip' => [ 'job.log' => 'failed' ]
+            'z/z.zip' => ['foo.md' => 'FOO', 'bar/bar' => 'BAR'],
+            'z2.zip' => ['job.log' => 'failed']
         ]);
 
         // regular files
@@ -662,8 +662,8 @@ class TestFileStorage extends Tester\TestCase
             'b.txt' => 'BBB',
             'c.txt' => 'CCC',
             'd.txt' => 'DDD',
-            'z/z.zip' => [ 'foo.md' => 'FOO', 'boo' => 'BOO', 'loo' => 'LOO', 'zoo' => 'ZOO', 'bar/bar' => 'BAR'],
-            'z2.zip' => [ 'job.log' => 'failed', 'config.yaml' => 'YAML' ]
+            'z/z.zip' => ['foo.md' => 'FOO', 'boo' => 'BOO', 'loo' => 'LOO', 'zoo' => 'ZOO', 'bar/bar' => 'BAR'],
+            'z2.zip' => ['job.log' => 'failed', 'config.yaml' => 'YAML']
         ]);
 
         // regular files
@@ -733,7 +733,7 @@ class TestFileStorage extends Tester\TestCase
         $storage = $this->prepareLocalStorage([
             'foo/bar/a.txt' => 'AAA',
             'foo/bar/b.txt' => 'BBB',
-            'zip' => [ 'foo' => 'FOO', 'bar' => 'BAR', 'keeper' => 'placeholder' ],
+            'zip' => ['foo' => 'FOO', 'bar' => 'BAR', 'keeper' => 'placeholder'],
         ]);
         $root = $storage->getRootDirectory();
 
@@ -782,8 +782,8 @@ class TestFileStorage extends Tester\TestCase
             'foo/bar/a.txt' => 'AAA',
             'foo/bar/b.txt' => 'BBB',
             'c.txt' => 'CCC',
-            'zip' => [ 'foo' => 'FOO' ],
-            'zip2' => [ 'job.log' => 'failed', 'config.yaml' => 'YAML' ]
+            'zip' => ['foo' => 'FOO'],
+            'zip2' => ['job.log' => 'failed', 'config.yaml' => 'YAML']
         ]);
         $root = $storage->getRootDirectory();
 
@@ -866,7 +866,7 @@ class TestFileStorage extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $partialFile = new UploadedPartialFile("foo", 9, $user);
-        $uploadedFile = new UploadedFile("foo", new DateTime(), 9, $user, true);
+        $uploadedFile = new UploadedFile("foo", new DateTime(), 9, $user);
         self::setPropertyOfObject($partialFile, 'id', '123');
         self::setPropertyOfObject($uploadedFile, 'id', '123');
 
@@ -902,7 +902,7 @@ class TestFileStorage extends Tester\TestCase
         $contents2 = '0123456789';
         $storage = $this->prepareLocalStorage([
             'foo.txt' => $contents1,
-            'bar.zip' => [ 'foo.txt' => $contents2 ],
+            'bar.zip' => ['foo.txt' => $contents2],
         ]);
 
         $file1 = $storage->fetch('foo.txt');
@@ -917,8 +917,8 @@ class TestFileStorage extends Tester\TestCase
         $storage = $this->prepareLocalStorage([
             'foo.txt' => 'abc',
             'foo.zip' => 'abc',
-            'bar.zip' => [ 'foo.txt' => 'abcde' ],
-            'inner.zip' => [ 'foo.txt' => 'abcdef' ],
+            'bar.zip' => ['foo.txt' => 'abcde'],
+            'inner.zip' => ['foo.txt' => 'abcdef'],
         ]);
         $storage->move('inner.zip', 'bar.zip#inner.zip');
 
@@ -933,14 +933,14 @@ class TestFileStorage extends Tester\TestCase
     {
         $storage = $this->prepareLocalStorage([
             'bad.zip' => 'abc',
-            'foo.zip' => [ 'foo.txt' => 'abcde', 'bar.txt' => 'xyz' ],
-            'inner.zip' => [ 'foo.txt' => 'abcde', 'bar.txt' => 'xyz' ],
+            'foo.zip' => ['foo.txt' => 'abcde', 'bar.txt' => 'xyz'],
+            'inner.zip' => ['foo.txt' => 'abcde', 'bar.txt' => 'xyz'],
         ]);
         $storage->move('inner.zip', 'bar.zip#inner.zip');
 
         Assert::equal([
-            [ 'name' => 'foo.txt', 'size' => 5 ],
-            [ 'name' => 'bar.txt', 'size' => 3 ],
+            ['name' => 'foo.txt', 'size' => 5],
+            ['name' => 'bar.txt', 'size' => 3],
         ], $storage->fetch('foo.zip')->getZipEntries());
 
         Assert::exception(

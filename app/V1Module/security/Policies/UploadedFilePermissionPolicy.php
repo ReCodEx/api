@@ -30,11 +30,6 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         return UploadedFile::class;
     }
 
-    public function isPublic(Identity $identity, UploadedFile $file)
-    {
-        return $file->isPublic();
-    }
-
     public function isAttachmentFile(Identity $identity, UploadedFile $file)
     {
         return $file instanceof AttachmentFile;
