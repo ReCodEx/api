@@ -891,7 +891,7 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of subgroups of a group
      * @GET
-     * @DEPRECATED Subgroup list is part of group view.
+     * @deprecated Subgroup list is part of group view.
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionSubgroups(string $id)
@@ -922,7 +922,7 @@ class GroupsPresenter extends BasePresenter
     /**
      * Get a list of members of a group
      * @GET
-     * @DEPRECATED Members are listed in group view.
+     * @deprecated Members are listed in group view.
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
     public function actionMembers(string $id)

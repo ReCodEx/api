@@ -21,7 +21,6 @@ use App\Model\Entity\RuntimeEnvironment;
  */
 class Compiler
 {
-
     public const EXERCISE_CONFIG_TYPES = ["simpleExerciseConfig", "advancedExerciseConfig"];
 
     /**

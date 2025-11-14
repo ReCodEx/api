@@ -6,6 +6,9 @@ use App\Model\Repository\ExternalLogins;
 use App\Security\ACL\SisIdWrapper;
 use App\Security\Identity;
 
+/**
+ * @deprecated Use the new SIS extension instead
+ */
 class SisPermissionPolicy implements IPermissionPolicy
 {
     private $externalLogins;

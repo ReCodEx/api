@@ -423,50 +423,51 @@ services:
   - App\Helpers\Notifications\SolutionFlagChangedEmailSender(%solutionFlagChangedNotifications%)
 
   # models - repositories
-  - App\Model\Repository\AsyncJobs
-  - App\Model\Repository\Comments
-  - App\Model\Repository\Exercises
-  - App\Model\Repository\ExerciseConfigs
-  - App\Model\Repository\ExerciseTags
-  - App\Model\Repository\ExerciseTests
   - App\Model\Repository\Assignments
-  - App\Model\Repository\ExternalLogins
-  - App\Model\Repository\Groups
-  - App\Model\Repository\GroupExternalAttributes
-  - App\Model\Repository\GroupInvitations
-  - App\Model\Repository\GroupExams
-  - App\Model\Repository\GroupExamLocks
-  - App\Model\Repository\Instances
-  - App\Model\Repository\Licences
-  - App\Model\Repository\Logins
-  - App\Model\Repository\ReferenceExerciseSolutions
-  - App\Model\Repository\ReferenceSolutionSubmissions
   - App\Model\Repository\AssignmentSolutions
   - App\Model\Repository\AssignmentSolutionSubmissions
   - App\Model\Repository\AssignmentSolvers
+  - App\Model\Repository\AsyncJobs
+  - App\Model\Repository\AttachmentFiles
+  - App\Model\Repository\Comments
+  - App\Model\Repository\Exercises
+  - App\Model\Repository\ExerciseConfigs
+  - App\Model\Repository\ExerciseFileLinks
+  - App\Model\Repository\ExerciseFiles
+  - App\Model\Repository\ExerciseTags
+  - App\Model\Repository\ExerciseTests
+  - App\Model\Repository\ExternalLogins
+  - App\Model\Repository\Groups
+  - App\Model\Repository\GroupExternalAttributes
+  - App\Model\Repository\GroupExams
+  - App\Model\Repository\GroupExamLocks
+  - App\Model\Repository\GroupInvitations
+  - App\Model\Repository\GroupMemberships
+  - App\Model\Repository\HardwareGroups
+  - App\Model\Repository\Instances
+  - App\Model\Repository\Licences
+  - App\Model\Repository\Logins
+  - App\Model\Repository\Notifications
+  - App\Model\Repository\PlagiarismDetectionBatches
+  - App\Model\Repository\PlagiarismDetectedSimilarities
+  - App\Model\Repository\PlagiarismDetectedSimilarFiles
+  - App\Model\Repository\ReferenceExerciseSolutions
+  - App\Model\Repository\ReferenceSolutionSubmissions
   - App\Model\Repository\ReviewComments
+  - App\Model\Repository\RuntimeEnvironments
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
+  - App\Model\Repository\Solutions
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\UploadedPartialFiles
   - App\Model\Repository\Users
   - App\Model\Repository\UserCalendars
-  - App\Model\Repository\RuntimeEnvironments
-  - App\Model\Repository\Solutions
-  - App\Model\Repository\GroupMemberships
-  - App\Model\Repository\HardwareGroups
-  - App\Model\Repository\ExerciseFiles
-  - App\Model\Repository\AttachmentFiles
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SecurityEvents
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
   - App\Model\Repository\ShadowAssignments
   - App\Model\Repository\ShadowAssignmentPointsRepository
-  - App\Model\Repository\Notifications
-  - App\Model\Repository\PlagiarismDetectionBatches
-  - App\Model\Repository\PlagiarismDetectedSimilarities
-  - App\Model\Repository\PlagiarismDetectedSimilarFiles
 
   # views factories
   - App\Model\View\ExerciseViewFactory

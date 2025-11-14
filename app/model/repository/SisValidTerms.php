@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @extends BaseRepository<SisValidTerm>
+ * @deprecated Use the new SIS extension instead
  */
 class SisValidTerms extends BaseRepository
 {

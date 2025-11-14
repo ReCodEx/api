@@ -263,7 +263,7 @@ class ExerciseFilesPresenter extends BasePresenter
     /**
      * Associate attachment exercise files with an exercise
      * @POST
-     * @DEPRECATED attachment files were unified with exercise files
+     * @deprecated attachment files were unified with exercise files
      * @throws ForbiddenRequestException
      */
     #[Post("files", new VMixed(), "Identifiers of attachment files", nullable: true)]
@@ -320,7 +320,7 @@ class ExerciseFilesPresenter extends BasePresenter
     /**
      * Get a list of all attachment files for an exercise
      * @GET
-     * @DEPRECATED attachment files were unified with exercise files
+     * @deprecated attachment files were unified with exercise files
      * @throws ForbiddenRequestException
      */
     #[Path("id", new VUuid(), "identification of exercise", required: true)]
@@ -347,7 +347,7 @@ class ExerciseFilesPresenter extends BasePresenter
     /**
      * Delete attachment exercise file with given id
      * @DELETE
-     * @DEPRECATED attachment files were unified with exercise files
+     * @deprecated attachment files were unified with exercise files
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
@@ -411,7 +411,7 @@ class ExerciseFilesPresenter extends BasePresenter
     /**
      * Download archive containing all attachment files for exercise.
      * @GET
-     * @DEPRECATED attachment files were unified with exercise files
+     * @deprecated attachment files were unified with exercise files
      * @throws NotFoundException
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException

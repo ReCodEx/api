@@ -10,7 +10,7 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 /**
  * Box which represents execution python script.
- * @DEPRECATED - use ScriptExecutionBox instead
+ * @deprecated - use ScriptExecutionBox instead
  */
 class Python3RunBox extends ExecutionBox
 {

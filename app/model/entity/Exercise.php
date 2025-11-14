@@ -171,6 +171,7 @@ class Exercise implements IExercise
         $this->groups = $groups;
         $this->assignments = new ArrayCollection();
         $this->attachmentFiles = $attachmentFiles;
+        $this->fileLinks = new ArrayCollection();
         $this->exerciseLimits = $exerciseLimits;
         $this->exerciseConfig = $exerciseConfig;
         $this->hardwareGroups = $hardwareGroups;
@@ -240,6 +241,8 @@ class Exercise implements IExercise
             $exercise->solutionFilesLimit,
             $exercise->solutionSizeLimit
         );
+
+        // TODO handle file link duplication
     }
 
     public function setRuntimeEnvironments(Collection $runtimeEnvironments): void
@@ -338,6 +341,7 @@ class Exercise implements IExercise
     public function hasNonemptyLocalizedTexts(): bool
     {
         foreach ($this->getLocalizedTexts() as $localizedText) {
+            /** @var LocalizedExercise $localizedText */
             if (!$localizedText->isEmpty()) {
                 return true;
             }

@@ -76,6 +76,7 @@ class Assignment extends AssignmentBase implements IExercise
         $this->configurationType = $exercise->getConfigurationType();
         $this->exerciseFiles = $exercise->getExerciseFiles();
         $this->attachmentFiles = $exercise->getAttachmentFiles();
+        $this->fileLinks = new ArrayCollection(); // TODO properly copy from exercise
         $this->solutionFilesLimit = $exercise->getSolutionFilesLimit();
         $this->solutionSizeLimit = $exercise->getSolutionSizeLimit();
     }

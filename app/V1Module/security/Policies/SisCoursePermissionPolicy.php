@@ -6,9 +6,11 @@ use App\Helpers\SisCourseRecord;
 use App\Model\Repository\ExternalLogins;
 use App\Security\Identity;
 
+/**
+ * @deprecated Use the new SIS extension instead
+ */
 class SisCoursePermissionPolicy implements IPermissionPolicy
 {
-
     function getAssociatedClass()
     {
         return SisCourseRecord::class;

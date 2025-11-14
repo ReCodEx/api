@@ -409,7 +409,7 @@ class ExercisesConfigPresenter extends BasePresenter
 
     /**
      * Get a description of resource limits for an exercise for given hwgroup.
-     * @DEPRECATED
+     * @deprecated
      * @GET
      * @throws ForbiddenRequestException
      * @throws NotFoundException
@@ -454,7 +454,7 @@ class ExercisesConfigPresenter extends BasePresenter
 
     /**
      * Set resource limits for an exercise for given hwgroup.
-     * @DEPRECATED
+     * @deprecated
      * @POST
      * @throws ApiException
      * @throws ExerciseConfigException
@@ -524,7 +524,7 @@ class ExercisesConfigPresenter extends BasePresenter
 
     /**
      * Remove resource limits of given hwgroup from an exercise.
-     * @DEPRECATED
+     * @deprecated
      * @DELETE
      * @throws NotFoundException
      */
