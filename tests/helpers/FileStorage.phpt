@@ -866,7 +866,7 @@ class TestFileStorage extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $partialFile = new UploadedPartialFile("foo", 9, $user);
-        $uploadedFile = new UploadedFile("foo", new DateTime(), 9, $user);
+        $uploadedFile = new UploadedFile("foo", new DateTime(), 9, $user, true);
         self::setPropertyOfObject($partialFile, 'id', '123');
         self::setPropertyOfObject($uploadedFile, 'id', '123');
 
