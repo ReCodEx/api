@@ -28,9 +28,15 @@ class ExerciseFileLink
 
     /**
      * The key (fixed ID) used to identify the file in exercise specification (for simple replacement).
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=16)
      */
     protected $key;
+
+    /**
+     * New name under which the file is downloaded (null means the original name).
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected $saveName;
 
     /**
      * Minimal required user role to access the file (null means even non-logged-in users).
@@ -56,36 +62,53 @@ class ExerciseFileLink
 
     /**
      * Link constructor
-     * @param string $key
+     * @param string $key used to identify the file in exercise specification (for simple replacement)
      * @param ExerciseFile $exerciseFile
-     * @param string|null $requiredRole
      * @param Exercise|null $exercise
      * @param Assignment|null $assignment
+     * @param string|null $requiredRole minimal required user role to access the file (null = non-logged-in users)
+     * @param string|null $saveName new name under which the file is downloaded (null means the original name)
      */
     private function __construct(
         string $key,
         ExerciseFile $exerciseFile,
-        ?string $requiredRole = null,
         ?Exercise $exercise = null,
         ?Assignment $assignment = null,
+        ?string $requiredRole = null,
+        ?string $saveName = null
     ) {
         $this->key = $key;
         $this->requiredRole = $requiredRole;
+        $this->saveName = $saveName;
         $this->exerciseFile = $exerciseFile;
         $this->exercise = $exercise;
         $this->assignment = $assignment;
         $this->createdAt = new DateTime();
     }
 
+    /**
+     * Create a link for exercise
+     * @param string $key
+     * @param ExerciseFile $exerciseFile
+     * @param Exercise $exercise
+     * @param string|null $requiredRole
+     * @param string|null $saveName
+     */
     public static function createForExercise(
         string $key,
         ExerciseFile $exerciseFile,
-        ?string $requiredRole,
-        Exercise $exercise
+        Exercise $exercise,
+        ?string $requiredRole = null,
+        ?string $saveName = null
     ): self {
-        return new self($key, $exerciseFile, $requiredRole, $exercise, null);
+        return new self($key, $exerciseFile, $exercise, null, $requiredRole, $saveName);
     }
 
+    /**
+     * Create a link for assignment by copying an existing link
+     * @param ExerciseFileLink $link to be copied when assignment is being created
+     * @param Assignment $assignment the assignment for which the link is being created
+     */
     public static function copyForAssignment(
         ExerciseFileLink $link,
         Assignment $assignment
@@ -95,7 +118,7 @@ class ExerciseFileLink
                 'Can only copy links associated with an exercise of selected assignment.'
             );
         }
-        return new self($link->key, $link->exerciseFile, $link->requiredRole, null, $assignment);
+        return new self($link->key, $link->exerciseFile, null, $assignment, $link->requiredRole, $link->saveName);
     }
 
     /*
@@ -107,9 +130,29 @@ class ExerciseFileLink
         return $this->key;
     }
 
+    public function setKey(string $key): void
+    {
+        $this->key = $key;
+    }
+
     public function getRequiredRole(): ?string
     {
         return $this->requiredRole;
+    }
+
+    public function setRequiredRole(?string $requiredRole): void
+    {
+        $this->requiredRole = $requiredRole;
+    }
+
+    public function getSaveName(): ?string
+    {
+        return $this->saveName;
+    }
+
+    public function setSaveName(?string $saveName): void
+    {
+        $this->saveName = $saveName;
     }
 
     public function getExerciseFile(): ExerciseFile
