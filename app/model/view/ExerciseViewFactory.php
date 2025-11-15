@@ -8,15 +8,18 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\ReferenceExerciseSolution;
+use App\Model\Repository\ExerciseFileLinks;
 use App\Security\ACL\IExercisePermissions;
 
 class ExerciseViewFactory
 {
     private $exercisePermissions;
+    private $fileLinks;
 
-    public function __construct(IExercisePermissions $exercisePermissions)
+    public function __construct(IExercisePermissions $exercisePermissions, ExerciseFileLinks $fileLinks)
     {
         $this->exercisePermissions = $exercisePermissions;
+        $this->fileLinks = $fileLinks;
     }
 
     /**
@@ -42,12 +45,12 @@ class ExerciseViewFactory
 
         return [
             "id" => $exercise->getId(),
-            "name" => $primaryLocalization ? $primaryLocalization->getName() : "", // BC
             "version" => $exercise->getVersion(),
             "createdAt" => $exercise->getCreatedAt()->getTimestamp(),
             "updatedAt" => $exercise->getUpdatedAt()->getTimestamp(),
             "archivedAt" => $exercise->isArchived() ? $exercise->getArchivedAt()->getTimestamp() : null,
             "localizedTexts" => $exercise->getLocalizedTexts()->getValues(),
+            "localizedTextsLinks" => $this->fileLinks->getLinksMapForExercise($exercise->getId()),
             "difficulty" => $exercise->getDifficulty(),
             "runtimeEnvironments" => $exercise->getRuntimeEnvironments()->getValues(),
             "hardwareGroups" => $exercise->getHardwareGroups()->getValues(),
@@ -56,9 +59,7 @@ class ExerciseViewFactory
             "adminsIds" => $exercise->getAdminsIds(),
             "groupsIds" => $exercise->getGroupsIds(),
             "mergeJudgeLogs" => $exercise->getMergeJudgeLogs(),
-            "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC
-            "supplementaryFilesIds" => $exercise->getExerciseFilesIds(),
-            "attachmentFilesIds" => $exercise->getAttachmentFilesIds(),
+            "filesIds" => $exercise->getExerciseFilesIds(),
             "configurationType" => $exercise->getConfigurationType(),
             "isPublic" => $exercise->isPublic(),
             "isLocked" => $exercise->isLocked(),
@@ -75,7 +76,13 @@ class ExerciseViewFactory
             ),
             "solutionFilesLimit" => $exercise->getSolutionFilesLimit(),
             "solutionSizeLimit" => $exercise->getSolutionSizeLimit(),
-            "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
+            "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise),
+
+            // DEPRECATED fields (will be removed in future)
+            "name" => $primaryLocalization ? $primaryLocalization->getName() : "",
+            "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "",
+            "supplementaryFilesIds" => $exercise->getExerciseFilesIds(),
+            "attachmentFilesIds" => $exercise->getAttachmentFilesIds(),
         ];
     }
 

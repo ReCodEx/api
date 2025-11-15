@@ -5,16 +5,19 @@ namespace App\Model\View;
 use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
+use App\Model\Repository\ExerciseFileLinks;
 use App\Security\ACL\IAssignmentPermissions;
 
 class AssignmentViewFactory
 {
     /** @var IAssignmentPermissions */
     private $assignmentAcl;
+    private $fileLinks;
 
-    public function __construct(IAssignmentPermissions $assignmentAcl)
+    public function __construct(IAssignmentPermissions $assignmentAcl, ExerciseFileLinks $fileLinks)
     {
         $this->assignmentAcl = $assignmentAcl;
+        $this->fileLinks = $fileLinks;
     }
 
     public function getAssignments(array $assignments): array
@@ -49,6 +52,7 @@ class AssignmentViewFactory
                     return $data;
                 }
             )->getValues(),
+            "localizedTextsLinks" => $this->fileLinks->getLinksMapForAssignment($assignment->getId()),
             "exerciseId" => $exercise ? $exercise->getId() : null,
             "groupId" => $assignment->getGroup() ? $assignment->getGroup()->getId() : null,
             "firstDeadline" => $assignment->getFirstDeadline()->getTimestamp(),
@@ -101,17 +105,25 @@ class AssignmentViewFactory
                 "exerciseTests" => [
                     "upToDate" => $assignment->areExerciseTestsInSync()
                 ],
-                "supplementaryFiles" => [
+                "files" => [
                     "upToDate" => $assignment->areExerciseFilesInSync()
                 ],
-                "attachmentFiles" => [
-                    "upToDate" => $assignment->areAttachmentFilesInSync()
+                "fileLinks" => [
+                    "upToDate" => $assignment->areExerciseFileLinksInSync()
                 ],
                 "runtimeEnvironments" => [
                     "upToDate" => $assignment->areRuntimeEnvironmentsInSync()
                 ],
                 "mergeJudgeLogs" => [
                     "upToDate" => $exercise && $assignment->getMergeJudgeLogs() === $exercise->getMergeJudgeLogs(),
+                ],
+
+                // DEPRECATED fields (will be removed in future)
+                "supplementaryFiles" => [
+                    "upToDate" => $assignment->areExerciseFilesInSync()
+                ],
+                "attachmentFiles" => [
+                    "upToDate" => $assignment->areAttachmentFilesInSync()
                 ],
             ],
             "solutionFilesLimit" => $assignment->getSolutionFilesLimit(),

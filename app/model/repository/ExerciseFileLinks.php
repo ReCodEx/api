@@ -14,4 +14,36 @@ class ExerciseFileLinks extends BaseRepository
     {
         parent::__construct($em, ExerciseFileLink::class);
     }
+
+    /**
+     * Load an associative array [ key => external-file-ID ] for all file links of the given exercise.
+     * @param string $exerciseId
+     * @return array<string, string>
+     */
+    public function getLinksMapForExercise(string $exerciseId): array
+    {
+        $links = $this->findBy(['exercise' => $exerciseId]);
+        $result = [];
+        foreach ($links as $link) {
+            /** @var ExerciseFileLink $link */
+            $result[$link->getKey()] = $link->getExerciseFile()->getId();
+        }
+        return $result;
+    }
+
+    /**
+     * Load an associative array [ key => external-file-ID ] for all file links of the given assignment.
+     * @param string $assignmentId
+     * @return array<string, string>
+     */
+    public function getLinksMapForAssignment(string $assignmentId): array
+    {
+        $links = $this->findBy(['assignment' => $assignmentId]);
+        $result = [];
+        foreach ($links as $link) {
+            /** @var ExerciseFileLink $link */
+            $result[$link->getKey()] = $link->getExerciseFile()->getId();
+        }
+        return $result;
+    }
 }
