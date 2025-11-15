@@ -30,8 +30,8 @@ abstract class Roles
 
     /**
      * Verify whether given actual role has at least the permissions of minimal requested role.
-     * In other words, this function is basicaly a check that $actualTestedRole >= $minimalRequestedRole
-     * in the terms of role strenghth (more permissive is bigger).
+     * In other words, this function is basically a check that $actualTestedRole >= $minimalRequestedRole
+     * in the terms of role strength (more permissive is bigger).
      * @param string $actualTestedRole
      * @param string $minimalRequestedRole
      */

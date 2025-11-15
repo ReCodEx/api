@@ -162,18 +162,23 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/admins", "Exercises:setAdmins");
         $router[] = new PostRoute("$prefix/<id>/notification", "Exercises:sendNotification");
 
-        $router[] = new GetRoute("$prefix/<id>/exercise-files", "ExerciseFiles:getExerciseFiles");
-        $router[] = new PostRoute("$prefix/<id>/exercise-files", "ExerciseFiles:uploadExerciseFiles");
-        $router[] = new DeleteRoute(
-            "$prefix/<id>/exercise-files/<fileId>",
-            "ExerciseFiles:deleteExerciseFile"
-        );
-        $router[] = new GetRoute(
-            "$prefix/<id>/exercise-files/download-archive",
-            "ExerciseFiles:downloadExerciseFilesArchive"
-        );
+        // exercise files
+        $router[] = new GetRoute("$prefix/<id>/files", "ExerciseFiles:getExerciseFiles");
+        $router[] = new PostRoute("$prefix/<id>/files", "ExerciseFiles:uploadExerciseFiles");
+        $router[] = new DeleteRoute("$prefix/<id>/files/<fileId>", "ExerciseFiles:deleteExerciseFile");
+        $router[] = new GetRoute("$prefix/<id>/files/download-archive", "ExerciseFiles:downloadExerciseFilesArchive");
 
-        // deprecated routes for supplementary files (replaced with exercise-files)
+        // file links
+        $router[] = new GetRoute("$prefix/<id>/file-links", "ExerciseFiles:getFileLinks");
+        $router[] = new PostRoute("$prefix/<id>/file-links", "ExerciseFiles:createFileLink");
+        $router[] = new PostRoute("$prefix/<id>/file-links/<linkId>", "ExerciseFiles:updateFileLink");
+        $router[] = new DeleteRoute("$prefix/<id>/file-links/<linkId>", "ExerciseFiles:deleteFileLink");
+        $router[] = new GetRoute("$prefix/<id>/file-links/<linkId>", "UploadedFiles:downloadExerciseFileByLink");
+
+        // special download route for file link by its key
+        $router[] = new GetRoute("$prefix/<id>/file-download/<linkKey>", "UploadedFiles:downloadExerciseFileLinkByKey");
+
+        // deprecated routes for supplementary-files (replaced with `files`)
         $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getExerciseFiles");
         $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadExerciseFiles");
         $router[] = new DeleteRoute(
