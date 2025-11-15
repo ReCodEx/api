@@ -8,9 +8,10 @@ use DateTime;
 
 /**
  * Additional identification for files that are accessible to users via stable URLs.
- * The entity always points to a single ExerciseFile, but also follows the CoW principle used for all
- * exercise-assignment records. I.e., when Assignment is created from Exercise, the links are copied
- * as well, but they still point to the same ExerciseFile entities.
+ * The entity always points to a single ExerciseFile, but also follows the principles used for all
+ * exercise-assignment records. However, links are small, so they are copied eagerly (not by CoW).
+ * I.e., when Assignment is created from Exercise, the links are copied (immediately) as well.
+ * The link of an exercise may be updated, but the link of an assignment is immutable.
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"key", "exercise_id"})})
  */
@@ -45,19 +46,21 @@ class ExerciseFileLink implements JsonSerializable
      */
     protected $requiredRole;
 
-
     /**
-     * @ORM\ManyToOne(targetEntity="ExerciseFile", inversedBy="links", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="ExerciseFile")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $exerciseFile;
 
     /**
      * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="fileLinks")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $exercise;
 
     /**
      * @ORM\ManyToOne(targetEntity="Assignment", inversedBy="fileLinks")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $assignment;
 
@@ -175,6 +178,16 @@ class ExerciseFileLink implements JsonSerializable
     public function getExerciseFile(): ExerciseFile
     {
         return $this->exerciseFile;
+    }
+
+    /**
+     * This is a rare case where we allow changing the linked ExerciseFile.
+     * It is used only when the immutable ExerciseFile is being replaced.
+     * Changing the link to point to a different ExerciseFile should not be allowed otherwise.
+     */
+    public function setExerciseFile(ExerciseFile $exerciseFile): void
+    {
+        $this->exerciseFile = $exerciseFile;
     }
 
     public function getExercise(): ?Exercise

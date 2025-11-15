@@ -64,13 +64,6 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
     protected $pipelines;
 
     /**
-     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exerciseFile")
-     * @var Collection<ExerciseFileLink>
-     */
-    protected $links;
-
-
-    /**
      * ExerciseFile constructor.
      * @param string $name
      * @param DateTime $uploadedAt
@@ -95,7 +88,6 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
         $this->exercises = new ArrayCollection();
         $this->assignments = new ArrayCollection();
         $this->pipelines = new ArrayCollection();
-        $this->links = new ArrayCollection();
 
         if ($exercise) {
             $this->exercises->add($exercise);
