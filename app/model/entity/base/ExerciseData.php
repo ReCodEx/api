@@ -365,7 +365,7 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exerciseFile", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exerciseFile", cascade={"persist"})
      * @var Collection<ExerciseFileLink>
      */
     protected $fileLinks;

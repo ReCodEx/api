@@ -126,6 +126,7 @@ class ExerciseFilesPresenter extends BasePresenter
 
         $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
         $currentFiles = [];
+        $filesToRemove = [];
         $totalFileSize = 0;
 
         /** @var ExerciseFile $file */
@@ -145,7 +146,7 @@ class ExerciseFilesPresenter extends BasePresenter
             if (array_key_exists($file->getName(), $currentFiles)) {
                 /** @var ExerciseFile $currentFile */
                 $currentFile = $currentFiles[$file->getName()];
-                $exercise->getExerciseFiles()->removeElement($currentFile);
+                $filesToRemove[$file->getName()] = $currentFile;
                 $totalFileSize -= $currentFile->getFileSize();
             } else {
                 $totalFileCount += 1;
@@ -174,6 +175,20 @@ class ExerciseFilesPresenter extends BasePresenter
         foreach ($files as $file) {
             $hash = $this->fileStorage->storeUploadedExerciseFile($file);
             $exerciseFile = ExerciseFile::fromUploadedFileAndExercise($file, $exercise, $hash);
+            if (array_key_exists($file->getName(), $filesToRemove)) {
+                /** @var ExerciseFile $currentFile */
+                $fileToRemove = $filesToRemove[$file->getName()];
+
+                // move links from old file to the new one
+                $links = $this->fileLinks->findBy(["exerciseFile" => $fileToRemove, "exercise" => $exercise]);
+                foreach ($links as $link) {
+                    $link->setExerciseFile($exerciseFile);
+                    $this->fileLinks->persist($link, false);
+                }
+
+                $exercise->getExerciseFiles()->removeElement($fileToRemove);
+            }
+
             $this->uploadedFiles->persist($exerciseFile, false);
             $this->uploadedFiles->remove($file, false);
         }
