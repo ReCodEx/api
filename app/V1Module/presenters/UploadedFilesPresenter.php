@@ -22,17 +22,22 @@ use App\Helpers\FileStorageManager;
 use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\Exercises;
+use App\Model\Repository\ExerciseFileLinks;
 use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\UploadedPartialFiles;
 use App\Model\Repository\PlagiarismDetectedSimilarFiles;
-use App\Model\Entity\UploadedFile;
-use App\Model\Entity\UploadedPartialFile;
+use App\Model\Entity\ExerciseFileLink;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\SolutionZipFile;
+use App\Model\Entity\UploadedFile;
+use App\Model\Entity\UploadedPartialFile;
+use App\Security\Roles;
+use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IUploadedFilePermissions;
 use App\Security\ACL\IUploadedPartialFilePermissions;
-use App\Security\ACL\IAssignmentSolutionPermissions;
 use Nette\Utils\Strings;
 use Nette\Http\IResponse;
 use Tracy\ILogger;
@@ -77,6 +82,42 @@ class UploadedFilesPresenter extends BasePresenter
     public $assignmentSolutions;
 
     /**
+     * @var Exercises
+     * @inject
+     */
+    public $exercises;
+
+    /**
+     * @var ExerciseFiles
+     * @inject
+     */
+    public $exerciseFiles;
+
+    /**
+     * @var ExerciseFileLinks
+     * @inject
+     */
+    public $fileLinks;
+
+    /**
+     * @var PlagiarismDetectedSimilarFiles
+     * @inject
+     */
+    public $detectedSimilarFiles;
+
+    /**
+     * @var IAssignmentSolutionPermissions
+     * @inject
+     */
+    public $assignmentSolutionAcl;
+
+    /**
+     * @var IExercisePermissions
+     * @inject
+     */
+    public $exerciseAcl;
+
+    /**
      * @var IUploadedFilePermissions
      * @inject
      */
@@ -89,22 +130,10 @@ class UploadedFilesPresenter extends BasePresenter
     public $uploadedPartialFileAcl;
 
     /**
-     * @var IAssignmentSolutionPermissions
+     * @var Roles
      * @inject
      */
-    public $assignmentSolutionAcl;
-
-    /**
-     * @var ExerciseFiles
-     * @inject
-     */
-    public $exerciseFiles;
-
-    /**
-     * @var PlagiarismDetectedSimilarFiles
-     * @inject
-     */
-    public $detectedSimilarFiles;
+    public $roles;
 
     /**
      * @var UploadsConfig
@@ -608,5 +637,106 @@ class UploadedFilesPresenter extends BasePresenter
             throw new NotFoundException("Exercise file not found in the storage");
         }
         $this->sendStorageFileResponse($file, $fileEntity->getName());
+    }
+
+    /**
+     * Perform verifications whether the user can download file via given link.
+     * @param ExerciseFileLink $link
+     * @throws ForbiddenRequestException
+     */
+    private function checkExerciseFileLink(ExerciseFileLink $link): void
+    {
+        if ($link->getRequiredRole() === null) {
+            return;  // public link, no further checks needed
+        }
+
+        $user = $this->getCurrentUserOrNull();
+        if (!$user) {
+            throw new ForbiddenRequestException("You must be logged in to download selected exercise file");
+        }
+
+        // for logged-in users, check exercise access (this is additional check on top of role requirement)
+        if (!$this->exerciseAcl->canViewDetail($link->getExercise())) {
+            throw new ForbiddenRequestException("You cannot download exercise file for this exercise.");
+        }
+
+        $reqRole = $link->getRequiredRole();
+        if (!$this->roles->isInRole($user->getRole(), $reqRole)) {
+            throw new ForbiddenRequestException("Minimal role '$reqRole' is required to download this exercise file.");
+        }
+    }
+
+    /**
+     * Find the file associated with the link and send it to the user.
+     * @param ExerciseFileLink $link
+     * @throws NotFoundException
+     */
+    private function downloadFileByLink(ExerciseFileLink $link): void
+    {
+        $fileEntity = $this->exerciseFiles->findOrThrow($link->getExerciseFile()->getId());
+        $file = $fileEntity->getFile($this->fileStorage);
+        if (!$file) {
+            throw new NotFoundException("Exercise file not found in the storage");
+        }
+        $this->sendStorageFileResponse($file, $link->getSaveName() ?? $fileEntity->getName());
+    }
+
+    public function checkDownloadExerciseFileByLink(string $id, string $linkId)
+    {
+        $link = $this->fileLinks->findOrThrow($linkId);
+
+        if ($link->getExercise()?->getId() !== $id) {
+            throw new BadRequestException("The exercise file link is not associated with the given exercise.");
+        }
+
+        $this->checkExerciseFileLink($link);
+    }
+
+    /**
+     * Download a specific exercise-file via its link.
+     * This endpoint is deliberately placed in UploadedFilesPresenter so it works for non-logged-in users as well.
+     * @GET
+     */
+    #[Path("id", new VUuid(), "of exercise", required: true)]
+    #[Path("linkId", new VUuid(), "of the exercise file link entity", required: true)]
+    public function actionDownloadExerciseFileByLink(string $id, string $linkId)
+    {
+        $link = $this->fileLinks->findOrThrow($linkId);
+        $this->downloadFileByLink($link);
+    }
+
+    public function checkDownloadExerciseFileLinkByKey(string $id, string $linkKey)
+    {
+        $links = $this->fileLinks->findBy(['exercise' => $id, 'key' => $linkKey]);
+        if (count($links) === 0) {
+            throw new NotFoundException("Exercise file link with given key not found for the exercise.");
+        }
+        if (count($links) > 1) {
+            // this should never happen
+            throw new InternalServerException("Multiple exercise file links with given key found for the exercise.");
+        }
+        $link = $links[0];
+
+        $this->checkExerciseFileLink($link);
+    }
+
+    /**
+     * Download a specific exercise-file via its link key.
+     * Unlike `downloadFileLink`, the key is selected by the user and does not have to change
+     * (when the link or the file is updated).
+     * On the other hand, it always retrieves the latest version of the file.
+     * @GET
+     */
+    #[Path("id", new VUuid(), "of exercise", required: true)]
+    #[Path(
+        "linkKey",
+        new VString(1, 16),
+        "Internal user-selected identifier of the exercise file link within the exercise",
+        required: true
+    )]
+    public function actionDownloadExerciseFileLinkByKey(string $id, string $linkKey)
+    {
+        $links = $this->fileLinks->findBy(['exercise' => $id, 'key' => $linkKey]);
+        $this->downloadFileByLink($links[0]);
     }
 }

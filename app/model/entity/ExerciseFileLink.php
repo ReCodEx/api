@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 use DateTime;
 
 /**
@@ -13,7 +14,7 @@ use DateTime;
  * @ORM\Entity
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"key", "exercise_id"})})
  */
-class ExerciseFileLink
+class ExerciseFileLink implements JsonSerializable
 {
     use CreatableEntity;
 
@@ -121,10 +122,26 @@ class ExerciseFileLink
         return new self($link->key, $link->exerciseFile, null, $assignment, $link->requiredRole, $link->saveName);
     }
 
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'id' => $this->getId(),
+            'key' => $this->getKey(),
+            'requiredRole' => $this->getRequiredRole(),
+            'saveName' => $this->getSaveName(),
+            'exerciseFileId' => $this->exerciseFile->getId(),
+            'createdAt' => $this->createdAt->getTimestamp(),
+        ];
+    }
+
     /*
      * Accessors
      */
 
+    public function getId(): ?string
+    {
+        return $this->id === null ? null : (string)$this->id;
+    }
     public function getKey(): string
     {
         return $this->key;

@@ -16,15 +16,18 @@ use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\FileStorageManager;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\ExerciseFile;
-use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AttachmentFile;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseFile;
+use App\Model\Entity\ExerciseFileLink;
+use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AttachmentFiles;
 use App\Model\Repository\Exercises;
-use App\Model\Entity\Exercise;
+use App\Model\Repository\ExerciseFileLinks;
 use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\UploadedFiles;
+use App\Security\Roles;
 use App\Security\ACL\IExercisePermissions;
 use Exception;
 
@@ -59,6 +62,12 @@ class ExerciseFilesPresenter extends BasePresenter
     public $exerciseFiles;
 
     /**
+     * @var ExerciseFileLinks
+     * @inject
+     */
+    public $fileLinks;
+
+    /**
      * @var AttachmentFiles
      * @inject
      */
@@ -87,6 +96,12 @@ class ExerciseFilesPresenter extends BasePresenter
      * @inject
      */
     public $configChecker;
+
+    /**
+     * @var Roles
+     * @inject
+     */
+    public $roles;
 
     public function checkUploadExerciseFiles(string $id)
     {
@@ -352,7 +367,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "identification of exercise", required: true)]
-    #[Path("fileId", new VString(), "identification of file", required: true)]
+    #[Path("fileId", new VUuid(), "identification of file", required: true)]
     public function actionDeleteAttachmentFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -427,5 +442,183 @@ class ExerciseFilesPresenter extends BasePresenter
             $files[$file->getName()] = $file->getFile($this->fileStorage);
         }
         $this->sendZipFilesResponse($files, "exercise-attachment-{$id}.zip");
+    }
+
+    /*
+     * Exercise file links management
+     */
+
+    public function checkGetFileLinks(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        if (!$this->exerciseAcl->canUpdate($exercise)) {
+            throw new ForbiddenRequestException("You cannot view exercise file links for this exercise.");
+        }
+    }
+
+    /**
+     * Retrieve a list of all exercise-file links for given exercise.
+     * @GET
+     */
+    #[Path("id", new VUuid(), "of exercise", required: true)]
+    public function actionGetFileLinks(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $this->sendSuccessResponse($exercise->getFileLinks()->getValues());
+    }
+
+    public function checkCreateFileLink(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        if (!$this->exerciseAcl->canUpdate($exercise)) {
+            throw new ForbiddenRequestException("You cannot create exercise file links for this exercise.");
+        }
+    }
+    /**
+     * Create a new exercise-file link for given exercise.
+     * @POST
+     */
+    #[Path("id", new VUuid(), "of exercise", required: true)]
+    #[Post(
+        "exerciseFileId",
+        new VUuid(),
+        "Target file the link will point to",
+        required: true
+    )]
+    #[Post(
+        "key",
+        new VString(1, 16),
+        "Internal user-selected identifier of the exercise file link within the exercise",
+        required: true
+    )]
+    #[Post(
+        "requiredRole",
+        new VString(1, 255),
+        "Minimal required user role to access the file (null = non-logged-in users)",
+        nullable: true,
+        required: false
+    )]
+    #[Post(
+        "saveName",
+        new VString(1, 255),
+        "File name override (the file will be downloaded under this name instead of the original name)",
+        nullable: true,
+        required: false
+    )]
+    public function actionCreateFileLink(string $id)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $req = $this->getRequest();
+        $exerciseFile = $this->exerciseFiles->findOrThrow($req->getPost("exerciseFileId"));
+        $key = $req->getPost("key");
+        $requiredRole = $req->getPost("requiredRole");
+        $saveName = $req->getPost("saveName");
+
+        if (!$this->roles->validateRole($requiredRole)) {
+            throw new InvalidApiArgumentException('requiredRole', "Unknown user role '$requiredRole'");
+        }
+
+        $link = ExerciseFileLink::createForExercise(
+            $key,
+            $exerciseFile,
+            $exercise,
+            $requiredRole,
+            $saveName
+        );
+
+        $this->fileLinks->persist($link);
+        $this->sendSuccessResponse($link);
+    }
+
+    public function checkUpdateFileLink(string $id, string $linkId)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $link = $this->fileLinks->findOrThrow($linkId);
+
+        if ($link->getExercise()?->getId() !== $id) {
+            throw new BadRequestException("The exercise file link is not associated with the given exercise.");
+        }
+
+        if (!$this->exerciseAcl->canUpdate($exercise)) {
+            throw new ForbiddenRequestException("You cannot update exercise file links for this exercise.");
+        }
+    }
+    /**
+     * Update a specific exercise-file link.
+     * @POST
+     */
+    #[Path("id", new VUuid(), "of exercise", required: true)]
+    #[Path("linkId", new VUuid(), "of the exercise file link", required: true)]
+    #[Post(
+        "key",
+        new VString(1, 16),
+        "Internal user-selected identifier of the exercise file link within the exercise",
+        required: true
+    )]
+    #[Post(
+        "requiredRole",
+        new VString(1, 255),
+        "Minimal required user role to access the file (null = non-logged-in users)",
+        nullable: true,
+        required: false
+    )]
+    #[Post(
+        "saveName",
+        new VString(1, 255),
+        "File name override (the file will be downloaded under this name instead of the original name)",
+        nullable: true,
+        required: false
+    )]
+    public function actionUpdateFileLink(string $id, string $linkId)
+    {
+        $link = $this->fileLinks->findOrThrow($linkId);
+        $req = $this->getRequest();
+        $post = $req->getPost();
+
+        if (array_key_exists("requiredRole", $post)) {
+            // array_key_exists checks whether the key is present (even if null)
+            $requiredRole = $post["requiredRole"];
+            if (!$this->roles->validateRole($requiredRole)) {
+                throw new InvalidApiArgumentException('requiredRole', "Unknown user role '$requiredRole'");
+            }
+            $link->setRequiredRole($requiredRole);
+        }
+
+        if (array_key_exists("saveName", $post)) {
+            // array_key_exists checks whether the key is present (even if null)
+            $link->setSaveName($post["saveName"]);
+        }
+
+        $link->setKey($req->getPost("key"));
+
+        $this->fileLinks->persist($link);
+        $this->sendSuccessResponse($link);
+    }
+
+    public function checkDeleteFileLink(string $id, string $linkId)
+    {
+        $exercise = $this->exercises->findOrThrow($id);
+        $link = $this->fileLinks->findOrThrow($linkId);
+
+        if ($link->getExercise()?->getId() !== $id) {
+            throw new BadRequestException("The exercise file link is not associated with the given exercise.");
+        }
+
+        if (!$this->exerciseAcl->canUpdate($exercise)) {
+            throw new ForbiddenRequestException("You cannot delete exercise file links for this exercise.");
+        }
+    }
+
+    /**
+     * Delete a specific exercise-file link.
+     * @DELETE
+     */
+    #[Path("id", new VUuid(), "of exercise", required: true)]
+    #[Path("linkId", new VUuid(), "of the exercise file link", required: true)]
+    public function actionDeleteFileLink(string $id, string $linkId)
+    {
+        $link = $this->fileLinks->findOrThrow($linkId);
+        $this->fileLinks->remove($link);
+        $this->sendSuccessResponse("OK");
     }
 }
