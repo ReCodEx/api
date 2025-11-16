@@ -216,6 +216,31 @@ App\Model\Entity\ExerciseFile:
             - "shahash"
             - @demoAdmin
             - @demoExercise
+    linkedExerciseFile:
+        __construct:
+            - "lib.py"
+            - "<dateTimeBetween('-3 years', '-1 years')>"
+            - 42
+            - "hashmash"
+            - @demoAdmin
+            - @demoExercise
+
+App\Model\Entity\ExerciseFileLink:
+    demoExerciseFileLink1:
+        __construct:
+            createForExercise:
+                - "LIB"
+                - @linkedExerciseFile
+                - @demoExercise
+                - "student"
+                - "thelib.py"
+
+    demoExerciseFileLink2:
+        __construct:
+            createForExercise:
+                - "ORIG"
+                - @linkedExerciseFile
+                - @demoExercise
 
 App\Model\Entity\ExerciseTag:
     demoTag1:

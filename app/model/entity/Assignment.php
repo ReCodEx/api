@@ -23,6 +23,20 @@ class Assignment extends AssignmentBase implements IExercise
 {
     use ExerciseData;
 
+    /**
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="assignment", cascade={"persist"})
+     * @var Collection<ExerciseFileLink>
+     */
+    protected $fileLinks;
+
+    /**
+     * @return Collection<ExerciseFileLink>
+     */
+    public function getFileLinks(): Collection
+    {
+        return $this->fileLinks;
+    }
+
     private function __construct(
         DateTime $firstDeadline,
         int $maxPointsBeforeFirstDeadline,
@@ -79,12 +93,6 @@ class Assignment extends AssignmentBase implements IExercise
         $this->fileLinks = new ArrayCollection();
         $this->solutionFilesLimit = $exercise->getSolutionFilesLimit();
         $this->solutionSizeLimit = $exercise->getSolutionSizeLimit();
-
-        // copy file links from exercise
-        foreach ($exercise->getFileLinks() as $link) {
-            $newLink = ExerciseFileLink::copyForAssignment($link, $this);
-            $this->fileLinks->add($newLink);
-        }
     }
 
     public static function assignToGroup(
@@ -112,6 +120,12 @@ class Assignment extends AssignmentBase implements IExercise
         );
 
         $group->addAssignment($assignment);
+
+        // copy file links from exercise
+        foreach ($exercise->getFileLinks() as $link) {
+            $newLink = ExerciseFileLink::copyForAssignment($link, $assignment);
+            $assignment->fileLinks->add($newLink);
+        }
 
         return $assignment;
     }
@@ -620,6 +634,9 @@ class Assignment extends AssignmentBase implements IExercise
         $this->submissionsCountLimit = $submissionsCountLimit;
     }
 
+    /**
+     * @return Collection<AssignmentSolution>
+     */
     public function getAssignmentSolutions(): Collection
     {
         return $this->assignmentSolutions;
@@ -755,7 +772,7 @@ class Assignment extends AssignmentBase implements IExercise
         return $this->plagiarismBatch;
     }
 
-    public function setPlagiarismBatch(?PlagiarismDetectionBatch $batch = null)
+    public function setPlagiarismBatch(?PlagiarismDetectionBatch $batch = null): void
     {
         $this->plagiarismBatch = $batch;
     }
