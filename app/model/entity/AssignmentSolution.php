@@ -343,6 +343,9 @@ class AssignmentSolution
         $this->overriddenPoints = $overriddenPoints;
     }
 
+    /**
+     * @return Collection<AssignmentSolutionSubmission>
+     */
     public function getSubmissions(): Collection
     {
         return $this->submissions;

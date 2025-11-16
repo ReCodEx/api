@@ -57,7 +57,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
         $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
 
-        // patch container, since we cannot create actual file storage manarer
+        // patch container, since we cannot create actual file storage manager
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
         $this->container->addService($fsName, new FileStorageManager(

@@ -112,6 +112,20 @@ class Exercise implements IExercise
     protected $archivedAt = null;
 
     /**
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exercise", cascade={"persist"})
+     * @var Collection<ExerciseFileLink>
+     */
+    protected $fileLinks;
+
+    /**
+     * @return Collection<ExerciseFileLink>
+     */
+    public function getFileLinks(): Collection
+    {
+        return $this->fileLinks;
+    }
+
+    /**
      * Constructor
      * @param int $version
      * @param string $difficulty
@@ -390,6 +404,9 @@ class Exercise implements IExercise
         $this->author = $author;
     }
 
+    /**
+     * @return ReadableCollection<User>
+     */
     public function getAdmins(): ReadableCollection
     {
         return $this->admins->filter(

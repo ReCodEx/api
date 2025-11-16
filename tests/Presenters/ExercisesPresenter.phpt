@@ -54,6 +54,9 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var App\Model\Repository\Exercises */
     protected $exercises;
 
+    /** @var App\Model\Repository\ExerciseFileLinks */
+    protected $exerciseFileLinks;
+
     /** @var App\Model\Repository\Assignments */
     protected $assignments;
 
@@ -83,6 +86,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $this->exerciseFiles = $container->getByType(\App\Model\Repository\ExerciseFiles::class);
         $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
         $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
+        $this->exerciseFileLinks = $container->getByType(App\Model\Repository\ExerciseFileLinks::class);
         $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
         $this->pipelines = $container->getByType(App\Model\Repository\Pipelines::class);
         $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
@@ -396,7 +400,7 @@ class TestExercisesPresenter extends Tester\TestCase
         $groups = $this->groups->findByName("en", "Private group", $instance);
         $group = reset($groups);
 
-        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Exercises',
@@ -409,7 +413,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testListExercisesByIds()
     {
-        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercises = $this->exercises->findAll();
         $first = $exercises[0];
         $second = $exercises[1];
@@ -430,18 +434,29 @@ class TestExercisesPresenter extends Tester\TestCase
 
     public function testDetail()
     {
-        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
-        $allExercises = $this->presenter->exercises->findAll();
-        $exercise = array_pop($allExercises);
+        $exercises = array_filter(
+            $this->exercises->findAll(),
+            function (Exercise $e) {
+                return !$e->getFileLinks()->isEmpty(); // select the exercise with file links
+            }
+        );
+        Assert::count(1, $exercises);
+        $exercise = array_pop($exercises);
 
-        $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'detail', 'id' => $exercise->getId()]);
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            'V1:Exercises',
+            'GET',
+            ['action' => 'detail', 'id' => $exercise->getId()]
+        );
 
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-        Assert::same($exercise->getId(), $result['payload']['id']);
+        Assert::same($exercise->getId(), $payload['id']);
+        Assert::count(2, $payload['localizedTextsLinks']);
+        $keys = array_keys($payload['localizedTextsLinks']);
+        sort($keys);
+        Assert::same(['LIB', 'ORIG'], $keys);
     }
 
     public function testUpdateDetail()

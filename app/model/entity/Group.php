@@ -474,7 +474,7 @@ class Group
     /**
      * Get all members of the group of given type
      * @param string[] ...$types
-     * @return ReadableCollection
+     * @return ReadableCollection<User>
      */
     public function getMembers(...$types): ReadableCollection
     {
@@ -505,12 +505,18 @@ class Group
         )->getValues();
     }
 
-    public function getStudents()
+    /**
+     * @return ReadableCollection<User>
+     */
+    public function getStudents(): ReadableCollection
     {
         return $this->getMembers(GroupMembership::TYPE_STUDENT);
     }
 
-    public function getStudentsIds()
+    /**
+     * @return string[] ids
+     */
+    public function getStudentsIds(): array
     {
         return $this->getMembersIds(GroupMembership::TYPE_STUDENT);
     }

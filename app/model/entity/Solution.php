@@ -74,7 +74,7 @@ class Solution
         $this->subdir = $this->createdAt->format('Y-m');
     }
 
-    public function addFile(SolutionFile $file)
+    public function addFile(SolutionFile $file): void
     {
         $this->files->add($file);
     }
@@ -97,7 +97,7 @@ class Solution
         return new SolutionParams(Yaml::parse($this->solutionParams));
     }
 
-    public function setSolutionParams(SolutionParams $params)
+    public function setSolutionParams(SolutionParams $params): void
     {
         $dumped = Yaml::dump($params->toArray());
         $this->solutionParams = $dumped ?: "";
@@ -137,6 +137,9 @@ class Solution
         return $this->author->isDeleted() ? null : $this->author->getId();
     }
 
+    /**
+     * @return Collection<SolutionFile>
+     */
     public function getFiles(): Collection
     {
         return $this->files;

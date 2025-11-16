@@ -59,7 +59,7 @@ class ExerciseFileLink implements JsonSerializable
     protected $exercise;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Assignment", inversedBy="fileLinks")
+     * @ORM\ManyToOne(targetEntity="Assignment")
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $assignment;

@@ -76,7 +76,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->hardwareGroups = $container->getByType(HardwareGroups::class);
         $this->assignmentSolutionViewFactory = $container->getByType(AssignmentSolutionViewFactory::class);
 
-        // patch container, since we cannot create actual file storage manarer
+        // patch container, since we cannot create actual file storage manager
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
         $this->container->addService($fsName, new FileStorageManager(
@@ -234,8 +234,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
         $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
-        $mockAssignmentEmailsSender->shouldReceive()->never(
-        ); // this is the main assertion of this test (no mail is sent)
+        $mockAssignmentEmailsSender->shouldReceive()->never(); // this is the main assertion of this test (no mail is sent)
         $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
 
         $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
@@ -619,32 +618,39 @@ class TestAssignmentsPresenter extends Tester\TestCase
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
+        $exercises = array_filter(
+            $this->presenter->exercises->findAll(),
+            function (Exercise $e) {
+                return !$e->getFileLinks()->isEmpty(); // select the exercise with file links
+            }
+        );
+        Assert::count(1, $exercises);
         /** @var Exercise $exercise */
-        $exercise = $this->presenter->exercises->findAll()[0];
+        $exercise = array_pop($exercises);
+
         /** @var Group $group */
         $group = $this->presenter->groups->findAll()[0];
 
-        $request = new Nette\Application\Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             'V1:Assignments',
             'POST',
             ['action' => 'create'],
             ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
         );
 
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
         /** @var AssignmentViewFactory $viewFactory */
         $viewFactory = $this->container->getByType(AssignmentViewFactory::class);
 
         // Make sure the assignment was persisted
         Assert::same(
-            $viewFactory->getAssignment($this->presenter->assignments->findOneBy(['id' => $result['payload']["id"]])),
-            $result['payload']
+            $viewFactory->getAssignment($this->presenter->assignments->findOneBy(['id' => $payload["id"]])),
+            $payload
         );
+        Assert::count(2, $payload['localizedTextsLinks']);
+        $keys = array_keys($payload['localizedTextsLinks']);
+        sort($keys);
+        Assert::same(['LIB', 'ORIG'], $keys);
     }
 
     public function testCreateAssignmentFromLockedExercise()
