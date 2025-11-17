@@ -16,7 +16,7 @@ class ExerciseFileLinks extends BaseRepository
     }
 
     /**
-     * Load an associative array [ key => external-file-ID ] for all file links of the given exercise.
+     * Load an associative array [ key => link-ID ] for all file links of the given exercise.
      * @param string $exerciseId
      * @return array<string, string>
      */
@@ -26,13 +26,13 @@ class ExerciseFileLinks extends BaseRepository
         $result = [];
         foreach ($links as $link) {
             /** @var ExerciseFileLink $link */
-            $result[$link->getKey()] = $link->getExerciseFile()->getId();
+            $result[$link->getKey()] = $link->getId();
         }
         return $result;
     }
 
     /**
-     * Load an associative array [ key => external-file-ID ] for all file links of the given assignment.
+     * Load an associative array [ key => link-ID ] for all file links of the given assignment.
      * @param string $assignmentId
      * @return array<string, string>
      */
@@ -42,7 +42,7 @@ class ExerciseFileLinks extends BaseRepository
         $result = [];
         foreach ($links as $link) {
             /** @var ExerciseFileLink $link */
-            $result[$link->getKey()] = $link->getExerciseFile()->getId();
+            $result[$link->getKey()] = $link->getId();
         }
         return $result;
     }

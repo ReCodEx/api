@@ -8,10 +8,17 @@ use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\TmpFilesHelper;
+use App\Model\Entity\Assignment;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseFileLink;
 use App\Model\Entity\UploadedFile;
+use App\Model\Repository\Assignments;
+use App\Model\Repository\AttachmentFiles;
+use App\Model\Repository\Exercises;
+use App\Model\Repository\ExerciseFiles;
+use App\Model\Repository\Groups;
+use App\Model\Repository\Logins;
 use App\V1Module\Presenters\ExerciseFilesPresenter;
 use App\Model\Entity\ExerciseFile;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,19 +40,24 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     /** @var  Nette\DI\Container */
     protected $container;
 
-    /** @var App\Model\Repository\ExerciseFiles */
+    /** @var ExerciseFiles */
     protected $exerciseFiles;
 
-    /** @var App\Model\Repository\Logins */
+    /** @var Logins */
     protected $logins;
 
     /** @var Nette\Security\User */
     private $user;
 
-    /** @var App\Model\Repository\Exercises */
+    /** @var Assignments */
+    protected $assignments;
+    /** @var Groups */
+    protected $groups;
+
+    /** @var Exercises */
     protected $exercises;
 
-    /** @var App\Model\Repository\AttachmentFiles */
+    /** @var AttachmentFiles */
     protected $attachmentFiles;
 
     public function __construct()
@@ -54,10 +66,12 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
-        $this->exerciseFiles = $container->getByType(\App\Model\Repository\ExerciseFiles::class);
-        $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
-        $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
-        $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
+        $this->assignments = $container->getByType(Assignments::class);
+        $this->attachmentFiles = $container->getByType(AttachmentFiles::class);
+        $this->exercises = $container->getByType(Exercises::class);
+        $this->exerciseFiles = $container->getByType(ExerciseFiles::class);
+        $this->groups = $container->getByType(Groups::class);
+        $this->logins = $container->getByType(Logins::class);
 
         // patch container, since we cannot create actual file storage manager
         $fsName = current($this->container->findByType(FileStorageManager::class));
@@ -140,6 +154,115 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         foreach ($payload as $item) {
             Assert::type(App\Model\Entity\ExerciseFile::class, $item);
         }
+    }
+
+    public function testExerciseFilesUploadOverload()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+        $exercise = current(array_filter(
+            $this->presenter->exercises->findAll(),
+            function ($exercise) {
+                return !$exercise->getFileLinks()->isEmpty();
+            }
+        ));
+        Assert::truthy($exercise);
+
+        $oldFiles = [];
+        foreach ($exercise->getExerciseFiles() as $file) {
+            /** @var ExerciseFile $file */
+            $oldFiles[$file->getName()] = $file->getId();
+        }
+        $oldFile = $exercise->getFileLinks()->first()->getExerciseFile();
+        $oldLinks = [];
+        foreach ($exercise->getFileLinks() as $link) {
+            if ($link->getExerciseFile()->getId() === $oldFile->getId()) {
+                $oldLinks[$link->getKey()] = $link;
+            }
+        }
+
+        // make an assignment (so we can check it is left unchanged)
+        $group = current($this->groups->findAll());
+        Assert::truthy($group);
+
+        $assignment = Assignment::assignToGroup($exercise, $group, true, null);
+        $this->assignments->persist($assignment);
+        $assignmentFiles = [];
+        foreach ($assignment->getExerciseFiles() as $file) {
+            /** @var ExerciseFile $file */
+            $assignmentFiles[$file->getName()] = $file->getId();
+        }
+        $assignmentLinks = $this->presenter->fileLinks->getLinksMapForAssignment($assignment->getId());
+
+        // prepare a new file
+        $filename = $oldFile->getName();
+        $file = new UploadedFile($filename, new \DateTime(), 42, $user);
+        $this->presenter->uploadedFiles->persist($file);
+        $this->presenter->uploadedFiles->flush();
+
+        // Mock file server setup
+        $fileStorage = Mockery::mock(FileStorageManager::class);
+        $fileStorage->shouldReceive("storeUploadedExerciseFile")->with($file)->once();
+        $this->presenter->fileStorage = $fileStorage;
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            "POST",
+            [
+                "action" => 'uploadExerciseFiles',
+                'id' => $exercise->getId()
+            ],
+            [
+                'files' => [$file->getId()]
+            ]
+        );
+
+        // number of files hasn't changed
+        Assert::count(count($oldFiles), $payload);
+        foreach ($payload as $item) {
+            Assert::type(App\Model\Entity\ExerciseFile::class, $item);
+        }
+
+        // all files (except the overloaded one) are unchanged, the overloaded one is new
+        $newFileId = null;
+        $this->presenter->exercises->refresh($exercise);
+        Assert::count(count($oldFiles), $exercise->getExerciseFiles());
+        foreach ($exercise->getExerciseFiles() as $file) {
+            /** @var ExerciseFile $file */
+            Assert::true(array_key_exists($file->getName(), $oldFiles));
+            if ($file->getName() !== $filename) {
+                Assert::equal($oldFiles[$file->getName()], $file->getId());
+            } else {
+                Assert::notEqual($oldFiles[$file->getName()], $file->getId());
+                Assert::equal(42, $file->getFileSize());
+                $newFileId = $file->getId();
+            }
+        }
+        Assert::truthy($newFileId);
+
+        // links has been properly updated
+        foreach ($exercise->getFileLinks() as $link) {
+            /** @var ExerciseFileLink $link */
+            Assert::true(array_key_exists($link->getKey(), $oldLinks));
+            $oldLink = $oldLinks[$link->getKey()];
+            Assert::equal($oldLink->getSaveName(), $link->getSaveName());
+            Assert::equal($oldLink->getRequiredRole(), $link->getRequiredRole());
+            Assert::equal($newFileId, $link->getExerciseFile()->getId());
+        }
+
+        // assignment is unchanged
+        $this->presenter->assignments->refresh($assignment);
+        Assert::count(count($assignmentFiles), $assignment->getExerciseFiles());
+        foreach ($assignment->getExerciseFiles() as $file) {
+            /** @var ExerciseFile $file */
+            Assert::true(array_key_exists($file->getName(), $assignmentFiles));
+            Assert::equal($assignmentFiles[$file->getName()], $file->getId());
+        }
+
+        $newAssignmentLinks = $this->presenter->fileLinks->getLinksMapForAssignment($assignment->getId());
+        Assert::same($assignmentLinks, $newAssignmentLinks);
     }
 
     public function testUploadTooManyExerciseFiles()

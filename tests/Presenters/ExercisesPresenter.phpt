@@ -690,8 +690,19 @@ class TestExercisesPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD, new Nette\Security\Passwords());
-        $exercise = current($this->presenter->exercises->findAll());
         $group = current($this->presenter->groups->findAll());
+
+        $exercises = array_filter($this->presenter->exercises->findAll(), function ($e) {
+            return !$e->isArchived() && !$e->getFileLinks()->isEmpty();
+        });
+        $exercise = current($exercises);
+        Assert::truthy($exercise);
+
+        // original links of the exercise indexed by keys
+        $exerciseLinks = [];
+        foreach ($exercise->getFileLinks() as $link) {
+            $exerciseLinks[$link->getKey()] = $link;
+        }
 
         $request = new Nette\Application\Request(
             'V1:Exercises',
@@ -715,6 +726,26 @@ class TestExercisesPresenter extends Tester\TestCase
         Assert::equal($user->getId(), $forked["authorId"]);
         Assert::equal(1, count($forked["groupsIds"]));
         Assert::equal($group->getId(), $forked["groupsIds"][0]);
+
+        Assert::count(count($exerciseLinks), $forked["localizedTextsLinks"]);
+        foreach ($forked["localizedTextsLinks"] as $key => $link) {
+            Assert::true(array_key_exists($key, $exerciseLinks));
+            Assert::notEqual($exerciseLinks[$key]->getId(), $link); // different link
+        }
+
+        $forked = $this->presenter->exercises->get($forked["id"]);
+        Assert::truthy($forked);
+
+        Assert::count(count($exerciseLinks), $forked->getFileLinks());
+        foreach ($forked->getFileLinks() as $link) {
+            Assert::true(array_key_exists($link->getKey(), $exerciseLinks));
+            $origLink = $exerciseLinks[$link->getKey()];
+            Assert::notSame($origLink->getId(), $link->getId());
+            Assert::null($link->getAssignment());
+            Assert::equal($origLink->getExerciseFile()->getId(), $link->getExerciseFile()->getId());
+            Assert::equal($origLink->getSaveName(), $link->getSaveName());
+            Assert::equal($origLink->getRequiredRole(), $link->getRequiredRole());
+        }
     }
 
     public function testHardwareGroups()
