@@ -529,7 +529,7 @@ class ExerciseFilesPresenter extends BasePresenter
         $requiredRole = $req->getPost("requiredRole");
         $saveName = $req->getPost("saveName");
 
-        if (!$this->roles->validateRole($requiredRole)) {
+        if ($requiredRole !== null && !$this->roles->validateRole($requiredRole)) {
             throw new InvalidApiArgumentException('requiredRole', "Unknown user role '$requiredRole'");
         }
 
@@ -559,7 +559,7 @@ class ExerciseFilesPresenter extends BasePresenter
         }
     }
     /**
-     * Update a specific exercise-file link.
+     * Update a specific exercise-file link. Missing arguments are not changed.
      * @POST
      */
     #[Path("id", new VUuid(), "of exercise", required: true)]
@@ -568,7 +568,7 @@ class ExerciseFilesPresenter extends BasePresenter
         "key",
         new VString(1, 16),
         "Internal user-selected identifier of the exercise file link within the exercise",
-        required: true
+        required: false
     )]
     #[Post(
         "requiredRole",
@@ -590,21 +590,24 @@ class ExerciseFilesPresenter extends BasePresenter
         $req = $this->getRequest();
         $post = $req->getPost();
 
+        $key = $req->getPost("key");
+        if ($key) {
+            $link->setKey($key); // if key is null, it is not changed
+        }
+
         if (array_key_exists("requiredRole", $post)) {
-            // array_key_exists checks whether the key is present (even if null)
+            // array_key_exists checks whether the requiredRole is present (even if null)
             $requiredRole = $post["requiredRole"];
-            if (!$this->roles->validateRole($requiredRole)) {
+            if ($requiredRole !== null && !$this->roles->validateRole($requiredRole)) {
                 throw new InvalidApiArgumentException('requiredRole', "Unknown user role '$requiredRole'");
             }
             $link->setRequiredRole($requiredRole);
         }
 
         if (array_key_exists("saveName", $post)) {
-            // array_key_exists checks whether the key is present (even if null)
+            // array_key_exists checks whether the saveName is present (even if null)
             $link->setSaveName($post["saveName"]);
         }
-
-        $link->setKey($req->getPost("key"));
 
         $this->fileLinks->persist($link);
         $this->sendSuccessResponse($link);
