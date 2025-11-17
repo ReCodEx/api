@@ -558,6 +558,7 @@ class ExerciseFilesPresenter extends BasePresenter
             throw new ForbiddenRequestException("You cannot update exercise file links for this exercise.");
         }
     }
+
     /**
      * Update a specific exercise-file link. Missing arguments are not changed.
      * @POST

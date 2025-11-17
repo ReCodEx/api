@@ -4,10 +4,18 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Model\Entity\AttachmentFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
+use App\Model\Entity\Assignment;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseFileLink;
+use App\Model\Entity\Group;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
-use App\Model\Repository\Logins;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\Exercises;
+use App\Model\Repository\Groups;
+use App\Model\Repository\Logins;
+use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\CannotReceiveUploadedFileException;
@@ -16,6 +24,7 @@ use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
+use App\Security\Roles;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Json;
 use Tester\Assert;
@@ -32,10 +41,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     private $userPassword = "password";
 
     private $otherUserLogin = "user1@example.com";
-    private $otherUserPassword = "password1";
-
     private $supervisorLogin = "demoGroupSupervisor@example.com";
-    private $supervisorPassword = "password";
 
     /** @var UploadedFilesPresenter */
     protected $presenter;
@@ -46,11 +52,20 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     /** @var  Nette\DI\Container */
     protected $container;
 
+    /** @var Assignments */
+    protected $assignments;
+
+    /** @var Exercises */
+    protected $exercises;
+
+    /** @var Groups */
+    protected $groups;
+
     /** @var Logins */
     protected $logins;
 
     /** @var AssignmentSolutions */
-    protected $asignmentSolutions;
+    protected $assignmentSolutions;
 
     /** @var Nette\Security\User */
     private $user;
@@ -64,10 +79,13 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $this->container = $container;
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->assignments = $container->getByType(Assignments::class);
+        $this->exercises = $container->getByType(Exercises::class);
+        $this->groups = $container->getByType(Groups::class);
         $this->logins = $container->getByType(Logins::class);
-        $this->asignmentSolutions = $container->getByType(AssignmentSolutions::class);
+        $this->assignmentSolutions = $container->getByType(AssignmentSolutions::class);
 
-        // patch container, since we cannot create actual file storage manarer
+        // patch container, since we cannot create actual file storage manager
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
         $this->container->addService($fsName, new FileStorageManager(
@@ -131,7 +149,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     public function testNotFoundDownload()
     {
-        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $user = $this->logins->getUser($this->userLogin, $this->userPassword, new Nette\Security\Passwords());
         $uploadedFile = new UploadedFile("nonexistfile", new DateTime(), 1, $user);
@@ -384,7 +402,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     {
         $token = PresenterTestHelper::login($this->container, $this->supervisorLogin);
 
-        $solution = current(array_filter($this->asignmentSolutions->findAll(), function ($solution) {
+        $solution = current(array_filter($this->assignmentSolutions->findAll(), function ($solution) {
             return $solution->getSolution()->getFiles()->count() > 0;
         }));
         Assert::truthy($solution);
@@ -436,7 +454,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         Assert::equal($file->getName(), $response->getName());
     }
 
-    public function testDownloadResultArchive()
+    public function testDownloadExerciseFile()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
@@ -671,7 +689,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     public function testDownloadDetectedPlagiarismSource()
     {
-        $token = PresenterTestHelper::login($this->container, 'demoGroupSupervisor@example.com');
+        PresenterTestHelper::login($this->container, 'demoGroupSupervisor@example.com');
 
         $similarFileEnt = current($this->presenter->detectedSimilarFiles->findAll());
         $file = $similarFileEnt->getSolutionFile();
@@ -708,6 +726,306 @@ class TestUploadedFilesPresenter extends Tester\TestCase
         $response = $this->presenter->run($request);
         Assert::type(App\Responses\StorageFileResponse::class, $response);
         Assert::equal($file->getName(), $response->getName());
+    }
+
+    private function getExerciseWithLinks(): Exercise
+    {
+        $exercises = array_filter(
+            $this->exercises->findAll(),
+            function (Exercise $e) {
+                return !$e->getFileLinks()->isEmpty(); // select the exercise with file links
+            }
+        );
+        Assert::count(1, $exercises);
+        return array_pop($exercises);
+    }
+
+    private function makeAssignmentWithLinks()
+    {
+        $exercise = $this->getExerciseWithLinks();
+        $supervisor = $this->container->getByType(Users::class)->getByEmail(PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        $group = current(array_filter(
+            $this->groups->findAll(),
+            function (Group $g) use ($supervisor) {
+                return $g->isSupervisorOf($supervisor) && !$g->isOrganizational();
+            }
+        ));
+        Assert::truthy($group);
+
+        $assignment = Assignment::assignToGroup($exercise, $group, true, null);
+        $this->assignments->persist($assignment);
+        return $assignment;
+    }
+
+    public function testDownloadExerciseFileByLink()
+    {
+        // no login (should be visible for everyone)
+
+        $exercise = $this->getExerciseWithLinks();
+        $fileLink = $exercise->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getRequiredRole() === null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $file = $fileLink->getExerciseFile();
+
+        // mock everything you can
+        $fileMock = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getExerciseFileByHash")
+            ->withArgs([$file->getHashName()])
+            ->andReturn($fileMock)->once();
+        $this->presenter->fileStorage = $mockStorage;
+
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'GET',
+            ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($file->getName(), $response->getName());
+    }
+
+    public function testDownloadAssignmentFileByLink()
+    {
+        // no login (should be visible for everyone)
+
+        $assignment = $this->makeAssignmentWithLinks();
+
+        Assert::count(2, $assignment->getFileLinks());
+        $fileLink = $assignment->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getRequiredRole() === null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $file = $fileLink->getExerciseFile();
+
+        // mock everything you can
+        $fileMock = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getExerciseFileByHash")
+            ->withArgs([$file->getHashName()])
+            ->andReturn($fileMock)->once();
+        $this->presenter->fileStorage = $mockStorage;
+
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'GET',
+            ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($file->getName(), $response->getName());
+    }
+
+    public function testDownloadExerciseFileByLinkWithRenaming()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        $exercise = $this->getExerciseWithLinks();
+        $fileLink = $exercise->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getSaveName() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $file = $fileLink->getExerciseFile();
+
+        // mock everything you can
+        $fileMock = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getExerciseFileByHash")
+            ->withArgs([$file->getHashName()])
+            ->andReturn($fileMock)->once();
+        $this->presenter->fileStorage = $mockStorage;
+
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'GET',
+            ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($fileLink->getSaveName(), $response->getName());
+    }
+
+    public function testDownloadAssignmentFileByLinkWithRenaming()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        $assignment = $this->makeAssignmentWithLinks();
+        $fileLink = $assignment->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getSaveName() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $file = $fileLink->getExerciseFile();
+
+        // mock everything you can
+        $fileMock = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getExerciseFileByHash")
+            ->withArgs([$file->getHashName()])
+            ->andReturn($fileMock)->once();
+        $this->presenter->fileStorage = $mockStorage;
+
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'GET',
+            ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($fileLink->getSaveName(), $response->getName());
+    }
+
+    public function testDownloadExerciseFileByLinkDeniedByRole()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        $exercise = $this->getExerciseWithLinks();
+        $fileLink = $exercise->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getRequiredRole() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $fileLink->setRequiredRole(Roles::EMPOWERED_SUPERVISOR_ROLE); // set role that current user does not have
+        $this->presenter->fileLinks->persist($fileLink);
+
+        Assert::exception(
+            function () use ($fileLink) {
+                $request = new Nette\Application\Request(
+                    $this->presenterPath,
+                    'GET',
+                    ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+                );
+                $this->presenter->run($request);
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testDownloadAssignmentFileByLinkDeniedByRole()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
+
+        $assignment = $this->makeAssignmentWithLinks();
+        $fileLink = $assignment->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getRequiredRole() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $fileLink->setRequiredRole(Roles::SUPERVISOR_ROLE); // set role that current user does not have
+        $this->presenter->fileLinks->persist($fileLink);
+
+        Assert::exception(
+            function () use ($fileLink) {
+                $request = new Nette\Application\Request(
+                    $this->presenterPath,
+                    'GET',
+                    ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+                );
+                $this->presenter->run($request);
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testDownloadExerciseFileByLinkDeniedByExerciseAcl()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::ANOTHER_SUPERVISOR_LOGIN);
+
+        $exercise = $this->getExerciseWithLinks();
+        $fileLink = $exercise->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getRequiredRole() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+
+        Assert::exception(
+            function () use ($fileLink) {
+                $request = new Nette\Application\Request(
+                    $this->presenterPath,
+                    'GET',
+                    ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+                );
+                $this->presenter->run($request);
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testDownloadAssignmentFileByLinkDeniedByAssignmentAcl()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::NONMEMBER_STUDENT_LOGIN);
+
+        $assignment = $this->makeAssignmentWithLinks();
+        $fileLink = $assignment->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getRequiredRole() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+
+        Assert::exception(
+            function () use ($fileLink) {
+                $request = new Nette\Application\Request(
+                    $this->presenterPath,
+                    'GET',
+                    ['action' => 'downloadExerciseFileByLink', 'id' => $fileLink->getId()]
+                );
+                $this->presenter->run($request);
+            },
+            ForbiddenRequestException::class
+        );
+    }
+
+    public function testDownloadExerciseFileByKey()
+    {
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+        $exercise = $this->getExerciseWithLinks();
+        $fileLink = $exercise->getFileLinks()->filter(
+            function (ExerciseFileLink $link) {
+                return $link->getSaveName() !== null;
+            }
+        )->first();
+        Assert::truthy($fileLink);
+        $file = $fileLink->getExerciseFile();
+
+        // mock everything you can
+        $fileMock = Mockery::mock(LocalImmutableFile::class);
+        $mockStorage = Mockery::mock(FileStorageManager::class);
+        $mockStorage->shouldReceive("getExerciseFileByHash")
+            ->withArgs([$file->getHashName()])
+            ->andReturn($fileMock)->once();
+        $this->presenter->fileStorage = $mockStorage;
+
+        $request = new Nette\Application\Request(
+            $this->presenterPath,
+            'GET',
+            [
+                'action' => 'downloadExerciseFileLinkByKey',
+                'id' => $exercise->getId(),
+                'linkKey' => $fileLink->getKey()
+            ]
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(App\Responses\StorageFileResponse::class, $response);
+        Assert::equal($fileLink->getSaveName(), $response->getName());
     }
 }
 

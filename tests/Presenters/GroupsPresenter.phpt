@@ -26,16 +26,7 @@ $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 class TestGroupsPresenter extends Tester\TestCase
 {
     private $userLogin = "user2@example.com";
-    private $userPassword = "password2";
-
     private $adminLogin = "admin@admin.com";
-    private $adminPassword = "admin";
-
-    private $groupSupervisorLogin = "demoGroupSupervisor@example.com";
-    private $groupSupervisorPassword = "password";
-
-    private $groupSupervisor2Login = "demoGroupSupervisor2@example.com";
-    private $groupSupervisor2Password = "password";
 
     /** @var GroupsPresenter */
     protected $presenter;
@@ -152,10 +143,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testListAllGroupsBySupervisor()
     {
-        $token = PresenterTestHelper::login(
-            $this->container,
-            $this->groupSupervisorLogin,
-        );
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Groups',
@@ -167,7 +155,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testListAllGroupsByAdmin()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Groups',
@@ -179,7 +167,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testSearchGroupByName()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Groups',
@@ -191,7 +179,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testSearchGroupByNameIncludingAncestors()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Groups',
@@ -203,7 +191,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testListGroupIncludingArchived()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Groups',
@@ -215,7 +203,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testListGroupOnlyArchived()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             'V1:Groups',
@@ -390,7 +378,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testAddGroup()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
 
         /** @var Instance $instance */
@@ -445,7 +433,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testAddOrganizationalGroup()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
 
         /** @var Instance $instance */
@@ -501,7 +489,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testAddExamGroup()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
 
         /** @var Instance $instance */
@@ -558,7 +546,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testAddGroupNoAdmin()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
         $admin = $this->container->getByType(Users::class)->getByEmail($this->adminLogin);
 
         /** @var Instance $instance */
@@ -613,7 +601,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testValidateAddGroupData()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $instance = $this->presenter->instances->findAll()[0];
 
@@ -755,7 +743,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testRemoveGroup()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $instance = $this->presenter->instances->findAll()[0];
         $groups = $this->presenter->groups->findAll();
@@ -779,7 +767,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testDetail()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $groups = $this->presenter->groups->findAll();
         $group = array_pop($groups);
@@ -800,7 +788,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testSubgroups()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $groups = $this->presenter->groups->findAll();
         $group = array_pop($groups);
@@ -821,7 +809,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testMembers()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $groups = $this->presenter->groups->findAll();
         $group = array_pop($groups);
@@ -851,7 +839,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testAssignments()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $groups = $this->presenter->groups->findAll();
         foreach ($groups as $group) {
@@ -871,7 +859,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     public function testShadowAssignments()
     {
-        $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
 
         $groups = $this->presenter->groups->findAll();
         foreach ($groups as $group) {
@@ -1450,8 +1438,8 @@ class TestGroupsPresenter extends Tester\TestCase
 
     private function prepExamGroup(): Group
     {
-        PresenterTestHelper::login($this->container, $this->groupSupervisor2Login);
-        $admin = $this->presenter->users->getByEmail($this->groupSupervisor2Login);
+        PresenterTestHelper::login($this->container, PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN);
+        $admin = $this->presenter->users->getByEmail(PresenterTestHelper::GROUP_SUPERVISOR2_LOGIN);
         $groups = $this->getAllGroupsInDepth(
             2,
             function (Group $g) {

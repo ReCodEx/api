@@ -173,7 +173,6 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/<id>/file-links", "ExerciseFiles:createFileLink");
         $router[] = new PostRoute("$prefix/<id>/file-links/<linkId>", "ExerciseFiles:updateFileLink");
         $router[] = new DeleteRoute("$prefix/<id>/file-links/<linkId>", "ExerciseFiles:deleteFileLink");
-        $router[] = new GetRoute("$prefix/<id>/file-links/<linkId>", "UploadedFiles:downloadExerciseFileByLink");
 
         // special download route for file link by its key
         $router[] = new GetRoute("$prefix/<id>/file-download/<linkKey>", "UploadedFiles:downloadExerciseFileLinkByKey");
@@ -474,6 +473,8 @@ class RouterFactory
         $router[] = new PutRoute("$prefix/partial/<id>", "UploadedFiles:appendPartial");
         $router[] = new DeleteRoute("$prefix/partial/<id>", "UploadedFiles:cancelPartial");
         $router[] = new PostRoute("$prefix/partial/<id>", "UploadedFiles:completePartial");
+
+        $router[] = new GetRoute("$prefix/link/<id>", "UploadedFiles:downloadExerciseFileByLink");
 
         $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
         $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
