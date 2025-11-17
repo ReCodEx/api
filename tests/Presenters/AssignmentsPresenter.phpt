@@ -21,8 +21,8 @@ use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\V1Module\Presenters\AssignmentsPresenter;
+use App\Security\Roles;
 use Doctrine\ORM\EntityManagerInterface;
-use Nette\Utils\Json;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Exceptions\NotFoundException;
@@ -628,6 +628,12 @@ class TestAssignmentsPresenter extends Tester\TestCase
         /** @var Exercise $exercise */
         $exercise = array_pop($exercises);
 
+        // original links of the exercise indexed by keys
+        $exerciseLinks = [];
+        foreach ($exercise->getFileLinks() as $link) {
+            $exerciseLinks[$link->getKey()] = $link;
+        }
+
         /** @var Group $group */
         $group = $this->presenter->groups->findAll()[0];
 
@@ -647,10 +653,24 @@ class TestAssignmentsPresenter extends Tester\TestCase
             $viewFactory->getAssignment($this->presenter->assignments->findOneBy(['id' => $payload["id"]])),
             $payload
         );
-        Assert::count(2, $payload['localizedTextsLinks']);
-        $keys = array_keys($payload['localizedTextsLinks']);
-        sort($keys);
-        Assert::same(['LIB', 'ORIG'], $keys);
+        Assert::count(count($exerciseLinks), $payload['localizedTextsLinks']);
+        foreach ($payload['localizedTextsLinks'] as $key => $linkId) {
+            Assert::true(array_key_exists($key, $exerciseLinks));
+            Assert::notEqual($exerciseLinks[$key]->getId(), $linkId); // new link should be created
+        }
+
+        // verify the newly created file links in the assignment
+        $assignment = $this->presenter->assignments->get($payload["id"]);
+        Assert::count(count($exerciseLinks), $assignment->getFileLinks());
+        foreach ($assignment->getFileLinks() as $link) {
+            Assert::true(array_key_exists($link->getKey(), $exerciseLinks));
+            $origLink = $exerciseLinks[$link->getKey()];
+            Assert::notSame($origLink->getId(), $link->getId());
+            Assert::null($link->getExercise());
+            Assert::equal($origLink->getExerciseFile()->getId(), $link->getExerciseFile()->getId());
+            Assert::equal($origLink->getSaveName(), $link->getSaveName());
+            Assert::equal($origLink->getRequiredRole(), $link->getRequiredRole());
+        }
     }
 
     public function testCreateAssignmentFromLockedExercise()
@@ -755,15 +775,22 @@ class TestAssignmentsPresenter extends Tester\TestCase
       wall-time: 44
     ";
 
+        $exercises = array_filter(
+            $this->presenter->exercises->findAll(),
+            function (Exercise $e) {
+                return !$e->getFileLinks()->isEmpty(); // select the exercise with file links
+            }
+        );
+        Assert::count(1, $exercises);
         /** @var Exercise $exercise */
-        $exercise = $this->presenter->exercises->findAll()[0];
+        $exercise = array_pop($exercises);
+
         $exerciseLimits = new ExerciseLimits($environment, $hwGroup, $limits, $user);
         $this->em->persist($exerciseLimits);
 
         $exercise->addExerciseLimits($exerciseLimits);
         $assignment = Assignment::assignToGroup($exercise, $group);
         $this->em->persist($assignment);
-
         $this->em->flush();
 
         $newExerciseLimits = new ExerciseLimits($environment, $hwGroup, $newLimits, $user);
@@ -771,6 +798,13 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $exercise->clearExerciseLimits();
         $exercise->addExerciseLimits($newExerciseLimits);
 
+        $exercise->getFileLinks()->removeElement($exercise->getFileLinks()->first());
+        Assert::count(1, $exercise->getFileLinks());
+        $link = $exercise->getFileLinks()->first();
+        $link->setKey("NEW");
+        $link->setRequiredRole(Roles::SUPERVISOR_ROLE);
+        $this->em->persist($link);
+        $this->em->persist($exercise);
         $this->em->flush();
 
         $request = new Nette\Application\Request(
@@ -785,6 +819,12 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         Assert::same($assignment->getId(), $data["id"]);
         Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
+        Assert::count(1, $assignment->getFileLinks());
+        $newLink = $assignment->getFileLinks()->first();
+        Assert::equal("NEW", $newLink->getKey());
+        Assert::equal(Roles::SUPERVISOR_ROLE, $newLink->getRequiredRole());
+        Assert::equal($link->getExerciseFile()->getId(), $newLink->getExerciseFile()->getId());
+        Assert::null($newLink->getExercise());
     }
 
     public function testRemove()

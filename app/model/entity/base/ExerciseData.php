@@ -280,7 +280,7 @@ trait ExerciseData
 
     /**
      * @ORM\ManyToMany(targetEntity="ExerciseFile")
-     * @var Collection
+     * @var Collection<ExerciseFile>
      */
     protected $exerciseFiles;
 
