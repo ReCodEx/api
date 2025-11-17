@@ -34,6 +34,7 @@ use App\Model\Entity\SolutionZipFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\UploadedPartialFile;
 use App\Security\Roles;
+use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IUploadedFilePermissions;
@@ -110,6 +111,12 @@ class UploadedFilesPresenter extends BasePresenter
      * @inject
      */
     public $assignmentSolutionAcl;
+
+    /**
+     * @var IAssignmentPermissions
+     * @inject
+     */
+    public $assignmentAcl;
 
     /**
      * @var IExercisePermissions
@@ -656,7 +663,10 @@ class UploadedFilesPresenter extends BasePresenter
         }
 
         // for logged-in users, check exercise access (this is additional check on top of role requirement)
-        if (!$this->exerciseAcl->canViewDetail($link->getExercise())) {
+        if ($link->getExercise() !== null && !$this->exerciseAcl->canViewDetail($link->getExercise())) {
+            throw new ForbiddenRequestException("You cannot download exercise file for this exercise.");
+        }
+        if ($link->getAssignment() !== null && !$this->assignmentAcl->canViewDetail($link->getAssignment())) {
             throw new ForbiddenRequestException("You cannot download exercise file for this exercise.");
         }
 
@@ -681,14 +691,9 @@ class UploadedFilesPresenter extends BasePresenter
         $this->sendStorageFileResponse($file, $link->getSaveName() ?? $fileEntity->getName());
     }
 
-    public function checkDownloadExerciseFileByLink(string $id, string $linkId)
+    public function checkDownloadExerciseFileByLink(string $id)
     {
-        $link = $this->fileLinks->findOrThrow($linkId);
-
-        if ($link->getExercise()?->getId() !== $id) {
-            throw new BadRequestException("The exercise file link is not associated with the given exercise.");
-        }
-
+        $link = $this->fileLinks->findOrThrow($id);
         $this->checkExerciseFileLink($link);
     }
 
@@ -697,11 +702,10 @@ class UploadedFilesPresenter extends BasePresenter
      * This endpoint is deliberately placed in UploadedFilesPresenter so it works for non-logged-in users as well.
      * @GET
      */
-    #[Path("id", new VUuid(), "of exercise", required: true)]
-    #[Path("linkId", new VUuid(), "of the exercise file link entity", required: true)]
-    public function actionDownloadExerciseFileByLink(string $id, string $linkId)
+    #[Path("id", new VUuid(), "of the exercise file link entity", required: true)]
+    public function actionDownloadExerciseFileByLink(string $id)
     {
-        $link = $this->fileLinks->findOrThrow($linkId);
+        $link = $this->fileLinks->findOrThrow($id);
         $this->downloadFileByLink($link);
     }
 

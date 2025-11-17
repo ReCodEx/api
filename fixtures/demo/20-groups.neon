@@ -117,6 +117,11 @@ App\Model\Entity\User:
         __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", student, @demoInstance]
         makeStudentOf: @demoGroup
         setVerified: true
+    
+    nonmemberStudent:
+        __construct: ["nonmemberStudent@example.com", "<firstName()>", "<lastName()>", "", "", student, @demoInstance]
+        setVerified: true
+
 
 App\Model\Entity\Login:
     submitUser1Login:

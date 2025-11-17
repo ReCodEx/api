@@ -25,6 +25,7 @@ class PresenterTestHelper
     public const ADMIN_PASSWORD = "admin";
 
     public const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
+    public const NONMEMBER_STUDENT_LOGIN = "nonmemberStudent@example.com";
     public const GROUP_SUPERVISOR_LOGIN = "demoGroupSupervisor@example.com";
     public const GROUP_SUPERVISOR2_LOGIN = "demoGroupSupervisor2@example.com";
     public const ANOTHER_SUPERVISOR_LOGIN = "anotherSupervisor@example.com";

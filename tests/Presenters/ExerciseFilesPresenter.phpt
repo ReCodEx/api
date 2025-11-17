@@ -714,7 +714,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $link = $exercise->getFileLinks()->first();
         Assert::truthy($link);
 
-        $payload = PresenterTestHelper::performPresenterRequest(
+        PresenterTestHelper::performPresenterRequest(
             $this->presenter,
             "V1:ExerciseFiles",
             'DELETE',
