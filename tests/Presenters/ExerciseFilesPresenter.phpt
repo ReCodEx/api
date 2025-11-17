@@ -9,6 +9,8 @@ use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Helpers\ExercisesConfig;
 use App\Helpers\TmpFilesHelper;
 use App\Model\Entity\AttachmentFile;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseFileLink;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExerciseFilesPresenter;
 use App\Model\Entity\ExerciseFile;
@@ -513,6 +515,215 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         foreach ($payload as $item) {
             Assert::type(App\Model\Entity\AttachmentFile::class, $item);
         }
+    }
+
+    private function getExerciseWithLinks(): Exercise
+    {
+        $exercises = array_filter(
+            $this->exercises->findAll(),
+            function (Exercise $e) {
+                return !$e->getFileLinks()->isEmpty(); // select the exercise with file links
+            }
+        );
+        Assert::count(1, $exercises);
+        return array_pop($exercises);
+    }
+
+    public function testGetExerciseFileLinks()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = $this->getExerciseWithLinks();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            'GET',
+            ['action' => 'getFileLinks', 'id' => $exercise->getId()]
+        );
+
+        $expectedLinks = [];
+        foreach ($exercise->getFileLinks() as $link) {
+            $expectedLinks[$link->getId()] = $link;
+        }
+
+        foreach ($payload as $link) {
+            Assert::true(array_key_exists($link->getId(), $expectedLinks));
+            $expectedLink = $expectedLinks[$link->getId()];
+            Assert::equal($expectedLink->getId(), $link->getId());
+            Assert::equal($expectedLink->getExerciseFile()->getId(), $link->getExerciseFile()->getId());
+            Assert::equal($expectedLink->getExercise()?->getId(), $link->getExercise()?->getId());
+            Assert::equal($expectedLink->getKey(), $link->getKey());
+            Assert::equal($expectedLink->getSaveName(), $link->getSaveName());
+            Assert::equal($expectedLink->getRequiredRole(), $link->getRequiredRole());
+            Assert::null($link->getAssignment());
+        }
+    }
+
+    public function testCreateExerciseFileLink()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = $this->getExerciseWithLinks();
+        $exerciseFile = $exercise->getExerciseFiles()->filter(function (ExerciseFile $ef) {
+            return $ef->getName() === 'input.txt';
+        })->first();
+        Assert::truthy($exerciseFile);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            'POST',
+            [
+                'action' => 'createFileLink',
+                'id' => $exercise->getId(),
+            ],
+            [
+                'exerciseFileId' => $exerciseFile->getId(),
+                'key' => 'test-key',
+                'requiredRole' => 'supervisor',
+                'saveName' => 'rename.txt'
+            ]
+        );
+
+        Assert::equal($exerciseFile->getId(), $payload->getExerciseFile()->getId());
+        Assert::equal('test-key', $payload->getKey());
+        Assert::equal('supervisor', $payload->getRequiredRole());
+        Assert::equal('rename.txt', $payload->getSaveName());
+
+        Assert::count(3, $this->presenter->fileLinks->findAll());
+    }
+
+    public function testCreateExerciseFileLinkWithoutOptionalFields()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = $this->getExerciseWithLinks();
+        $exerciseFile = $exercise->getExerciseFiles()->filter(function (ExerciseFile $ef) {
+            return $ef->getName() === 'input.txt';
+        })->first();
+        Assert::truthy($exerciseFile);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            'POST',
+            [
+                'action' => 'createFileLink',
+                'id' => $exercise->getId(),
+            ],
+            [
+                'exerciseFileId' => $exerciseFile->getId(),
+                'key' => 'test-key',
+            ]
+        );
+
+        Assert::equal($exerciseFile->getId(), $payload->getExerciseFile()->getId());
+        Assert::equal('test-key', $payload->getKey());
+        Assert::null($payload->getRequiredRole());
+        Assert::null($payload->getSaveName());
+
+        Assert::count(3, $this->presenter->fileLinks->findAll());
+    }
+
+    public function testUpdateExerciseFileLink()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = $this->getExerciseWithLinks();
+        $link = $exercise->getFileLinks()->filter(function (ExerciseFileLink $l) {
+            return $l->getKey() === 'LIB';
+        })->first();
+        Assert::truthy($link);
+        $exerciseFile = $link->getExerciseFile();
+        $saveName = $link->getSaveName();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            'POST',
+            [
+                'action' => 'updateFileLink',
+                'id' => $exercise->getId(),
+                'linkId' => $link->getId(),
+            ],
+            [
+                'key' => 'SPAM',
+                'requiredRole' => 'supervisor',
+            ]
+        );
+
+        $this->presenter->fileLinks->refresh($link);
+
+        Assert::equal($link->getId(), $payload->getId());
+        Assert::count(2, $this->presenter->fileLinks->findAll());
+
+        Assert::equal($exerciseFile->getId(), $payload->getExerciseFile()->getId());
+        Assert::equal('SPAM', $payload->getKey());
+        Assert::equal('supervisor', $payload->getRequiredRole());
+        Assert::equal($saveName, $payload->getSaveName()); // wasn't changed
+
+        Assert::equal($exerciseFile->getId(), $link->getExerciseFile()->getId());
+        Assert::equal('SPAM', $link->getKey());
+        Assert::equal('supervisor', $link->getRequiredRole());
+        Assert::equal($saveName, $link->getSaveName()); // wasn't changed
+    }
+
+    public function testUpdateExerciseFileLinkSetNulls()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = $this->getExerciseWithLinks();
+        $link = $exercise->getFileLinks()->filter(function (ExerciseFileLink $l) {
+            return $l->getKey() === 'LIB';
+        })->first();
+        Assert::truthy($link);
+        $exerciseFile = $link->getExerciseFile();
+        $key = $link->getKey();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            'POST',
+            [
+                'action' => 'updateFileLink',
+                'id' => $exercise->getId(),
+                'linkId' => $link->getId(),
+            ],
+            [
+                'requiredRole' => null,
+                'saveName' => null,
+            ]
+        );
+
+        $this->presenter->fileLinks->refresh($link);
+
+        Assert::equal($link->getId(), $payload->getId());
+        Assert::count(2, $this->presenter->fileLinks->findAll());
+
+        Assert::equal($exerciseFile->getId(), $payload->getExerciseFile()->getId());
+        Assert::equal($key, $payload->getKey()); // wasn't changed
+        Assert::null($payload->getRequiredRole());
+        Assert::null($payload->getSaveName());
+
+        Assert::equal($exerciseFile->getId(), $link->getExerciseFile()->getId());
+        Assert::equal($key, $link->getKey()); // wasn't changed
+        Assert::null($link->getRequiredRole());
+        Assert::null($link->getSaveName());
+    }
+
+    public function testDeleteExerciseFileLink()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $exercise = $this->getExerciseWithLinks();
+        $link = $exercise->getFileLinks()->first();
+        Assert::truthy($link);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:ExerciseFiles",
+            'DELETE',
+            ['action' => 'deleteFileLink', 'id' => $exercise->getId(), 'linkId' => $link->getId()]
+        );
+
+        Assert::count(1, $this->presenter->fileLinks->findAll());
+        $remaining = current($this->presenter->fileLinks->findAll());
+        Assert::notEqual($link->getId(), $remaining->getId());
     }
 }
 
