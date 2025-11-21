@@ -6,6 +6,7 @@ use App\Helpers\FileStorage\IFileStorage;
 use App\Helpers\FileStorage\IHashFileStorage;
 use App\Helpers\FileStorage\IImmutableFile;
 use App\Helpers\FileStorage\FileStorageException;
+use App\Helpers\FileStorage\LocalImmutableFile;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Solution;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -357,6 +358,35 @@ class FileStorageManager
         $id = $file->getId();
         $name = $file->getName();
         return "$dir/$userDir/{$id}_{$name}";
+    }
+
+    /**
+     * Helper function that computes what hash would an attachment file have in the hash storage.
+     * The file must exist or an exception is thrown.
+     * @param AttachmentFile $file
+     * @return string hash of the file
+     */
+    public function getAttachmentFileHash(AttachmentFile $file): string
+    {
+        $imFile = $this->getAttachmentFile($file);
+        if (!$imFile || !($imFile instanceof LocalImmutableFile)) {
+            throw new FileStorageException("Attachment file not found in storage.", $this->getAttachmentFilePath($file));
+        }
+        return $this->hashStorage->getFileHash($imFile->getRealPath());
+    }
+
+    /**
+     * Copy attachment file to persistent hash storage for exercise files.
+     * @param AttachmentFile $file
+     * @return string hash identifying the file in the hash storage
+     */
+    public function copyAttachmentFileToHashStorage(AttachmentFile $file): string
+    {
+        $imFile = $this->getAttachmentFile($file);
+        if (!$imFile || !($imFile instanceof LocalImmutableFile)) {
+            throw new FileStorageException("Attachment file not found in storage.", $this->getAttachmentFilePath($file));
+        }
+        return $this->hashStorage->storeFile($imFile->getRealPath(), false);
     }
 
     /**

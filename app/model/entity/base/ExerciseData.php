@@ -22,7 +22,7 @@ trait ExerciseData
 
     /**
      * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
-     * @var Collection|Selectable
+     * @var Collection<LocalizedExercise>|Selectable
      */
     protected $localizedTexts;
 
@@ -328,7 +328,7 @@ trait ExerciseData
 
     /**
      * @ORM\ManyToMany(targetEntity="AttachmentFile")
-     * @var Collection
+     * @var Collection<AttachmentFile>
      */
     protected $attachmentFiles;
 
@@ -346,16 +346,16 @@ trait ExerciseData
      * @param AttachmentFile $file
      * @return bool
      */
-    public function removeAttachmentFile(AttachmentFile $file)
+    public function removeAttachmentFile(AttachmentFile $file): bool
     {
         return $this->attachmentFiles->removeElement($file);
     }
 
     /**
      * Get identifications of additional exercise files.
-     * @return array
+     * @return string[]
      */
-    public function getAttachmentFilesIds()
+    public function getAttachmentFilesIds(): array
     {
         return $this->attachmentFiles->map(
             function (AttachmentFile $file) {

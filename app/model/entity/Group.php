@@ -397,9 +397,9 @@ class Group
      * @param string[] $types allowed membership types (empty array = all)
      * @param bool|null $inherited flag indicating how to filter inherited memberships
      *                  (null = no filter, true = only inherited, false = only direct)
-     * @return Collection
+     * @return Collection<GroupMembership>
      */
-    private function getMembershipsInternal(array $types, ?bool $inherited = null)
+    private function getMembershipsInternal(array $types, ?bool $inherited = null): Collection
     {
         $memberships = $this->memberships->filter(
             function (GroupMembership $membership) {
@@ -432,7 +432,7 @@ class Group
     /**
      * Return all direct members depending on specified type
      * @param string[] ...$types
-     * @return Collection
+     * @return Collection<GroupMembership>
      */
     public function getMemberships(...$types)
     {
@@ -442,7 +442,7 @@ class Group
     /**
      * Return all inherited members depending on specified type
      * @param string[] ...$types
-     * @return Collection
+     * @return Collection<GroupMembership>
      */
     public function getInheritedMemberships(...$types)
     {
@@ -812,6 +812,9 @@ class Group
         $group->setGroup($this);
     }
 
+    /**
+     * @return Collection<LocalizedGroup>
+     */
     public function getLocalizedTexts(): Collection
     {
         return $this->localizedTexts;
@@ -819,7 +822,7 @@ class Group
 
     /**
      * Return all localized texts as an array indexed by locales.
-     * @return array
+     * @return LocalizedGroup[]
      */
     public function getLocalizedTextsAssocArray(): array
     {
@@ -885,6 +888,9 @@ class Group
         );
     }
 
+    /**
+     * @return Collection<Group>
+     */
     public function getChildGroups(): Collection
     {
         return $this->childGroups->filter(

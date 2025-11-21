@@ -81,7 +81,7 @@ class LocalHashFileStorage implements IHashFileStorage
         return $file;
     }
 
-    public function storeFile(string $path, bool $move = true): string
+    public function getFileHash(string $path): string
     {
         if (!file_exists($path) || !is_file($path)) {
             throw new FileStorageException("Given local file not found.", $path);
@@ -91,7 +91,12 @@ class LocalHashFileStorage implements IHashFileStorage
             throw new FileStorageException("Given file is not accessible for reading.", $path);
         }
 
-        $hash = sha1_file($path);
+        return sha1_file($path);
+    }
+
+    public function storeFile(string $path, bool $move = true): string
+    {
+        $hash = $this->getFileHash($path);
         $newPath = $this->getRealPath($hash);
         $dirPath = dirname($newPath);
         if (!@mkdir($dirPath, 0775, true) && !is_dir($dirPath)) { // true = recursive
@@ -106,7 +111,6 @@ class LocalHashFileStorage implements IHashFileStorage
             }
         }
 
-        // @phpstan-ignore booleanAnd.rightAlwaysTrue
         if ($move && file_exists($path)) {
             @unlink($path); // the file was copied or already exists, lets simulate move
         }

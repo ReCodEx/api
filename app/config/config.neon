@@ -317,7 +317,7 @@ services:
   - App\Console\CleanupWorkerTmpFiles
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.deadlineThresholdFrom%, %assignmentNotifications.deadlineThresholdTo%)
   - App\Console\SendPendingReviewsNotification(%reviewsNotifications.pendingThreshold%)
-  - App\Console\AsyncJobsUpkeep(%async.upkeep%)
+  - App\Console\ConvertExerciseAttachments(%api.address%)
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
   - App\Console\MetaConverter

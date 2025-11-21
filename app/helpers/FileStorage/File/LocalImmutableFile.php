@@ -179,4 +179,14 @@ class LocalImmutableFile implements IImmutableFile
 
         @readfile($this->realPath);
     }
+
+    /**
+     * Returns the actual real path on local file system.
+     * This method is not part of IImmutableFile interface, it is for specific local operations only.
+     * @return string
+     */
+    public function getRealPath(): string
+    {
+        return $this->realPath;
+    }
 }
