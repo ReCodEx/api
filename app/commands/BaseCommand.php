@@ -145,4 +145,39 @@ class BaseCommand extends Command
         }
         return $helper->ask($this->input, $this->output, $question);
     }
+
+    protected function writeError(string $message): void
+    {
+        if ($this->output) {
+            $this->output->writeln("<error>ERROR:</> $message", OutputInterface::VERBOSITY_QUIET);
+        }
+    }
+
+    protected function writeWarning(string $message): void
+    {
+        if ($this->output) {
+            $this->output->writeln("<fg=yellow>WARNING:</> $message", OutputInterface::OUTPUT_NORMAL);
+        }
+    }
+
+    protected function writeVerbose(string $message): void
+    {
+        if ($this->output) {
+            $this->output->writeln($message, OutputInterface::VERBOSITY_VERBOSE);
+        }
+    }
+
+    protected function writeComment(string $message): void
+    {
+        if ($this->output) {
+            $this->output->writeln("<fg=bright-blue>$message</>", OutputInterface::VERBOSITY_VERY_VERBOSE);
+        }
+    }
+
+    protected function writeDebug(string $message): void
+    {
+        if ($this->output) {
+            $this->output->writeln("<fg=gray>DEBUG: $message</>", OutputInterface::VERBOSITY_DEBUG);
+        }
+    }
 }

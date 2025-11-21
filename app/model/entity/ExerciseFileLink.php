@@ -30,7 +30,7 @@ class ExerciseFileLink implements JsonSerializable
 
     /**
      * The key (fixed ID) used to identify the file in exercise specification (for simple replacement).
-     * @ORM\Column(type="string", length=16)
+     * @ORM\Column(name="`key`", type="string", length=16)
      */
     protected $key;
 

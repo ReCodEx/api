@@ -480,6 +480,9 @@ class Exercise implements IExercise
         );
     }
 
+    /**
+     * @return Collection<Assignment>
+     */
     public function getAssignments(): Collection
     {
         return $this->assignments->filter(

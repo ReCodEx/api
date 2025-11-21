@@ -113,8 +113,28 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
         return $this->description;
     }
 
+    /**
+     * This setter is dangerous since the entity may be shared by multiple exercises/assignments.
+     * You better know what you are doing when using it!!!
+     * @param string $description
+     */
+    public function setDescriptionDangerous(string $description): void
+    {
+        $this->description = $description;
+    }
+
     public function getAssignmentText(): string
     {
         return $this->assignmentText;
+    }
+
+    /**
+     * This setter is dangerous since the entity may be shared by multiple exercises/assignments.
+     * You better know what you are doing when using it!!!
+     * @param string $assignmentText
+     */
+    public function setAssignmentTextDangerous(string $assignmentText): void
+    {
+        $this->assignmentText = $assignmentText;
     }
 }

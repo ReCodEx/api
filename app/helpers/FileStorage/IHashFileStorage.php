@@ -25,6 +25,13 @@ interface IHashFileStorage
     public function fetchOrThrow(string $hash): IImmutableFile;
 
     /**
+     * Returns the hash of the given file from local file system.
+     * @param string $path Valid local path to an existing file.
+     * @return string Hash of the file.
+     */
+    public function getFileHash(string $path): string;
+
+    /**
      * Stores a regular file from local file system into the storage.
      * @param string $path Valid local path to an existing file.
      * @param bool $move whether the file should be moved (if false, the file is copied)
