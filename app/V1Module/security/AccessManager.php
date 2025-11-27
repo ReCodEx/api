@@ -39,6 +39,9 @@ class AccessManager
     /** @var int Expiration time of newly issued invitation tokens (in seconds) */
     private $invitationExpiration;
 
+    /** @var string|null Name of the cookie where to look for the token */
+    private $tokenCookieName;
+
     public function __construct(array $parameters, Users $users)
     {
         $this->users = $users;
@@ -48,6 +51,7 @@ class AccessManager
         $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.mff.cuni.cz");
         $this->audience = Arrays::get($parameters, "audience", "https://recodex.mff.cuni.cz");
         $this->usedAlgorithm = Arrays::get($parameters, "usedAlgorithm", "HS256");
+        $this->tokenCookieName = Arrays::get($parameters, "tokenCookieName", null);
         JWT::$leeway = Arrays::get($parameters, "leeway", 10); // 10 seconds
     }
 
@@ -140,9 +144,9 @@ class AccessManager
      */
     public function issueToken(
         User $user,
-        string $effectiveRole = null,
+        ?string $effectiveRole = null,
         array $scopes = [],
-        int $exp = null,
+        ?int $exp = null,
         array $payload = []
     ) {
         if (!$user->isAllowed()) {
@@ -208,7 +212,7 @@ class AccessManager
         string $titlesBefore = "",
         string $titlesAfter = "",
         array $groupsIds = [],
-        int $invitationExpiration = null,
+        ?int $invitationExpiration = null,
     ): string {
         $token = InvitationToken::create(
             $invitationExpiration ?? $this->invitationExpiration,
@@ -227,25 +231,30 @@ class AccessManager
      * Extract the access token from the request.
      * @return string|null  The access token parsed from the HTTP request, or null if there is no access token.
      */
-    public static function getGivenAccessToken(IRequest $request)
+    public function getGivenAccessToken(IRequest $request)
     {
         $accessToken = $request->getQuery("access_token");
         if ($accessToken !== null && Strings::length($accessToken) > 0) {
-            return $accessToken; // the token specified in the URL is prefered
+            return $accessToken; // the token specified in the URL is preferred
         }
 
         // if the token is not in the URL, try to find the "Authorization" header with the bearer token
         $authorizationHeader = $request->getHeader("Authorization");
-
-        if ($authorizationHeader === null) {
-            return null;
+        if ($authorizationHeader !== null) {
+            $parts = Strings::split($authorizationHeader, "/ /");
+            if (count($parts) === 2) {
+                list($bearer, $accessToken) = $parts;
+                if ($bearer === "Bearer" && !str_contains($accessToken, " ") && Strings::length($accessToken) > 0) {
+                    return $accessToken;
+                }
+            }
         }
 
-        $parts = Strings::split($authorizationHeader, "/ /");
-        if (count($parts) === 2) {
-            list($bearer, $accessToken) = $parts;
-            if ($bearer === "Bearer" && !str_contains($accessToken, " ") && Strings::length($accessToken) > 0) {
-                return $accessToken;
+        // finally, try fallback to cookie if configured
+        if ($this->tokenCookieName !== null) {
+            $cookieToken = $request->getCookie($this->tokenCookieName);
+            if ($cookieToken !== null && Strings::length($cookieToken) > 0) {
+                return $cookieToken; // token found in the cookie
             }
         }
 
