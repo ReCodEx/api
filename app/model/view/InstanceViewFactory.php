@@ -44,8 +44,6 @@ class InstanceViewFactory
 
         return [
             "id" => $instance->getId(),
-            "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "", // BC
-            "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "", // BC
             "hasValidLicence" => $instance->hasValidLicense(),
             "isOpen" => $instance->isOpen(),
             "isAllowed" => $instance->isAllowed(),
@@ -56,6 +54,10 @@ class InstanceViewFactory
             "rootGroup" => $this->groupViewFactory->getGroup($instance->getRootGroup()),
             "rootGroupId" => $instance->getRootGroup()->getId(),
             "extensions" => $extensions,
+
+            // deprecated
+            "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "", // BC
+            "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "", // BC
         ];
     }
 

@@ -227,7 +227,10 @@ class TestAccessManager extends Tester\TestCase
         $token = "abcdefg";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y&access_token=$token");
         $request = new Request($url);
-        Assert::equal($token, AccessManager::getGivenAccessToken($request));
+
+        $users = Mockery::mock(App\Model\Repository\Users::class);
+        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        Assert::equal($token, $manager->getGivenAccessToken($request));
     }
 
     public function testExtractFromEmptyQuery()
@@ -235,7 +238,9 @@ class TestAccessManager extends Tester\TestCase
         $token = "";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y&access_token=$token");
         $request = new Request($url);
-        Assert::null(AccessManager::getGivenAccessToken($request));
+        $users = Mockery::mock(App\Model\Repository\Users::class);
+        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        Assert::null($manager->getGivenAccessToken($request));
     }
 
     public function testExtractFromHeader()
@@ -243,7 +248,9 @@ class TestAccessManager extends Tester\TestCase
         $token = "abcdefg";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Bearer $token"]);
-        Assert::equal($token, AccessManager::getGivenAccessToken($request));
+        $users = Mockery::mock(App\Model\Repository\Users::class);
+        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        Assert::equal($token, $manager->getGivenAccessToken($request));
     }
 
     public function testExtractFromHeaderWrongType()
@@ -251,7 +258,9 @@ class TestAccessManager extends Tester\TestCase
         $token = "abcdefg";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Basic $token"]);
-        Assert::null(AccessManager::getGivenAccessToken($request));
+        $users = Mockery::mock(App\Model\Repository\Users::class);
+        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        Assert::null($manager->getGivenAccessToken($request));
     }
 
     public function testExtractFromHeaderEmpty()
@@ -259,7 +268,9 @@ class TestAccessManager extends Tester\TestCase
         $token = "";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Basic $token"]);
-        Assert::null(AccessManager::getGivenAccessToken($request));
+        $users = Mockery::mock(App\Model\Repository\Users::class);
+        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        Assert::null($manager->getGivenAccessToken($request));
     }
 
     public function testExtractFromHeaderWithSpace()
@@ -267,7 +278,9 @@ class TestAccessManager extends Tester\TestCase
         $token = "";
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Bearer $token and more!"]);
-        Assert::null(AccessManager::getGivenAccessToken($request));
+        $users = Mockery::mock(App\Model\Repository\Users::class);
+        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        Assert::null($manager->getGivenAccessToken($request));
     }
 }
 

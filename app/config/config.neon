@@ -23,9 +23,9 @@ parameters:
     versionFormat: "{tag}"
 
   async:
-    pollingInterval: 60 # seconds (you may set this to larger values if inotify wakeups are allowed)
+    pollingInterval: 60 # seconds (you may set this to larger values if inotify wake-ups are allowed)
     retries: 3 # how many times each async job is retried when failing
-    # inotify can wake the async worker (immediately once an async opertion is issued)
+    # inotify can wake the async worker (immediately once an async operation is issued)
     inotify: false # set to true only if your system (and PHP) supports inotify (not available on Windows, extension required on Linux)
     inotifyFile: %tempDir%/async-inotify-file # file used as inotify rod for triggering async worker on dispatch
     restartWorkerAfter: # memory leak precaution - worker is restarted once in a while
@@ -44,7 +44,7 @@ parameters:
     address: "https://your.recodex.domain"
 
   submissions:
-    locked: false  # if set to true, the API will not be accepting submissions (and it will be incidated in can-submit/permission hints)
+    locked: false  # if set to true, the API will not be accepting submissions (and it will be indicated in can-submit/permission hints)
     lockedReason:  # Localized message with reason displayed in UI, why the submissions are locked (ignored if locked == false)
       cs: "Odevzdávání řešení bylo zablokováno v konfiguraci aplikace."
       en: "Submitting new solutions is currently locked out in the application configuration."
@@ -57,6 +57,7 @@ parameters:
     invitationExpiration: 86400  # of an invitation token (seconds)
     usedAlgorithm: HS256
     verificationKey: "recodex-123"
+    tokenCookieName: 'recodex_accessToken'  # web-app config value 'PERSISTENT_TOKENS_KEY_PREFIX' + '_accessToken', null if only Authorization header is used
 
   broker:  # connection to broker
     address: "tcp://127.0.0.1:9658"
@@ -198,7 +199,7 @@ parameters:
     deletedEmailSuffix: "@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
 
   removeInactiveUsers:
-    # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).
+    # How long the user has to be inactive to warrant the removal (null = never remove students, 1 month is minimum).
     # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
     disableAfter: "2 years"
     deleteAfter: null   # null = never, if not null, better be > disableAfter
@@ -225,7 +226,7 @@ mail:  # configuration of sending mails
   password: ""  # password to the server
   secure: "tls"  # security, values are empty for no security, "ssl" or "tls"
   context:  # additional parameters, depending on used mail engine
-    ssl:  # examle self-signed certificates can be allowed as verify_peer and verify_peer_name to false and allow_self_signed to true under ssl key (see example)
+    ssl:  # example self-signed certificates can be allowed as verify_peer and verify_peer_name to false and allow_self_signed to true under ssl key (see example)
       verify_peer: false
       verify_peer_name: false
       allow_self_signed: true
