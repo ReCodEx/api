@@ -261,7 +261,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws NotFoundException
      */
-    #[Post("groupId", new VMixed(), "Identifier of the group", nullable: true)]
+    #[Post("groupId", new VUuid(), "Identifier of the group")]
     public function actionCreate()
     {
         $req = $this->getRequest();
@@ -318,7 +318,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @throws BadRequestException
      * @throws InvalidStateException
      */
-    #[Post("userId", new VString(), "Identifier of the user which is marked as awardee for points")]
+    #[Post("userId", new VUuid(), "Identifier of the user which is marked as awardee for points")]
     #[Post("points", new VInt(), "Number of points assigned to the user")]
     #[Post("note", new VString(), "Note about newly created points")]
     #[Post(
@@ -391,7 +391,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
         "Datetime when the points were awarded, whatever that means",
         required: false,
     )]
-    #[Path("pointsId", new VString(), "Identifier of the shadow assignment points", required: true)]
+    #[Path("pointsId", new VUuid(), "Identifier of the shadow assignment points", required: true)]
     public function actionUpdatePoints(string $pointsId)
     {
         $pointsEntity = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
@@ -432,7 +432,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("pointsId", new VString(), "Identifier of the shadow assignment points", required: true)]
+    #[Path("pointsId", new VUuid(), "Identifier of the shadow assignment points", required: true)]
     public function actionRemovePoints(string $pointsId)
     {
         $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);

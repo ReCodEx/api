@@ -12,6 +12,7 @@ use App\Model\Repository\Instances;
 use App\Model\Repository\Users;
 use App\Model\View\UserViewFactory;
 use App\Helpers\Extensions;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Security\AccessManager;
 use App\Security\TokenScope;
 
@@ -67,7 +68,7 @@ class ExtensionsPresenter extends BasePresenter
     #[Query("locale", new VString(2, 2), required: false)]
     #[Query("return", new VString(), required: false)]
     #[Path("extId", new VString(), required: true)]
-    #[Path("instanceId", new VString(), required: true)]
+    #[Path("instanceId", new VUuid(), required: true)]
     public function actionUrl(string $extId, string $instanceId, ?string $locale, ?string $return)
     {
         $user = $this->getCurrentUser();

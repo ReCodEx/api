@@ -209,7 +209,7 @@ class SubmitPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
-    #[Query("userId", new VString(), "Identification of the user", required: false, nullable: true)]
+    #[Query("userId", new VUuid(), "Identification of the user", required: false, nullable: true)]
     public function actionCanSubmit(string $id, ?string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -235,8 +235,8 @@ class SubmitPresenter extends BasePresenter
      * @throws ParseException
      */
     #[Post("note", new VString(0, 1024), "A note by the author of the solution")]
-    #[Post("userId", new VMixed(), "Author of the submission", required: false, nullable: true)]
-    #[Post("files", new VMixed(), "Submitted files", nullable: true)]
+    #[Post("userId", new VUuid(), "Author of the submission", required: false, nullable: true)]
+    #[Post("files", new VArray(new VUuid()), "Submitted files", nullable: true)]
     #[Post(
         "runtimeEnvironmentId",
         new VMixed(),
@@ -435,9 +435,9 @@ class SubmitPresenter extends BasePresenter
      * @throws InvalidApiArgumentException
      * @throws NotFoundException
      */
-    #[Post("files", new VArray())]
+    #[Post("files", new VArray(new VUuid()), "Submitted files", nullable: true)]
     #[Path("id", new VUuid(), "identifier of assignment", required: true)]
-    #[Query("userId", new VString(), "Identifier of the submission author", required: false, nullable: true)]
+    #[Query("userId", new VUuid(), "Identifier of the submission author", required: false, nullable: true)]
     public function actionPreSubmit(string $id, string $userId = null)
     {
         $assignment = $this->assignments->findOrThrow($id);

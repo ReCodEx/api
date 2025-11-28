@@ -416,8 +416,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws ExerciseConfigException
      */
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
-    #[Path("runtimeEnvironmentId", new VString(), required: true)]
-    #[Path("hwGroupId", new VString(), required: true)]
+    #[Path("runtimeEnvironmentId", new VString(1), required: true)]
+    #[Path("hwGroupId", new VString(1), required: true)]
     public function actionGetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
     {
         /** @var Exercise $exercise */
@@ -465,8 +465,8 @@ class ExercisesConfigPresenter extends BasePresenter
      */
     #[Post("limits", new VArray(), "A list of resource limits for the given environment and hardware group")]
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
-    #[Path("runtimeEnvironmentId", new VString(), required: true)]
-    #[Path("hwGroupId", new VString(), required: true)]
+    #[Path("runtimeEnvironmentId", new VString(1), required: true)]
+    #[Path("hwGroupId", new VString(1), required: true)]
     public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
     {
         /** @var Exercise $exercise */
@@ -529,8 +529,8 @@ class ExercisesConfigPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
-    #[Path("runtimeEnvironmentId", new VString(), required: true)]
-    #[Path("hwGroupId", new VString(), required: true)]
+    #[Path("runtimeEnvironmentId", new VString(1), required: true)]
+    #[Path("hwGroupId", new VString(1), required: true)]
     public function actionRemoveHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId)
     {
         /** @var Exercise $exercise */

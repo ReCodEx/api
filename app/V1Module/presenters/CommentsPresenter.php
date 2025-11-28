@@ -184,8 +184,8 @@ class CommentsPresenter extends BasePresenter
      * @POST
      * @throws NotFoundException
      */
-    #[Path("threadId", new VString(), "Identifier of the comment thread", required: true)]
-    #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
+    #[Path("threadId", new VUuid(), "Identifier of the comment thread", required: true)]
+    #[Path("commentId", new VUuid(), "Identifier of the comment", required: true)]
     public function actionTogglePrivate(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
@@ -218,8 +218,8 @@ class CommentsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("isPrivate", new VBool(), "True if the comment is private")]
-    #[Path("threadId", new VString(), "Identifier of the comment thread", required: true)]
-    #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
+    #[Path("threadId", new VUuid(), "Identifier of the comment thread", required: true)]
+    #[Path("commentId", new VUuid(), "Identifier of the comment", required: true)]
     public function actionSetPrivate(string $threadId, string $commentId)
     {
         /** @var Comment $comment */
@@ -255,8 +255,8 @@ class CommentsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      */
-    #[Path("threadId", new VString(), "Identifier of the comment thread", required: true)]
-    #[Path("commentId", new VString(), "Identifier of the comment", required: true)]
+    #[Path("threadId", new VUuid(), "Identifier of the comment thread", required: true)]
+    #[Path("commentId", new VUuid(), "Identifier of the comment", required: true)]
     public function actionDelete(string $threadId, string $commentId)
     {
         /** @var Comment $comment */

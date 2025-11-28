@@ -790,7 +790,7 @@ class GroupsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Path("id", new VUuid(), "An identifier of the relocated group", required: true)]
-    #[Path("newParentId", new VString(), "An identifier of the new parent group", required: true)]
+    #[Path("newParentId", new VUuid(), "An identifier of the new parent group", required: true)]
     public function actionRelocate(string $id, string $newParentId)
     {
         $group = $this->groups->findOrThrow($id);
@@ -959,7 +959,7 @@ class GroupsPresenter extends BasePresenter
      */
     #[Post("type", new VString(1), "Identifier of membership type (admin, supervisor, ...)", required: true)]
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the supervisor", required: true)]
     #[ResponseFormat(GroupFormat::class)]
     public function actionAddMember(string $id, string $userId)
     {
@@ -1006,7 +1006,7 @@ class GroupsPresenter extends BasePresenter
      * @DELETE
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the supervisor", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the supervisor", required: true)]
     #[ResponseFormat(GroupFormat::class)]
     public function actionRemoveMember(string $id, string $userId)
     {
@@ -1148,7 +1148,7 @@ class GroupsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the student", required: true)]
     public function actionStudentsStats(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1178,7 +1178,7 @@ class GroupsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the student", required: true)]
     public function actionStudentsSolutions(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1225,7 +1225,7 @@ class GroupsPresenter extends BasePresenter
      * @POST
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the student", required: true)]
     #[ResponseFormat(GroupFormat::class)]
     public function actionAddStudent(string $id, string $userId)
     {
@@ -1257,7 +1257,7 @@ class GroupsPresenter extends BasePresenter
      * @DELETE
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the student", required: true)]
     #[ResponseFormat(GroupFormat::class)]
     public function actionRemoveStudent(string $id, string $userId)
     {
@@ -1290,7 +1290,7 @@ class GroupsPresenter extends BasePresenter
      * @POST
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the student", required: true)]
     public function actionLockStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);
@@ -1330,7 +1330,7 @@ class GroupsPresenter extends BasePresenter
      * @DELETE
      */
     #[Path("id", new VUuid(), "Identifier of the group", required: true)]
-    #[Path("userId", new VString(), "Identifier of the student", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the student", required: true)]
     public function actionUnlockStudent(string $id, string $userId)
     {
         $user = $this->users->findOrThrow($userId);

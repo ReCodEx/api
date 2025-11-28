@@ -543,7 +543,7 @@ class PipelinesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "identification of pipeline", required: true)]
-    #[Path("fileId", new VString(), "identification of file", required: true)]
+    #[Path("fileId", new VUuid(), "identification of file", required: true)]
     public function actionDeleteExerciseFile(string $id, string $fileId)
     {
         $pipeline = $this->pipelines->findOrThrow($id);

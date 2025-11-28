@@ -543,8 +543,8 @@ class AssignmentsPresenter extends BasePresenter
      * @throws InvalidStateException
      * @throws NotFoundException
      */
-    #[Post("exerciseId", new VMixed(), "Identifier of the exercise", nullable: true)]
-    #[Post("groupId", new VMixed(), "Identifier of the group", nullable: true)]
+    #[Post("exerciseId", new VUuid(), "Identifier of the exercise", nullable: true)]
+    #[Post("groupId", new VUuid(), "Identifier of the group", nullable: true)]
     public function actionCreate()
     {
         $req = $this->getRequest();
@@ -713,7 +713,7 @@ class AssignmentsPresenter extends BasePresenter
      * @GET
      */
     #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
-    #[Path("userId", new VString(), "Identifier of the user", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the user", required: true)]
     public function actionUserSolutions(string $id, string $userId)
     {
         $assignment = $this->assignments->findOrThrow($id);
@@ -757,7 +757,7 @@ class AssignmentsPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Path("id", new VUuid(), "Identifier of the assignment", required: true)]
-    #[Path("userId", new VString(), "Identifier of the user", required: true)]
+    #[Path("userId", new VUuid(), "Identifier of the user", required: true)]
     public function actionBestSolution(string $id, string $userId)
     {
         $assignment = $this->assignments->findOrThrow($id);

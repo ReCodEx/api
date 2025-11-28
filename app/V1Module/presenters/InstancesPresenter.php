@@ -277,7 +277,7 @@ class InstancesPresenter extends BasePresenter
     #[Post("note", new VString(2, 255), "A note for users or administrators", required: false)]
     #[Post("validUntil", new VString(), "Expiration date of the license", required: false)]
     #[Post("isValid", new VBool(), "Administrator switch to toggle license validity", required: false)]
-    #[Path("licenceId", new VString(), "Identifier of the license", required: true)]
+    #[Path("licenceId", new VUuid(), "Identifier of the license", required: true)]
     public function actionUpdateLicence(string $licenceId)
     {
         $licence = $this->licences->findOrThrow($licenceId);
@@ -311,7 +311,7 @@ class InstancesPresenter extends BasePresenter
      * @DELETE
      * @throws NotFoundException
      */
-    #[Path("licenceId", new VString(), "Identifier of the license", required: true)]
+    #[Path("licenceId", new VUuid(), "Identifier of the license", required: true)]
     public function actionDeleteLicence(string $licenceId)
     {
         $licence = $this->licences->findOrThrow($licenceId);
