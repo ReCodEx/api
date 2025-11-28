@@ -28,6 +28,7 @@ use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
 use App\Helpers\MetaFormats\Attributes\Format;
 use App\Helpers\MetaFormats\FormatDefinitions\UserFormat;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Security\Roles;
 use App\Security\ACL\IUserPermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -160,7 +161,7 @@ class RegistrationPresenter extends BasePresenter
     #[Post("lastName", new VString(2), "Last name")]
     #[Post("password", new VString(1), "A password for authentication")]
     #[Post("passwordConfirm", new VString(1), "A password confirmation")]
-    #[Post("instanceId", new VString(1), "Identifier of the instance to register in")]
+    #[Post("instanceId", new VUuid(), "Identifier of the instance to register in")]
     #[Post("titlesBeforeName", new VString(1), "Titles which is placed before user name", required: false)]
     #[Post("titlesAfterName", new VString(1), "Titles which is placed after user name", required: false)]
     #[Post(

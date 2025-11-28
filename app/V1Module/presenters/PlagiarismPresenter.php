@@ -224,7 +224,7 @@ class PlagiarismPresenter extends BasePresenter
      * @GET
      */
     #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
-    #[Path("solutionId", new VString(), required: true)]
+    #[Path("solutionId", new VUuid(), required: true)]
     public function actionGetSimilarities(string $id, string $solutionId): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);
@@ -260,7 +260,7 @@ class PlagiarismPresenter extends BasePresenter
     #[Post("similarity", new VDouble(), "Relative similarity of the records associated with selected author [0-1].")]
     #[Post("files", new VArray(), "List of similar files and their records.")]
     #[Path("id", new VUuid(), "Identification of the detection batch", required: true)]
-    #[Path("solutionId", new VString(), required: true)]
+    #[Path("solutionId", new VUuid(), required: true)]
     public function actionAddSimilarities(string $id, string $solutionId): void
     {
         $batch = $this->detectionBatches->findOrThrow($id);

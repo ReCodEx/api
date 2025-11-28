@@ -15,6 +15,7 @@ use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidApiArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Model\Entity\SecurityEvent;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
@@ -178,7 +179,7 @@ class LoginPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      */
-    #[Path("userId", new VString(), required: true)]
+    #[Path("userId", new VUuid(), required: true)]
     public function actionTakeOver($userId)
     {
         $user = $this->users->findOrThrow($userId);

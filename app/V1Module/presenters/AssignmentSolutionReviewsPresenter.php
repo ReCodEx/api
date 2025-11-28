@@ -347,7 +347,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
         required: false,
     )]
     #[Path("id", new VUuid(), "identifier of the solution", required: true)]
-    #[Path("commentId", new VString(), "identifier of the review comment", required: true)]
+    #[Path("commentId", new VUuid(), "identifier of the review comment", required: true)]
     public function actionEditComment(string $id, string $commentId)
     {
         $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -407,7 +407,7 @@ class AssignmentSolutionReviewsPresenter extends BasePresenter
      * @DELETE
      */
     #[Path("id", new VUuid(), "identifier of the solution", required: true)]
-    #[Path("commentId", new VString(), "identifier of the review comment", required: true)]
+    #[Path("commentId", new VUuid(), "identifier of the review comment", required: true)]
     public function actionDeleteComment(string $id, string $commentId)
     {
         $comment = $this->reviewComments->findOrThrow($commentId);

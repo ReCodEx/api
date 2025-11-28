@@ -10,6 +10,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\MetaFormats\Validators\VUuid;
 use App\Model\Entity\User;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IEmailPermissions;
@@ -166,7 +167,7 @@ class EmailsPresenter extends BasePresenter
     #[Post("toMe", new VBool(), "User wants to also receive an email")]
     #[Post("subject", new VString(1), "Subject for the soon to be sent email")]
     #[Post("message", new VString(1), "Message which will be sent, can be html code")]
-    #[Path("groupId", new VString(), required: true)]
+    #[Path("groupId", new VUuid(), required: true)]
     public function actionSendToGroupMembers(string $groupId)
     {
         $user = $this->getCurrentUser();

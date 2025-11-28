@@ -172,7 +172,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * Get reference solutions for an exercise
      * @GET
      */
-    #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("exerciseId", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSolutions(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -203,7 +203,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @GET
      * @throws NotFoundException
      */
-    #[Path("solutionId", new VString(), "An identifier of the solution", required: true)]
+    #[Path("solutionId", new VUuid(), "An identifier of the solution", required: true)]
     public function actionDetail(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -225,7 +225,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws InternalServerException
      */
     #[Post("note", new VString(0, 65535), "A description by the author of the solution")]
-    #[Path("solutionId", new VString(), "Identifier of the solution", required: true)]
+    #[Path("solutionId", new VUuid(), "Identifier of the solution", required: true)]
     public function actionUpdate(string $solutionId)
     {
         $req = $this->getRequest();
@@ -248,7 +248,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * Delete reference solution with given identification.
      * @DELETE
      */
-    #[Path("solutionId", new VString(), "identifier of reference solution", required: true)]
+    #[Path("solutionId", new VUuid(), "identifier of reference solution", required: true)]
     public function actionDeleteReferenceSolution(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -283,7 +283,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @GET
      * @throws InternalServerException
      */
-    #[Path("solutionId", new VString(), "identifier of the reference exercise solution", required: true)]
+    #[Path("solutionId", new VUuid(), "identifier of the reference exercise solution", required: true)]
     public function actionSubmissions(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -311,7 +311,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws InternalServerException
      */
-    #[Path("submissionId", new VString(), "identifier of the reference exercise submission", required: true)]
+    #[Path("submissionId", new VUuid(), "identifier of the reference exercise submission", required: true)]
     public function actionSubmission(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -335,7 +335,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * Remove reference solution evaluation (submission) permanently.
      * @DELETE
      */
-    #[Path("submissionId", new VString(), "Identifier of the reference solution submission", required: true)]
+    #[Path("submissionId", new VUuid(), "Identifier of the reference solution submission", required: true)]
     public function actionDeleteSubmission(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -367,7 +367,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("files", new VArray())]
-    #[Path("exerciseId", new VString(), "identifier of exercise", required: true)]
+    #[Path("exerciseId", new VUuid(), "identifier of exercise", required: true)]
     public function actionPreSubmit(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -423,7 +423,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     #[Post("files", new VMixed(), "Files of the reference solution", nullable: true)]
     #[Post("runtimeEnvironmentId", new VMixed(), "ID of runtime for this solution", nullable: true)]
     #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
-    #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("exerciseId", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionSubmit(string $exerciseId)
     {
         $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -515,7 +515,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Post("debug", new VBool(), "Debugging evaluation with all logs and outputs", required: false)]
-    #[Path("exerciseId", new VString(), "Identifier of the exercise", required: true)]
+    #[Path("exerciseId", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionResubmitAll($exerciseId)
     {
         $req = $this->getRequest();
@@ -611,7 +611,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws \Nette\Application\BadRequestException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("solutionId", new VString(), "of reference solution", required: true)]
+    #[Path("solutionId", new VUuid(), "of reference solution", required: true)]
     public function actionDownloadSolutionArchive(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -663,7 +663,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws InternalServerException
      * @throws \Nette\Application\AbortException
      */
-    #[Path("submissionId", new VString(), required: true)]
+    #[Path("submissionId", new VUuid(), required: true)]
     public function actionDownloadResultArchive(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -695,7 +695,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws InternalServerException
      */
-    #[Path("submissionId", new VString(), "identifier of the reference exercise submission", required: true)]
+    #[Path("submissionId", new VUuid(), "identifier of the reference exercise submission", required: true)]
     public function actionEvaluationScoreConfig(string $submissionId)
     {
         $submission = $this->referenceSubmissions->findOrThrow($submissionId);
@@ -722,7 +722,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("visibility", new VInt(), "New visibility level.", required: true)]
-    #[Path("solutionId", new VString(), "of reference solution", required: true)]
+    #[Path("solutionId", new VUuid(), "of reference solution", required: true)]
     public function actionSetVisibility(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);

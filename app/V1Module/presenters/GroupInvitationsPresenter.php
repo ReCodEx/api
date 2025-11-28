@@ -155,7 +155,7 @@ class GroupInvitationsPresenter extends BasePresenter
      * List all invitations of a group.
      * @GET
      */
-    #[Path("groupId", new VString(), required: true)]
+    #[Path("groupId", new VUuid(), required: true)]
     public function actionList($groupId)
     {
         $group = $this->groups->findOrThrow($groupId);
@@ -176,7 +176,7 @@ class GroupInvitationsPresenter extends BasePresenter
      */
     #[Post("expireAt", new VTimestamp(), "When the invitation expires.", nullable: true)]
     #[Post("note", new VMixed(), "Note for the students who wish to use the invitation link.", nullable: true)]
-    #[Path("groupId", new VString(), required: true)]
+    #[Path("groupId", new VUuid(), required: true)]
     public function actionCreate($groupId)
     {
         $req = $this->getRequest();

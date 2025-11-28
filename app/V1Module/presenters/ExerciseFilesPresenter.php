@@ -236,7 +236,7 @@ class ExerciseFilesPresenter extends BasePresenter
      * @throws ForbiddenRequestException
      */
     #[Path("id", new VUuid(), "identification of exercise", required: true)]
-    #[Path("fileId", new VString(), "identification of file", required: true)]
+    #[Path("fileId", new VUuid(), "identification of file", required: true)]
     public function actionDeleteExerciseFile(string $id, string $fileId)
     {
         $exercise = $this->exercises->findOrThrow($id);

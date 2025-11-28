@@ -258,10 +258,10 @@ class ExercisesPresenter extends BasePresenter
      * List authors of all exercises, possibly filtered by a group in which the exercises appear.
      * @GET
      */
-    #[Query("instanceId", new VString(), "Id of an instance from which the authors are listed.", required: false)]
+    #[Query("instanceId", new VUuid(), "Id of an instance from which the authors are listed.", required: false)]
     #[Query(
         "groupId",
-        new VString(),
+        new VUuid(),
         "A group where the relevant exercises can be seen (assigned).",
         required: false,
         nullable: true,
@@ -283,7 +283,7 @@ class ExercisesPresenter extends BasePresenter
      * Get a list of exercises based on given ids.
      * @POST
      */
-    #[Post("ids", new VArray(), "Identifications of exercises")]
+    #[Post("ids", new VArray(new VUuid()), "Identifications of exercises")]
     public function actionListByIds()
     {
         $exercises = $this->exercises->findByIds($this->getRequest()->getPost("ids"));
@@ -537,7 +537,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws ApiException
      * @throws ParseException
      */
-    #[Post("groupId", new VMixed(), "Identifier of the group to which exercise belongs to", nullable: true)]
+    #[Post("groupId", new VUuid(), "Identifier of the group to which exercise belongs to", nullable: true)]
     public function actionCreate()
     {
         $user = $this->getCurrentUser();
@@ -652,7 +652,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws NotFoundException
      * @throws ParseException
      */
-    #[Post("groupId", new VMixed(), "Identifier of the group to which exercise will be forked", nullable: true)]
+    #[Post("groupId", new VUuid(), "Identifier of the group to which exercise will be forked", nullable: true)]
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
     public function actionForkFrom(string $id)
     {
@@ -695,7 +695,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws InvalidApiArgumentException
      */
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
-    #[Path("groupId", new VString(), "Identifier of the group to which exercise should be attached", required: true)]
+    #[Path("groupId", new VUuid(), "Identifier of the group to which exercise should be attached", required: true)]
     public function actionAttachGroup(string $id, string $groupId)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -729,7 +729,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws InvalidApiArgumentException
      */
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
-    #[Path("groupId", new VString(), "Identifier of the group which should be detached from exercise", required: true)]
+    #[Path("groupId", new VUuid(), "Identifier of the group which should be detached from exercise", required: true)]
     public function actionDetachGroup(string $id, string $groupId)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -999,7 +999,7 @@ class ExercisesPresenter extends BasePresenter
      * @POST
      * @throws NotFoundException
      */
-    #[Post("admins", new VArray(), "List of user IDs.", required: true)]
+    #[Post("admins", new VArray(new VUuid()), "List of user IDs.", required: true)]
     #[Path("id", new VUuid(), "identifier of the exercise", required: true)]
     public function actionSetAdmins(string $id)
     {
