@@ -502,7 +502,7 @@ class ExerciseFilesPresenter extends BasePresenter
     )]
     #[Post(
         "key",
-        new VString(1, 16),
+        new VString(1, 16, '/^[-a-zA-Z0-9_]+$/'),
         "Internal user-selected identifier of the exercise file link within the exercise",
         required: true
     )]
@@ -567,7 +567,7 @@ class ExerciseFilesPresenter extends BasePresenter
     #[Path("linkId", new VUuid(), "of the exercise file link", required: true)]
     #[Post(
         "key",
-        new VString(1, 16),
+        new VString(1, 16, '/^[-a-zA-Z0-9_]+$/'),
         "Internal user-selected identifier of the exercise file link within the exercise",
         required: false
     )]
