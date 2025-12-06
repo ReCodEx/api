@@ -645,10 +645,17 @@ class AssignmentsPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "Identifier of the assignment that should be synchronized", required: true)]
+    #[Post("syncOptions", new VArray(new VString(
+        1,
+        32,
+        '/^(configurationType|exerciseConfig|exerciseEnvironmentConfigs|exerciseTests|files|fileLinks|hardwareGroups'
+            . '|limits|localizedTexts|mergeJudgeLogs|runtimeEnvironments|scoreConfig)$/'
+    )), "List of options what to synchronize (if missing, everything is synchronized)", required: false)]
     public function actionSyncWithExercise($id)
     {
         $assignment = $this->assignments->findOrThrow($id);
         $exercise = $assignment->getExercise();
+        $syncOptions = $this->getRequest()->getPost("syncOptions") ?? [];
 
         if ($exercise === null) {
             throw new NotFoundException("Exercise for assignment '{$id}' was deleted");
@@ -661,7 +668,7 @@ class AssignmentsPresenter extends BasePresenter
         }
 
         $assignment->updatedNow();
-        $assignment->syncWithExercise();
+        $assignment->syncWithExercise($syncOptions);
         $this->assignments->flush();
         $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
     }

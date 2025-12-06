@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
 use DateTime;
+use InvalidArgumentException;
 
 /**
  * @ORM\Entity
@@ -535,7 +536,7 @@ class Assignment extends AssignmentBase implements IExercise
             );
     }
 
-    public function syncWithExercise()
+    public function syncWithExercise(array $options = []): void
     {
         $exercise = $this->getExercise();
         if ($exercise === null) {
@@ -543,56 +544,102 @@ class Assignment extends AssignmentBase implements IExercise
             return;
         }
 
-        $this->mergeJudgeLogs = $exercise->getMergeJudgeLogs();
+        // figure out which parts to sync (all are synced if no options are given)
+        $syncOptions = [
+            "configurationType" => !$options,
+            "exerciseConfig" => !$options,
+            "exerciseEnvironmentConfigs" => !$options,
+            "exerciseTests" => !$options,
+            "files" => !$options,
+            "fileLinks" => !$options,
+            "hardwareGroups" => !$options,
+            "limits" => !$options,
+            "localizedTexts" => !$options,
+            "mergeJudgeLogs" => !$options,
+            "runtimeEnvironments" => !$options,
+            "scoreConfig" => !$options,
+        ];
 
-        $this->hardwareGroups->clear();
-        foreach ($exercise->getHardwareGroups() as $group) {
-            $this->hardwareGroups->add($group);
+        foreach ($options as $option) {
+            if (!array_key_exists($option, $syncOptions)) {
+                throw new InvalidArgumentException("Unknown sync option: $option");
+            }
+            $syncOptions[$option] = true;
         }
 
-        $this->localizedTexts->clear();
-        foreach ($exercise->getLocalizedTexts() as $text) {
-            $this->localizedTexts->add($text);
+        $syncOptions = (object)$syncOptions;
+
+        if ($syncOptions->configurationType) {
+            $this->configurationType = $exercise->getConfigurationType();
         }
 
-        $this->exerciseConfig = $exercise->getExerciseConfig();
-        $this->configurationType = $exercise->getConfigurationType();
-        $this->scoreConfig = $exercise->getScoreConfig();
-
-        $this->exerciseEnvironmentConfigs->clear();
-        foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {
-            $this->exerciseEnvironmentConfigs->add($config);
+        if ($syncOptions->exerciseConfig) {
+            $this->exerciseConfig = $exercise->getExerciseConfig();
         }
 
-        $this->exerciseLimits->clear();
-        foreach ($exercise->getExerciseLimits() as $limits) {
-            $this->exerciseLimits->add($limits);
+        if ($syncOptions->exerciseEnvironmentConfigs) {
+            $this->exerciseEnvironmentConfigs->clear();
+            foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {
+                $this->exerciseEnvironmentConfigs->add($config);
+            }
         }
 
-        $this->exerciseTests->clear();
-        foreach ($exercise->getExerciseTests() as $test) {
-            $this->exerciseTests->add($test);
+        if ($syncOptions->exerciseTests) {
+            $this->exerciseTests->clear();
+            foreach ($exercise->getExerciseTests() as $test) {
+                $this->exerciseTests->add($test);
+            }
         }
 
-        $this->exerciseFiles->clear();
-        foreach ($exercise->getExerciseFiles() as $file) {
-            $this->exerciseFiles->add($file);
+        if ($syncOptions->files) {
+            $this->exerciseFiles->clear();
+            foreach ($exercise->getExerciseFiles() as $file) {
+                $this->exerciseFiles->add($file);
+            }
         }
 
-        $this->attachmentFiles->clear();
-        foreach ($exercise->getAttachmentFiles() as $file) {
-            $this->attachmentFiles->add($file);
+        if ($syncOptions->fileLinks) {
+            $this->fileLinks->clear();
+            foreach ($exercise->getFileLinks() as $link) {
+                $newLink = ExerciseFileLink::copyForAssignment($link, $this);
+                $this->fileLinks->add($newLink);
+            }
         }
 
-        $this->fileLinks->clear();
-        foreach ($exercise->getFileLinks() as $link) {
-            $newLink = ExerciseFileLink::copyForAssignment($link, $this);
-            $this->fileLinks->add($newLink);
+        if ($syncOptions->hardwareGroups) {
+            $this->hardwareGroups->clear();
+            foreach ($exercise->getHardwareGroups() as $group) {
+                $this->hardwareGroups->add($group);
+            }
         }
 
-        $this->runtimeEnvironments->clear();
-        foreach ($exercise->getRuntimeEnvironments() as $env) {
-            $this->runtimeEnvironments->add($env);
+        if ($syncOptions->limits) {
+            $this->exerciseLimits->clear();
+            foreach ($exercise->getExerciseLimits() as $limits) {
+                $this->exerciseLimits->add($limits);
+            }
+        }
+
+        if ($syncOptions->localizedTexts) {
+            $this->localizedTexts->clear();
+            foreach ($exercise->getLocalizedTexts() as $text) {
+                $this->localizedTexts->add($text);
+            }
+        }
+
+        if ($syncOptions->mergeJudgeLogs) {
+            $this->mergeJudgeLogs = $exercise->getMergeJudgeLogs();
+        }
+
+        if ($syncOptions->runtimeEnvironments) {
+            $this->runtimeEnvironments->clear();
+            foreach ($exercise->getRuntimeEnvironments() as $env) {
+                $this->runtimeEnvironments->add($env);
+            }
+        }
+
+        if ($syncOptions->scoreConfig) {
+            $this->scoreConfig = $exercise->getScoreConfig();
         }
 
         $this->syncedAt = new DateTime();
