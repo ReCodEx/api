@@ -117,14 +117,6 @@ class AssignmentViewFactory
                 "mergeJudgeLogs" => [
                     "upToDate" => $exercise && $assignment->getMergeJudgeLogs() === $exercise->getMergeJudgeLogs(),
                 ],
-
-                // DEPRECATED fields (will be removed in future)
-                "supplementaryFiles" => [
-                    "upToDate" => $assignment->areExerciseFilesInSync()
-                ],
-                "attachmentFiles" => [
-                    "upToDate" => $assignment->areAttachmentFilesInSync()
-                ],
             ],
             "solutionFilesLimit" => $assignment->getSolutionFilesLimit(),
             "solutionSizeLimit" => $assignment->getSolutionSizeLimit(),
