@@ -236,6 +236,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix", "Assignments:create");
         $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
         $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");
+        $router[] = new PostRoute("$prefix/<id>/localized-texts", "Assignments:updateLocalizedTexts");
         $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
         $router[] = new GetRoute("$prefix/<id>/solutions", "Assignments:solutions");
         $router[] = new GetRoute("$prefix/<id>/best-solutions", "Assignments:bestSolutions");

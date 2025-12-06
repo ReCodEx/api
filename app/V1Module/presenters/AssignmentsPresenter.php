@@ -211,7 +211,11 @@ class AssignmentsPresenter extends BasePresenter
      */
     #[Post("version", new VInt(), "Version of the edited assignment")]
     #[Post("isPublic", new VBool(), "Is the assignment ready to be displayed to students?")]
-    #[Post("localizedTexts", new VArray(), "A description of the assignment")]
+    #[Post(
+        "localizedStudentHints",
+        new VArray(),
+        "Additional localized hint texts for students (locale => hint text)",
+    )]
     #[Post("firstDeadline", new VTimestamp(), "First deadline for submission of the assignment")]
     #[Post(
         "maxPointsBeforeFirstDeadline",
@@ -307,10 +311,6 @@ class AssignmentsPresenter extends BasePresenter
             );
         }
 
-        // localized texts cannot be empty
-        if (count($req->getPost("localizedTexts")) == 0) {
-            throw new InvalidApiArgumentException('localizedTexts', "No entry for localized texts given.");
-        }
 
         if ($this->isRequestJson()) {
             $disabledRuntimeIds = $req->getPost("disabledRuntimeEnvironmentIds");
@@ -425,49 +425,17 @@ class AssignmentsPresenter extends BasePresenter
             $this->solutionEvaluations->flush();
         }
 
-        // go through localizedTexts and construct database entities
-        $localizedTexts = [];
+        // go through localized hints and construct database entities
         $localizedAssignments = [];
-        foreach ($req->getPost("localizedTexts") as $localization) {
-            $lang = $localization["locale"];
-
-            if (array_key_exists($lang, $localizedTexts)) {
-                throw new InvalidApiArgumentException('localizedTexts', "Duplicate entry for language '$lang'");
-            }
-
-            // create all new localized texts
-            $assignmentExercise = $assignment->getExercise();
-            $localizedExercise = $assignmentExercise ? $assignmentExercise->getLocalizedTextByLocale($lang) : null;
-            $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
-            if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
-                throw new InvalidApiArgumentException('link', "External assignment link is not a valid URL");
-            }
-
-            $localizedTexts[$lang] = new LocalizedExercise(
+        foreach ($req->getPost("localizedStudentHints") ?? [] as $lang => $hintText) {
+            $localizedAssignments[$lang] = new LocalizedAssignment(
                 $lang,
-                trim(Arrays::get($localization, "name", "")),
-                trim(Arrays::get($localization, "text", "")),
-                $localizedExercise ? $localizedExercise->getDescription() : "",
-                $externalAssignmentLink ?: null
+                trim($hintText)
             );
-
-            if (array_key_exists("studentHint", $localization)) {
-                $localizedAssignments[$lang] = new LocalizedAssignment(
-                    $lang,
-                    trim(Arrays::get($localization, "studentHint", ""))
-                );
-            }
         }
 
-        // make changes to database
-        Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
-
-        foreach ($assignment->getLocalizedTexts() as $localizedText) {
-            $this->assignments->persist($localizedText, false);
-        }
-
+        // save changes to database (if any)
         Localizations::updateCollection($assignment->getLocalizedAssignments(), $localizedAssignments);
-
         foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
             $this->assignments->persist($localizedAssignment, false);
         }
@@ -501,7 +469,81 @@ class AssignmentsPresenter extends BasePresenter
             }
         }
 
-        $this->assignments->flush();
+        $this->assignments->persist($assignment);
+        $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
+    }
+
+    public function checkUpdateLocalizedTexts(string $id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+        if (!$this->assignmentAcl->canUpdate($assignment)) {
+            throw new ForbiddenRequestException("You cannot update this assignment.");
+        }
+    }
+
+    /**
+     * Update (only) the localized texts of an assignment.
+     * This is a separate operations since the texts are taken over from the exercise.
+     * Updating them is an override of the exercise specification and needs to be handled carefully.
+     * @POST
+     */
+    #[Post("version", new VInt(), "Version of the edited assignment")]
+    #[Post("localizedTexts", new VArray(), "Localized texts with exercise/assignment specification")]
+    #[Path("id", new VUuid(), "Identifier of the updated assignment", required: true)]
+    public function actionUpdateLocalizedTexts(string $id)
+    {
+        $assignment = $this->assignments->findOrThrow($id);
+
+        $req = $this->getRequest();
+        $version = (int)$req->getPost("version");
+        if ($version !== $assignment->getVersion()) {
+            $newVer = $assignment->getVersion();
+            throw new BadRequestException(
+                "The assignment was edited in the meantime and the version has changed. Current version is $newVer.",
+                FrontendErrorMappings::E400_010__ENTITY_VERSION_TOO_OLD,
+                [
+                    'entity' => 'assignment',
+                    'id' => $id,
+                    'version' => $newVer
+                ]
+            );
+        }
+
+        // go through localizedTexts and construct database entities
+        $localizedTexts = [];
+        foreach ($req->getPost("localizedTexts") as $localization) {
+            $lang = $localization["locale"];
+
+            if (array_key_exists($lang, $localizedTexts)) {
+                throw new InvalidApiArgumentException('localizedTexts', "Duplicate entry for language '$lang'");
+            }
+
+            // create all new localized texts
+            $assignmentExercise = $assignment->getExercise();
+            $localizedExercise = $assignmentExercise ? $assignmentExercise->getLocalizedTextByLocale($lang) : null;
+            $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
+            if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
+                throw new InvalidApiArgumentException('link', "External assignment link is not a valid URL");
+            }
+
+            $localizedTexts[$lang] = new LocalizedExercise(
+                $lang,
+                trim(Arrays::get($localization, "name", "")),
+                trim(Arrays::get($localization, "text", "")),
+                $localizedExercise ? $localizedExercise->getDescription() : "",
+                $externalAssignmentLink ?: null
+            );
+        }
+
+        // make changes to database
+        Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
+        foreach ($assignment->getLocalizedTexts() as $localizedText) {
+            $this->assignments->persist($localizedText, false);
+        }
+
+        $assignment->incrementVersion();
+        $assignment->updatedNow();
+        $this->assignments->persist($assignment);
         $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
     }
 
