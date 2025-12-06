@@ -145,8 +145,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->presenter->solutionEvaluations = $mockEvaluations;
 
         $isPublic = true;
-        $localizedTexts = [
-            ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+        $localizedStudentHints = [
+            "en" => "Use the force!",
         ];
         $firstDeadline = (new DateTime())->getTimestamp();
         $maxPointsBeforeFirstDeadline = 123;
@@ -171,7 +171,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             [
                 'isPublic' => $isPublic,
                 'version' => 1,
-                'localizedTexts' => $localizedTexts,
+                'localizedStudentHints' => $localizedStudentHints,
                 'firstDeadline' => $firstDeadline,
                 'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
                 'submissionsCountLimit' => $submissionsCountLimit,
@@ -218,10 +218,10 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         // check localized texts
         Assert::count(1, $updatedAssignment["localizedTexts"]);
-        $localized = current($localizedTexts);
+        $localized = current($localizedStudentHints);
         $updatedLocalized = $updatedAssignment["localizedTexts"][0];
-        Assert::equal($updatedLocalized["locale"], $localized["locale"]);
-        Assert::equal($updatedLocalized["text"], $localized["text"]);
+        Assert::equal("en", $updatedLocalized["locale"]);
+        Assert::equal($localized, $updatedLocalized["studentHint"]);
     }
 
     public function testUpdateDetailWithoutNotifications()
@@ -249,9 +249,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'isPublic' => true,
                 'version' => 1,
                 'sendNotification' => false,
-                'localizedTexts' => [
-                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-                ],
+                'localizedStudentHints' => ["en" => "Use the force!"],
                 'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 42,
                 'submissionsCountLimit' => 10,
@@ -303,9 +301,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $this->presenter->solutionEvaluations = $mockEvaluations;
 
         $isPublic = true;
-        $localizedTexts = [
-            ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-        ];
+        $localizedStudentHints = ["en" => "Use the force!"];
         $firstDeadline = (new DateTime())->getTimestamp() + 100;
         $maxPointsBeforeFirstDeadline = 123;
         $submissionsCountLimit = 32;
@@ -330,7 +326,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'isPublic' => $isPublic,
                 'version' => 1,
                 'sendNotification' => true,
-                'localizedTexts' => $localizedTexts,
+                'localizedStudentHints' => $localizedStudentHints,
                 'firstDeadline' => $firstDeadline,
                 'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
                 'submissionsCountLimit' => $submissionsCountLimit,
@@ -377,10 +373,10 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         // check localized texts
         Assert::count(1, $updatedAssignment["localizedTexts"]);
-        $localized = current($localizedTexts);
+        $localized = current($localizedStudentHints);
         $updatedLocalized = $updatedAssignment["localizedTexts"][0];
-        Assert::equal($updatedLocalized["locale"], $localized["locale"]);
-        Assert::equal($updatedLocalized["text"], $localized["text"]);
+        Assert::equal("en", $updatedLocalized["locale"]);
+        Assert::equal($localized, $updatedLocalized["studentHint"]);
     }
 
     public function testAddStudentHints()
@@ -399,9 +395,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             [
                 'isPublic' => true,
                 'version' => 1,
-                'localizedTexts' => [
-                    ["locale" => "locA", "text" => "descA", "name" => "nameA", "studentHint" => "Try hard"]
-                ],
+                'localizedStudentHints' => ["en" => "Try hard"],
                 'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
@@ -424,7 +418,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $response = $this->presenter->run($request);
         $updatedAssignment = PresenterTestHelper::extractPayload($response);
         Assert::count(1, $updatedAssignment["localizedTexts"]);
-        Assert::equal("locA", $updatedAssignment["localizedTexts"][0]["locale"]);
+        Assert::equal("en", $updatedAssignment["localizedTexts"][0]["locale"]);
         Assert::equal("Try hard", $updatedAssignment["localizedTexts"][0]["studentHint"]);
         Assert::true($updatedAssignment["maxPointsDeadlineInterpolation"]);
     }
@@ -446,9 +440,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             [
                 'isPublic' => true,
                 'version' => 1,
-                'localizedTexts' => [
-                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-                ],
+                'localizedStudentHints' => ["en" => "Use the force!"],
                 'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
@@ -491,9 +483,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             [
                 'isPublic' => true,
                 'version' => 1,
-                'localizedTexts' => [
-                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-                ],
+                'localizedStudentHints' => ["en" => "Use the force!"],
                 'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
@@ -540,9 +530,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             [
                 'isPublic' => true,
                 'version' => 1,
-                'localizedTexts' => [
-                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-                ],
+                'localizedStudentHints' => ["en" => "Use the force!"],
                 'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
@@ -587,9 +575,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
             [
                 'isPublic' => true,
                 'version' => 1,
-                'localizedTexts' => [
-                    ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-                ],
+                'localizedStudentHints' => ["en" => "Use the force!"],
                 'firstDeadline' => (new DateTime())->getTimestamp(),
                 'maxPointsBeforeFirstDeadline' => 123,
                 'submissionsCountLimit' => 32,
@@ -612,6 +598,42 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::false($payload["isExam"]);
         $this->presenter->assignments->refresh($assignment);
         Assert::false($assignment->isExam());
+    }
+
+    public function testUpdateLocalizedTexts()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $assignments = $this->assignments->findAll();
+        /** @var Assignment $assignment */
+        $assignment = array_pop($assignments);
+
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'updateLocalizedTexts', 'id' => $assignment->getId()],
+            [
+                'version' => 1,
+                'localizedTexts' => [
+                    ["locale" => "en", "name" => "Overwritten name", "text" => "Overwritten text"],
+                    ["locale" => "nw", "name" => "New name", "text" => "New text"],
+                ],
+            ]
+        );
+
+        $response = $this->presenter->run($request);
+        $updatedAssignment = PresenterTestHelper::extractPayload($response);
+        Assert::count(2, $updatedAssignment["localizedTexts"]);
+        $texts = $updatedAssignment["localizedTexts"];
+        usort($texts, function ($a, $b) {
+            return strcmp($a["locale"], $b["locale"]);
+        });
+        Assert::equal("en", $texts[0]["locale"]);
+        Assert::equal("Overwritten name", $texts[0]["name"]);
+        Assert::equal("Overwritten text", $texts[0]["text"]);
+        Assert::equal("nw", $texts[1]["locale"]);
+        Assert::equal("New name", $texts[1]["name"]);
+        Assert::equal("New text", $texts[1]["text"]);
     }
 
     public function testCreateAssignment()
