@@ -827,6 +827,76 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::null($newLink->getExercise());
     }
 
+    public function testSyncWithExercisePartial()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = PresenterTestHelper::getUser($this->container);
+
+        /** @var RuntimeEnvironment $environment */
+        $environment = $this->runtimeEnvironments->findAll()[0];
+        /** @var HardwareGroup $hwGroup */
+        $hwGroup = $this->hardwareGroups->findAll()[0];
+        /** @var Group $group */
+        $group = $this->presenter->groups->findAll()[0];
+
+        $limits = "
+      memory: 42,
+      wall-time: 33
+    ";
+
+        $newLimits = "
+      memory: 33,
+      wall-time: 44
+    ";
+
+        $exercises = array_filter(
+            $this->presenter->exercises->findAll(),
+            function (Exercise $e) {
+                return !$e->getFileLinks()->isEmpty(); // select the exercise with file links
+            }
+        );
+        Assert::count(1, $exercises);
+        /** @var Exercise $exercise */
+        $exercise = array_pop($exercises);
+
+        $exerciseLimits = new ExerciseLimits($environment, $hwGroup, $limits, $user);
+        $this->em->persist($exerciseLimits);
+
+        $exercise->addExerciseLimits($exerciseLimits);
+        $assignment = Assignment::assignToGroup($exercise, $group);
+        $this->em->persist($assignment);
+        $this->em->flush();
+
+        $newExerciseLimits = new ExerciseLimits($environment, $hwGroup, $newLimits, $user);
+        $this->em->persist($newExerciseLimits);
+        $exercise->clearExerciseLimits();
+        $exercise->addExerciseLimits($newExerciseLimits);
+
+        $exercise->getFileLinks()->removeElement($exercise->getFileLinks()->first());
+        Assert::count(1, $exercise->getFileLinks());
+        $link = $exercise->getFileLinks()->first();
+        $link->setKey("NEW");
+        $link->setRequiredRole(Roles::SUPERVISOR_ROLE);
+        $this->em->persist($link);
+        $this->em->persist($exercise);
+        $this->em->flush();
+
+        $request = new Nette\Application\Request(
+            'V1:Assignments',
+            'POST',
+            ['action' => 'syncWithExercise', 'id' => $assignment->getId()],
+            ['syncOptions' => ['limits']]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $payload = $response->getPayload();
+        $data = $payload["payload"];
+
+        Assert::same($assignment->getId(), $data["id"]);
+        Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
+        Assert::count(2, $assignment->getFileLinks());
+    }
+
     public function testRemove()
     {
         $token = PresenterTestHelper::loginDefaultAdmin($this->container);
