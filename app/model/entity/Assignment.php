@@ -490,18 +490,18 @@ class Assignment extends AssignmentBase implements IExercise
             return false;
         }
 
-        // build index where keys are exercise file IDs
+        // build an index where keys are keys (the only unique attribute)
         $fileIndex = [];
         foreach ($this->getFileLinks() as $link) {
-            $fileIndex[$link->getExerciseFile()->getId()] = $link;
+            $fileIndex[$link->getKey()] = $link;
         }
 
         // verify that all exercise links are present and has the same data
         foreach ($exercise->getFileLinks() as $link) {
-            $ourLink = $fileIndex[$link->getExerciseFile()->getId()] ?? null;
+            $ourLink = $fileIndex[$link->getKey()] ?? null;
             if (
                 $ourLink === null
-                || $ourLink->getKey() !== $link->getKey()
+                || $ourLink->getExerciseFile()->getId() !== $link->getExerciseFile()->getId()
                 || $ourLink->getRequiredRole() !== $link->getRequiredRole()
                 || $ourLink->getSaveName() !== $link->getSaveName()
             ) {
