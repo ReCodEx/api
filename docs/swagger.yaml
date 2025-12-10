@@ -109,6 +109,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -278,8 +279,8 @@ paths:
           description: 'Placeholder response'
   '/v1/comments/{threadId}/comment/{commentId}/toggle':
     post:
-      summary: 'Make a private comment public or vice versa'
-      description: 'Make a private comment public or vice versa'
+      summary: 'Make a private comment public or vice versa [DEPRECATED]'
+      description: "Make a private comment public or vice versa\n[DEPRECATED]"
       operationId: commentsPresenterActionTogglePrivate
       parameters:
         -
@@ -289,6 +290,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
         -
           name: commentId
@@ -297,6 +299,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -314,6 +317,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
         -
           name: commentId
@@ -322,6 +326,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -352,6 +357,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
         -
           name: commentId
@@ -360,6 +366,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -428,6 +435,8 @@ paths:
                 groupId:
                   description: 'Identifier of the group to which exercise belongs to'
                   type: string
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: true
               type: object
       responses:
@@ -448,7 +457,7 @@ paths:
                 ids:
                   description: 'Identifications of exercises'
                   type: array
-                  items: {  }
+                  items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }
                   nullable: false
               type: object
       responses:
@@ -467,6 +476,7 @@ paths:
           required: false
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
         -
           name: groupId
@@ -475,6 +485,7 @@ paths:
           required: false
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: true
       responses:
         '200':
@@ -695,6 +706,8 @@ paths:
                 groupId:
                   description: 'Identifier of the group to which exercise will be forked'
                   type: string
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: true
               type: object
       responses:
@@ -779,6 +792,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -804,6 +818,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -949,7 +964,7 @@ paths:
                 admins:
                   description: 'List of user IDs.'
                   type: array
-                  items: {  }
+                  items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }
                   nullable: false
               type: object
       responses:
@@ -986,7 +1001,7 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/exercises/{id}/exercise-files':
+  '/v1/exercises/{id}/files':
     get:
       summary: 'Get list of all exercise files for an exercise'
       description: 'Get list of all exercise files for an exercise'
@@ -1033,7 +1048,7 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/exercises/{id}/exercise-files/{fileId}':
+  '/v1/exercises/{id}/files/{fileId}':
     delete:
       summary: 'Delete exercise file with given id'
       description: 'Delete exercise file with given id'
@@ -1055,11 +1070,12 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
           description: 'Placeholder response'
-  '/v1/exercises/{id}/exercise-files/download-archive':
+  '/v1/exercises/{id}/files/download-archive':
     get:
       summary: 'Download archive containing all files for exercise.'
       description: 'Download archive containing all files for exercise.'
@@ -1073,6 +1089,187 @@ paths:
           schema:
             type: string
             pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/exercises/{id}/file-links':
+    get:
+      summary: 'Retrieve a list of all exercise-file links for given exercise.'
+      description: 'Retrieve a list of all exercise-file links for given exercise.'
+      operationId: exerciseFilesPresenterActionGetFileLinks
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+    post:
+      summary: 'Create a new exercise-file link for given exercise.'
+      description: 'Create a new exercise-file link for given exercise.'
+      operationId: exerciseFilesPresenterActionCreateFileLink
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - exerciseFileId
+                - key
+              properties:
+                exerciseFileId:
+                  description: 'Target file the link will point to'
+                  type: string
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
+                  nullable: false
+                key:
+                  description: 'Internal user-selected identifier of the exercise file link within the exercise'
+                  type: string
+                  maxLength: 16
+                  minLength: 1
+                  pattern: '^[-a-zA-Z0-9_]+$'
+                  example: text
+                  nullable: false
+                requiredRole:
+                  description: 'Minimal required user role to access the file (null = non-logged-in users)'
+                  type: string
+                  maxLength: 255
+                  minLength: 1
+                  example: text
+                  nullable: true
+                saveName:
+                  description: 'File name override (the file will be downloaded under this name instead of the original name)'
+                  type: string
+                  maxLength: 255
+                  minLength: 1
+                  example: text
+                  nullable: true
+              type: object
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/exercises/{id}/file-links/{linkId}':
+    post:
+      summary: 'Update a specific exercise-file link. Missing arguments are not changed.'
+      description: 'Update a specific exercise-file link. Missing arguments are not changed.'
+      operationId: exerciseFilesPresenterActionUpdateFileLink
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+        -
+          name: linkId
+          in: path
+          description: 'of the exercise file link'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                key:
+                  description: 'Internal user-selected identifier of the exercise file link within the exercise'
+                  type: string
+                  maxLength: 16
+                  minLength: 1
+                  pattern: '^[-a-zA-Z0-9_]+$'
+                  example: text
+                  nullable: false
+                requiredRole:
+                  description: 'Minimal required user role to access the file (null = non-logged-in users)'
+                  type: string
+                  maxLength: 255
+                  minLength: 1
+                  example: text
+                  nullable: true
+                saveName:
+                  description: 'File name override (the file will be downloaded under this name instead of the original name)'
+                  type: string
+                  maxLength: 255
+                  minLength: 1
+                  example: text
+                  nullable: true
+              type: object
+      responses:
+        '200':
+          description: 'Placeholder response'
+    delete:
+      summary: 'Delete a specific exercise-file link.'
+      description: 'Delete a specific exercise-file link.'
+      operationId: exerciseFilesPresenterActionDeleteFileLink
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+        -
+          name: linkId
+          in: path
+          description: 'of the exercise file link'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/exercises/{id}/file-download/{linkKey}':
+    get:
+      summary: 'Download a specific exercise-file via its link key. Unlike `downloadFileLink`, the key is selected by the user and does not have to change (when the link or the file is updated). On the other hand, it always retrieves the latest version of the file.'
+      description: 'Download a specific exercise-file via its link key. Unlike `downloadFileLink`, the key is selected by the user and does not have to change (when the link or the file is updated). On the other hand, it always retrieves the latest version of the file.'
+      operationId: uploadedFilesPresenterActionDownloadExerciseFileLinkByKey
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of exercise'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+        -
+          name: linkKey
+          in: path
+          description: 'Internal user-selected identifier of the exercise file link within the exercise'
+          required: true
+          schema:
+            type: string
+            maxLength: 16
+            minLength: 1
             nullable: false
       responses:
         '200':
@@ -1146,6 +1343,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -1170,8 +1368,8 @@ paths:
           description: 'Placeholder response'
   '/v1/exercises/{id}/attachment-files':
     get:
-      summary: 'Get a list of all attachment files for an exercise'
-      description: 'Get a list of all attachment files for an exercise'
+      summary: 'Get a list of all attachment files for an exercise [DEPRECATED]'
+      description: "Get a list of all attachment files for an exercise\n[DEPRECATED]: attachment files were unified with exercise files"
       operationId: exerciseFilesPresenterActionGetAttachmentFiles
       parameters:
         -
@@ -1186,9 +1384,10 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
     post:
-      summary: 'Associate attachment exercise files with an exercise'
-      description: 'Associate attachment exercise files with an exercise'
+      summary: 'Associate attachment exercise files with an exercise [DEPRECATED]'
+      description: "Associate attachment exercise files with an exercise\n[DEPRECATED]: attachment files were unified with exercise files"
       operationId: exerciseFilesPresenterActionUploadAttachmentFiles
       parameters:
         -
@@ -1215,10 +1414,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/exercises/{id}/attachment-files/{fileId}':
     delete:
-      summary: 'Delete attachment exercise file with given id'
-      description: 'Delete attachment exercise file with given id'
+      summary: 'Delete attachment exercise file with given id [DEPRECATED]'
+      description: "Delete attachment exercise file with given id\n[DEPRECATED]: attachment files were unified with exercise files"
       operationId: exerciseFilesPresenterActionDeleteAttachmentFile
       parameters:
         -
@@ -1237,14 +1437,16 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/exercises/{id}/attachment-files/download-archive':
     get:
-      summary: 'Download archive containing all attachment files for exercise.'
-      description: 'Download archive containing all attachment files for exercise.'
+      summary: 'Download archive containing all attachment files for exercise. [DEPRECATED]'
+      description: "Download archive containing all attachment files for exercise.\n[DEPRECATED]: attachment files were unified with exercise files"
       operationId: exerciseFilesPresenterActionDownloadAttachmentFilesArchive
       parameters:
         -
@@ -1259,6 +1461,7 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/exercises/{id}/tests':
     get:
       summary: 'Get tests for exercise based on given identification.'
@@ -1442,8 +1645,8 @@ paths:
           description: 'Placeholder response'
   '/v1/exercises/{id}/environment/{runtimeEnvironmentId}/hwgroup/{hwGroupId}/limits':
     get:
-      summary: 'Get a description of resource limits for an exercise for given hwgroup.'
-      description: 'Get a description of resource limits for an exercise for given hwgroup.'
+      summary: 'Get a description of resource limits for an exercise for given hwgroup. [DEPRECATED]'
+      description: "Get a description of resource limits for an exercise for given hwgroup.\n[DEPRECATED]"
       operationId: exercisesConfigPresenterActionGetHardwareGroupLimits
       parameters:
         -
@@ -1462,6 +1665,7 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
             nullable: false
         -
           name: hwGroupId
@@ -1470,13 +1674,14 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
             nullable: false
       responses:
         '200':
           description: 'Placeholder response'
     post:
-      summary: 'Set resource limits for an exercise for given hwgroup.'
-      description: 'Set resource limits for an exercise for given hwgroup.'
+      summary: 'Set resource limits for an exercise for given hwgroup. [DEPRECATED]'
+      description: "Set resource limits for an exercise for given hwgroup.\n[DEPRECATED]"
       operationId: exercisesConfigPresenterActionSetHardwareGroupLimits
       parameters:
         -
@@ -1495,6 +1700,7 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
             nullable: false
         -
           name: hwGroupId
@@ -1503,6 +1709,7 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
             nullable: false
       requestBody:
         content:
@@ -1521,8 +1728,8 @@ paths:
         '200':
           description: 'Placeholder response'
     delete:
-      summary: 'Remove resource limits of given hwgroup from an exercise.'
-      description: 'Remove resource limits of given hwgroup from an exercise.'
+      summary: 'Remove resource limits of given hwgroup from an exercise. [DEPRECATED]'
+      description: "Remove resource limits of given hwgroup from an exercise.\n[DEPRECATED]"
       operationId: exercisesConfigPresenterActionRemoveHardwareGroupLimits
       parameters:
         -
@@ -1541,6 +1748,7 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
             nullable: false
         -
           name: hwGroupId
@@ -1549,6 +1757,7 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
             nullable: false
       responses:
         '200':
@@ -1670,10 +1879,14 @@ paths:
                 exerciseId:
                   description: 'Identifier of the exercise'
                   type: string
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: true
                 groupId:
                   description: 'Identifier of the group'
                   type: string
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: true
               type: object
       responses:
@@ -1718,7 +1931,7 @@ paths:
               required:
                 - version
                 - isPublic
-                - localizedTexts
+                - localizedStudentHints
                 - firstDeadline
                 - maxPointsBeforeFirstDeadline
                 - submissionsCountLimit
@@ -1742,8 +1955,8 @@ paths:
                   type: boolean
                   example: 'true'
                   nullable: false
-                localizedTexts:
-                  description: 'A description of the assignment'
+                localizedStudentHints:
+                  description: 'Additional localized hint texts for students (locale => hint text)'
                   type: array
                   items: {  }
                   nullable: false
@@ -1863,6 +2076,43 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+  '/v1/exercise-assignments/{id}/localized-texts':
+    post:
+      summary: 'Update (only) the localized texts of an assignment. This is a separate operations since the texts are taken over from the exercise. Updating them is an override of the exercise specification and needs to be handled carefully.'
+      description: 'Update (only) the localized texts of an assignment. This is a separate operations since the texts are taken over from the exercise. Updating them is an override of the exercise specification and needs to be handled carefully.'
+      operationId: assignmentsPresenterActionUpdateLocalizedTexts
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'Identifier of the updated assignment'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - version
+                - localizedTexts
+              properties:
+                version:
+                  description: 'Version of the edited assignment'
+                  type: integer
+                  example: '0'
+                  nullable: false
+                localizedTexts:
+                  description: 'Localized texts with exercise/assignment specification'
+                  type: array
+                  items: {  }
+                  nullable: false
+              type: object
+      responses:
+        '200':
+          description: 'Placeholder response'
   '/v1/exercise-assignments/{id}/solutions':
     get:
       summary: 'Get a list of solutions of all users for the assignment'
@@ -1939,6 +2189,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -1965,6 +2216,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2015,6 +2267,17 @@ paths:
             type: string
             pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                syncOptions:
+                  description: 'List of options what to synchronize (if missing, everything is synchronized)'
+                  type: array
+                  items: { type: string, maxLength: 32, minLength: 1, pattern: ^(configurationType|exerciseConfig|exerciseEnvironmentConfigs|exerciseTests|files|fileLinks|hardwareGroups|limits|localizedTexts|mergeJudgeLogs|runtimeEnvironments|scoreConfig)$, example: text }
+                  nullable: false
+              type: object
       responses:
         '200':
           description: 'Placeholder response'
@@ -2040,6 +2303,7 @@ paths:
           required: false
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: true
       responses:
         '200':
@@ -2077,10 +2341,13 @@ paths:
                 userId:
                   description: 'Author of the submission'
                   type: string
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: true
                 files:
                   description: 'Submitted files'
-                  type: string
+                  type: array
+                  items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }
                   nullable: true
                 runtimeEnvironmentId:
                   description: 'Identifier of the runtime environment used for evaluation'
@@ -2151,6 +2418,7 @@ paths:
           required: false
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: true
       requestBody:
         content:
@@ -2160,10 +2428,10 @@ paths:
                 - files
               properties:
                 files:
-                  description: ''
+                  description: 'Submitted files'
                   type: array
-                  items: {  }
-                  nullable: false
+                  items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }
+                  nullable: true
               type: object
       responses:
         '200':
@@ -2479,8 +2747,8 @@ paths:
           description: 'Placeholder response'
   '/v1/groups/{id}/subgroups':
     get:
-      summary: 'Get a list of subgroups of a group'
-      description: 'Get a list of subgroups of a group'
+      summary: 'Get a list of subgroups of a group [DEPRECATED]'
+      description: "Get a list of subgroups of a group\n[DEPRECATED]: Subgroup list is part of group view."
       operationId: groupsPresenterActionSubgroups
       parameters:
         -
@@ -2495,6 +2763,7 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/groups/{id}/organizational':
     post:
       summary: "Set the 'isOrganizational' flag for a group"
@@ -2711,6 +2980,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2755,6 +3025,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2780,6 +3051,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2817,6 +3089,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2855,6 +3128,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2881,6 +3155,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -2906,14 +3181,15 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
           description: 'Placeholder response'
   '/v1/groups/{id}/members':
     get:
-      summary: 'Get a list of members of a group'
-      description: 'Get a list of members of a group'
+      summary: 'Get a list of members of a group [DEPRECATED]'
+      description: "Get a list of members of a group\n[DEPRECATED]: Members are listed in group view."
       operationId: groupsPresenterActionMembers
       parameters:
         -
@@ -2928,6 +3204,7 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/groups/{id}/members/{userId}':
     post:
       summary: 'Add/update a membership (other than student) for given user'
@@ -2950,6 +3227,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3001,6 +3279,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3066,6 +3345,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3082,6 +3362,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3507,6 +3788,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3546,6 +3828,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3563,6 +3846,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3580,6 +3864,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3610,6 +3895,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3654,6 +3940,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3682,6 +3969,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3698,6 +3986,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3728,6 +4017,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3774,6 +4064,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3809,6 +4100,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3826,6 +4118,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -3856,6 +4149,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3872,6 +4166,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3889,6 +4184,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -3906,6 +4202,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -4347,6 +4644,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -4397,6 +4695,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -4570,8 +4869,8 @@ paths:
         '200':
           description: 'Placeholder response'
     post:
-      summary: 'Finalize partial upload and convert the partial file into UploadFile. All data chunks are extracted from the store, assembled into one file, and is moved back into the store.'
-      description: 'Finalize partial upload and convert the partial file into UploadFile. All data chunks are extracted from the store, assembled into one file, and is moved back into the store.'
+      summary: 'Finalize partial upload and convert the partial file into UploadedFile entity. All data chunks are extracted from the store, assembled into one file, and that is moved back into the store.'
+      description: 'Finalize partial upload and convert the partial file into UploadedFile entity. All data chunks are extracted from the store, assembled into one file, and that is moved back into the store.'
       operationId: uploadedFilesPresenterActionCompletePartial
       parameters:
         -
@@ -4603,6 +4902,24 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+  '/v1/uploaded-files/link/{id}':
+    get:
+      summary: 'Download a specific exercise-file via its link. This endpoint is deliberately placed in UploadedFilesPresenter so it works for non-logged-in users as well.'
+      description: 'Download a specific exercise-file via its link. This endpoint is deliberately placed in UploadedFilesPresenter so it works for non-logged-in users as well.'
+      operationId: uploadedFilesPresenterActionDownloadExerciseFileByLink
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'of the exercise file link entity'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
   /v1/uploaded-files:
     post:
       summary: 'Upload a file'
@@ -4621,24 +4938,6 @@ paths:
                   format: binary
                   nullable: false
               type: object
-      responses:
-        '200':
-          description: 'Placeholder response'
-  '/v1/uploaded-files/supplementary-file/{id}/download':
-    get:
-      summary: 'Download exercise file'
-      description: 'Download exercise file'
-      operationId: uploadedFilesPresenterActionDownloadExerciseFile
-      parameters:
-        -
-          name: id
-          in: path
-          description: 'Identifier of the file'
-          required: true
-          schema:
-            type: string
-            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-            nullable: false
       responses:
         '200':
           description: 'Placeholder response'
@@ -4750,6 +5049,25 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+  '/v1/uploaded-files/supplementary-file/{id}/download':
+    get:
+      summary: 'Download exercise file [DEPRECATED]'
+      description: "Download exercise file\n[DEPRECATED]: use generic uploaded-file download endpoint instead"
+      operationId: uploadedFilesPresenterActionDownloadExerciseFile
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'Identifier of the file'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
+      deprecated: true
   /v1/users:
     get:
       summary: 'Get a list of all users matching given filters in given pagination rage. The result conforms to pagination protocol.'
@@ -4868,8 +5186,8 @@ paths:
                 instanceId:
                   description: 'Identifier of the instance to register in'
                   type: string
-                  minLength: 1
-                  example: text
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: false
                 titlesBeforeName:
                   description: 'Titles which is placed before user name'
@@ -5974,6 +6292,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -6065,6 +6384,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -6432,6 +6752,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -6592,7 +6913,9 @@ paths:
                 groupId:
                   description: 'Identifier of the group'
                   type: string
-                  nullable: true
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
+                  nullable: false
               type: object
       responses:
         '200':
@@ -6655,7 +6978,8 @@ paths:
                 userId:
                   description: 'Identifier of the user which is marked as awardee for points'
                   type: string
-                  example: text
+                  pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                  example: 10000000-2000-4000-8000-160000000000
                   nullable: false
                 points:
                   description: 'Number of points assigned to the user'
@@ -6689,6 +7013,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -6730,6 +7055,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -7122,6 +7448,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       responses:
         '200':
@@ -7147,6 +7474,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
       requestBody:
         content:
@@ -7211,6 +7539,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             nullable: false
         -
           name: locale

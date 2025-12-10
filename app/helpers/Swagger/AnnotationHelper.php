@@ -285,6 +285,23 @@ class AnnotationHelper
         return null;
     }
 
+    /**
+     * Extracts the deprecated message from the annotations.
+     * @param array $annotations The array of annotations.
+     * @return string|null Returns the concatenated deprecated message (may be '' @deprecated without message is set)
+     *                     or null if the endpoint is not deprecated.
+     */
+    private static function extractAnnotationDeprecatedMessage(array $annotations): ?string
+    {
+        $deprecated = [];
+        foreach ($annotations as $annotation) {
+            if (str_starts_with($annotation, "@deprecated")) {
+                $deprecated[] = trim(preg_replace('/^@deprecated\s*/', '', $annotation));
+            }
+        }
+        return $deprecated ? implode("\n", array_filter($deprecated)) : null;
+    }
+
     private static function annotationParameterDataToAnnotationData(
         string $className,
         string $methodName,
@@ -292,6 +309,7 @@ class AnnotationHelper
         array $params,
         array $responseDataList,
         ?string $description,
+        ?string $deprecated = null,
     ): AnnotationData {
         $pathParams = [];
         $queryParams = [];
@@ -322,6 +340,7 @@ class AnnotationHelper
             $fileParams,
             $responseDataList,
             $description,
+            $deprecated
         );
     }
 
@@ -345,14 +364,16 @@ class AnnotationHelper
         $httpMethod = self::extractAnnotationHttpMethod($methodAnnotations);
         $params = self::extractStandardAnnotationParams($methodAnnotations, $route);
         $description = self::extractAnnotationDescription($methodAnnotations);
+        $deprecated = self::extractAnnotationDeprecatedMessage($methodAnnotations);
 
         return self::annotationParameterDataToAnnotationData(
             $className,
             $methodName,
             $httpMethod,
             $params,
-            [], // there are no reponse params defined in the old annotations
-            $description
+            [], // there are no response params defined in the old annotations
+            $description,
+            $deprecated,
         );
     }
 
@@ -413,6 +434,7 @@ class AnnotationHelper
             return $data->toAnnotationParameterData();
         }, $attributeData);
         $description = self::extractAnnotationDescription($methodAnnotations);
+        $deprecated = self::extractAnnotationDeprecatedMessage($methodAnnotations);
 
         return self::annotationParameterDataToAnnotationData(
             $className,
@@ -421,6 +443,7 @@ class AnnotationHelper
             $params,
             $responseDataList,
             $description,
+            $deprecated,
         );
     }
 
@@ -511,7 +534,6 @@ class AnnotationHelper
             }
         } while ($property === null && $class !== null);
 
-        $property->setAccessible(true);
         return $property->getValue($object);
     }
 
