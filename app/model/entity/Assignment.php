@@ -25,17 +25,18 @@ class Assignment extends AssignmentBase implements IExercise
     use ExerciseData;
 
     /**
-     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="assignment", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="assignment", cascade={"persist", "remove"},
+     *                orphanRemoval=true)
      * @var Collection<ExerciseFileLink>
      */
-    protected $fileLinks;
+    protected $exerciseFileLinks;
 
     /**
      * @return Collection<ExerciseFileLink>
      */
     public function getFileLinks(): Collection
     {
-        return $this->fileLinks;
+        return $this->exerciseFileLinks;
     }
 
     private function __construct(
@@ -91,7 +92,7 @@ class Assignment extends AssignmentBase implements IExercise
         $this->configurationType = $exercise->getConfigurationType();
         $this->exerciseFiles = $exercise->getExerciseFiles();
         $this->attachmentFiles = $exercise->getAttachmentFiles();
-        $this->fileLinks = new ArrayCollection();
+        $this->exerciseFileLinks = new ArrayCollection();
         $this->solutionFilesLimit = $exercise->getSolutionFilesLimit();
         $this->solutionSizeLimit = $exercise->getSolutionSizeLimit();
     }
@@ -125,7 +126,7 @@ class Assignment extends AssignmentBase implements IExercise
         // copy file links from exercise
         foreach ($exercise->getFileLinks() as $link) {
             $newLink = ExerciseFileLink::copyForAssignment($link, $assignment);
-            $assignment->fileLinks->add($newLink);
+            $assignment->exerciseFileLinks->add($newLink);
         }
 
         return $assignment;
@@ -599,10 +600,10 @@ class Assignment extends AssignmentBase implements IExercise
         }
 
         if ($syncOptions->fileLinks) {
-            $this->fileLinks->clear();
+            $this->exerciseFileLinks->clear();
             foreach ($exercise->getFileLinks() as $link) {
                 $newLink = ExerciseFileLink::copyForAssignment($link, $this);
-                $this->fileLinks->add($newLink);
+                $this->exerciseFileLinks->add($newLink);
             }
         }
 
