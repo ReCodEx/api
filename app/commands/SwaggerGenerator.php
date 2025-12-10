@@ -16,7 +16,7 @@ use OpenApi\Generator;
     description: 'Generate an OpenAPI documentation from the temporary file created by the swagger:annotate command. '
         . 'The temporary file is deleted afterwards.'
 )]
-class GenerateSwagger extends Command
+class SwaggerGenerator extends Command
 {
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -24,11 +24,12 @@ class GenerateSwagger extends Command
 
         // check if file exists
         if (!file_exists($path)) {
-            $output->writeln("Error in GenerateSwagger: Temp annotation file not found.");
+            $output->writeln("Error in SwaggerGenerator: Temp annotation file not found.");
             return Command::FAILURE;
         }
 
-        $openapi = Generator::scan([$path]);
+        $generator = new Generator();
+        $openapi = $generator->generate([$path]);
 
         $output->writeln($openapi->toYaml());
 

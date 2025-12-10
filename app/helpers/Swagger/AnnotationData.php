@@ -37,6 +37,12 @@ class AnnotationData
     public array $responseDataList;
     public ?string $endpointDescription;
 
+    /**
+     * @var string|null A message indicating why the endpoint is deprecated, or null if the endpoint is not deprecated.
+     *                  Empty string is valid and indicates deprecation without a message.
+     */
+    public ?string $deprecated = null;
+
     public function __construct(
         string $className,
         string $methodName,
@@ -47,6 +53,7 @@ class AnnotationData
         array $fileParams,
         array $responseDataList,
         ?string $endpointDescription = null,
+        ?string $deprecated = null,
     ) {
         $this->className = $className;
         $this->methodName = $methodName;
@@ -57,6 +64,28 @@ class AnnotationData
         $this->fileParams = $fileParams;
         $this->responseDataList = $responseDataList;
         $this->endpointDescription = $endpointDescription;
+        $this->deprecated = $deprecated;
+    }
+
+    private function getSummary(): ?string
+    {
+        $summary = $this->endpointDescription;
+        if ($this->deprecated !== null) {
+            $summary = $summary ?? '';
+            $summary .=  ($summary ? " " : "") . "[DEPRECATED]";
+        }
+        return $summary;
+    }
+
+    private function getDescription(): ?string
+    {
+        $description = $this->endpointDescription;
+        if ($this->deprecated !== null) {
+            $description = $description ?? '';
+            $description .=  ($description ? "\n" : "") . "[DEPRECATED]" . ($this->deprecated ? ": " : "")
+                . $this->deprecated;
+        }
+        return $description;
     }
 
     public function getAllParams(): array
@@ -219,8 +248,8 @@ class AnnotationData
 
         // add the endpoint description when provided
         if ($this->endpointDescription !== null) {
-            $body->addKeyValue("summary", $this->endpointDescription);
-            $body->addKeyValue("description", $this->endpointDescription);
+            $body->addKeyValue("summary", $this->getSummary());
+            $body->addKeyValue("description", $this->getDescription());
         }
 
         foreach ($this->pathParams as $pathParam) {
@@ -253,6 +282,10 @@ class AnnotationData
         // add a placeholder response if none present
         if (count($this->responseDataList) === 0) {
             $body->addValue('@OA\Response(response="200",description="Placeholder response")');
+        }
+
+        if ($this->deprecated) {
+            $body->addKeyValue("deprecated", true);
         }
 
         return $httpMethodAnnotation . $body->toString();

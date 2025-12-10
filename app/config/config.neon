@@ -312,7 +312,6 @@ services:
   
   # commands
   - App\Console\DoctrineFixtures
-  #- App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
   - App\Console\CleanupExercisesFiles
   - App\Console\CleanupWorkerTmpFiles
@@ -322,7 +321,7 @@ services:
   - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
   - App\Console\MetaConverter
-  - App\Console\GenerateSwagger
+  - App\Console\SwaggerGenerator
   - App\Console\SwaggerAnnotator
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
