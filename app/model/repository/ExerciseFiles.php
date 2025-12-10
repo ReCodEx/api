@@ -29,6 +29,10 @@ class ExerciseFiles extends BaseRepository
                 (SELECT a FROM App\Model\Entity\Assignment a WHERE a MEMBER OF f.assignments AND a.deletedAt IS NULL)
             AND NOT EXISTS
                 (SELECT p FROM App\Model\Entity\Pipeline p WHERE p MEMBER OF f.pipelines AND p.deletedAt IS NULL)
+            AND NOT EXISTS
+                (SELECT l FROM App\Model\Entity\ExerciseFileLink l
+                LEFT JOIN l.exercise le LEFT JOIN l.assignment la
+                WHERE l.exerciseFile = f AND le.deletedAt IS NULL AND la.deletedAt IS NULL)
         ");
 
         return $query->getResult();
