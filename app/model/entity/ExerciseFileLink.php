@@ -13,7 +13,8 @@ use DateTime;
  * I.e., when Assignment is created from Exercise, the links are copied (immediately) as well.
  * The link of an exercise may be updated, but the link of an assignment is immutable.
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"key", "exercise_id"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"key", "exercise_id"}),
+ *                               @ORM\UniqueConstraint(columns={"key", "assignment_id"})})
  */
 class ExerciseFileLink implements JsonSerializable
 {
@@ -59,7 +60,7 @@ class ExerciseFileLink implements JsonSerializable
     protected $exercise;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Assignment")
+     * @ORM\ManyToOne(targetEntity="Assignment", inversedBy="exerciseFileLinks")
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $assignment;

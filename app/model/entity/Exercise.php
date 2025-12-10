@@ -112,7 +112,8 @@ class Exercise implements IExercise
     protected $archivedAt = null;
 
     /**
-     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exercise", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exercise", cascade={"persist", "remove"},
+     *                orphanRemoval=true)
      * @var Collection<ExerciseFileLink>
      */
     protected $fileLinks;

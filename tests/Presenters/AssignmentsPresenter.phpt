@@ -841,6 +841,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
         Assert::same($assignment->getId(), $data["id"]);
         Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
+        $this->presenter->assignments->refresh($assignment);
         Assert::count(1, $assignment->getFileLinks());
         $newLink = $assignment->getFileLinks()->first();
         Assert::equal("NEW", $newLink->getKey());
