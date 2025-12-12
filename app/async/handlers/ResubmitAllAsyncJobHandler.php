@@ -44,7 +44,7 @@ class ResubmitAllAsyncJobHandler implements IAsyncJobHandler
         $this->canceled = false;
 
         $assignment = $job->getAssociatedAssignment();
-        if (!$assignment) {
+        if (!$assignment || $assignment->isDeleted()) {
             throw new InvalidArgumentException("Resubmit all async job is not attached to any assignment.");
         }
 

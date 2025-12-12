@@ -8,7 +8,6 @@ use App\Helpers\MetaFormats\Validators\VArray;
 use App\Helpers\MetaFormats\Validators\VBool;
 use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
-use App\Helpers\MetaFormats\Validators\VMixed;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -668,7 +667,13 @@ class AssignmentsPresenter extends BasePresenter
     #[Path("id", new VUuid(), "Identifier of the assignment to be removed", required: true)]
     public function actionRemove(string $id)
     {
-        $this->assignments->remove($this->assignments->findOrThrow($id));
+        $assignment = $this->assignments->findOrThrow($id);
+        $asyncJobs = $this->asyncJobs->findPendingJobs(null, true, null, $assignment); // all jobs of the assignment
+        foreach ($asyncJobs as $job) {
+            $this->dispatcher->unschedule($job);
+        }
+
+        $this->assignments->remove($assignment);
         $this->sendSuccessResponse("OK");
     }
 
