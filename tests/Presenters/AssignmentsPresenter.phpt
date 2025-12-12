@@ -22,6 +22,7 @@ use App\Helpers\FileStorage\LocalFileStorage;
 use App\Helpers\FileStorage\LocalHashFileStorage;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use App\Security\Roles;
+use App\Async\Handler\AssignmentNotificationJobHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -922,9 +923,18 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     public function testRemove()
     {
-        $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = PresenterTestHelper::getUser($this->container);
 
         $assignment = current($this->assignments->findAll());
+        $assignment->setVisibleFrom((new DateTime())->modify('+1 day'));
+        $this->presenter->assignments->persist($assignment);
+
+        AssignmentNotificationJobHandler::scheduleAsyncJob($this->presenter->dispatcher, $user, $assignment);
+
+        $mockDispatcher = Mockery::mock(\App\Async\Dispatcher::class);
+        $mockDispatcher->shouldReceive("unschedule")->once();
+        $this->presenter->dispatcher = $mockDispatcher;
 
         $request = new Nette\Application\Request(
             'V1:Assignments',

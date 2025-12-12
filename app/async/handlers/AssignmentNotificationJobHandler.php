@@ -44,7 +44,7 @@ class AssignmentNotificationJobHandler implements IAsyncJobHandler
         }
 
         $assignment = $job->getAssociatedAssignment();
-        if ($assignment) {
+        if ($assignment && !$assignment->isDeleted()) {
             $this->assignmentEmailsSender->assignmentCreated($assignment);
         }
     }
