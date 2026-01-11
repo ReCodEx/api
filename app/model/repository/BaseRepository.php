@@ -86,7 +86,8 @@ class BaseRepository
      */
     public function findByIds(array $ids): array
     {
-        return $this->findBy(["id" => $ids]);
+        // the bypass for empty array is needed to avoid SQL error (Doctrine issue)
+        return empty($ids) ? [] : $this->findBy(["id" => $ids]);
     }
 
     /**
