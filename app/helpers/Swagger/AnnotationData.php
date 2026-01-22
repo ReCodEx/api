@@ -65,6 +65,13 @@ class AnnotationData
         $this->responseDataList = $responseDataList;
         $this->endpointDescription = $endpointDescription;
         $this->deprecated = $deprecated;
+
+        if ($this->endpointDescription) {
+            $this->endpointDescription = str_replace('"', "'", $this->endpointDescription);
+        }
+        if ($this->deprecated) {
+            $this->deprecated = str_replace('"', "'", $this->deprecated);
+        }
     }
 
     private function getSummary(): ?string

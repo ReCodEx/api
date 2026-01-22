@@ -2850,6 +2850,49 @@ paths:
                   code: { description: 'HTTP response code.', type: integer, example: '0', nullable: false }
                   payload: { description: 'The payload of the response.', properties: { id: { description: 'An identifier of the group', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, externalId: { description: 'An informative, human readable identifier of the group', type: string, example: text, nullable: true }, organizational: { description: 'Whether the group is organizational (no assignments nor students).', type: boolean, example: 'true', nullable: false }, exam: { description: 'Whether the group is an exam group.', type: boolean, example: 'true', nullable: false }, archived: { description: 'Whether the group is archived', type: boolean, example: 'true', nullable: false }, public: { description: 'Should the group be visible to all student?', type: boolean, example: 'true', nullable: false }, directlyArchived: { description: 'Whether the group was explicitly marked as archived', type: boolean, example: 'true', nullable: false }, localizedTexts: { description: 'Localized names and descriptions', type: array, items: {  }, nullable: false }, primaryAdminsIds: { description: 'IDs of users which are explicitly listed as direct admins of this group', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, parentGroupId: { description: 'Identifier of the parent group (absent for a top-level group)', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, parentGroupsIds: { description: 'Identifications of groups in descending order.', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, childGroups: { description: 'Identifications of child groups.', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, privateData: { description: '', properties: { admins: { description: 'IDs of all users that have admin privileges to this group (including inherited)', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, supervisors: { description: 'IDs of all group supervisors', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, observers: { description: 'IDs of all group observers', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, students: { description: 'IDs of the students of this group', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, instanceId: { description: 'ID of an instance in which the group belongs', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, hasValidLicence: { description: 'Whether the instance where the group belongs has a valid license', type: boolean, example: 'true', nullable: false }, assignments: { description: 'IDs of all group assignments', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, shadowAssignments: { description: 'IDs of all group shadow assignments', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, publicStats: { description: "Whether the student's results are visible to other students", type: boolean, example: 'true', nullable: false }, detaining: { description: 'Whether the group detains the students (so they can be released only by the teacher)', type: boolean, example: 'true', nullable: false }, threshold: { description: 'A relative number of points a student must receive from assignments to fulfill the requirements of the group', type: number, example: '0.1', nullable: false }, pointsLimit: { description: "A minimal number of points that a student must receive to fulfill the group's requirements", type: integer, example: '0', nullable: false }, bindings: { description: 'Entities bound to the group', type: array, items: {  }, nullable: false }, examBegin: { description: 'The time when the exam starts if there is an exam scheduled', type: integer, example: '1740135333', nullable: false }, examEnd: { description: 'The time when the exam ends if there is an exam scheduled', type: integer, example: '1740135333', nullable: false }, examLockStrict: { description: 'Whether the scheduled exam requires a strict access lock', type: boolean, example: 'true', nullable: false }, exams: { description: 'All past exams (with at least one student locked)', type: array, items: {  }, nullable: false } }, type: object, nullable: false }, permissionHints: { description: '', type: array, items: {  }, nullable: false } }, type: object, nullable: false }
                 type: object
+  '/v1/groups/{id}/exam':
+    post:
+      summary: "Change the group 'exam' indicator. If denotes that the group should be listed in exam groups instead of regular groups and the assignments should have 'isExam' flag set by default."
+      description: "Change the group 'exam' indicator. If denotes that the group should be listed in exam groups instead of regular groups and the assignments should have 'isExam' flag set by default."
+      operationId: groupsPresenterActionSetExam
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'An identifier of the updated group'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - value
+              properties:
+                value:
+                  description: 'The value of the flag'
+                  type: boolean
+                  example: 'true'
+                  nullable: false
+              type: object
+      responses:
+        '200':
+          description: 'Response data'
+          content:
+            application/json:
+              schema:
+                required:
+                  - success
+                  - code
+                  - payload
+                properties:
+                  success: { description: 'Whether the request was processed successfully.', type: boolean, example: 'true', nullable: false }
+                  code: { description: 'HTTP response code.', type: integer, example: '0', nullable: false }
+                  payload: { description: 'The payload of the response.', properties: { id: { description: 'An identifier of the group', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, externalId: { description: 'An informative, human readable identifier of the group', type: string, example: text, nullable: true }, organizational: { description: 'Whether the group is organizational (no assignments nor students).', type: boolean, example: 'true', nullable: false }, exam: { description: 'Whether the group is an exam group.', type: boolean, example: 'true', nullable: false }, archived: { description: 'Whether the group is archived', type: boolean, example: 'true', nullable: false }, public: { description: 'Should the group be visible to all student?', type: boolean, example: 'true', nullable: false }, directlyArchived: { description: 'Whether the group was explicitly marked as archived', type: boolean, example: 'true', nullable: false }, localizedTexts: { description: 'Localized names and descriptions', type: array, items: {  }, nullable: false }, primaryAdminsIds: { description: 'IDs of users which are explicitly listed as direct admins of this group', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, parentGroupId: { description: 'Identifier of the parent group (absent for a top-level group)', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, parentGroupsIds: { description: 'Identifications of groups in descending order.', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, childGroups: { description: 'Identifications of child groups.', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, privateData: { description: '', properties: { admins: { description: 'IDs of all users that have admin privileges to this group (including inherited)', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, supervisors: { description: 'IDs of all group supervisors', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, observers: { description: 'IDs of all group observers', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, students: { description: 'IDs of the students of this group', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, instanceId: { description: 'ID of an instance in which the group belongs', type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000, nullable: false }, hasValidLicence: { description: 'Whether the instance where the group belongs has a valid license', type: boolean, example: 'true', nullable: false }, assignments: { description: 'IDs of all group assignments', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, shadowAssignments: { description: 'IDs of all group shadow assignments', type: array, items: { type: string, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', example: 10000000-2000-4000-8000-160000000000 }, nullable: false }, publicStats: { description: "Whether the student's results are visible to other students", type: boolean, example: 'true', nullable: false }, detaining: { description: 'Whether the group detains the students (so they can be released only by the teacher)', type: boolean, example: 'true', nullable: false }, threshold: { description: 'A relative number of points a student must receive from assignments to fulfill the requirements of the group', type: number, example: '0.1', nullable: false }, pointsLimit: { description: "A minimal number of points that a student must receive to fulfill the group's requirements", type: integer, example: '0', nullable: false }, bindings: { description: 'Entities bound to the group', type: array, items: {  }, nullable: false }, examBegin: { description: 'The time when the exam starts if there is an exam scheduled', type: integer, example: '1740135333', nullable: false }, examEnd: { description: 'The time when the exam ends if there is an exam scheduled', type: integer, example: '1740135333', nullable: false }, examLockStrict: { description: 'Whether the scheduled exam requires a strict access lock', type: boolean, example: 'true', nullable: false }, exams: { description: 'All past exams (with at least one student locked)', type: array, items: {  }, nullable: false } }, type: object, nullable: false }, permissionHints: { description: '', type: array, items: {  }, nullable: false } }, type: object, nullable: false }
+                type: object
   '/v1/groups/{id}/examPeriod':
     post:
       summary: 'Set an examination period (in the future) when the group will be secured for submitting. Only locked students may submit solutions in the group during this period. This endpoint is also used to update already planned exam period, but only dates in the future can be edited (e.g., once an exam begins, the beginning may no longer be updated).'
@@ -5740,6 +5783,37 @@ paths:
                   type: string
                   minLength: 1
                   example: text
+                  nullable: false
+              type: object
+      responses:
+        '200':
+          description: 'Placeholder response'
+  '/v1/users/{id}/allowed':
+    post:
+      summary: "Set 'isAllowed' flag of the given user. The flag determines whether a user may perform any operation of the API."
+      description: "Set 'isAllowed' flag of the given user. The flag determines whether a user may perform any operation of the API."
+      operationId: usersPresenterActionSetAllowed
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'Identifier of the user'
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - isAllowed
+              properties:
+                isAllowed:
+                  description: 'Whether the user is allowed (active) or not.'
+                  type: boolean
+                  example: 'true'
                   nullable: false
               type: object
       responses:
