@@ -26,6 +26,8 @@ class SecurityPresenter extends BasePresenter
     public $router;
 
     /**
+     * A preflight test whether given URL (and HTTP method) would be allowed by internal ACL checks
+     * (for the current user).
      * @POST
      */
     #[Post("url", new VMixed(), "URL of the resource that we are checking", required: true, nullable: true)]

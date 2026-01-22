@@ -6,7 +6,8 @@ info:
 paths:
   /v1/security/check:
     post:
-      summary: '* @OA\Post(path="/v1/security/check", operationId="securityPresenterActionCheck", @OA\RequestBody(@OA\MediaType(mediaType="application/json",@OA\Schema(@OA\Property(property="url", type="string", nullable=true, description="URL of the resource that we are checking"), @OA\Property(property="method", type="string", nullable=true, description="The HTTP method"), required={"url","method"}))), @OA\Response(response="200",description="Placeholder response"))'
+      summary: 'A preflight test whether given URL (and HTTP method) would be allowed by internal ACL checks (for the current user).'
+      description: 'A preflight test whether given URL (and HTTP method) would be allowed by internal ACL checks (for the current user).'
       operationId: securityPresenterActionCheck
       requestBody:
         content:
@@ -3482,7 +3483,8 @@ paths:
         '200':
           description: 'Placeholder response'
     delete:
-      summary: '* @OA\Delete(path="/v1/group-invitations/{id}", operationId="groupInvitationsPresenterActionRemove", @OA\Parameter(name="id", in="path", required=true, description="Identifier of the group invitation", @OA\Schema(type="string", nullable=false, pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")), @OA\Response(response="200",description="Placeholder response"))'
+      summary: 'Remove the invitation.'
+      description: 'Remove the invitation.'
       operationId: groupInvitationsPresenterActionRemove
       parameters:
         -
@@ -6465,22 +6467,25 @@ paths:
           description: 'Placeholder response'
   /v1/extensions/sis/status/:
     get:
-      summary: '* @OA\Get(path="/v1/extensions/sis/status/", operationId="sisPresenterActionStatus", @OA\Response(response="200",description="Placeholder response"))'
+      summary: 'Check SIS status for the current user. [DEPRECATED]'
+      description: "Check SIS status for the current user.\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionStatus
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   /v1/extensions/sis/terms/:
     get:
-      summary: 'Get a list of all registered SIS terms'
-      description: 'Get a list of all registered SIS terms'
+      summary: 'Get a list of all registered SIS terms [DEPRECATED]'
+      description: "Get a list of all registered SIS terms\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionGetTerms
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
     post:
-      summary: 'Register a new term'
-      description: 'Register a new term'
+      summary: 'Register a new term [DEPRECATED]'
+      description: "Register a new term\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionRegisterTerm
       requestBody:
         content:
@@ -6502,10 +6507,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/terms/{id}':
     post:
-      summary: 'Set details of a term'
-      description: 'Set details of a term'
+      summary: 'Set details of a term [DEPRECATED]'
+      description: "Set details of a term\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionEditTerm
       parameters:
         -
@@ -6544,9 +6550,10 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
     delete:
-      summary: 'Delete a term'
-      description: 'Delete a term'
+      summary: 'Delete a term [DEPRECATED]'
+      description: "Delete a term\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionDeleteTerm
       parameters:
         -
@@ -6560,10 +6567,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/users/{userId}/subscribed-groups/{year}/{term}/as-student':
     get:
-      summary: 'Get all courses subscirbed by a student and corresponding ReCodEx groups. Organizational and archived groups are filtered out from the result. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.'
-      description: 'Get all courses subscirbed by a student and corresponding ReCodEx groups. Organizational and archived groups are filtered out from the result. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.'
+      summary: 'Get all courses subscirbed by a student and corresponding ReCodEx groups. Organizational and archived groups are filtered out from the result. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names. [DEPRECATED]'
+      description: "Get all courses subscirbed by a student and corresponding ReCodEx groups. Organizational and archived groups are filtered out from the result. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionSubscribedCourses
       parameters:
         -
@@ -6593,10 +6601,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/users/{userId}/supervised-courses/{year}/{term}':
     get:
-      summary: 'Get supervised SIS courses and corresponding ReCodEx groups. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.'
-      description: 'Get supervised SIS courses and corresponding ReCodEx groups. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.'
+      summary: 'Get supervised SIS courses and corresponding ReCodEx groups. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names. [DEPRECATED]'
+      description: "Get supervised SIS courses and corresponding ReCodEx groups. Each course holds bound group IDs and group objects are returned in a separate array. Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionSupervisedCourses
       parameters:
         -
@@ -6626,10 +6635,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/remote-courses/{courseId}/possible-parents':
     get:
-      summary: 'Find groups that can be chosen as parents of a group created from given SIS group by current user'
-      description: 'Find groups that can be chosen as parents of a group created from given SIS group by current user'
+      summary: 'Find groups that can be chosen as parents of a group created from given SIS group by current user [DEPRECATED]'
+      description: "Find groups that can be chosen as parents of a group created from given SIS group by current user\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionPossibleParents
       parameters:
         -
@@ -6643,10 +6653,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/remote-courses/{courseId}/create':
     post:
-      summary: 'Create a new group based on a SIS group'
-      description: 'Create a new group based on a SIS group'
+      summary: 'Create a new group based on a SIS group [DEPRECATED]'
+      description: "Create a new group based on a SIS group\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionCreateGroup
       parameters:
         -
@@ -6672,10 +6683,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/remote-courses/{courseId}/bind':
     post:
-      summary: 'Bind an existing local group to a SIS group'
-      description: 'Bind an existing local group to a SIS group'
+      summary: 'Bind an existing local group to a SIS group [DEPRECATED]'
+      description: "Bind an existing local group to a SIS group\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionBindGroup
       parameters:
         -
@@ -6701,10 +6713,11 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   '/v1/extensions/sis/remote-courses/{courseId}/bindings/{groupId}':
     delete:
-      summary: 'Delete a binding between a local group and a SIS group'
-      description: 'Delete a binding between a local group and a SIS group'
+      summary: 'Delete a binding between a local group and a SIS group [DEPRECATED]'
+      description: "Delete a binding between a local group and a SIS group\n[DEPRECATED]: Use the new SIS extension instead"
       operationId: sisPresenterActionUnbindGroup
       parameters:
         -
@@ -6726,6 +6739,7 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+      deprecated: true
   /v1/emails:
     post:
       summary: 'Sends an email with provided subject and message to all ReCodEx users.'

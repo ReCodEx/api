@@ -103,6 +103,7 @@ class GroupInvitationsPresenter extends BasePresenter
     }
 
     /**
+     * Remove the invitation.
      * @DELETE
      */
     #[Path("id", new VUuid(), "Identifier of the group invitation", required: true)]

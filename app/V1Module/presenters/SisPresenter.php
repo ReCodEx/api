@@ -88,6 +88,8 @@ class SisPresenter extends BasePresenter
 
 
     /**
+     * Check SIS status for the current user.
+     * @deprecated Use the new SIS extension instead
      * @GET
      * @throws ForbiddenRequestException
      */
@@ -124,6 +126,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Get a list of all registered SIS terms
+     * @deprecated Use the new SIS extension instead
      * @GET
      */
     public function actionGetTerms()
@@ -140,6 +143,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Register a new term
+     * @deprecated Use the new SIS extension instead
      * @POST
      * @throws InvalidApiArgumentException
      * @throws ForbiddenRequestException
@@ -176,6 +180,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Set details of a term
+     * @deprecated Use the new SIS extension instead
      * @POST
      * @throws InvalidApiArgumentException
      * @throws NotFoundException
@@ -225,6 +230,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Delete a term
+     * @deprecated Use the new SIS extension instead
      * @DELETE
      * @throws NotFoundException
      */
@@ -252,6 +258,7 @@ class SisPresenter extends BasePresenter
      * Organizational and archived groups are filtered out from the result.
      * Each course holds bound group IDs and group objects are returned in a separate array.
      * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
+     * @deprecated Use the new SIS extension instead
      * @GET
      * @throws InvalidApiArgumentException
      * @throws BadRequestException
@@ -319,6 +326,7 @@ class SisPresenter extends BasePresenter
      * Get supervised SIS courses and corresponding ReCodEx groups.
      * Each course holds bound group IDs and group objects are returned in a separate array.
      * Whole ancestral closure of groups is returned, so the webapp may properly assemble hiarichial group names.
+     * @deprecated Use the new SIS extension instead
      * @GET
      * @throws InvalidApiArgumentException
      * @throws NotFoundException
@@ -411,6 +419,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Create a new group based on a SIS group
+     * @deprecated Use the new SIS extension instead
      * @POST
      * @throws BadRequestException
      * @throws ForbiddenRequestException
@@ -488,6 +497,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Bind an existing local group to a SIS group
+     * @deprecated Use the new SIS extension instead
      * @POST
      * @throws ApiException
      * @throws ForbiddenRequestException
@@ -524,6 +534,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Delete a binding between a local group and a SIS group
+     * @deprecated Use the new SIS extension instead
      * @DELETE
      * @throws BadRequestException
      * @throws ForbiddenRequestException
@@ -554,6 +565,7 @@ class SisPresenter extends BasePresenter
 
     /**
      * Find groups that can be chosen as parents of a group created from given SIS group by current user
+     * @deprecated Use the new SIS extension instead
      * @GET
      * @throws ApiException
      * @throws ForbiddenRequestException
