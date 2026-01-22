@@ -8,7 +8,7 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="group_begin_idx", columns={"group_id", "begin"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"group_id", "begin"})})
  * Holds history record of an exam that took place in a group.
  * The `examBegin`, `examEnd` fields are copied from group to `begin`, `end` fields here,
  * `examLockStrict` is copied to `lockStrict` field.
