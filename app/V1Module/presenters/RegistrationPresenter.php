@@ -18,11 +18,9 @@ use App\Model\Entity\User;
 use App\Model\Entity\Instance;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Logins;
-use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Instances;
 use App\Model\View\UserViewFactory;
 use App\Security\AccessManager;
-use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Helpers\InvitationHelper;
@@ -48,12 +46,6 @@ class RegistrationPresenter extends BasePresenter
     public $logins;
 
     /**
-     * @var ExternalLogins
-     * @inject
-     */
-    public $externalLogins;
-
-    /**
      * @var AccessManager
      * @inject
      */
@@ -70,12 +62,6 @@ class RegistrationPresenter extends BasePresenter
      * @inject
      */
     public $groups;
-
-    /**
-     * @var ExternalServiceAuthenticator
-     * @inject
-     */
-    public $externalServiceAuthenticator;
 
     /**
      * @var EmailVerificationHelper
