@@ -351,20 +351,20 @@ class UsersPresenter extends BasePresenter
      * Change first name and last name and check if user can change them.
      * @param User $user
      * @param null|string $titlesBefore
-     * @param null|string $firstname
-     * @param null|string $lastname
+     * @param null|string $firstName
+     * @param null|string $lastName
      * @param null|string $titlesAfter
      * @throws ForbiddenRequestException
      */
     private function changePersonalData(
         User $user,
         ?string $titlesBefore,
-        ?string $firstname,
-        ?string $lastname,
+        ?string $firstName,
+        ?string $lastName,
         ?string $titlesAfter
     ) {
         if (
-            ($titlesBefore !== null || $firstname !== null || $lastname !== null || $titlesAfter !== null) &&
+            ($titlesBefore !== null || $firstName !== null || $lastName !== null || $titlesAfter !== null) &&
             !$this->userAcl->canUpdatePersonalData($user)
         ) {
             throw new ForbiddenRequestException("You cannot update personal data");
@@ -374,12 +374,12 @@ class UsersPresenter extends BasePresenter
             $user->setTitlesBeforeName(trim($titlesBefore));
         }
 
-        if ($firstname && trim($firstname)) {
-            $user->setFirstName(trim($firstname));
+        if ($firstName && trim($firstName)) {
+            $user->setFirstName(trim($firstName));
         }
 
-        if ($lastname && trim($lastname)) {
-            $user->setLastName(trim($lastname));
+        if ($lastName && trim($lastName)) {
+            $user->setLastName(trim($lastName));
         }
 
         if ($titlesAfter !== null) {
