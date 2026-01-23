@@ -506,6 +506,7 @@ class RouterFactory
         $router[] = new PostRoute("$prefix/accept-invitation", "Registration:acceptInvitation");
 
         $router[] = new GetRoute("$prefix/<id>", "Users:detail");
+        $router[] = new GetRoute("$prefix/external-login/<service>/<externalId>", "Users:findByExternalLogin");
         $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");
         $router[] = new DeleteRoute("$prefix/<id>", "Users:delete");
         $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");

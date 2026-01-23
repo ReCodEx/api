@@ -214,6 +214,29 @@ class UsersPresenter extends BasePresenter
         $this->sendSuccessResponse($this->userViewFactory->getUser($user));
     }
 
+    public function checkFindByExternalLogin(string $service, string $externalId)
+    {
+        $user = $this->externalLogins->getUser($service, $externalId);
+        if (!$user) {
+            throw new NotFoundException("User with given external login not found.");
+        }
+        if (!$this->userAcl->canViewPublicData($user)) {
+            throw new ForbiddenRequestException();
+        }
+    }
+
+    /**
+     * Get details of a user identified via external login.
+     * @GET
+     */
+    #[Path("service", new VString(1), "External authentication service name", required: true)]
+    #[Path("externalId", new VString(1), "External user identifier", required: true)]
+    public function actionFindByExternalLogin(string $service, string $externalId)
+    {
+        $user = $this->externalLogins->getUser($service, $externalId);
+        $this->sendSuccessResponse($user ? $this->userViewFactory->getUser($user) : null);
+    }
+
     public function checkDelete(string $id)
     {
         $user = $this->users->findOrThrow($id);
