@@ -5548,6 +5548,33 @@ paths:
       responses:
         '200':
           description: 'Placeholder response'
+  '/v1/users/external-login/{service}/{externalId}':
+    get:
+      summary: 'Get details of a user identified via external login.'
+      description: 'Get details of a user identified via external login.'
+      operationId: usersPresenterActionFindByExternalLogin
+      parameters:
+        -
+          name: service
+          in: path
+          description: 'External authentication service name'
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            nullable: false
+        -
+          name: externalId
+          in: path
+          description: 'External user identifier'
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            nullable: false
+      responses:
+        '200':
+          description: 'Placeholder response'
   '/v1/users/{id}/invalidate-tokens':
     post:
       summary: 'Invalidate all existing tokens issued for given user'

@@ -5,7 +5,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\AnonymizationHelper;
-use App\Model\Entity\Exercise;
 use App\Model\Entity\Login;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
@@ -223,6 +222,36 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::equal(200, $result['code']);
 
         Assert::same($user->getId(), $result["payload"]["id"]);
+    }
+
+    public function testFindByExternalLogin()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $extLogins = $this->presenter->externalLogins->findAll();
+        Assert::count(1, $extLogins);
+        $el = $extLogins[0];
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            $this->presenterPath,
+            'GET',
+            ['action' => 'findByExternalLogin', 'service' => $el->getAuthService(), 'externalId' => $el->getExternalId()]
+        );
+
+        Assert::same($el->getUser()->getId(), $payload["id"]);
+    }
+
+    public function testFindByExternalLoginEmptyResult()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        Assert::exception(function () {
+            PresenterTestHelper::performPresenterRequest(
+                $this->presenter,
+                $this->presenterPath,
+                'GET',
+                ['action' => 'findByExternalLogin', 'service' => 'ext-service', 'externalId' => 'blabla']
+            );
+        }, App\Exceptions\NotFoundException::class);
     }
 
     public function testUpdateProfileWithoutEmailAndPassword()
@@ -857,7 +886,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::true($payload['privateData']['isExternal']);
         Assert::equal(['test-cas' => 'abc'], $payload['privateData']['externalIds']);
 
-        $els = $this->presenter->externalLogins->findAll();
+        $els = $this->presenter->externalLogins->findBy(['authService' => 'test-cas']);
         Assert::count(1, $els);
         Assert::equal($user->getId(), $els[0]->getUser()->getId());
         Assert::equal('abc', $els[0]->getExternalId());
@@ -890,7 +919,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::true($payload['privateData']['isExternal']);
         Assert::equal(['test-cas' => 'abc'], $payload['privateData']['externalIds']);
 
-        $els = $this->presenter->externalLogins->findAll();
+        $els = $this->presenter->externalLogins->findBy(['authService' => 'test-cas']);
         Assert::count(1, $els);
         Assert::equal($user->getId(), $els[0]->getUser()->getId());
         Assert::equal('abc', $els[0]->getExternalId());
@@ -922,7 +951,7 @@ class TestUsersPresenter extends Tester\TestCase
         Assert::false($payload['privateData']['isExternal']);
         Assert::equal([], $payload['privateData']['externalIds']);
 
-        $els = $this->presenter->externalLogins->findAll();
+        $els = $this->presenter->externalLogins->findBy(['authService' => 'test-cas']);
         Assert::count(0, $els);
 
         $this->users->refresh($user);
