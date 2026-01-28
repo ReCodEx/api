@@ -779,26 +779,6 @@ class Group
         );
     }
 
-    public function getMaxPoints(): int
-    {
-        $pointsAss = array_reduce(
-            $this->getAssignments()->getValues(),
-            function ($carry, Assignment $assignment) {
-                return $carry + $assignment->getGroupPoints();
-            },
-            0
-        );
-        $pointsShadow = array_reduce(
-            $this->getShadowAssignments()->getValues(),
-            function ($carry, ShadowAssignment $shadowAssignment) {
-                return $carry + $shadowAssignment->getGroupPoints();
-            },
-            0
-        );
-
-        return $pointsAss + $pointsShadow;
-    }
-
     public function getLocalizedTextByLocale(string $locale): ?LocalizedGroup
     {
         $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
