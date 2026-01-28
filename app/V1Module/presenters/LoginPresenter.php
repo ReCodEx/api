@@ -94,13 +94,17 @@ class LoginPresenter extends BasePresenter
     /**
      * Sends response with an access token, if the user exists.
      * @param User $user
+     * @param int|null $expiration in seconds, null for default expiration
      * @throws AuthenticationException
      * @throws ForbiddenRequestException
      * @throws InvalidAccessTokenException
      */
-    private function sendAccessTokenResponse(User $user)
+    private function sendAccessTokenResponse(User $user, ?int $expiration = null)
     {
-        $token = $this->accessManager->issueToken($user, null, [TokenScope::MASTER, TokenScope::REFRESH]);
+        if ($expiration !== null && ($expiration > $this->accessManager->getExpiration() || $expiration <= 0)) {
+            $expiration = null;  // invalid values are ignored
+        }
+        $token = $this->accessManager->issueToken($user, null, [TokenScope::MASTER, TokenScope::REFRESH], $expiration);
         $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
         $this->sendSuccessResponse(
@@ -121,11 +125,13 @@ class LoginPresenter extends BasePresenter
      */
     #[Post("username", new VEmail(), "User's E-mail")]
     #[Post("password", new VString(1), "Password")]
+    #[Post("expiration", new VInt(), "Token expiration in seconds (not greater than the default)", required: false)]
     public function actionDefault()
     {
         $req = $this->getRequest();
         $username = $req->getPost("username");
         $password = $req->getPost("password");
+        $expiration = $req->getPost("expiration");
 
         $user = $this->credentialsAuthenticator->authenticate($username, $password);
         $this->verifyUserIpLock($user);
@@ -135,7 +141,7 @@ class LoginPresenter extends BasePresenter
         $event = SecurityEvent::createLoginEvent($this->getHttpRequest()->getRemoteAddress(), $user);
         $this->securityEvents->persist($event);
 
-        $this->sendAccessTokenResponse($user);
+        $this->sendAccessTokenResponse($user, $expiration);
     }
 
     /**
@@ -148,6 +154,7 @@ class LoginPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("token", new VString(1), "JWT external authentication token")]
+    #[Post("expiration", new VInt(), "Token expiration in seconds (not greater than the default)", required: false)]
     #[Path("authenticatorName", new VString(), "Identifier of the external authenticator", required: true)]
     public function actionExternal($authenticatorName)
     {
@@ -160,7 +167,7 @@ class LoginPresenter extends BasePresenter
         $event = SecurityEvent::createExternalLoginEvent($this->getHttpRequest()->getRemoteAddress(), $user);
         $this->securityEvents->persist($event);
 
-        $this->sendAccessTokenResponse($user);
+        $this->sendAccessTokenResponse($user, $req->getPost("expiration"));
     }
 
     public function checkTakeOver($userId)
