@@ -20,6 +20,7 @@ use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Nette\Utils\Arrays;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Factory for group views which somehow do not fit into json serialization of
@@ -95,6 +96,30 @@ class GroupViewFactory
     }
 
     /**
+     * Get assignments of the group which current user can view.
+     */
+    private function getAssignments(Group $group): Collection
+    {
+        return $group->getAssignments()->filter(
+            function (Assignment $assignment) {
+                return $this->assignmentAcl->canViewDetail($assignment);
+            }
+        );
+    }
+
+    /**
+     * Get shadow assignments of the group which current user can view.
+     */
+    private function getShadowAssignments(Group $group): Collection
+    {
+        return $group->getShadowAssignments()->filter(
+            function (ShadowAssignment $assignment) {
+                return $this->shadowAssignmentAcl->canViewDetail($assignment);
+            }
+        );
+    }
+
+    /**
      * Get the statistics of an individual student.
      * @param Group $group
      * @param User $student Student of this group
@@ -108,9 +133,9 @@ class GroupViewFactory
         array $assignmentSolutions,
         array $reviewRequests
     ) {
-        $maxPoints = $group->getMaxPoints();
+        $maxPoints = 0;
         $shadowPointsMap = $this->shadowAssignmentPointsRepository->findPointsForAssignments(
-            $group->getShadowAssignments()->getValues(),
+            $this->getShadowAssignments($group)->getValues(),
             $student
         );
         $gainedPoints = $this->getPointsGainedByStudentForSolutions($assignmentSolutions);
@@ -119,10 +144,11 @@ class GroupViewFactory
         $studentReviewRequests = $reviewRequests[$student->getId()] ?? [];
 
         $assignments = [];
-        foreach ($group->getAssignments()->getValues() as $assignment) {
+        foreach ($this->getAssignments($group) as $assignment) {
             /**
              * @var Assignment $assignment
              */
+            $maxPoints += $assignment->getGroupPoints();
             $best = Arrays::get($assignmentSolutions, $assignment->getId(), null);
             $submission = $best ? $best->getLastSubmission() : null;
 
@@ -141,10 +167,11 @@ class GroupViewFactory
         }
 
         $shadowAssignments = [];
-        foreach ($group->getShadowAssignments()->getValues() as $shadowAssignment) {
+        foreach ($this->getShadowAssignments($group) as $shadowAssignment) {
             /**
              * @var ShadowAssignment $shadowAssignment
              */
+            $maxPoints += $shadowAssignment->getGroupPoints();
             $shadowPoints = Arrays::get($shadowPointsMap, $shadowAssignment->getId(), null);
 
             $shadowAssignments[] = [
@@ -189,7 +216,7 @@ class GroupViewFactory
     public function getStudentsStats(Group $group, User $student)
     {
         $assignmentSolutions = $this->assignmentSolutions->findBestUserSolutionsForAssignments(
-            $group->getAssignments()->getValues(),
+            $this->getAssignments($group)->getValues(),
             $student
         );
         $reviewRequestSolutions = $this->assignmentSolutions->findReviewRequestSolutionsIndexed($group, $student);
@@ -204,7 +231,7 @@ class GroupViewFactory
     public function getAllStudentsStats(Group $group)
     {
         $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments(
-            $group->getAssignments()->getValues()
+            $this->getAssignments($group)->getValues()
         );
         $reviewRequestSolutions = $this->assignmentSolutions->findReviewRequestSolutionsIndexed($group);
         return array_map(
@@ -237,20 +264,12 @@ class GroupViewFactory
                 "students" => $this->groupAcl->canViewStudents($group) ? $group->getStudentsIds() : [],
                 "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
                 "hasValidLicence" => $group->hasValidLicense(),
-                "assignments" => $group->getAssignments()->filter(
-                    function (Assignment $assignment) {
-                        return $this->assignmentAcl->canViewDetail($assignment);
-                    }
-                )->map(
+                "assignments" => $this->getAssignments($group)->map(
                     function (Assignment $assignment) {
                         return $assignment->getId();
                     }
                 )->getValues(),
-                "shadowAssignments" => $group->getShadowAssignments()->filter(
-                    function (ShadowAssignment $assignment) {
-                        return $this->shadowAssignmentAcl->canViewDetail($assignment);
-                    }
-                )->map(
+                "shadowAssignments" => $this->getShadowAssignments($group)->map(
                     function (ShadowAssignment $assignment) {
                         return $assignment->getId();
                     }
