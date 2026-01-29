@@ -831,6 +831,7 @@ class UsersPresenter extends BasePresenter
 
         $this->sendSuccessResponse(
             [
+                "user" => $this->userViewFactory->getUser($user),
                 "accessToken" => $user === $this->getCurrentUser() ? $this->accessManager->issueRefreshedToken(
                     $token
                 ) : null
