@@ -85,7 +85,8 @@ class TestLoginPresenter extends Tester\TestCase
         $events = $this->presenter->securityEvents->findAll();
         Assert::count(0, $events);
 
-        $request = new Request(
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
             "V1:Login",
             "POST",
             ["action" => "default"],
@@ -95,15 +96,46 @@ class TestLoginPresenter extends Tester\TestCase
             ]
         );
 
-        /** @var JsonResponse $response */
-        $response = $this->presenter->run($request);
-        Assert::type(JsonResponse::class, $response);
-        $result = $response->getPayload();
-
-        Assert::same(200, $result["code"]);
-        Assert::true(array_key_exists("accessToken", $result["payload"]));
-        Assert::same($this->presenter->users->getByEmail($this->userLogin)->getId(), $result["payload"]["user"]["id"]);
+        $user = $this->presenter->users->getByEmail($this->userLogin);
+        Assert::same($user->getId(), $payload["user"]["id"]);
         Assert::true($this->presenter->user->isLoggedIn());
+
+        Assert::true(array_key_exists("accessToken", $payload));
+        $token = $this->presenter->accessManager->decodeToken($payload["accessToken"]);
+        Assert::same($user->getId(), $token->getUserId());
+        Assert::same($this->presenter->accessManager->getExpiration(), $token->getExpirationTime());
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_LOGIN, $events[0]->getType());
+        Assert::equal($this->presenter->user->getId(), $events[0]->getUser()->getId());
+    }
+
+    public function testLoginRestrictedExpiration()
+    {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter,
+            "V1:Login",
+            "POST",
+            ["action" => "default"],
+            [
+                "username" => $this->userLogin,
+                "password" => $this->userPassword,
+                "expiration" => 10,
+            ]
+        );
+
+        $user = $this->presenter->users->getByEmail($this->userLogin);
+        Assert::same($user->getId(), $payload["user"]["id"]);
+        Assert::true($this->presenter->user->isLoggedIn());
+
+        Assert::true(array_key_exists("accessToken", $payload));
+        $token = $this->presenter->accessManager->decodeToken($payload["accessToken"]);
+        Assert::same($user->getId(), $token->getUserId());
+        Assert::same(10, $token->getExpirationTime());
 
         $events = $this->presenter->securityEvents->findAll();
         Assert::count(1, $events);
@@ -171,9 +203,65 @@ class TestLoginPresenter extends Tester\TestCase
         $result = $response->getPayload();
 
         Assert::same(200, $result["code"]);
-        Assert::true(array_key_exists("accessToken", $result["payload"]));
         Assert::equal($user->getId(), $result["payload"]["user"]["id"]);
         Assert::true($this->presenter->user->isLoggedIn());
+
+        Assert::true(array_key_exists("accessToken", $result["payload"]));
+        $token = $this->presenter->accessManager->decodeToken($result["payload"]["accessToken"]);
+        Assert::same($user->getId(), $token->getUserId());
+        Assert::same($this->presenter->accessManager->getExpiration(), $token->getExpirationTime());
+
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(1, $events);
+        Assert::equal(SecurityEvent::TYPE_LOGIN_EXTERNAL, $events[0]->getType());
+        Assert::equal($user->getId(), $events[0]->getUser()->getId());
+    }
+
+    public function testLoginExternalRestrictedExpiration()
+    {
+        $events = $this->presenter->securityEvents->findAll();
+        Assert::count(0, $events);
+
+        $authenticator = new ExternalServiceAuthenticator(
+            [[
+                'name' => 'test-cas',
+                'jwtSecret' => 'tajnyRetezec',
+            ]],
+            $this->externalLogins,
+            $this->users,
+            $this->logins,
+            $this->instances,
+            $this->emailVerificationHelper,
+            $this->failureHelper
+        );
+
+        $user = $this->presenter->users->getByEmail($this->userLogin);
+
+        $payload = [
+            'iat' => time(),
+            'id' => 'external-id-1',
+            'mail' => $this->userLogin,
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+        ];
+        $token = JWT::encode($payload, 'tajnyRetezec', "HS256");
+
+        $this->presenter->externalServiceAuthenticator = $authenticator;
+
+        $request = new Request("V1:Login", "POST", ["action" => "external", "authenticatorName" => "test-cas"], ['token' => $token, 'expiration' => 15]);
+
+        $response = $this->presenter->run($request);
+        Assert::type(JsonResponse::class, $response);
+        $result = $response->getPayload();
+
+        Assert::same(200, $result["code"]);
+        Assert::equal($user->getId(), $result["payload"]["user"]["id"]);
+        Assert::true($this->presenter->user->isLoggedIn());
+
+        Assert::true(array_key_exists("accessToken", $result["payload"]));
+        $token = $this->presenter->accessManager->decodeToken($result["payload"]["accessToken"]);
+        Assert::same($user->getId(), $token->getUserId());
+        Assert::same(15, $token->getExpirationTime());
 
         $events = $this->presenter->securityEvents->findAll();
         Assert::count(1, $events);
