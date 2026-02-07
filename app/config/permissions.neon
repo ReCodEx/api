@@ -79,6 +79,7 @@ permissions:
       resource: group
       actions:
           - viewExternalAttributes
+          - archive
 
     - allow: true
       role: scope-group-external
