@@ -65,6 +65,8 @@ class FrontendErrorMappings
     public const E400_502__GROUP_INSTANCE_ROOT_CANNOT_RELOCATE = "400-502";
     /** Relocation of a group would create a loop in the tree hierarchy (new parent is a child of a group or group itself). */
     public const E400_503__GROUP_RELOCATION_WOULD_CREATE_LOOP = "400-503";
+    /** Group cannot be created/renamed because another group with the same name already exists in the parent group */
+    public const E400_504__GROUP_DUPLICATE_NAME = "400-504";
 
     /** General unauthorized */
     public const E401_000__UNAUTHORIZED = "401-000";

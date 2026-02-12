@@ -1374,7 +1374,8 @@ class GroupsPresenter extends BasePresenter
                     if ($otherGroup !== $group) {
                         throw new InvalidApiArgumentException(
                             'name',
-                            "There is already a group of this name, please choose a different one."
+                            "There is already a group of this name, please choose a different one.",
+                            FrontendErrorMappings::E400_504__GROUP_DUPLICATE_NAME
                         );
                     }
                 }
