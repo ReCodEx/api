@@ -29,7 +29,7 @@
         "php": ">=8.2",
         "bjeavons/zxcvbn-php": "^1.4",
         "contributte/console": "^0.10.0",
-        "firebase/php-jwt": "^6.11",
+        "firebase/php-jwt": "^7.0",
         "forxer/gravatar": "^5.0",
         "guzzlehttp/guzzle": "^7.10",
         "eluceo/ical": "^2.7",
