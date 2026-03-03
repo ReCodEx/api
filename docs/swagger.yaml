@@ -45,14 +45,19 @@ paths:
                 username:
                   description: "User's E-mail"
                   type: string
-                  minLength: 1
                   example: name@domain.tld
                   nullable: false
+                  minLength: 1
                 password:
                   description: Password
                   type: string
-                  minLength: 1
                   example: text
+                  nullable: false
+                  minLength: 1
+                expiration:
+                  description: 'Token expiration in seconds (not greater than the default)'
+                  type: integer
+                  example: '0'
                   nullable: false
               type: object
       responses:
@@ -139,8 +144,13 @@ paths:
                 token:
                   description: 'JWT external authentication token'
                   type: string
-                  minLength: 1
                   example: text
+                  nullable: false
+                  minLength: 1
+                expiration:
+                  description: 'Token expiration in seconds (not greater than the default)'
+                  type: integer
+                  example: '0'
                   nullable: false
               type: object
       responses:
@@ -265,10 +275,10 @@ paths:
                 text:
                   description: 'Text of the comment'
                   type: string
-                  maxLength: 65535
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 65535
+                  minLength: 1
                 isPrivate:
                   description: 'True if the comment is private'
                   type: boolean
@@ -528,9 +538,9 @@ paths:
           required: false
           schema:
             type: string
+            nullable: false
             maxLength: 32
             minLength: 1
-            nullable: false
         -
           name: force
           in: query
@@ -846,9 +856,9 @@ paths:
           required: true
           schema:
             type: string
+            nullable: false
             maxLength: 32
             minLength: 1
-            nullable: false
       responses:
         '200':
           description: 'Placeholder response'
@@ -1143,25 +1153,25 @@ paths:
                 key:
                   description: 'Internal user-selected identifier of the exercise file link within the exercise'
                   type: string
-                  maxLength: 16
-                  minLength: 1
                   pattern: '^[-a-zA-Z0-9_]+$'
                   example: text
                   nullable: false
+                  maxLength: 16
+                  minLength: 1
                 requiredRole:
                   description: 'Minimal required user role to access the file (null = non-logged-in users)'
                   type: string
-                  maxLength: 255
-                  minLength: 1
                   example: text
                   nullable: true
+                  maxLength: 255
+                  minLength: 1
                 saveName:
                   description: 'File name override (the file will be downloaded under this name instead of the original name)'
                   type: string
-                  maxLength: 255
-                  minLength: 1
                   example: text
                   nullable: true
+                  maxLength: 255
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -1198,25 +1208,25 @@ paths:
                 key:
                   description: 'Internal user-selected identifier of the exercise file link within the exercise'
                   type: string
-                  maxLength: 16
-                  minLength: 1
                   pattern: '^[-a-zA-Z0-9_]+$'
                   example: text
                   nullable: false
+                  maxLength: 16
+                  minLength: 1
                 requiredRole:
                   description: 'Minimal required user role to access the file (null = non-logged-in users)'
                   type: string
-                  maxLength: 255
-                  minLength: 1
                   example: text
                   nullable: true
+                  maxLength: 255
+                  minLength: 1
                 saveName:
                   description: 'File name override (the file will be downloaded under this name instead of the original name)'
                   type: string
-                  maxLength: 255
-                  minLength: 1
                   example: text
                   nullable: true
+                  maxLength: 255
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -1269,9 +1279,9 @@ paths:
           required: true
           schema:
             type: string
+            nullable: false
             maxLength: 16
             minLength: 1
-            nullable: false
       responses:
         '200':
           description: 'Placeholder response'
@@ -1632,9 +1642,9 @@ paths:
                 runtimeEnvironmentId:
                   description: 'Environment identifier'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 pipelinesIds:
                   description: 'Identifiers of selected pipelines for one test'
                   type: array
@@ -1666,8 +1676,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
         -
           name: hwGroupId
           in: path
@@ -1675,8 +1685,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
       responses:
         '200':
           description: 'Placeholder response'
@@ -1701,8 +1711,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
         -
           name: hwGroupId
           in: path
@@ -1710,8 +1720,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
       requestBody:
         content:
           application/json:
@@ -1749,8 +1759,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
         -
           name: hwGroupId
           in: path
@@ -1758,8 +1768,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
       responses:
         '200':
           description: 'Placeholder response'
@@ -2276,7 +2286,7 @@ paths:
                 syncOptions:
                   description: 'List of options what to synchronize (if missing, everything is synchronized)'
                   type: array
-                  items: { type: string, maxLength: 32, minLength: 1, pattern: ^(configurationType|exerciseConfig|exerciseEnvironmentConfigs|exerciseTests|files|fileLinks|hardwareGroups|limits|localizedTexts|mergeJudgeLogs|runtimeEnvironments|scoreConfig)$, example: text }
+                  items: { type: string, pattern: ^(configurationType|exerciseConfig|exerciseEnvironmentConfigs|exerciseTests|files|fileLinks|hardwareGroups|limits|localizedTexts|mergeJudgeLogs|runtimeEnvironments|scoreConfig)$, example: text, maxLength: 32, minLength: 1 }
                   nullable: false
               type: object
       responses:
@@ -2336,9 +2346,9 @@ paths:
                 note:
                   description: 'A note by the author of the solution'
                   type: string
-                  maxLength: 1024
                   example: text
                   nullable: false
+                  maxLength: 1024
                 userId:
                   description: 'Author of the submission'
                   type: string
@@ -3283,9 +3293,9 @@ paths:
                 type:
                   description: 'Identifier of membership type (admin, supervisor, ...)'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -3596,23 +3606,23 @@ paths:
                 service:
                   description: 'Identifier of the external service creating the attribute'
                   type: string
-                  maxLength: 32
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 32
+                  minLength: 1
                 key:
                   description: 'Key of the attribute (must be valid identifier)'
                   type: string
-                  maxLength: 32
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 32
+                  minLength: 1
                 value:
                   description: 'Value of the attribute (arbitrary string)'
                   type: string
-                  maxLength: 255
                   example: text
                   nullable: false
+                  maxLength: 255
               type: object
       responses:
         '200':
@@ -3638,9 +3648,9 @@ paths:
           required: true
           schema:
             type: string
+            nullable: false
             maxLength: 32
             minLength: 1
-            nullable: false
         -
           name: key
           in: query
@@ -3648,9 +3658,9 @@ paths:
           required: true
           schema:
             type: string
+            nullable: false
             maxLength: 32
             minLength: 1
-            nullable: false
         -
           name: value
           in: query
@@ -3658,8 +3668,8 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 255
             nullable: false
+            maxLength: 255
       responses:
         '200':
           description: 'Placeholder response'
@@ -3686,9 +3696,9 @@ paths:
                 name:
                   description: 'Name of the instance'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 description:
                   description: 'Description of the instance'
                   type: string
@@ -3808,9 +3818,9 @@ paths:
                 note:
                   description: 'A note for users or administrators'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 validUntil:
                   description: 'Expiration date of the license'
                   type: integer
@@ -3843,10 +3853,10 @@ paths:
                 note:
                   description: 'A note for users or administrators'
                   type: string
-                  maxLength: 255
-                  minLength: 2
                   example: text
                   nullable: false
+                  maxLength: 255
+                  minLength: 2
                 validUntil:
                   description: 'Expiration date of the license'
                   type: string
@@ -4043,9 +4053,9 @@ paths:
                 note:
                   description: 'A description by the author of the solution'
                   type: string
-                  maxLength: 65535
                   example: text
                   nullable: false
+                  maxLength: 65535
               type: object
       responses:
         '200':
@@ -4294,9 +4304,9 @@ paths:
                 note:
                   description: 'A note by the author of the solution'
                   type: string
-                  maxLength: 1024
                   example: text
                   nullable: false
+                  maxLength: 1024
               type: object
       responses:
         '200':
@@ -4638,16 +4648,16 @@ paths:
                 text:
                   description: 'The comment itself.'
                   type: string
-                  maxLength: 65535
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 65535
+                  minLength: 1
                 file:
                   description: 'Identification of the file to which the comment is related to.'
                   type: string
-                  maxLength: 256
                   example: text
                   nullable: false
+                  maxLength: 256
                 line:
                   description: 'Line in the designated file to which the comment is related to.'
                   type: integer
@@ -4701,10 +4711,10 @@ paths:
                 text:
                   description: 'The comment itself.'
                   type: string
-                  maxLength: 65535
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 65535
+                  minLength: 1
                 issue:
                   description: 'Whether the comment is an issue (expected to be resolved by the student)'
                   type: boolean
@@ -4840,9 +4850,9 @@ paths:
                 note:
                   description: 'Brief description of how the failure was resolved'
                   type: string
-                  maxLength: 255
                   example: text
                   nullable: false
+                  maxLength: 255
                 sendEmail:
                   description: 'True if email should be sent to the author of submission'
                   type: boolean
@@ -4868,10 +4878,10 @@ paths:
                 name:
                   description: 'Name of the uploaded file.'
                   type: string
-                  maxLength: 255
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 255
+                  minLength: 1
                 size:
                   description: 'Total size in bytes.'
                   type: integer
@@ -5026,8 +5036,8 @@ paths:
           required: false
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
         -
           name: similarSolutionId
           in: query
@@ -5062,8 +5072,8 @@ paths:
           required: false
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
         -
           name: similarSolutionId
           in: query
@@ -5201,33 +5211,33 @@ paths:
                 email:
                   description: 'An email that will serve as a login name'
                   type: string
-                  minLength: 1
                   example: name@domain.tld
                   nullable: false
+                  minLength: 1
                 firstName:
                   description: 'First name'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 lastName:
                   description: 'Last name'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 password:
                   description: 'A password for authentication'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 passwordConfirm:
                   description: 'A password confirmation'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 instanceId:
                   description: 'Identifier of the instance to register in'
                   type: string
@@ -5237,15 +5247,15 @@ paths:
                 titlesBeforeName:
                   description: 'Titles which is placed before user name'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 titlesAfterName:
                   description: 'Titles which is placed after user name'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 ignoreNameCollision:
                   description: 'If a use with the same name exists, this needs to be set to true.'
                   type: boolean
@@ -5351,21 +5361,21 @@ paths:
                 email:
                   description: 'An email that will serve as a login name'
                   type: string
-                  minLength: 1
                   example: name@domain.tld
                   nullable: false
+                  minLength: 1
                 firstName:
                   description: 'First name'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 lastName:
                   description: 'Last name'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 instanceId:
                   description: 'Identifier of the instance to register in'
                   type: string
@@ -5375,15 +5385,15 @@ paths:
                 titlesBeforeName:
                   description: 'Titles that are placed before user name'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 titlesAfterName:
                   description: 'Titles that are placed after user name'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 groups:
                   description: 'List of group IDs in which the user is added right after registration'
                   type: array
@@ -5392,10 +5402,10 @@ paths:
                 locale:
                   description: 'Language used in the invitation email (en by default).'
                   type: string
-                  maxLength: 2
-                  minLength: 2
                   example: text
                   nullable: false
+                  maxLength: 2
+                  minLength: 2
                 ignoreNameCollision:
                   description: 'If a use with the same name exists, this needs to be set to true.'
                   type: boolean
@@ -5422,21 +5432,21 @@ paths:
                 token:
                   description: 'Token issued in create invitation process.'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 password:
                   description: 'A password for authentication'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 passwordConfirm:
                   description: 'A password confirmation'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -5481,15 +5491,15 @@ paths:
                 firstName:
                   description: 'First name'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 lastName:
                   description: 'Last name'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 titlesBeforeName:
                   description: 'Titles before name'
                   type: string
@@ -5501,27 +5511,27 @@ paths:
                 email:
                   description: 'New email address'
                   type: string
-                  minLength: 1
                   example: name@domain.tld
                   nullable: false
+                  minLength: 1
                 oldPassword:
                   description: 'Old password of current user'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 password:
                   description: 'New password of current user'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 passwordConfirm:
                   description: 'Confirmation of new password of current user'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 gravatarUrlEnabled:
                   description: 'Enable or disable gravatar profile image'
                   type: boolean
@@ -5561,8 +5571,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
         -
           name: externalId
           in: path
@@ -5570,8 +5580,8 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
             nullable: false
+            minLength: 1
       responses:
         '200':
           description: 'Placeholder response'
@@ -5810,9 +5820,9 @@ paths:
                 role:
                   description: 'Role which should be assigned to the user'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -5881,10 +5891,10 @@ paths:
                 externalId:
                   description: ''
                   type: string
-                  maxLength: 128
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 128
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -6016,9 +6026,9 @@ paths:
                 username:
                   description: 'An identifier of the user whose password should be reset'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
               type: object
       responses:
         '200':
@@ -6038,9 +6048,9 @@ paths:
                 password:
                   description: 'The new password'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
               type: object
       responses:
         '200':
@@ -6230,9 +6240,9 @@ paths:
                 name:
                   description: 'Name of the pipeline'
                   type: string
-                  minLength: 2
                   example: text
                   nullable: false
+                  minLength: 2
                 version:
                   description: 'Version of the edited pipeline'
                   type: integer
@@ -6783,15 +6793,15 @@ paths:
                 subject:
                   description: 'Subject for the soon to be sent email'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 message:
                   description: 'Message which will be sent, can be html code'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -6812,15 +6822,15 @@ paths:
                 subject:
                   description: 'Subject for the soon to be sent email'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 message:
                   description: 'Message which will be sent, can be html code'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -6841,15 +6851,15 @@ paths:
                 subject:
                   description: 'Subject for the soon to be sent email'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 message:
                   description: 'Message which will be sent, can be html code'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -6901,15 +6911,15 @@ paths:
                 subject:
                   description: 'Subject for the soon to be sent email'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 message:
                   description: 'Message which will be sent, can be html code'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
               type: object
       responses:
         '200':
@@ -7146,9 +7156,9 @@ paths:
                 note:
                   description: 'Note about newly created points'
                   type: string
-                  maxLength: 1024
                   example: text
                   nullable: false
+                  maxLength: 1024
                 awardedAt:
                   description: 'Datetime when the points were awarded, whatever that means'
                   type: integer
@@ -7227,9 +7237,9 @@ paths:
                 role:
                   description: 'Users with this role and its children can see notification'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 type:
                   description: 'Type of the notification (custom)'
                   type: string
@@ -7297,9 +7307,9 @@ paths:
                 role:
                   description: 'Users with this role and its children can see notification'
                   type: string
-                  minLength: 1
                   example: text
                   nullable: false
+                  minLength: 1
                 type:
                   description: 'Type of the notification (custom)'
                   type: string
@@ -7447,9 +7457,9 @@ paths:
           required: false
           schema:
             type: string
+            nullable: false
             maxLength: 255
             minLength: 1
-            nullable: false
         -
           name: solutionId
           in: query
@@ -7476,16 +7486,16 @@ paths:
                 detectionTool:
                   description: 'Identifier of the external tool used to detect similarities.'
                   type: string
-                  maxLength: 255
-                  minLength: 1
                   example: text
                   nullable: false
+                  maxLength: 255
+                  minLength: 1
                 detectionToolParams:
                   description: 'Tool-specific parameters (e.g., CLI args) used for this particular batch.'
                   type: string
-                  maxLength: 255
                   example: text
                   nullable: false
+                  maxLength: 255
               type: object
       responses:
         '200':
@@ -7610,9 +7620,9 @@ paths:
                 fileEntry:
                   description: 'Entry (relative path) within a ZIP package (if the uploaded file is a ZIP).'
                   type: string
-                  maxLength: 255
                   example: text
                   nullable: false
+                  maxLength: 255
                 authorId:
                   description: 'Id of the author of the similar solutions/files.'
                   type: string
@@ -7663,9 +7673,9 @@ paths:
           required: false
           schema:
             type: string
+            nullable: false
             maxLength: 2
             minLength: 2
-            nullable: false
         -
           name: return
           in: query
