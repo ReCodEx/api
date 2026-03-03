@@ -27,7 +27,7 @@ parameters:
     audience: "%webapp.address%"
     expiration: 604800  # 7 days in seconds
     invitationExpiration: 604800  # of an invitation token (7 days in seconds)
-    verificationKey: "recodex-123"	# this should be a really secret string
+    verificationKey: "recodex-123"	# this should be a really secret string and sufficiently long (for HS256, at least 32 characters is required)
     tokenCookieName: 'recodex_accessToken'  # web-app config value 'PERSISTENT_TOKENS_KEY_PREFIX' + '_accessToken', null if only Authorization header is used
 
   broker:

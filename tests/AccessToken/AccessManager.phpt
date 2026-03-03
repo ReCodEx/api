@@ -20,6 +20,7 @@ class TestAccessManager extends Tester\TestCase
 {
     use \MockeryTrait;
 
+    private static $verificationKey = "abc1234567890-1234567890-1234567890";
     /*
      * Token decoding
      */
@@ -27,10 +28,9 @@ class TestAccessManager extends Tester\TestCase
     public function testDecodeToken()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         $payload = ["sub" => "123", "exp" => time() + 123];
-        $token = JWT::encode($payload, $verificationKey, "HS256");
+        $token = JWT::encode($payload, self::$verificationKey, "HS256");
         $accessToken = $manager->decodeToken($token);
         Assert::type(AccessToken::class, $accessToken);
         Assert::equal("123", $accessToken->getUserId());
@@ -39,10 +39,9 @@ class TestAccessManager extends Tester\TestCase
     public function testDecodeUnverifiedToken()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         $payload = ["sub" => "123", "exp" => time() + 123];
-        $token = JWT::encode($payload, $verificationKey . "!!!", "HS256");
+        $token = JWT::encode($payload, self::$verificationKey . "!!!", "HS256");
 
         Assert::exception(
             function () use ($manager, $token) {
@@ -56,10 +55,9 @@ class TestAccessManager extends Tester\TestCase
     public function testDecodeExpiredToken()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         $payload = ["sub" => "123", "exp" => time() - 123, "leeway" => 0];
-        $token = JWT::encode($payload, $verificationKey, "HS256");
+        $token = JWT::encode($payload, self::$verificationKey, "HS256");
 
         Assert::exception(
             function () use ($manager, $token) {
@@ -73,20 +71,18 @@ class TestAccessManager extends Tester\TestCase
     public function testDecodeExpiredTokenWithEnoughLeeway()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         $payload = ["sub" => "123", "exp" => time() - 5, "leeway" => 10];
-        $token = JWT::encode($payload, $verificationKey, "HS256");
+        $token = JWT::encode($payload, self::$verificationKey, "HS256");
         Assert::type(AccessToken::class, $manager->decodeToken($token));
     }
 
     public function testDecodeTokenBeforeNBF()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         $payload = ["sub" => "123", "exp" => time() + 1000, "nbf" => time() + 100];
-        $token = JWT::encode($payload, $verificationKey, "HS256");
+        $token = JWT::encode($payload, self::$verificationKey, "HS256");
 
         Assert::exception(
             function () use ($manager, $token) {
@@ -104,10 +100,9 @@ class TestAccessManager extends Tester\TestCase
     public function testIssueToken()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
         $manager = new AccessManager(
             [
-                "verificationKey" => $verificationKey,
+                "verificationKey" => self::$verificationKey,
                 "issuer" => "X",
                 "audience" => "Y",
                 "expiration" => 123
@@ -120,7 +115,7 @@ class TestAccessManager extends Tester\TestCase
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user);
 
-        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
+        $payload = JWT::decode($token, new Key(self::$verificationKey, 'HS256'));
         Assert::equal($user->getId(), $payload->sub);
         Assert::equal("X", $payload->iss);
         Assert::equal("Y", $payload->aud);
@@ -133,10 +128,9 @@ class TestAccessManager extends Tester\TestCase
     public function testIssueTokenFailsForDisabledUser()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
         $manager = new AccessManager(
             [
-                "verificationKey" => $verificationKey,
+                "verificationKey" => self::$verificationKey,
                 "issuer" => "X",
                 "audience" => "Y",
                 "expiration" => 123
@@ -159,60 +153,56 @@ class TestAccessManager extends Tester\TestCase
     public function testIssueTokenWithScopes()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
 
         $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, ["x", "y"]);
 
-        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
+        $payload = JWT::decode($token, new Key(self::$verificationKey, 'HS256'));
         Assert::equal(["x", "y"], $payload->scopes);
     }
 
     public function testIssueTokenWithEffectiveRole()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
 
         $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, "role-eff");
 
-        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
+        $payload = JWT::decode($token, new Key(self::$verificationKey, 'HS256'));
         Assert::equal("role-eff", $payload->effrole);
     }
 
     public function testIssueTokenWithExplicitExpiration()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
 
         $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30);
 
-        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
+        $payload = JWT::decode($token, new Key(self::$verificationKey, 'HS256'));
         Assert::true((time() + 30) >= $payload->exp);
     }
 
     public function testCustomPayload()
     {
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $verificationKey = "abc";
-        $manager = new AccessManager(["verificationKey" => $verificationKey], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
 
         $user = Mockery::mock(App\Model\Entity\User::class);
         $user->shouldReceive("getId")->andReturn("123456");
         $user->shouldReceive("isAllowed")->andReturn(true);
         $token = $manager->issueToken($user, null, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
 
-        $payload = JWT::decode($token, new Key($verificationKey, 'HS256'));
+        $payload = JWT::decode($token, new Key(self::$verificationKey, 'HS256'));
         Assert::true((time() + 30) >= $payload->exp);
         Assert::equal("123456", $payload->sub);
         Assert::equal("uvw", $payload->xyz);
@@ -229,7 +219,7 @@ class TestAccessManager extends Tester\TestCase
         $request = new Request($url);
 
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         Assert::equal($token, $manager->getGivenAccessToken($request));
     }
 
@@ -239,7 +229,7 @@ class TestAccessManager extends Tester\TestCase
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y&access_token=$token");
         $request = new Request($url);
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         Assert::null($manager->getGivenAccessToken($request));
     }
 
@@ -249,7 +239,7 @@ class TestAccessManager extends Tester\TestCase
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Bearer $token"]);
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         Assert::equal($token, $manager->getGivenAccessToken($request));
     }
 
@@ -259,7 +249,7 @@ class TestAccessManager extends Tester\TestCase
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Basic $token"]);
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         Assert::null($manager->getGivenAccessToken($request));
     }
 
@@ -269,7 +259,7 @@ class TestAccessManager extends Tester\TestCase
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Basic $token"]);
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         Assert::null($manager->getGivenAccessToken($request));
     }
 
@@ -279,7 +269,7 @@ class TestAccessManager extends Tester\TestCase
         $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
         $request = new Request($url, [], [], [], ["Authorization" => "Bearer $token and more!"]);
         $users = Mockery::mock(App\Model\Repository\Users::class);
-        $manager = new AccessManager(["verificationKey" => "abc"], $users);
+        $manager = new AccessManager(["verificationKey" => self::$verificationKey], $users);
         Assert::null($manager->getGivenAccessToken($request));
     }
 }

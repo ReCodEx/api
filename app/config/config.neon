@@ -56,7 +56,6 @@ parameters:
     expiration: 86400  # of regular auth tokens (seconds)
     invitationExpiration: 86400  # of an invitation token (seconds)
     usedAlgorithm: HS256
-    verificationKey: "recodex-123"
     tokenCookieName: 'recodex_accessToken'  # web-app config value 'PERSISTENT_TOKENS_KEY_PREFIX' + '_accessToken', null if only Authorization header is used
 
   broker:  # connection to broker

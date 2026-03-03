@@ -2,7 +2,6 @@
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
@@ -40,8 +39,9 @@ class TestUserStorage extends Tester\TestCase
 
     protected function createUserStorage(AccessToken $token)
     {
-        $verificationKey = $this->container->parameters["accessManager"]["verificationKey"];
-        $usedAlgorithm = $this->container->parameters["accessManager"]["usedAlgorithm"];
+        $accessManagerParam = $this->container->getParameter("accessManager");
+        $verificationKey = $accessManagerParam["verificationKey"];
+        $usedAlgorithm = $accessManagerParam["usedAlgorithm"];
         $httpRequest = new Http\Request(
             new Http\UrlScript("/hello"),
             [],
