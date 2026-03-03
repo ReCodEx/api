@@ -15,6 +15,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DomainException;
 use UnexpectedValueException;
+use InvalidArgumentException;
 
 class AccessManager
 {
@@ -46,6 +47,9 @@ class AccessManager
     {
         $this->users = $users;
         $this->verificationKey = Arrays::get($parameters, "verificationKey");
+        if (!$this->verificationKey || strlen($this->verificationKey) < 32) {
+            throw new InvalidArgumentException("AccessManager verification key is not configured or too short");
+        }
         $this->expiration = Arrays::get($parameters, "expiration", 24 * 60 * 60); // one day in seconds
         $this->invitationExpiration = Arrays::get($parameters, "invitationExpiration", 24 * 60 * 60); // one day in sec
         $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.mff.cuni.cz");

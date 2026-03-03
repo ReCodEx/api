@@ -19,7 +19,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 class ExternalServiceAuthenticatorTestCase extends Tester\TestCase
 {
     public const AUTH_NAME = 'test-cas';
-    public const AUTH_SECRET = 'superSecretStringForJWT';
+    public const AUTH_SECRET = 'superSecretStringForJWT-1234567890-1234567890-1234567890';
 
     /** @var  Nette\DI\Container */
     private $container;

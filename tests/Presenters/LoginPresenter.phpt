@@ -173,7 +173,7 @@ class TestLoginPresenter extends Tester\TestCase
         $authenticator = new ExternalServiceAuthenticator(
             [[
                 'name' => 'test-cas',
-                'jwtSecret' => 'tajnyRetezec',
+                'jwtSecret' => 'tajnyRetezec-1234567890-1234567890-1234567890',
             ]],
             $this->externalLogins,
             $this->users,
@@ -192,7 +192,7 @@ class TestLoginPresenter extends Tester\TestCase
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
         ];
-        $token = JWT::encode($payload, 'tajnyRetezec', "HS256");
+        $token = JWT::encode($payload, 'tajnyRetezec-1234567890-1234567890-1234567890', "HS256");
 
         $this->presenter->externalServiceAuthenticator = $authenticator;
 
@@ -225,7 +225,7 @@ class TestLoginPresenter extends Tester\TestCase
         $authenticator = new ExternalServiceAuthenticator(
             [[
                 'name' => 'test-cas',
-                'jwtSecret' => 'tajnyRetezec',
+                'jwtSecret' => 'tajnyRetezec-1234567890-1234567890-1234567890',
             ]],
             $this->externalLogins,
             $this->users,
@@ -244,7 +244,7 @@ class TestLoginPresenter extends Tester\TestCase
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
         ];
-        $token = JWT::encode($payload, 'tajnyRetezec', "HS256");
+        $token = JWT::encode($payload, 'tajnyRetezec-1234567890-1234567890-1234567890', "HS256");
 
         $this->presenter->externalServiceAuthenticator = $authenticator;
 
