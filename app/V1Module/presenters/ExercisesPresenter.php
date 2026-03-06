@@ -514,7 +514,7 @@ class ExercisesPresenter extends BasePresenter
      * @throws NotFoundException
      */
     #[Path("id", new VUuid(), "Identifier of the exercise", required: true)]
-    #[Query("archived", new VBool(), "Include also archived groups in the result", required: false)]
+    #[Query("archived", new VBool(false), "Include also archived groups in the result", required: false)]
     public function actionAssignments(string $id, bool $archived = false)
     {
         $exercise = $this->exercises->findOrThrow($id);
@@ -797,7 +797,7 @@ class ExercisesPresenter extends BasePresenter
     #[Query("renameTo", new VString(1, 32), "New name of the tag", required: false)]
     #[Query(
         "force",
-        new VBool(),
+        new VBool(false),
         "If true, the rename will be allowed even if the new tag name exists (tags will be merged). "
             . "Otherwise, name collisions will result in error.",
         required: false,

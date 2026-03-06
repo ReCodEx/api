@@ -99,7 +99,7 @@ class AsyncJobsPresenter extends BasePresenter
     )]
     #[Query(
         "includeScheduled",
-        new VBool(),
+        new VBool(false),
         "If true, pending scheduled events will be listed as well",
         required: false,
         nullable: true,
