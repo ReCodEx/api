@@ -186,7 +186,7 @@ class GroupsPresenter extends BasePresenter
     #[Query("instanceId", new VString(), "Only groups of this instance are returned.", required: false, nullable: true)]
     #[Query(
         "ancestors",
-        new VBool(),
+        new VBool(false),
         "If true, returns an ancestral closure of the initial result set. "
             . "Included ancestral groups do not respect other filters (archived, search, ...).",
         required: false,
@@ -198,10 +198,10 @@ class GroupsPresenter extends BasePresenter
         required: false,
         nullable: true,
     )]
-    #[Query("archived", new VBool(), "Include also archived groups in the result.", required: false)]
+    #[Query("archived", new VBool(false), "Include also archived groups in the result.", required: false)]
     #[Query(
         "onlyArchived",
-        new VBool(),
+        new VBool(false),
         "Automatically implies \$archived flag and returns only archived groups.",
         required: false,
     )]
