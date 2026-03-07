@@ -102,4 +102,13 @@ class VArray extends BaseValidator
         }
         return true;
     }
+
+    public function patchQueryParameter(mixed &$value): void
+    {
+        if (is_array($value) && $this->nestedValidator !== null) {
+            foreach ($value as &$element) {
+                $this->nestedValidator->patchQueryParameter($element);
+            }
+        }
+    }
 }
