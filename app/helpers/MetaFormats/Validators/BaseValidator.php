@@ -65,4 +65,16 @@ class BaseValidator
         // return false by default to enforce overriding in derived types
         return false;
     }
+
+    /**
+     * Patches the query/path parameter value after successful validation.
+     * This is useful for special data types that needs to be converted to a different type before being used
+     * in the presenter method (e.g., convert strings like "true"/"false" to booleans).
+     * Note: this method is not called for values that did not pass validation.
+     * @param mixed $value The value to be patched. Passed by reference, so it can be modified by the method.
+     */
+    public function patchQueryParameter(mixed &$value): void
+    {
+        // no-op by default, can be overridden by validators that need to change the value before validation
+    }
 }

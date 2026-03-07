@@ -130,6 +130,11 @@ class BasePresenter extends \App\Presenters\BasePresenter
         Validators::init();
         $this->processParams($actionReflection);
 
+        // TODO -- coerce bools in params
+        if (!empty($this->params['archived'])) {
+            $this->params['archived'] = filter_var($this->params['archived'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         // ACL-checking method
         $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
     }
@@ -256,6 +261,17 @@ class BasePresenter extends \App\Presenters\BasePresenter
                 $this->processParamsFormat($format, $paramValue);
             } else {
                 $param->conformsToDefinition($paramValue);
+            }
+
+            // Path and query parameter might need patching, so they have correct type for
+            // being injected into the presenter method.
+            if (
+                $param->type === Type::Path || $param->type === Type::Query
+                && array_key_exists($param->name, $this->params)
+            ) {
+                foreach ($param->validators as $validator) {
+                    $validator->patchQueryParameter($this->params[$param->name]);
+                }
             }
         }
     }
