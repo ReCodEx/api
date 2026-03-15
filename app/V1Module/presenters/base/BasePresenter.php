@@ -130,11 +130,6 @@ class BasePresenter extends \App\Presenters\BasePresenter
         Validators::init();
         $this->processParams($actionReflection);
 
-        // TODO -- coerce bools in params
-        if (!empty($this->params['archived'])) {
-            $this->params['archived'] = filter_var($this->params['archived'], FILTER_VALIDATE_BOOLEAN);
-        }
-
         // ACL-checking method
         $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
     }
