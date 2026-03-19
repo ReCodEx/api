@@ -3,11 +3,12 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\Notification;
 use App\Security\Identity;
 use App\Security\Roles;
 
-class NotificationPermissionPolicy implements IPermissionPolicy
+class NotificationPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     /** @var Roles */
     private $roles;
@@ -57,7 +58,7 @@ class NotificationPermissionPolicy implements IPermissionPolicy
 
         /** @var Group $group */
         foreach ($notification->getGroups() as $group) {
-            if ($group->isAdminOf($user)) {
+            if ($this->checkMinimalMembership($user, $group, GroupMembership::TYPE_ADMIN)) {
                 return true;
             }
         }

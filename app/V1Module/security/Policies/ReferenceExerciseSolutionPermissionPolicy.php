@@ -3,11 +3,12 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Helpers\SubmissionConfigHelper;
 use App\Security\Identity;
 
-class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
+class ReferenceExerciseSolutionPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     /** @var SubmissionConfigHelper */
     private $submissionHelper;
@@ -33,7 +34,7 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
         return ReferenceExerciseSolution::class;
     }
 
-    public function isAuthor(Identity $identity, ReferenceExerciseSolution $referenceExerciseSolution = null)
+    public function isAuthor(Identity $identity, ?ReferenceExerciseSolution $referenceExerciseSolution = null)
     {
         if ($referenceExerciseSolution === null) {
             return false;
@@ -74,7 +75,7 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
 
         /** @var Group $group */
         foreach ($exercise->getGroups() as $group) {
-            if ($group->isAdminOf($user)) {
+            if ($this->checkMinimalMembership($user, $group, GroupMembership::TYPE_ADMIN)) {
                 return true;
             }
         }
@@ -92,7 +93,7 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
 
     public function isExerciseNotArchived(
         Identity $identity,
-        ReferenceExerciseSolution $referenceExerciseSolution = null
+        ?ReferenceExerciseSolution $referenceExerciseSolution = null
     ) {
         if ($referenceExerciseSolution === null) {
             return false;
@@ -107,7 +108,7 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy
         return $exercise && !$exercise->isArchived();
     }
 
-    public function isPublic(Identity $identity, ReferenceExerciseSolution $referenceExerciseSolution = null)
+    public function isPublic(Identity $identity, ?ReferenceExerciseSolution $referenceExerciseSolution = null)
     {
         return $referenceExerciseSolution !== null
             && $referenceExerciseSolution->getVisibility() >= ReferenceExerciseSolution::VISIBILITY_PUBLIC;

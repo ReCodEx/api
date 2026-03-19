@@ -2,11 +2,11 @@
 
 namespace App\Security\Policies;
 
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\ShadowAssignment;
 use App\Security\Identity;
-use DateTime;
 
-class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
+class ShadowAssignmentPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     public function getAssociatedClass()
     {
@@ -38,14 +38,11 @@ class ShadowAssignmentPermissionPolicy implements IPermissionPolicy
 
     public function isSupervisor(Identity $identity, ShadowAssignment $assignment)
     {
-        $group = $assignment->getGroup();
-        $user = $identity->getUserData();
-
-        if ($user === null) {
-            return false;
-        }
-
-        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $assignment->getGroup(),
+            GroupMembership::TYPE_SUPERVISOR
+        );
     }
 
     /**
