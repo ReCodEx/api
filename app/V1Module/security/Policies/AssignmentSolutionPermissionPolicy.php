@@ -3,10 +3,10 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\GroupMembership;
 use App\Security\Identity;
 
-class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
+class AssignmentSolutionPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     public function getAssociatedClass()
     {
@@ -20,14 +20,11 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        $group = $assignment->getGroup();
-        $user = $identity->getUserData();
-
-        if ($user === null) {
-            return false;
-        }
-
-        return $group && $group->isAdminOf($user);
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $assignment->getGroup(),
+            GroupMembership::TYPE_ADMIN
+        );
     }
 
     public function isSupervisorOrAdmin(Identity $identity, AssignmentSolution $solution)
@@ -37,14 +34,11 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        $group = $assignment->getGroup();
-        $user = $identity->getUserData();
-
-        if ($user === null) {
-            return false;
-        }
-
-        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $assignment->getGroup(),
+            GroupMembership::TYPE_SUPERVISOR
+        );
     }
 
     public function isObserverOrBetter(Identity $identity, AssignmentSolution $solution)
@@ -54,14 +48,11 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        $group = $assignment->getGroup();
-        $user = $identity->getUserData();
-
-        if ($user === null) {
-            return false;
-        }
-
-        return $group && ($group->isObserverOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $assignment->getGroup(),
+            GroupMembership::TYPE_OBSERVER
+        );
     }
 
     public function isAuthor(Identity $identity, AssignmentSolution $solution)

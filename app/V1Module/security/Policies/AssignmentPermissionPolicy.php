@@ -3,11 +3,12 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\Assignment;
+use App\Model\Entity\GroupMembership;
 use App\Security\Identity;
 use App\Helpers\SubmissionConfigHelper;
 use DateTime;
 
-class AssignmentPermissionPolicy implements IPermissionPolicy
+class AssignmentPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     /** @var SubmissionConfigHelper */
     private $submissionHelper;
@@ -70,26 +71,20 @@ class AssignmentPermissionPolicy implements IPermissionPolicy
 
     public function isSupervisorOrAdmin(Identity $identity, Assignment $assignment)
     {
-        $group = $assignment->getGroup();
-        $user = $identity->getUserData();
-
-        if ($user === null) {
-            return false;
-        }
-
-        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $assignment->getGroup(),
+            GroupMembership::TYPE_SUPERVISOR
+        );
     }
 
     public function isObserverOrBetter(Identity $identity, Assignment $assignment)
     {
-        $group = $assignment->getGroup();
-        $user = $identity->getUserData();
-
-        if ($user === null) {
-            return false;
-        }
-
-        return $group && ($group->isObserverOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $assignment->getGroup(),
+            GroupMembership::TYPE_OBSERVER
+        );
     }
 
     /**

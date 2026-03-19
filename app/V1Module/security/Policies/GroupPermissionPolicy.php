@@ -3,11 +3,12 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\Instance;
 use App\Security\Identity;
 use DateTIme;
 
-class GroupPermissionPolicy implements IPermissionPolicy
+class GroupPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     public function getAssociatedClass()
     {
@@ -21,17 +22,20 @@ class GroupPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        return $group->isMemberOf($user) || $group->isAdminOf($user);
+        return $group->isMemberOf($user) || $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $group,
+            GroupMembership::TYPE_ADMIN
+        );
     }
 
     public function isSupervisorOrAdmin(Identity $identity, Group $group): bool
     {
-        $user = $identity->getUserData();
-        if (!$user) {
-            return false;
-        }
-
-        return $group->isSupervisorOf($user) || $group->isAdminOf($user);
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $group,
+            GroupMembership::TYPE_SUPERVISOR
+        );
     }
 
     public function isObserver(Identity $identity, Group $group): bool
@@ -46,12 +50,11 @@ class GroupPermissionPolicy implements IPermissionPolicy
 
     public function isAdmin(Identity $identity, Group $group): bool
     {
-        $user = $identity->getUserData();
-        if (!$user) {
-            return false;
-        }
-
-        return $group->isAdminOf($user);
+        return $this->checkMinimalMembership(
+            $identity->getUserData(),
+            $group,
+            GroupMembership::TYPE_ADMIN
+        );
     }
 
     public function isPublic(Identity $identity, Group $group): bool

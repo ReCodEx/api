@@ -2,12 +2,13 @@
 
 namespace App\Security\Policies;
 
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Security\Identity;
 use App\Security\Roles;
 
-class UserPermissionPolicy implements IPermissionPolicy
+class UserPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     public function getAssociatedClass()
     {
@@ -65,11 +66,7 @@ class UserPermissionPolicy implements IPermissionPolicy
         }
 
         foreach ($user->getGroupsAsStudent() as $group) {
-            if (
-                $group->isSupervisorOf($currentUser)
-                || $group->isObserverOf($currentUser)
-                || $group->isAdminOf($currentUser)
-            ) {
+            if ($this->checkMinimalMembership($currentUser, $group, GroupMembership::TYPE_OBSERVER)) {
                 return true;
             }
         }

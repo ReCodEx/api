@@ -6,12 +6,13 @@ use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
 use App\Security\Identity;
 
-class UploadedFilePermissionPolicy implements IPermissionPolicy
+class UploadedFilePermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     /** @var Assignments */
     private $assignments;
@@ -125,7 +126,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy
         }
 
         $group = $this->files->findGroupForSolutionFile($file);
-        return $group && ($group->isObserverOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership($user, $group, GroupMembership::TYPE_OBSERVER);
     }
 
     public function isRelatedToAssignment(Identity $identity, UploadedFile $file)

@@ -5,11 +5,12 @@ namespace App\Security\Policies;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
+use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Security\Identity;
 
-class CommentPermissionPolicy implements IPermissionPolicy
+class CommentPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     private $assignments;
     private $assignmentSolutions;
@@ -62,8 +63,11 @@ class CommentPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        $group = $solution->getAssignment()->getGroup();
-        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership(
+            $user,
+            $solution->getAssignment()->getGroup(),
+            GroupMembership::TYPE_SUPERVISOR
+        );
     }
 
 
@@ -80,7 +84,6 @@ class CommentPermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        $group = $assignment->getGroup();
-        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+        return $this->checkMinimalMembership($user, $assignment->getGroup(), GroupMembership::TYPE_SUPERVISOR);
     }
 }

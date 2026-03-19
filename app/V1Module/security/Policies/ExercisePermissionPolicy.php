@@ -4,10 +4,11 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use App\Helpers\SubmissionConfigHelper;
 use App\Security\Identity;
 
-class ExercisePermissionPolicy implements IPermissionPolicy
+class ExercisePermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
 {
     /** @var SubmissionConfigHelper */
     private $submissionHelper;
@@ -121,15 +122,6 @@ class ExercisePermissionPolicy implements IPermissionPolicy
         return false;
     }
 
-    /**
-     * @var Array[]
-     * A cache holding the result of isAdminOf invocation for given groups.
-     * The cache is structures as [user-id][group-id] => boolean
-     * Under normal circumstances, the cache should hold only one (logged in) user,
-     * but it was written as generic cache just in case.
-     */
-    private $supergroupAdminCache = [];
-
     public function isSuperGroupAdmin(Identity $identity, Exercise $exercise)
     {
         $user = $identity->getUserData();
@@ -141,21 +133,12 @@ class ExercisePermissionPolicy implements IPermissionPolicy
             return false;
         }
 
-        if (empty($this->supergroupAdminCache[$user->getId()])) {
-            $this->supergroupAdminCache[$user->getId()] = [];
-        }
-        $supergroupCache = &$this->supergroupAdminCache[$user->getId()];
-
         /** @var Group $group */
         foreach ($exercise->getGroups() as $group) {
-            if (!array_key_exists($group->getId(), $supergroupCache)) {
-                $supergroupCache[$group->getId()] = $group->isAdminOf($user);
-            }
-            if ($supergroupCache[$group->getId()]) {
+            if ($this->checkMinimalMembership($user, $group, GroupMembership::TYPE_ADMIN)) {
                 return true;
             }
         }
-
         return false;
     }
 
