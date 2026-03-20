@@ -110,6 +110,7 @@ fi
 %{install_dir}/app/V1Module
 %{install_dir}/app/web.config
 %{install_dir}/app/.htaccess
+%{install_dir}/app/.version
 %{install_dir}/composer.json
 %{install_dir}/composer.lock
 %{install_dir}/composer-stable.phar
