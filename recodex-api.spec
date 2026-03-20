@@ -13,7 +13,7 @@ License: MIT
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
-Vendor: Petr Stefan <UNKNOWN>
+Vendor: ReCodEx Team
 Url: https://github.com/ReCodEx/api
 Requires(post): systemd
 Requires(preun): systemd
@@ -41,6 +41,7 @@ ln -sf /var/log/recodex/core-api %{buildroot}%{install_dir}/log
 mkdir -p %{buildroot}%{install_dir}/temp
 cp -r www %{buildroot}%{install_dir}/www
 cp -r app %{buildroot}%{install_dir}/app
+echo "v%{version}-%{release}" > %{buildroot}%{install_dir}/app/.version
 cp -r bin %{buildroot}%{install_dir}/bin
 cp -r migrations %{buildroot}%{install_dir}/migrations
 mkdir -p %{buildroot}%{install_dir}/fixtures

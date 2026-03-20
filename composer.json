@@ -38,7 +38,6 @@
         "ext-zip": ">=1.15",
         "latte/latte": "^3.1",
         "league/commonmark": "^2.8",
-        "limenet/git-version": "v0.1.6",
         "nelmio/alice": "^3.17",
         "nette/application": "^3.2",
         "nette/bootstrap": "^3.2",
