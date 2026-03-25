@@ -279,7 +279,7 @@ class UploadedFilesPresenter extends BasePresenter
         if ($entry && $fileEntity instanceof SolutionZipFile) {
             try {
                 $file = $fileEntity->getNestedFile($this->fileStorage, $entry);
-                $size = $file->getSize();
+                $size = $file?->getSize();
             } catch (FileStorageException $ex) {
                 throw new NotFoundException(
                     "File not found in the storage",
