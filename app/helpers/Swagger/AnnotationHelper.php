@@ -470,6 +470,7 @@ class AnnotationHelper
      */
     public static function getRoutesMetadata(): array
     {
+        RouterFactory::setStrictMode();  // no deprecated (duplicate) routes
         $router = RouterFactory::createRouter();
 
         // find all route object using a queue
