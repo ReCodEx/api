@@ -536,6 +536,11 @@ class User
         return $this->groupLockType === GroupExamLockType::Restricted->value;
     }
 
+    public function getGroupLockType(): ?GroupExamLockType
+    {
+        return $this->isGroupLocked() ? GroupExamLockType::from($this->groupLockType) : null;
+    }
+
     /**
      * @return Group|null The group in which the user is currently locked, null if no lock is active.
      */

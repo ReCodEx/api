@@ -42,6 +42,7 @@ use App\Model\View\AssignmentSolutionViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
+use App\Model\GroupExamLockType;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
@@ -608,7 +609,7 @@ class GroupsPresenter extends BasePresenter
         "When the exam ends (unix ts in the future, no more than a day after 'begin').",
         required: true,
     )]
-    #[Post("strict", new VBool(), "Whether locked users are prevented from accessing other groups.", required: false)]
+    #[Post("type", new VString(), "Lock type ('visible', 'reviewed', 'accepted', 'restricted').", required: false)]
     #[Path("id", new VUuid(), "An identifier of the updated group", required: true)]
     #[ResponseFormat(GroupFormat::class)]
     public function actionSetExamPeriod(string $id)
@@ -618,18 +619,27 @@ class GroupsPresenter extends BasePresenter
         $req = $this->getRequest();
         $beginTs = (int)$req->getPost("begin");
         $endTs = (int)$req->getPost("end");
-        $strict = $req->getPost("strict") !== null
-            ? filter_var($req->getPost("strict"), FILTER_VALIDATE_BOOLEAN) : null;
-        $now = (new DateTime())->getTimestamp();
-        $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
 
-        if ($strict === null) {
+        $typeStr = $req->getPost("type");
+        $type = null;
+        if ($typeStr !== null) {
+            $type = GroupExamLockType::tryFrom($typeStr);
+            if ($type === null) {
+                throw new InvalidApiArgumentException(
+                    'type',
+                    "Invalid lock type. Allowed values are: " . implode(", ", GroupExamLockType::values())
+                );
+            }
+        } else {
             if ($group->hasExamPeriodSet()) {
-                $strict = $group->isExamLockStrict(); // flag is not present -> is not changing
+                $type = $group->getExamLockType(); // type is not present -> is not changing
             } else {
-                throw new BadRequestException("The strict flag must be present when new exam is being set.");
+                throw new BadRequestException("The lock type must be present when new exam is being set.");
             }
         }
+
+        $now = (new DateTime())->getTimestamp();
+        $nowTolerance = 60;  // 60s is a tolerance when comparing with "now"
 
         // beginning must be in the future (or must not be modified)
         if ((!$group->hasExamPeriodSet() || $beginTs) && $beginTs < $now - $nowTolerance) {
@@ -655,14 +665,14 @@ class GroupsPresenter extends BasePresenter
 
         if ($group->hasExamPeriodSet()) {
             if ($group->getExamBegin()->getTimestamp() <= $now) { // ... already begun
-                if ($strict !== $group->isExamLockStrict()) {
-                    throw new BadRequestException("The strict flag cannot be changed once the exam begins.");
+                if ($type !== $group->getExamLockType()) {
+                    throw new BadRequestException("The lock type cannot be changed once the exam begins.");
                 }
 
                 // the exam already begun, we need to fix any group-locked users
                 foreach ($group->getStudents() as $student) {
                     if ($student->getGroupLock()?->getId() === $id) {
-                        $student->setGroupLock($group, $end, $strict);
+                        $student->setGroupLock($group, $end, $type);
                         if ($student->isIpLocked()) {
                             $student->setIpLock($student->getIpLockRaw(), $end);
                         }
@@ -696,11 +706,11 @@ class GroupsPresenter extends BasePresenter
 
         $exam = $this->groupExams->findPendingForGroup($group);
         if ($exam) {
-            $exam->update($begin, $end, $strict);
+            $exam->update($begin, $end, $type);
             $this->groupExams->persist($exam, false);
         }
 
-        $group->setExamPeriod($begin, $end, $strict);
+        $group->setExamPeriod($begin, $end, $type);
         $this->groups->persist($group);
 
         $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
@@ -1298,7 +1308,7 @@ class GroupsPresenter extends BasePresenter
 
         $expiration = $group->getExamEnd();
         $user->setIpLock($this->getHttpRequest()->getRemoteAddress(), $expiration);
-        $user->setGroupLock($group, $expiration, $group->isExamLockStrict());
+        $user->setGroupLock($group, $expiration, $group->getExamLockType());
         $this->users->persist($user, false);
 
         // make sure the locking is also logged

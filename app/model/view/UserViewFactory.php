@@ -88,6 +88,8 @@ class UserViewFactory
                 "externalIds" => $this->getExternalIds($user, $reallyShowEverything),
                 "ipLock" => $user->isIpLocked() ? $user->getIpLockRaw() : null,
                 "groupLock" => $user->getGroupLock()?->getId(),
+                "groupLockType" => $user->getGroupLockType()?->value,
+                // DEPRECATED, use groupLockType instead
                 "isGroupLockStrict" => $user->isGroupLockStrict(),
             ];
 
