@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Model\GroupExamLockType;
 use App\Security\Roles;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -420,6 +421,7 @@ class User
      * @ORM\Column(type="string", nullable=true)
      * IP address (either IPv4 or IPv6) the user is locked to. API requests from different addresses
      * will be treated as unauthorized.
+     * @var string|null
      */
     protected $ipLock = null;
 
@@ -499,13 +501,16 @@ class User
      * @ORM\ManyToOne(targetEntity="Group")
      * If set, any user actions will be restricted to this group only.
      * (except for fundamental operations like listing groups or getting group name)
+     * @var Group|null
      */
     protected $groupLock = null;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="string")
+     * String representation of the GroupExamLockType enum (copied from the group exam).
+     * @var string
      */
-    protected $groupLockStrict = false;
+    protected $groupLockType = GroupExamLockType::Visible->value;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -528,7 +533,7 @@ class User
      */
     public function isGroupLockStrict(): bool
     {
-        return $this->groupLockStrict;
+        return $this->groupLockType === GroupExamLockType::Restricted->value;
     }
 
     /**
@@ -548,9 +553,9 @@ class User
      * Lock the user within a group.
      * @param Group $group
      * @param DateTime|null $expiration of the lock, if null, the lock will never expire
-     * @param bool $strict if true, the user may not even access other groups for reading
+     * @param GroupExamLockType $type if true, the user may not even access other groups for reading
      */
-    public function setGroupLock(Group $group, ?DateTime $expiration = null, bool $strict = false): void
+    public function setGroupLock(Group $group, ?DateTime $expiration, GroupExamLockType $type): void
     {
         // basic asserts to be on the safe side
         if (!$group->hasExamPeriodSet()) {
@@ -562,14 +567,14 @@ class User
 
         $this->groupLock = $group;
         $this->groupLockExpiration = $expiration;
-        $this->groupLockStrict = $strict;
+        $this->groupLockType = $type->value;
     }
 
     public function removeGroupLock(): void
     {
         $this->groupLock = null;
         $this->groupLockExpiration = null;
-        $this->groupLockStrict = false;
+        $this->groupLockType = GroupExamLockType::Visible->value;
     }
 
 

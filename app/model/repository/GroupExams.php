@@ -4,6 +4,7 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\Group;
 use App\Model\Entity\GroupExam;
+use App\Model\GroupExamLockType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use DateTime;
@@ -45,10 +46,10 @@ class GroupExams extends BaseRepository
      * @param Group $group
      * @param DateTime $begin
      * @param DateTime $end
-     * @param bool $strict
+     * @param GroupExamLockType $type
      * @return GroupExam|null
      */
-    private function tryFindOrCreate(Group $group, DateTime $begin, DateTime $end, bool $strict): ?GroupExam
+    private function tryFindOrCreate(Group $group, DateTime $begin, DateTime $end, GroupExamLockType $type): ?GroupExam
     {
         $exam = $this->findBy(["group" => $group, "begin" => $begin]);
         if (count($exam) > 1) {
@@ -58,12 +59,12 @@ class GroupExams extends BaseRepository
         if (!$exam) {
             try {
                 $this->em->getConnection()->executeQuery(
-                    "INSERT INTO group_exam (group_id, begin, end, lock_strict) VALUES (:gid, :begin, :end, :strict)",
+                    "INSERT INTO group_exam (group_id, begin, end, lock_type) VALUES (:gid, :begin, :end, :type)",
                     [
                         'gid' => $group->getId(),
                         'begin' => $begin->format('Y-m-d H:i:s'),
                         'end' => $end->format('Y-m-d H:i:s'),
-                        'strict' => $strict ? 1 : 0
+                        'type' => $type->value
                     ]
                 );
             } catch (UniqueConstraintViolationException) {
@@ -82,21 +83,21 @@ class GroupExams extends BaseRepository
      * @param Group $group
      * @param DateTime|null $begin if null, exam begin from the group is taken
      * @param DateTime|null $end if null, exam end from the group is taken
-     * @param bool|null $strict if null, examLockStrict value is taken
+     * @param GroupExamLockType|null $type if null, examLockType value is taken
      * @return GroupExam
      */
     public function findOrCreate(
         Group $group,
         ?DateTime $begin = null,
         ?DateTime $end = null,
-        ?bool $strict = null
+        ?GroupExamLockType $type = null
     ): GroupExam {
         $begin = $begin ?? $group->getExamBegin();
         $end = $end ?? $group->getExamEnd();
-        $strict = $strict === null ? $group->isExamLockStrict() : $strict;
+        $type = $type ?? $group->getExamLockType();
 
         for ($retries = 0; $retries < 3; $retries++) {
-            $exam = $this->tryFindOrCreate($group, $begin, $end, $strict);
+            $exam = $this->tryFindOrCreate($group, $begin, $end, $type);
             if ($exam !== null) {
                 return $exam;
             }

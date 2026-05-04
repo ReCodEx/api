@@ -62,18 +62,18 @@ final class Version20211015163456 extends AbstractMigration
                 // update
                 $this->connection->executeStatement(
                     "UPDATE user_ui_data SET `data` = :newData WHERE id = :id",
-                    [ 'id' => $uiId, 'newData' => json_encode($json) ]
+                    ['id' => $uiId, 'newData' => json_encode($json)]
                 );
             } else {
                 // insert new
                 $uuid = Uuid::uuid();
                 $this->connection->executeStatement(
                     "INSERT INTO user_ui_data (id, `data`) VALUES (:id, :newData)",
-                    [ 'id' => $uuid, 'newData' => json_encode($json) ]
+                    ['id' => $uuid, 'newData' => json_encode($json)]
                 );
                 $this->connection->executeStatement(
                     "UPDATE `user` SET `ui_data_id` = :uuid WHERE id = :id",
-                    [ 'id' => $userId,'uuid' => $uuid ]
+                    ['id' => $userId, 'uuid' => $uuid]
                 );
             }
         }
@@ -115,7 +115,7 @@ final class Version20211015163456 extends AbstractMigration
                 $json = [];
             }
 
-            $updateData = [ 'id' => $sId ];
+            $updateData = ['id' => $sId];
             foreach (self::$transforms as $col => $uiProp) {
                 $updateData[$col] = $json[$uiProp] ?? self::$defaults[$col];
                 unset($json[$uiProp]);
@@ -123,7 +123,7 @@ final class Version20211015163456 extends AbstractMigration
             $this->connection->executeStatement("UPDATE user_settings SET $sets WHERE id = :id", $updateData);
             $this->connection->executeStatement(
                 "UPDATE user_ui_data SET `data` = :newData WHERE id = :id",
-                [ 'id' => $uiId, 'newData' => json_encode($json) ]
+                ['id' => $uiId, 'newData' => json_encode($json)]
             );
         }
     }
