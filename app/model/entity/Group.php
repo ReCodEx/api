@@ -2,7 +2,7 @@
 
 namespace App\Model\Entity;
 
-use DateTime;
+use App\Model\GroupExamLockType;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use LogicException;
 use InvalidArgumentException;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -231,6 +232,7 @@ class Group
      * @ORM\Column(type="datetime", nullable=true)
      * When an exam in this groups begins. In the exam period, a user must lock in a group to be allowed
      * submitting solutions. This is completely independent of the isExam flag.
+     * @var DateTime|null
      */
     protected $examBegin = null;
 
@@ -238,15 +240,17 @@ class Group
      * @ORM\Column(type="datetime", nullable=true)
      * When an exam in this groups ends. In the exam period, a user must lock in a group to be allowed
      * submitting solutions. This is completely independent of the isExam flag.
+     * @var DateTime|null
      */
     protected $examEnd = null;
 
     /**
-     * @ORM\Column(type="boolean")
-     * Whether the group-lock for the exam should be strict
+     * @ORM\Column(type="string")
+     * The type of lock for the exam.
      * (under strict lock, the user cannot read data from other groups).
+     * @var string
      */
-    protected $examLockStrict = false;
+    protected $examLockType = GroupExamLockType::Visible->value;
 
     /**
      * @var Collection
@@ -260,9 +264,9 @@ class Group
      * Switch the group into an exam group by setting the begin and end dates of the exam.
      * @param DateTime $begin when the exam starts
      * @param DateTime $end when the exam ends
-     * @param bool $strict if true, locked users cannot access other groups (for reading)
+     * @param GroupExamLockType $type the type of lock for the exam
      */
-    public function setExamPeriod(DateTime $begin, DateTime $end, bool $strict = false): void
+    public function setExamPeriod(DateTime $begin, DateTime $end, GroupExamLockType $type): void
     {
         // asserts
         if ($begin >= $end) {
@@ -275,7 +279,7 @@ class Group
 
         $this->examBegin = $begin;
         $this->examEnd = $end;
-        $this->examLockStrict = $strict;
+        $this->examLockType = $type->value;
         $this->isOrganizational = false;
     }
 
@@ -286,7 +290,7 @@ class Group
     {
         $this->examBegin = null;
         $this->examEnd = null;
-        $this->examLockStrict = false;
+        $this->examLockType = GroupExamLockType::Visible->value;
     }
 
     /**
@@ -301,7 +305,12 @@ class Group
 
     public function isExamLockStrict(): bool
     {
-        return $this->examLockStrict;
+        return $this->examLockType === GroupExamLockType::Restricted->value;
+    }
+
+    public function getExamLockType(): GroupExamLockType
+    {
+        return GroupExamLockType::from($this->examLockType);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Model\GroupExamLockType;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
@@ -11,7 +12,7 @@ use JsonSerializable;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"group_id", "begin"})})
  * Holds history record of an exam that took place in a group.
  * The `examBegin`, `examEnd` fields are copied from group to `begin`, `end` fields here,
- * `examLockStrict` is copied to `lockStrict` field.
+ * `examLockType` is copied to `lockType` field.
  * This entity is created when the first user locks in (i.e., only exams with users are recorded in history).
  */
 class GroupExam implements JsonSerializable
@@ -20,58 +21,61 @@ class GroupExam implements JsonSerializable
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @var int|null
      */
     protected $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="Group", inversedBy="exams")
+     * @var Group
      */
     protected $group;
 
     /**
      * @ORM\Column(type="datetime")
-     * @var DateTime
+     * @var DateTime|null
      */
     protected $begin = null;
 
     /**
      * @ORM\Column(type="datetime")
-     * @var DateTime
+     * @var DateTime|null
      */
     protected $end = null;
 
     /**
-     * @ORM\Column(type="boolean")
-     * Saved value from examLockStrict flag.
+     * @ORM\Column(type="string")
+     * Saved value from examLockType flag.
+     * @var string
      */
-    protected $lockStrict = false;
+    protected $lockType = GroupExamLockType::Visible->value;
 
     /**
      * Constructor
      * @param Group $group
      * @param DateTime $begin
      * @param DateTime $end
-     * @param bool $strict
+     * @param GroupExamLockType $type
      */
-    public function __construct(Group $group, DateTime $begin, DateTime $end, bool $strict)
+    public function __construct(Group $group, DateTime $begin, DateTime $end, GroupExamLockType $type)
     {
         $this->group = $group;
         $this->begin = $begin;
         $this->end = $end;
-        $this->lockStrict = $strict;
+        $this->lockType = $type->value;
     }
 
     /**
      * Update the parameters (happens if pending exam is cut short, for instance).
      * @param DateTime $begin
      * @param DateTime $end
-     * @param bool $strict
+     * @param GroupExamLockType $type
      */
-    public function update(DateTime $begin, DateTime $end, bool $strict): void
+    public function update(DateTime $begin, DateTime $end, GroupExamLockType $type): void
     {
         $this->begin = $begin;
         $this->end = $end;
-        $this->lockStrict = $strict;
+        $this->lockType = $type->value;
     }
 
     public function jsonSerialize(): mixed
@@ -82,7 +86,9 @@ class GroupExam implements JsonSerializable
             "groupId" => $group ? $group->getId() : null,
             "begin" => $this->getBegin()->getTimestamp(),
             "end" => $this->getEnd()->getTimestamp(),
-            "strict" => $this->lockStrict,
+            "type" => $this->lockType,
+            // BC only, DEPRECATED
+            "strict" => $this->lockType === GroupExamLockType::Restricted->value,
         ];
     }
 
@@ -113,6 +119,11 @@ class GroupExam implements JsonSerializable
 
     public function isLockStrict(): bool
     {
-        return $this->lockStrict;
+        return $this->lockType === GroupExamLockType::Restricted->value;
+    }
+
+    public function getLockType(): GroupExamLockType
+    {
+        return GroupExamLockType::from($this->lockType);
     }
 }
