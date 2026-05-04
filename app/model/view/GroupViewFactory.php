@@ -281,7 +281,8 @@ class GroupViewFactory
                 "bindings" => $this->bindings->getBindingsForGroup($group),
                 "examBegin" => $group->hasExamPeriodSet() ? $group->getExamBegin()?->getTimestamp() : null,
                 "examEnd" => $group->hasExamPeriodSet() ? $group->getExamEnd()?->getTimestamp() : null,
-                "examLockStrict" => $group->hasExamPeriodSet() ? $group->isExamLockStrict() : null,
+                "examLockType" => $group->hasExamPeriodSet() ? $group->getExamLockType()->value : null,
+                "examLockStrict" => $group->hasExamPeriodSet() ? $group->isExamLockStrict() : null, // DEPRECATED
                 "exams" => $group->getExams()->getValues(),
             ];
         }
