@@ -10,6 +10,7 @@ use App\Model\Repository\Users;
 use App\Model\Repository\Groups;
 use App\Model\Repository\GroupExams;
 use App\Model\Repository\GroupExamLocks;
+use App\Model\GroupExamLockType;
 use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
@@ -102,7 +103,12 @@ class ListExamEventsTest extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now - 1800;
-        $exam = new GroupExam($group, DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
+        $exam = new GroupExam(
+            $group,
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Restricted
+        );
         $this->exams->persist($exam);
 
         $lock = new GroupExamLock($exam, $user, '127.0.0.1');
@@ -143,7 +149,7 @@ class ListExamEventsTest extends Tester\TestCase
             $group,
             DateTime::createFromFormat('U', $now - 100000),
             DateTime::createFromFormat('U', $now - 98000),
-            true
+            GroupExamLockType::Restricted
         );
         $this->exams->persist($exam);
         $lock = new GroupExamLock($exam, $user, '127.0.0.1');
@@ -155,7 +161,7 @@ class ListExamEventsTest extends Tester\TestCase
             $group,
             DateTime::createFromFormat('U', $now - 3000),
             DateTime::createFromFormat('U', $now),
-            true
+            GroupExamLockType::Restricted
         );
         $this->exams->persist($exam);
         $lock = new GroupExamLock($exam, $user, '127.0.0.1');
@@ -167,7 +173,7 @@ class ListExamEventsTest extends Tester\TestCase
             $group,
             DateTime::createFromFormat('U', $now - 7200),
             DateTime::createFromFormat('U', $now - 3600),
-            true
+            GroupExamLockType::Restricted
         );
         $this->exams->persist($exam);
         $lock = new GroupExamLock($exam, $user, '127.0.0.1');

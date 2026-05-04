@@ -10,6 +10,7 @@ use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
+use App\Model\GroupExamLockType;
 use App\Helpers\FileStorageManager;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
@@ -1464,7 +1465,7 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             ['action' => 'setExamPeriod', 'id' => $group->getId()],
-            ['begin' => $begin, 'end' => $end, 'strict' => true]
+            ['begin' => $begin, 'end' => $end, 'type' => 'restricted']
         );
 
         Assert::equal($group->getId(), $payload['id']);
@@ -1493,7 +1494,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     'V1:Groups',
                     'POST',
                     ['action' => 'setExamPeriod', 'id' => $group->getId()],
-                    ['begin' => $begin, 'end' => $end, 'strict' => true]
+                    ['begin' => $begin, 'end' => $end, 'type' => 'restricted']
                 );
             },
             BadRequestException::class
@@ -1507,7 +1508,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Restricted
+        );
         $this->presenter->groups->persist($group);
         Assert::true($group->isExamLockStrict());
 
@@ -1519,7 +1524,7 @@ class TestGroupsPresenter extends Tester\TestCase
             'V1:Groups',
             'POST',
             ['action' => 'setExamPeriod', 'id' => $group->getId()],
-            ['begin' => $begin, 'end' => $end, 'strict' => false]
+            ['begin' => $begin, 'end' => $end, 'type' => 'visible']
         );
 
         Assert::equal($group->getId(), $payload['id']);
@@ -1541,7 +1546,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
         $end += 3600;  // let's give it another hour
 
@@ -1570,7 +1579,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
         $end = $now;  // truncate the rest of the exam
 
@@ -1598,7 +1611,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         $exam = $this->presenter->groupExams->findOrCreate($group);
@@ -1634,7 +1651,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         $begin += 100;
@@ -1661,7 +1682,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), true);
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Restricted
+        );
         $this->presenter->groups->persist($group);
 
         $end += 100;
@@ -1673,7 +1698,7 @@ class TestGroupsPresenter extends Tester\TestCase
                     'V1:Groups',
                     'POST',
                     ['action' => 'setExamPeriod', 'id' => $group->getId()],
-                    ['end' => $end, 'strict' => false]
+                    ['end' => $end, 'type' => 'visible']
                 );
             },
             BadRequestException::class
@@ -1687,7 +1712,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 7200;
         $end = $now - 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         $end = $now;
@@ -1713,7 +1742,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         $payload = PresenterTestHelper::performPresenterRequest(
@@ -1737,7 +1770,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 3600;
         $end = $now + 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         Assert::exception(
@@ -1760,7 +1797,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 7200;
         $end = $now - 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         Assert::exception(
@@ -1784,10 +1825,19 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now - 7200;
         $end = $now - 3600;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
-        $exam = new GroupExam($group, DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end), false);
+        $exam = new GroupExam(
+            $group,
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groupExams->persist($exam);
 
         $lock = new GroupExamLock($exam, $student, '1.2.3.4');
@@ -1930,7 +1980,11 @@ class TestGroupsPresenter extends Tester\TestCase
         $now = (new DateTime())->getTimestamp();
         $begin = $now + 3600;
         $end = $now + 7200;
-        $group->setExamPeriod(DateTime::createFromFormat('U', $begin), DateTime::createFromFormat('U', $end));
+        $group->setExamPeriod(
+            DateTime::createFromFormat('U', $begin),
+            DateTime::createFromFormat('U', $end),
+            GroupExamLockType::Visible
+        );
         $this->presenter->groups->persist($group);
 
         Assert::exception(
