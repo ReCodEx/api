@@ -4,6 +4,7 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\GroupMembership;
+use App\Model\GroupExamLockType;
 use App\Security\Identity;
 
 class AssignmentSolutionPermissionPolicy extends BasePermissionPolicy implements IPermissionPolicy
@@ -107,9 +108,10 @@ class AssignmentSolutionPermissionPolicy extends BasePermissionPolicy implements
     }
 
     /**
-     * Current user is either not locked at all, or locked to this group, or the current lock is not strict.
+     * Current user is either not locked at all, or locked to this group (where the solution is),
+     * or the current lock type allows (read-only) access to this solution.
      */
-    public function userIsNotLockedElsewhereStrictly(Identity $identity, AssignmentSolution $solution): bool
+    public function userGroupLockTypeAllowsReadAccess(Identity $identity, AssignmentSolution $solution): bool
     {
         $user = $identity->getUserData();
         $group = $solution->getAssignment()?->getGroup();
@@ -117,7 +119,27 @@ class AssignmentSolutionPermissionPolicy extends BasePermissionPolicy implements
             return false;
         }
 
-        return !$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()
-            || !$user->isGroupLockStrict();
+        if (!$user->isGroupLocked() || $user->getGroupLock()->getId() === $group->getId()) {
+            return true;
+        }
+
+        $lockType = $user->getGroupLockType();
+        if ($lockType === null || $lockType === GroupExamLockType::Visible) {
+            return true;
+        }
+
+        if ($lockType === GroupExamLockType::Restricted) {
+            return false;  // a shortcut (false is also at the end)
+        }
+
+        if ($lockType === GroupExamLockType::Accepted) {
+            return $solution->isAccepted();
+        }
+
+        if ($lockType === GroupExamLockType::Reviewed) {
+            return $solution->isAccepted() || $solution->isReviewed();
+        }
+
+        return false;
     }
 }
