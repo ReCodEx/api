@@ -612,7 +612,7 @@ permissions:
           - viewReview
       conditions:
           - assignmentSolution.isAuthor
-          - assignmentSolution.userIsNotLockedElsewhereStrictly
+          - assignmentSolution.userGroupLockTypeAllowsReadAccess
 
     - allow: true
       role: student
@@ -633,7 +633,7 @@ permissions:
       conditions:
           - assignmentSolution.areEvaluationDetailsPublic
           - assignmentSolution.isAuthor
-          - assignmentSolution.userIsNotLockedElsewhereStrictly
+          - assignmentSolution.userGroupLockTypeAllowsReadAccess
 
     - allow: true
       role: student
@@ -644,7 +644,7 @@ permissions:
           - assignmentSolution.areEvaluationDetailsPublic
           - assignmentSolution.areMeasuredValuesPublic
           - assignmentSolution.isAuthor
-          - assignmentSolution.userIsNotLockedElsewhereStrictly
+          - assignmentSolution.userGroupLockTypeAllowsReadAccess
 
     - allow: true
       role: supervisor-student
