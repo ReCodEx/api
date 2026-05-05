@@ -1530,13 +1530,13 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal($group->getId(), $payload['id']);
         Assert::equal($begin, $payload['privateData']['examBegin']);
         Assert::equal($end, $payload['privateData']['examEnd']);
-        Assert::false($payload['privateData']['examLockStrict']);
+        Assert::equal('visible', $payload['privateData']['examLockType']);
 
         $this->presenter->groups->refresh($group);
         Assert::true($group->hasExamPeriodSet());
         Assert::equal($begin, $group->getExamBegin()?->getTimestamp());
         Assert::equal($end, $group->getExamEnd()?->getTimestamp());
-        Assert::false($group->isExamLockStrict());
+        Assert::equal(GroupExamLockType::Visible, $group->getExamLockType());
     }
 
     public function testUpdatePendingExamPeriod()

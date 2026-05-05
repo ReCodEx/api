@@ -11,6 +11,7 @@ use App\Helpers\MetaFormats\Validators\VDouble;
 use App\Helpers\MetaFormats\Validators\VInt;
 use App\Helpers\MetaFormats\Validators\VTimestamp;
 use App\Helpers\MetaFormats\Validators\VUuid;
+use App\Helpers\MetaFormats\Validators\VString;
 
 /**
  * Nested Format definition used by the GroupFormat.
@@ -71,8 +72,12 @@ class GroupPrivateDataFormat extends MetaFormat
     #[FPost(new VTimestamp(), "The time when the exam ends if there is an exam scheduled", required: false)]
     public ?int $examEnd;
 
-    #[FPost(new VBool(), "Whether the scheduled exam requires a strict access lock", required: false)]
-    public ?bool $examLockStrict;
+    #[FPost(
+        new VString(),
+        "Type (restriction level) of the exam lock ('restricted', 'accepted', 'reviewed', 'visible')",
+        required: false
+    )]
+    public ?string $examLockType;
 
     #[FPost(new VArray(), "All past exams (with at least one student locked)")]
     public array $exams;

@@ -8,6 +8,7 @@ use App\Model\Entity\CommentThread;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use App\V1Module\Presenters\CommentsPresenter;
 use App\V1Module\Presenters\GroupsPresenter;
+use App\V1Module\Presenters\AssignmentSolutionsPresenter;
 use App\Helpers\FileStorageManager;
 use App\Helpers\TmpFilesHelper;
 use App\Helpers\FileStorage\LocalFileStorage;
@@ -32,6 +33,9 @@ class UserLocking extends Tester\TestCase
     /** @var GroupsPresenter */
     protected $presenter;
 
+    /** @var AssignmentSolutionsPresenter */
+    protected $assignmentSolutionsPresenter;
+
     /** @var EntityManagerInterface */
     protected $em;
 
@@ -48,7 +52,7 @@ class UserLocking extends Tester\TestCase
         $this->em = PresenterTestHelper::getEntityManager($container);
         $this->user = $container->getByType(\Nette\Security\User::class);
 
-        // patch container, since we cannot create actual file storage manarer
+        // patch container, since we cannot create actual file storage manager
         $fsName = current($this->container->findByType(FileStorageManager::class));
         $this->container->removeService($fsName);
         $this->container->addService($fsName, new FileStorageManager(
@@ -64,6 +68,7 @@ class UserLocking extends Tester\TestCase
         PresenterTestHelper::fillDatabase($this->container);
         PresenterTestHelper::login($this->container, $this->studentLogin);
         $this->presenter = PresenterTestHelper::createPresenter($this->container, GroupsPresenter::class);
+        $this->assignmentSolutionsPresenter = PresenterTestHelper::createPresenter($this->container, AssignmentSolutionsPresenter::class);
     }
 
     protected function tearDown()
@@ -149,6 +154,7 @@ class UserLocking extends Tester\TestCase
 
         Assert::equal($student->getId(), $payload['user']['id']);
         Assert::equal($group->getId(), $payload['user']['privateData']['groupLock']);
+        Assert::equal(GroupExamLockType::Restricted->value, $payload['user']['privateData']['groupLockType']);
         Assert::equal($_SERVER['REMOTE_ADDR'], $payload['user']['privateData']['ipLock']);
         Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['groupLockExpiration']);
         Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['ipLockExpiration']);
@@ -169,10 +175,10 @@ class UserLocking extends Tester\TestCase
     public function testSecondStudentLocksInGroup()
     {
         $student = $this->presenter->users->getByEmail($this->studentLogin);
-        $group = $this->prepExamGroup($student, -3600, 3600); // exam in progress
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Accepted); // exam in progress
 
         // create group exam simulates situation where some previous student locked in
-        $groupExam = $this->presenter->groupExams->findOrCreate($group);
+        $this->presenter->groupExams->findOrCreate($group);
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter,
@@ -188,6 +194,7 @@ class UserLocking extends Tester\TestCase
 
         Assert::equal($student->getId(), $payload['user']['id']);
         Assert::equal($group->getId(), $payload['user']['privateData']['groupLock']);
+        Assert::equal(GroupExamLockType::Accepted->value, $payload['user']['privateData']['groupLockType']);
         Assert::equal($_SERVER['REMOTE_ADDR'], $payload['user']['privateData']['ipLock']);
         Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['groupLockExpiration']);
         Assert::equal($group->getExamEnd()->getTimestamp(), $payload['user']['privateData']['ipLockExpiration']);
@@ -519,7 +526,272 @@ class UserLocking extends Tester\TestCase
         Assert::count(4, $payload);
     }
 
-    public function testIpLockPrevetsOtherIps()
+    public function testLockedUserCanSeeSolutionDetailsInOtherGroups()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Visible);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && !$s->isReviewed() && $s->getReviewStartedAt() !== null;
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->assignmentSolutionsPresenter,
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'solution', 'id' => $solution->getId()]
+        );
+        Assert::equal($solution->getId(), $payload["id"] ?? null);
+    }
+
+    public function testLockedUserCannotUpdateSolutionsInOtherGroups()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Visible);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && !$s->isReviewed() && $s->getReviewStartedAt() !== null;
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+
+        Assert::exception(
+            function () use ($solution) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->assignmentSolutionsPresenter,
+                    'V1:AssignmentSolutions',
+                    'POST',
+                    ['action' => 'updateSolution', 'id' => $solution->getId()],
+                    ['note' => 'new note']
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
+    public function testLockedUserCannotSeeSolutionDetailsInOtherGroupsWhenRestricted()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Restricted);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && !$s->isReviewed() && $s->getReviewStartedAt() !== null;
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+
+        Assert::exception(
+            function () use ($solution) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->assignmentSolutionsPresenter,
+                    'V1:AssignmentSolutions',
+                    'GET',
+                    ['action' => 'solution', 'id' => $solution->getId()]
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
+    public function testLockedUserCanSeeAcceptedSolutionDetailsInOtherGroupsWhenAccepted()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Accepted);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && $s->isReviewed();
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+        $solution->setAccepted(true);
+        $this->presenter->assignmentSolutions->persist($solution);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->assignmentSolutionsPresenter,
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'solution', 'id' => $solution->getId()]
+        );
+        Assert::equal($solution->getId(), $payload["id"] ?? null);
+    }
+
+    public function testLockedUserCannotSeeSolutionDetailsInOtherGroupsWhenAccepted()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Accepted);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && $s->isReviewed();
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+
+        Assert::exception(
+            function () use ($solution) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->assignmentSolutionsPresenter,
+                    'V1:AssignmentSolutions',
+                    'GET',
+                    ['action' => 'solution', 'id' => $solution->getId()]
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
+    public function testLockedUserCanSeeAcceptedSolutionDetailsInOtherGroupsWhenReviewed()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Reviewed);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && $s->isReviewed();
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+        $solution->setAccepted(true);
+        $this->presenter->assignmentSolutions->persist($solution);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->assignmentSolutionsPresenter,
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'solution', 'id' => $solution->getId()]
+        );
+        Assert::equal($solution->getId(), $payload["id"] ?? null);
+    }
+
+    public function testLockedUserCanSeeReviewedSolutionDetailsInOtherGroupsWhenReviewed()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Reviewed);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && $s->isReviewed();
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+        $solution->setReviewedAt(new DateTime());
+        $this->presenter->assignmentSolutions->persist($solution);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->assignmentSolutionsPresenter,
+            'V1:AssignmentSolutions',
+            'GET',
+            ['action' => 'solution', 'id' => $solution->getId()]
+        );
+        Assert::equal($solution->getId(), $payload["id"] ?? null);
+    }
+
+    public function testLockedUserCannotSeeSolutionDetailsInOtherGroupsWhenReviewed()
+    {
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
+        $student = $this->presenter->users->getByEmail($this->studentLogin);
+        $group = $this->prepExamGroup($student, -3600, 3600, GroupExamLockType::Reviewed);
+
+        $student->setIpLock($this->ip, $group->getExamEnd());
+        $student->setGroupLock($group, $group->getExamEnd(), $group->getExamLockType());
+        $this->presenter->users->persist($student);
+
+        $group = $group->getParentGroup();
+        $assignments = $group->getAssignments();
+        Assert::count(1, $assignments);
+        $assignment = $assignments->toArray()[0];
+        Assert::count(4, $assignment->getAssignmentSolutions());
+        $solutions = $assignment->getAssignmentSolutions()->filter(function ($s) {
+            return !$s->isAccepted() && !$s->isReviewed() && $s->getReviewStartedAt() !== null;
+        });
+        Assert::count(1, $solutions);
+        $solution = $solutions->first();
+        Assert::false($solution->isAccepted());
+        Assert::false($solution->isReviewed());
+
+        Assert::exception(
+            function () use ($solution) {
+                PresenterTestHelper::performPresenterRequest(
+                    $this->assignmentSolutionsPresenter,
+                    'V1:AssignmentSolutions',
+                    'GET',
+                    ['action' => 'solution', 'id' => $solution->getId()]
+                );
+            },
+            App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
+    public function testIpLockPreventsOtherIps()
     {
         $student = $this->presenter->users->getByEmail($this->studentLogin);
         $group = $this->prepExamGroup($student, -3600, 3600);
