@@ -87,8 +87,6 @@ class GroupExam implements JsonSerializable
             "begin" => $this->getBegin()->getTimestamp(),
             "end" => $this->getEnd()->getTimestamp(),
             "type" => $this->lockType,
-            // BC only, DEPRECATED
-            "strict" => $this->lockType === GroupExamLockType::Restricted->value,
         ];
     }
 
