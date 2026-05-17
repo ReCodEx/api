@@ -303,11 +303,6 @@ class Group
         return $this->examBegin !== null && $this->examEnd !== null && $this->examEnd > $at;
     }
 
-    public function isExamLockStrict(): bool
-    {
-        return $this->examLockType === GroupExamLockType::Restricted->value;
-    }
-
     public function getExamLockType(): GroupExamLockType
     {
         return GroupExamLockType::from($this->examLockType);

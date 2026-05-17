@@ -169,7 +169,7 @@ class UserLocking extends Tester\TestCase
         $groupExam = $this->presenter->groupExams->findBy(["group" => $group, "begin" => $group->getExamBegin()]);
         Assert::count(1, $groupExam);
         Assert::equal($group->getExamEnd()->getTimestamp(), $groupExam[0]->getEnd()->getTimestamp());
-        Assert::equal($group->isExamLockStrict(), $groupExam[0]->isLockStrict());
+        Assert::equal($group->getExamLockType(), $groupExam[0]->getLockType());
     }
 
     public function testSecondStudentLocksInGroup()

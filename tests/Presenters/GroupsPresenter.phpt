@@ -1514,7 +1514,7 @@ class TestGroupsPresenter extends Tester\TestCase
             GroupExamLockType::Restricted
         );
         $this->presenter->groups->persist($group);
-        Assert::true($group->isExamLockStrict());
+        Assert::equal(GroupExamLockType::Restricted, $group->getExamLockType());
 
         $begin += 100;
         $end += 100;
