@@ -89,8 +89,6 @@ class UserViewFactory
                 "ipLock" => $user->isIpLocked() ? $user->getIpLockRaw() : null,
                 "groupLock" => $user->getGroupLock()?->getId(),
                 "groupLockType" => $user->getGroupLockType()?->value,
-                // DEPRECATED, use groupLockType instead
-                "isGroupLockStrict" => $user->isGroupLockStrict(),
             ];
 
             // really show everything should be used only for user, who is just logging/signing in

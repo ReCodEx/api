@@ -86,8 +86,6 @@ class ListExamEvents extends BaseCommand
             'exam_begin_at' => $lock->getGroupExam()->getBegin()->getTimestamp(),
             'exam_end_at' => $lock->getGroupExam()->getEnd()->getTimestamp(),
             'lock_type' => $lock->getGroupExam()->getLockType()->value,
-            // DEPRECATED, use lock_type instead
-            'lock_strict' => $lock->getGroupExam()->isLockStrict(),
         ];
     }
 
