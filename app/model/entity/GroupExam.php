@@ -115,11 +115,6 @@ class GroupExam implements JsonSerializable
         return $this->end;
     }
 
-    public function isLockStrict(): bool
-    {
-        return $this->lockType === GroupExamLockType::Restricted->value;
-    }
-
     public function getLockType(): GroupExamLockType
     {
         return GroupExamLockType::from($this->lockType);
