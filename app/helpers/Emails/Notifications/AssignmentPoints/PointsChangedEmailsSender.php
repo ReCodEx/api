@@ -171,7 +171,7 @@ class PointsChangedEmailsSender
                 )->getName(),
                 "points" => $points->getPoints(),
                 "maxPoints" => $assignment->getMaxPoints(),
-                "link" => $this->webappLinks->getShadowAssignmentPageUrl($points->getId())
+                "link" => $this->webappLinks->getShadowAssignmentPageUrl($assignment->getId())
             ]
         );
     }
