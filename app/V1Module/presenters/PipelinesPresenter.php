@@ -138,7 +138,7 @@ class PipelinesPresenter extends BasePresenter
         $this->sendSuccessResponse($boxes);
     }
 
-    public function checkDefault(string $search = null)
+    public function checkDefault()
     {
         if (!$this->pipelineAcl->canViewAll()) {
             throw new ForbiddenRequestException("You cannot list all pipelines.");
@@ -383,7 +383,7 @@ class PipelinesPresenter extends BasePresenter
             $pipeline->setPipelineConfig($newConfig);
         }
 
-        $parameters = $this->request->getPost("parameters");
+        $parameters = $req->getPost("parameters");
         if ($parameters !== null) {
             $pipeline->setParameters($parameters);
         }

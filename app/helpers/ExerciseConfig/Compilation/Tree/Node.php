@@ -3,7 +3,6 @@
 namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
-use App\Helpers\ExerciseConfig\VariablesTable;
 
 /**
  * Node representing Box in the compilation of exercise. It can hold additional
@@ -13,7 +12,6 @@ use App\Helpers\ExerciseConfig\VariablesTable;
  */
 class Node
 {
-
     /**
      * PortNode from which was this node created.
      * @var ?PortNode
@@ -65,9 +63,9 @@ class Node
 
     /**
      * Node constructor.
-     * @param ?PortNode $node
+     * @param PortNode|null $node
      */
-    public function __construct(PortNode $node = null)
+    public function __construct(?PortNode $node = null)
     {
         if ($node) {
             $this->portNode = $node;

@@ -6,7 +6,7 @@ class MockIdentity extends App\Security\Identity
     private $scopeRoles;
     private $effectiveRole;
 
-    public function __construct(array $roles, array $scopeRoles = [], string $effectiveRole = null)
+    public function __construct(array $roles, array $scopeRoles = [], ?string $effectiveRole = null)
     {
         parent::__construct(null, null);
         $this->roles = $roles;
@@ -19,12 +19,12 @@ class MockIdentity extends App\Security\Identity
         return $this->roles;
     }
 
-    function getScopeRoles()
+    public function getScopeRoles()
     {
         return $this->scopeRoles;
     }
 
-    function getEffectiveRole(): ?string
+    public function getEffectiveRole(): ?string
     {
         return $this->effectiveRole;
     }

@@ -57,7 +57,7 @@ class ExerciseConfig
     public function __construct(
         string $config,
         User $author,
-        ExerciseConfig $createdFrom = null
+        ?ExerciseConfig $createdFrom = null
     ) {
         $this->createdAt = new DateTime();
 

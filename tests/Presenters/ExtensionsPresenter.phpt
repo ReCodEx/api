@@ -62,7 +62,7 @@ class TestExtensionsPresenter extends Tester\TestCase
         $caption,
         string $url,
         array $scopes = ['master', 'refresh'],
-        string $user = null,
+        ?string $user = null,
         array $instances = [],
         array $roles = [],
         array $externalLogins = [],

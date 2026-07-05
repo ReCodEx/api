@@ -10,7 +10,6 @@ use App\Helpers\EntityMetadata\Solution\SolutionParams;
  */
 class CompilationParams
 {
-
     /**
      * Files submitted by user.
      * @var string[]
@@ -69,7 +68,7 @@ class CompilationParams
     public static function create(
         array $files = [],
         bool $debug = false,
-        SolutionParams $solutionParams = null
+        ?SolutionParams $solutionParams = null
     ): CompilationParams {
         $params = new CompilationParams();
         $params->files = $files;

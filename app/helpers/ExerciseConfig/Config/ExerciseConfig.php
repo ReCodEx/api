@@ -11,16 +11,15 @@ use App\Exceptions\InternalServerException;
  */
 class ExerciseConfig implements JsonSerializable
 {
-
     /** Key for the environments list item */
-    const ENVIRONMENTS_KEY = "environments";
+    public const ENVIRONMENTS_KEY = "environments";
     /** Key for the tests item */
-    const TESTS_KEY = "tests";
+    public const TESTS_KEY = "tests";
 
     /** @var array tests indexed by test name */
-    protected $tests = array();
+    protected $tests = [];
     /** @var array list of which can be present in tests environments */
-    protected $environments = array();
+    protected $environments = [];
 
 
     /**
@@ -35,7 +34,7 @@ class ExerciseConfig implements JsonSerializable
     /**
      * Add environment into this holder.
      * @param string $id
-     * @return $this
+     * @return ExerciseConfig $this
      */
     public function addEnvironment(string $id): ExerciseConfig
     {
@@ -46,7 +45,7 @@ class ExerciseConfig implements JsonSerializable
     /**
      * Remove environment according to given name identification.
      * @param string $id
-     * @return $this
+     * @return ExerciseConfig $this
      */
     public function removeEnvironment(string $id): ExerciseConfig
     {
@@ -83,7 +82,7 @@ class ExerciseConfig implements JsonSerializable
      * Add test into this holder.
      * @param string $id
      * @param Test $test
-     * @return $this
+     * @return ExerciseConfig $this
      */
     public function addTest(string $id, Test $test): ExerciseConfig
     {
@@ -94,7 +93,7 @@ class ExerciseConfig implements JsonSerializable
     /**
      * Remove test according to given test identification.
      * @param string $id
-     * @return $this
+     * @return ExerciseConfig $this
      */
     public function removeTest(string $id): ExerciseConfig
     {
@@ -106,7 +105,7 @@ class ExerciseConfig implements JsonSerializable
      * Remove test according to given test identification.
      * @param string $oldId
      * @param string $newId
-     * @return $this
+     * @return ExerciseConfig $this
      */
     public function changeTestId(string $oldId, string $newId): ExerciseConfig
     {

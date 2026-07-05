@@ -63,7 +63,7 @@ class Variable implements JsonSerializable
      * @param string|array $value
      * @throws ExerciseConfigException
      */
-    public function __construct(string $type, string $name = null, $value = null)
+    public function __construct(string $type, ?string $name = null, $value = null)
     {
         $this->type = $type;
         $this->name = $name;
