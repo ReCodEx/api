@@ -97,13 +97,13 @@ class EmailHelper
      * @param Exception $lastMailerException Exception thrown from the sender (if any). Its message is logged as well.
      * @throws Exception
      */
-    private function archiveMailCopy(Message $message, Exception $lastMailerException = null)
+    private function archiveMailCopy(Message $message, ?Exception $lastMailerException = null)
     {
         if (!file_exists($this->archivingDir)) {
             mkdir($this->archivingDir, 0775, true); // make sure logging directory exists
         }
 
-        // Logging is not that important, all following opertions fail silently.
+        // Logging is not that important, all following operations fail silently.
         if (file_exists($this->archivingDir) && is_writeable($this->archivingDir)) {
             $data = [
                 '----- BEGIN MAIL -----',

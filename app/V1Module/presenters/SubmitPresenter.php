@@ -437,8 +437,7 @@ class SubmitPresenter extends BasePresenter
      */
     #[Post("files", new VArray(new VUuid()), "Submitted files", nullable: true)]
     #[Path("id", new VUuid(), "identifier of assignment", required: true)]
-    #[Query("userId", new VUuid(), "Identifier of the submission author", required: false, nullable: true)]
-    public function actionPreSubmit(string $id, string $userId = null)
+    public function actionPreSubmit(string $id)
     {
         $assignment = $this->assignments->findOrThrow($id);
 

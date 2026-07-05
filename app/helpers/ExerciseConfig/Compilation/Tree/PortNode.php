@@ -3,7 +3,6 @@
 namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
-use App\Helpers\ExerciseConfig\VariablesTable;
 use Nette\Utils\Arrays;
 
 /**
@@ -15,7 +14,6 @@ use Nette\Utils\Arrays;
  */
 class PortNode
 {
-
     /**
      * Node structure created based on this node.
      * @var Node
@@ -84,10 +82,10 @@ class PortNode
     /**
      * Node constructor.
      * @param Box $box
-     * @param ?string $pipelineId
+     * @param string|null $pipelineId
      * @param string|null $testId
      */
-    public function __construct(Box $box, string $pipelineId = null, string $testId = null)
+    public function __construct(Box $box, ?string $pipelineId = null, ?string $testId = null)
     {
         $this->box = $box;
         $this->pipelineId = $pipelineId;

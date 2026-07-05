@@ -4,7 +4,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\AssignmentSolversPresenter;
 use App\Model\Repository\Assignments;
-use Doctrine\ORM\EntityManagerInterface;
 use Tester\Assert;
 
 $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -32,7 +31,6 @@ class TestAssignmentSolversPresenter extends Tester\TestCase
         $this->container = $container;
         $this->user = $container->getByType(\Nette\Security\User::class);
         $this->assignments = $this->container->getByType(Assignments::class);
-        $entityManager = $this->container->getByType(EntityManagerInterface::class);
     }
 
     protected function setUp()
