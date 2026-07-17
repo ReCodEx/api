@@ -35,11 +35,6 @@ $configurator->createRobotLoader()
     ->register();
 
 $configurator->addConfig(__DIR__ . '/../app/config/config.neon');
-
-if (getenv("TRAVIS")) {
-    $configurator->addConfig(__DIR__ . '/config.travis.neon');
-} else {
-    $configurator->addConfig(__DIR__ . '/config.tests.neon');
-}
+$configurator->addConfig(__DIR__ . '/config.tests.neon');
 
 return $configurator->createContainer();

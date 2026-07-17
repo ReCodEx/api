@@ -53,7 +53,7 @@ class FixExerciseConfigs extends BaseCommand
         $this->exerciseConfigs = $exerciseConfigs;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument(
             'runtime',

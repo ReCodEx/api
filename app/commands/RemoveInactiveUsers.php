@@ -64,7 +64,7 @@ class RemoveInactiveUsers extends Command
         $this->anonymizationHelper = $anonymizationHelper;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addOption(
             'report',

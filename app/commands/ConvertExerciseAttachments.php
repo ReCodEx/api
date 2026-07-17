@@ -134,7 +134,7 @@ class ConvertExerciseAttachments extends BaseCommand
         $this->fileStorageManager = $fileStorageManager;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addOption(
             'apiBase',

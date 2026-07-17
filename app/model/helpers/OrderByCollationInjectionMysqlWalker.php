@@ -16,7 +16,7 @@ class OrderByCollationInjectionMysqlWalker extends SqlWalker
     public const HINT_COLLATION = 'orderByCollationInjectionMysqlWalker.collation';
     public const HINT_COLLATION_FORBIDDEN_COLUMNS = 'orderByCollationInjectionMysqlWalker.forbiddenCols';
 
-    private function isForbidden($orderByItemTokens)
+    private function isForbidden(array $orderByItemTokens)
     {
         $forbiddenColumns = $this->getQuery()->getHint(self::HINT_COLLATION_FORBIDDEN_COLUMNS);
         if (
@@ -33,14 +33,14 @@ class OrderByCollationInjectionMysqlWalker extends SqlWalker
         return false;
     }
 
-    public function walkOrderByItem($orderByItem)
+    public function walkOrderByItem($orderByItem): string
     {
         $sql = parent::walkOrderByItem($orderByItem);
         $collation = $this->getQuery()->getHint(self::HINT_COLLATION);
 
         $tokens = explode(' ', $sql);
         if ($collation && count($tokens) > 1 && !$this->isForbidden($tokens)) {
-            // 'colname ASC|DESC' => 'colname COLLATE colation ASC|DESC'
+            // 'col-name ASC|DESC' => 'col-name COLLATE collation ASC|DESC'
             $direction = array_pop($tokens);
             array_push($tokens, 'COLLATE', $collation, $direction);
         }

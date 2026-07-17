@@ -45,7 +45,7 @@ class ListExamEvents extends BaseCommand
         $this->examLocks = $examLocks;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addOption(
             'from',

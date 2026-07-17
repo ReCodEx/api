@@ -3,11 +3,10 @@
 namespace DoctrineExtensions\Query\Functions;
 
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
-use Doctrine\ORM\Query\Lexer;
+use Doctrine\ORM\Query\TokenType;
 use Doctrine\ORM\Query\Parser;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\SqlWalker;
-use Doctrine\ORM\Query\TokenType;
 
 /**
  * Provides a way to access an entity's discriminator field in DQL
@@ -46,10 +45,10 @@ class TypeFunction extends FunctionNode
      * @param SqlWalker $sqlWalker
      * @return string
      */
-    public function getSql(SqlWalker $sqlWalker)
+    public function getSql(SqlWalker $sqlWalker): string
     {
         $qComp      = $sqlWalker->getQueryComponent($this->dqlAlias);
-        /** @var \Doctrine\ORM\Mapping\ClassMetadataInfo $class */
+        /** @var \Doctrine\ORM\Mapping\ClassMetadata */
         $class      = $qComp['metadata'];
         $tableAlias = $sqlWalker->getSQLTableAlias($class->getTableName(), $this->dqlAlias);
 
@@ -65,7 +64,7 @@ class TypeFunction extends FunctionNode
     /**
      * @param Parser $parser
      */
-    public function parse(Parser $parser)
+    public function parse(Parser $parser): void
     {
         $parser->match(TokenType::T_IDENTIFIER);
         $parser->match(TokenType::T_OPEN_PARENTHESIS);

@@ -3,10 +3,11 @@ parameters:
     verificationKey: "recodex-1234567890-1234567890-1234567890"
 
 nettrine.dbal:
-  connection:
-    url: 'sqlite://:memory:'
-    charset: UTF-8
-    driver: pdo_sqlite
+  connections:
+    default:
+      driver: pdo_sqlite
+      url: "sqlite:///:memory:"
+
 services:
     cacheStorage:
         factory: Nette\Caching\Storages\MemoryStorage

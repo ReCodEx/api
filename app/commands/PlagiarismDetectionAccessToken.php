@@ -38,7 +38,7 @@ class PlagiarismDetectionAccessToken extends Command
         $this->users = $users;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument('userId', InputArgument::REQUIRED, 'ID of the admin owning the token.');
         $this->addOption(
