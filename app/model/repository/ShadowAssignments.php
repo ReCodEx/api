@@ -33,7 +33,8 @@ class ShadowAssignments extends BaseSoftDeleteRepository
             )
         );
 
-        $qb->setParameters([ "from" => $from, "to" => $to ]);
+        $qb->setParameter("from", $from);
+        $qb->setParameter("to", $to);
         return $qb->getQuery()->getResult();
     }
 }

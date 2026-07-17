@@ -6,6 +6,7 @@ require_once __DIR__ . '/TestResultMock.php';
 use Tester\Assert;
 use App\Helpers\Evaluation\UniversalScoreCalculator;
 use App\Exceptions\SubmissionEvaluationFailedException;
+
 /**
  * @testCase
  */
@@ -30,7 +31,7 @@ class TestUniversalScoreCalculator extends Tester\TestCase
             }
         }
 
-        $res = [ 'type' => $name ];
+        $res = ['type' => $name];
         if ($children) {
             $res['children'] = $children;
         }
@@ -76,7 +77,7 @@ class TestUniversalScoreCalculator extends Tester\TestCase
             $expectedChildren = $expected['children'];
             $actualChildren = $actual['children'];
             Assert::equal(count($expectedChildren), count($actualChildren));
-            
+
             foreach ($expectedChildren as $key => $expectedChild) {
                 $actualChild = $actualChildren[$key];
                 if (is_array($actualChild) && is_array($expectedChild)) {
@@ -132,7 +133,7 @@ class TestUniversalScoreCalculator extends Tester\TestCase
     /**
      * Instantiate the calculator and perform score computation (using sample config if not provided).
      */
-    private function computeScore(array $results, array $config = null)
+    private function computeScore(array $results, ?array $config = null)
     {
         if ($config === null) {
             $config = $this->getTestConfig();
@@ -185,7 +186,7 @@ class TestUniversalScoreCalculator extends Tester\TestCase
     public function testMalformedNodeMissingType()
     {
         $this->_testBadConfig(
-            [ 'children' => [ $this->getTestConfig() ]]
+            ['children' => [$this->getTestConfig()]]
         );
     }
 
@@ -210,13 +211,13 @@ class TestUniversalScoreCalculator extends Tester\TestCase
     }
 
     public function testInvalidNumberOfChildrenBinary()
-    { 
+    {
         $this->_testBadConfig(self::sub(1, 2, 3));
     }
 
     public function testInvalidNumberOfChildrenLeaf()
     {
-        $this->_testBadConfig( [ 'type' => 'test-result', 'children' => [ self::sum(1, 2, 3) ]] );
+        $this->_testBadConfig(['type' => 'test-result', 'children' => [self::sum(1, 2, 3)]]);
     }
 
     public function testUnknownReference()
@@ -241,7 +242,7 @@ class TestUniversalScoreCalculator extends Tester\TestCase
         self::compareConfigs($config, $normalized);
     }
 
-    public function testNormalizationWithUnkonwParams()
+    public function testNormalizationWithUnknownParams()
     {
         $config = $this->getTestConfig();
         self::addDataExtensions($config);
