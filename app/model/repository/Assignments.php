@@ -61,14 +61,9 @@ class Assignments extends BaseSoftDeleteRepository
             )
         );
 
-        $qb->setParameters(
-            [
-                "true" => true,
-                "from" => $from,
-                "to" => $to
-            ]
-        );
-
+        $qb->setParameter("true", true);
+        $qb->setParameter("from", $from);
+        $qb->setParameter("to", $to);
         return $qb->getQuery()->getResult();
     }
 }

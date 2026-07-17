@@ -69,13 +69,8 @@ class Groups extends BaseSoftDeleteRepository
         $textsQb->where($textsQb->expr()->eq("l.name", ":name"));
         $textsQb->andWhere($textsQb->expr()->eq("l.locale", ":locale"));
 
-        $textsQb->setParameters(
-            [
-                "name" => $name,
-                "locale" => $locale
-            ]
-        );
-
+        $textsQb->setParameter("name", $name);
+        $textsQb->setParameter("locale", $locale);
         $texts = $textsQb->getQuery()->getResult();
 
         if (count($texts) === 0) {
@@ -113,7 +108,9 @@ class Groups extends BaseSoftDeleteRepository
             $groupsQb->andWhere($groupsQb->expr()->orX(...$criteria));
         }
 
-        $groupsQb->setParameters($parameters);
+        foreach ($parameters as $key => $value) {
+            $groupsQb->setParameter($key, $value);
+        }
 
         return $groupsQb->getQuery()->getResult();
     }

@@ -52,13 +52,8 @@ class Comments extends BaseRepository
             $qb->andWhere('tc.user = :user');
         }
 
-        $qb->setParameters(
-            [
-                'id' => $thread->getId(),
-                'user' => $user->getId(),
-            ]
-        );
-
+        $qb->setParameter('id', $thread->getId());
+        $qb->setParameter('user', $user->getId());
         return (int)$qb->getQuery()->getSingleScalarResult();
     }
 
