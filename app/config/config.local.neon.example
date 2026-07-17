@@ -97,11 +97,13 @@ parameters:
 
 # The most important part - a database system connection
 nettrine.dbal:
-  connection:
-    host: "localhost"
-    user: "recodex"
-    password: "someSecretPasswordYouNeedToSetYourself"
-    dbname: "recodex"
+  connections:
+    default:
+      host: "localhost"
+      user: "recodex"
+      password: "someSecretPasswordYouNeedToSetYourself"
+      dbname: "recodex"
+      charset: utf8mb4
 
 # configure mailing module
 mail:

@@ -321,10 +321,9 @@ class AssignmentSolutions extends BaseRepository
 
         $conn = $this->em->getConnection();
         $stmt = $conn->prepare($query);
-        return $stmt->executeQuery([
-            'assignmentId' => $assignment->getId(),
-            'authorId' => $user->getId(),
-        ])->fetchAssociative();
+        $stmt->bindValue('assignmentId', $assignment->getId());
+        $stmt->bindValue('authorId', $user->getId());
+        return $stmt->executeQuery()->fetchAssociative();
     }
 
     /**

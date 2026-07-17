@@ -5,6 +5,7 @@ use App\Model\Repository\Users;
 use App\Security\AccessManager;
 use App\Security\TokenScope;
 use Doctrine\Common\EventManager;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,7 +17,6 @@ use Nette\DI\Container;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
-use Nettrine\ORM\Decorator\SimpleEntityManagerDecorator;
 use Symfony\Component\Process\Process;
 
 class PresenterTestHelper
@@ -34,12 +34,13 @@ class PresenterTestHelper
         string $dbPath,
         Configuration $configuration,
         EventManager $eventManager
-    ): SimpleEntityManagerDecorator {
-        return new SimpleEntityManagerDecorator(EntityManager::create(
-            ["driver" => "pdo_sqlite", "path" => $dbPath],
+    ): EntityManager {
+        $connection = DriverManager::getConnection(["driver" => "pdo_sqlite", "path" => $dbPath], $configuration);
+        return new EntityManager(
+            $connection,
             $configuration,
             $eventManager
-        ));
+        );
     }
 
     public static function replaceService(Container $container, $service, $type = null)
@@ -99,7 +100,7 @@ class PresenterTestHelper
                 $originalEm->getConfiguration(),
                 $originalEm->getEventManager()
             );
-            static::replaceService($container, $schemaEm, SimpleEntityManagerDecorator::class);
+            static::replaceService($container, $schemaEm, EntityManagerInterface::class);
 
             $schemaTool = new Doctrine\ORM\Tools\SchemaTool($schemaEm);
             $schemaTool->dropSchema($schemaEm->getMetadataFactory()->getAllMetadata());
@@ -127,7 +128,7 @@ class PresenterTestHelper
             file_put_contents($dumpPath, $sqliteProcess->getOutput());
 
             // Replace the temporary entity manager with the original one
-            static::replaceService($container, $originalEm, SimpleEntityManagerDecorator::class);
+            static::replaceService($container, $originalEm, EntityManagerInterface::class);
         }
 
         flock($lockHandle, LOCK_UN);

@@ -44,7 +44,7 @@ class ListSecurityEvents extends BaseCommand
         $this->events = $events;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addOption(
             'from',

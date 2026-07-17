@@ -73,7 +73,7 @@ class RuntimeImport extends BaseCommand
         $this->configValidator = $configValidator;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument(
             'zipFile',

@@ -40,7 +40,7 @@ class RuntimeExport extends Command
         $this->fileManager = $fileManager;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument('runtime', InputArgument::REQUIRED, 'ID of the runtime environment to be exported.')
             ->addArgument('saveAs', InputArgument::REQUIRED, 'Path to the output ZIP archive.');
