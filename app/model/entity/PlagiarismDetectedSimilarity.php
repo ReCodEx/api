@@ -6,74 +6,71 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={
- *   "batch_id", "author_id", "solution_file_id", "file_entry"
- * })})
- * A record (node) representing a similarity detected between a file and a set of files of a particular user.
- * This entity holds the tested file and a reference to the author of similar files (possible sources of plagiarism).
- * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarity
- * (i.e., all possible sources of plagiarism of one author).
- */
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['batch_id', 'author_id', 'solution_file_id', 'file_entry'])]
+#[ORM\Entity]
 class PlagiarismDetectedSimilarity
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
      * @var PlagiarismDetectionBatch
-     * @ORM\ManyToOne(targetEntity="PlagiarismDetectionBatch")
      * Reference to a batch in which this similarity was detected.
      */
+    #[ORM\ManyToOne(targetEntity: PlagiarismDetectionBatch::class)]
     protected $batch;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="User")
-     * Author of all solutions refered in related PlagiarismDetectedSimilarFile entities.
+     * Author of all solutions referred in related PlagiarismDetectedSimilarFile entities.
      * (i.e., this is just a denormalization pull-up to increase efficiency).
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     /**
      * @var AssignmentSolution
-     * @ORM\ManyToOne(targetEntity="AssignmentSolution")
      * The solution that was tested for similarities.
      */
+    #[ORM\ManyToOne(targetEntity: AssignmentSolution::class)]
     protected $testedSolution;
 
     /**
      * @var SolutionFile
-     * @ORM\ManyToOne(targetEntity="SolutionFile")
      * Reference to a solution file that was tested for similarities (is a suspected plagiarism).
      */
+    #[ORM\ManyToOne(targetEntity: SolutionFile::class)]
     protected $solutionFile;
 
     /**
-     * @ORM\Column(type="string")
      * A submitted file name (of the solution) that was tested for similarities.
      * This is filled only if solution file is a ZIP that was scanned internally.
      */
+    #[ORM\Column(type: 'string')]
     protected $fileEntry;
 
     /**
-     * @ORM\Column(type="float")
      * Similarity score normalized from 0 (no similarity) to 1 (identical).
      */
+    #[ORM\Column(type: 'float')]
     protected $similarity;
 
     /**
-     * @ORM\OneToMany(targetEntity="PlagiarismDetectedSimilarFile", mappedBy="detectedSimilarity",
-     *                cascade={"persist"}, orphanRemoval=true)
      * @var Collection
      */
+    #[ORM\OneToMany(
+        targetEntity: PlagiarismDetectedSimilarFile::class,
+        mappedBy: 'detectedSimilarity',
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
     protected $similarFiles;
 
     /**

@@ -14,15 +14,15 @@ use InvalidArgumentException;
 use DateTime;
 
 /**
- * @ORM\Entity
- * @ORM\Table(name="`group`")
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * Regular groups have students and offer them assignments. There are two special group types:
  * - organizational (cannot have students nor assignments, but may have sub-groups)
- *   indicated by isOrganizational column (flag)
+ * indicated by isOrganizational column (flag)
  * - exam (activity in this group is restricted to very short period in time when an exam is scheduled)
- *   indicated by non-null values of examBegin and examEnd columns
+ * indicated by non-null values of examBegin and examEnd columns
  */
+#[ORM\Table(name: '`group`')]
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class Group
 {
     use DeletableEntity;
@@ -78,44 +78,36 @@ class Group
     }
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
      * DEPRECATED in favor of external attributes
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $externalId;
 
     /**
-     * @ORM\OneToMany(targetEntity="LocalizedGroup", mappedBy="group")
      * @var ArrayCollection
      */
+    #[ORM\OneToMany(targetEntity: LocalizedGroup::class, mappedBy: 'group')]
     protected $localizedTexts;
 
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
+    #[ORM\Column(type: 'float', nullable: true)]
     protected $threshold;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     protected $pointsLimit;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $publicStats;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isPublic;
 
     public function isPublic(): bool
@@ -133,16 +125,14 @@ class Group
         return $this->publicStats;
     }
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $archivedAt = null;
 
     /**
      * Flag that helps determine whether a group has been archived explicitly.
      * That affects the modifications (moving and excavating group to/from archive).
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     protected $directlyArchived = false;
 
     /**
@@ -209,55 +199,57 @@ class Group
         return $this->directlyArchived;
     }
 
-    /**
-     * @ORM\Column(type="boolean", options={"default":0})
-     */
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     protected $isOrganizational = false;
 
     /**
-     * @ORM\Column(type="boolean", options={"default":0})
      * Students cannot leave detaining groups on their own (supervisor can remove them).
      */
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     protected $isDetaining = false;
 
     /**
-     * @ORM\Column(type="boolean", options={"default":0})
      * The group is dedicated to examination. This is used mainly for selective visualization
      * and to make the "exam" flag of the assignments set as default.
      * This flag is independent of the exam begin-end dates which are used for security purposes.
      */
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     protected $isExam = false;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * When an exam in this groups begins. In the exam period, a user must lock in a group to be allowed
      * submitting solutions. This is completely independent of the isExam flag.
      * @var DateTime|null
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $examBegin = null;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * When an exam in this groups ends. In the exam period, a user must lock in a group to be allowed
      * submitting solutions. This is completely independent of the isExam flag.
      * @var DateTime|null
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $examEnd = null;
 
     /**
-     * @ORM\Column(type="string")
      * The type of lock for the exam.
      * (under strict lock, the user cannot read data from other groups).
      * @var string
      */
+    #[ORM\Column(type: 'string')]
     protected $examLockType = GroupExamLockType::Visible->value;
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="GroupExam", mappedBy="group",
-     *                cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\OrderBy({"begin" = "DESC"})
      */
+    #[ORM\OneToMany(
+        targetEntity: GroupExam::class,
+        mappedBy: 'group',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[ORM\OrderBy(['begin' => 'DESC'])]
     protected $exams;
 
     /**
@@ -310,18 +302,19 @@ class Group
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="GroupExternalAttribute", mappedBy="group", cascade={"all"}, orphanRemoval=true)
      */
+    #[ORM\OneToMany(
+        targetEntity: GroupExternalAttribute::class,
+        mappedBy: 'group',
+        cascade: ['all'],
+        orphanRemoval: true
+    )]
     protected $externalAttributes;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")
-     */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'childGroups')]
     protected $parentGroup;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Group", mappedBy="parentGroup")
-     */
+    #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'parentGroup')]
     protected $childGroups;
 
     /**
@@ -340,15 +333,17 @@ class Group
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="GroupInvitation", mappedBy="group",
-     *                cascade={"persist", "remove"}, orphanRemoval=true)
-     * @ORM\OrderBy({"createdAt" = "DESC"})
      */
+    #[ORM\OneToMany(
+        targetEntity: GroupInvitation::class,
+        mappedBy: 'group',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
     protected $invitations;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="groups")
-     */
+    #[ORM\ManyToMany(targetEntity: Exercise::class, mappedBy: 'groups')]
     protected $exercises;
 
     public function getExercises()
@@ -360,9 +355,7 @@ class Group
         );
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")
-     */
+    #[ORM\ManyToOne(targetEntity: Instance::class, inversedBy: 'groups')]
     protected $instance;
 
     public function getInstance(): ?Instance
@@ -376,9 +369,7 @@ class Group
         return $instance && $instance->hasValidLicense();
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="group", cascade={"all"})
-     */
+    #[ORM\OneToMany(targetEntity: GroupMembership::class, mappedBy: 'group', cascade: ['all'])]
     protected $memberships;
 
     /**
@@ -721,9 +712,7 @@ class Group
         return false;
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="Assignment", mappedBy="group")
-     */
+    #[ORM\OneToMany(targetEntity: Assignment::class, mappedBy: 'group')]
     protected $assignments;
 
     /**
@@ -753,9 +742,7 @@ class Group
         );
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="ShadowAssignment", mappedBy="group")
-     */
+    #[ORM\OneToMany(targetEntity: ShadowAssignment::class, mappedBy: 'group')]
     protected $shadowAssignments;
 
     /**

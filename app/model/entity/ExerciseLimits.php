@@ -9,39 +9,29 @@ use App\Helpers\YamlException;
 use App\Helpers\Yaml;
 use DateTime;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class ExerciseLimits implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $limits;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $createdAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ExerciseLimits")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: ExerciseLimits::class)]
     protected $createdFrom;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     public function getAuthor(): ?User
@@ -49,14 +39,10 @@ class ExerciseLimits implements JsonSerializable
         return $this->author->isDeleted() ? null : $this->author;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
-     */
+    #[ORM\ManyToOne(targetEntity: RuntimeEnvironment::class)]
     protected $runtimeEnvironment;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="HardwareGroup")
-     */
+    #[ORM\ManyToOne(targetEntity: HardwareGroup::class)]
     protected $hardwareGroup;
 
     /**

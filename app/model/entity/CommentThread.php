@@ -8,21 +8,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class CommentThread implements JsonSerializable
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=36, options={"fixed":true})
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 36, options: ['fixed' => true])]
     protected $id;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Comment", mappedBy="commentThread")
-     * @ORM\OrderBy({ "postedAt" = "ASC" })
-     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'commentThread')]
+    #[ORM\OrderBy(['postedAt' => 'ASC'])]
     protected $comments;
 
     public function addComment(Comment $comment)

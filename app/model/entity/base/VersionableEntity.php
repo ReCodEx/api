@@ -6,9 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait VersionableEntity
 {
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $version = 1;
 
     public function getVersion(): int

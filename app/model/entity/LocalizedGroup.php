@@ -5,31 +5,21 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class LocalizedGroup extends LocalizedEntity implements JsonSerializable
 {
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $description;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="LocalizedGroup")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: LocalizedGroup::class)]
     protected $createdFrom;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="localizedTexts")
-     * @ORM\JoinColumn(nullable=true)
-     */
+    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'localizedTexts')]
     protected $group;
 
     public function __construct($locale, string $name, string $description, ?LocalizedGroup $createdFrom = null)

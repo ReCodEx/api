@@ -6,48 +6,44 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
 
-/**
- * @ORM\Entity
- * A record representing one processing batch of plagiarism detection.
- * The detection is performed by external tools (solutions are downloaded and results are uploaded via API).
- */
+#[ORM\Entity]
 class PlagiarismDetectionBatch implements JsonSerializable
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
-     * @ORM\Column(type="string")
      * Identifier of the external tool that performed the detection.
      */
+    #[ORM\Column(type: 'string')]
     protected $detectionTool;
 
     /**
-     * @ORM\Column(type="string")
      * Tool-specific parameters serialized into a string (e.g., CLI arguments use to invoke the tool)
      */
+    #[ORM\Column(type: 'string')]
     protected $detectionToolParameters;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="User")
      * User responsible for the detection process.
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $supervisor;
 
     /**
      * @var DateTime
-     * @ORM\Column(type="datetime", nullable=true)
      * Time when all the plagiarism records were uploaded. If null, the upload is still pending.
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $uploadCompletedAt = null;
 
     /**

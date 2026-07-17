@@ -7,47 +7,42 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"group_id", "begin"})})
- * Holds history record of an exam that took place in a group.
- * The `examBegin`, `examEnd` fields are copied from group to `begin`, `end` fields here,
- * `examLockType` is copied to `lockType` field.
- * This entity is created when the first user locks in (i.e., only exams with users are recorded in history).
- */
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['group_id', 'begin'])]
+#[ORM\Entity]
 class GroupExam implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @var int|null
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="exams")
      * @var Group
      */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'exams')]
     protected $group;
 
     /**
-     * @ORM\Column(type="datetime")
      * @var DateTime|null
      */
+    #[ORM\Column(type: 'datetime')]
     protected $begin = null;
 
     /**
-     * @ORM\Column(type="datetime")
      * @var DateTime|null
      */
+    #[ORM\Column(type: 'datetime')]
     protected $end = null;
 
     /**
-     * @ORM\Column(type="string")
      * Saved value from examLockType flag.
      * @var string
      */
+    #[ORM\Column(type: 'string')]
     protected $lockType = GroupExamLockType::Visible->value;
 
     /**

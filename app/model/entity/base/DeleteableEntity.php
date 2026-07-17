@@ -8,9 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 trait DeletableEntity
 {
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $deletedAt = null;
 
     public function getDeletedAt(): ?DateTime

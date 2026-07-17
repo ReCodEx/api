@@ -6,44 +6,41 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="grouped_created_at_idx", columns={"group_id", "created_at"})})
- */
+#[ORM\Table]
+#[ORM\Index(name: 'grouped_created_at_idx', columns: ['group_id', 'created_at'])]
+#[ORM\Entity]
 class GroupInvitation implements JsonSerializable
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $expireAt = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="invitations")
-     */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'invitations')]
     protected $group;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
      * who created the invitation
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $host;
 
     /**
-     * @ORM\Column(type="string")
      * short remark for those who are about to use the link
      */
+    #[ORM\Column(type: 'string')]
     protected $note;
 
     /**

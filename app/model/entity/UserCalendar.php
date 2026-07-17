@@ -6,29 +6,22 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * Entity holding information about iCal provider for user events.
- */
+#[ORM\Entity]
 class UserCalendar implements JsonSerializable
 {
     use CreatableEntity;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=32)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 32)]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $user;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $expiredAt = null;
 
     /**

@@ -8,10 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- */
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class Instance
 {
     use UpdatableEntity;
@@ -19,17 +17,15 @@ class Instance
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isOpen;
 
     /**
@@ -40,14 +36,10 @@ class Instance
         return $this->isOpen;
     }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isAllowed;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $admin;
 
     public function getAdmin(): ?User
@@ -55,21 +47,19 @@ class Instance
         return $this->admin->isDeleted() ? null : $this->admin;
     }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $needsLicence;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Group", cascade={"persist"})
      * @var Group
      */
+    #[ORM\ManyToOne(targetEntity: Group::class, cascade: ['persist'])]
     protected $rootGroup;
 
     /**
      * @var ArrayCollection
-     * @ORM\OneToMany(targetEntity="Licence", mappedBy="instance")
      */
+    #[ORM\OneToMany(targetEntity: Licence::class, mappedBy: 'instance')]
     protected $licences;
 
     public function addLicence(Licence $licence)
@@ -91,9 +81,7 @@ class Instance
         return $this->needsLicence === false || $this->getValidLicences()->count() > 0;
     }
 
-    /**
-     * @ORM\ManyToMany(targetEntity="User", mappedBy="instances")
-     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'instances')]
     protected $members;
 
     public function addMember(User $user)
@@ -101,9 +89,7 @@ class Instance
         $this->members->add($user);
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="Group", mappedBy="instance", cascade={"persist"})
-     */
+    #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'instance', cascade: ['persist'])]
     protected $groups;
 
     public function addGroup(Group $group)

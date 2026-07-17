@@ -6,9 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\EvaluationResults as ER;
 use App\Model\View\Helpers\SubmissionViewOptions;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class TestResult
 {
     public function __construct(
@@ -39,113 +37,75 @@ class TestResult
         $this->judgeStderr = substr($result->getJudgeStderr(), 0, 65536);
     }
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $testName;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $status;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="SolutionEvaluation", inversedBy="testResults")
-     */
+    #[ORM\ManyToOne(targetEntity: SolutionEvaluation::class, inversedBy: 'testResults')]
     protected $solutionEvaluation;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $score;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $memoryExceeded;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $usedMemory;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $usedMemoryLimit;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $wallTimeExceeded;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $usedWallTime;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $usedWallTimeLimit;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $cpuTimeExceeded;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $usedCpuTime;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $usedCpuTimeLimit;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $exitCode;
 
     /**
-     * @ORM\Column(type="boolean")
      * Whether the exit code corresponds to configured success exit codes.
      */
+    #[ORM\Column(type: 'boolean')]
     protected $exitCodeOk;
 
     /**
-     * @ORM\Column(type="boolean")
      * Whether the exit code was produced by regular termination (not by signal, timeout, or sandbox error).
      */
+    #[ORM\Column(type: 'boolean')]
     protected $exitCodeNative;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     protected $exitSignal;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $message;
 
-    /**
-     * @ORM\Column(type="text", length=65535, nullable=true)
-     */
+    #[ORM\Column(type: 'text', length: 65535, nullable: true)]
     protected $judgeStdout;
 
-    /**
-     * @ORM\Column(type="text", length=65535, nullable=true)
-     */
+    #[ORM\Column(type: 'text', length: 65535, nullable: true)]
     protected $judgeStderr;
 
     public function getDataForView(SubmissionViewOptions $options)

@@ -7,20 +7,16 @@ use JsonSerializable;
 use DateTime;
 use OverflowException;
 
-/**
- * @ORM\Entity
- * This entity tracks an upload of a file per partes (chunked upload).
- * Once the file is uploaded completely, it will be converted into UploadedFile entity.
- */
+#[ORM\Entity]
 class UploadedPartialFile implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     public function getId(): ?string
@@ -30,8 +26,8 @@ class UploadedPartialFile implements JsonSerializable
 
     /**
      * The name under which the file was uploaded
-     * @ORM\Column(type="string")
      */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
     public function getName(): string
@@ -48,19 +44,13 @@ class UploadedPartialFile implements JsonSerializable
         return pathinfo($this->name, PATHINFO_EXTENSION);
     }
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $startedAt;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $updatedAt;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $totalSize;
 
     public function getTotalSize(): int
@@ -68,9 +58,7 @@ class UploadedPartialFile implements JsonSerializable
         return $this->totalSize;
     }
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $uploadedSize = 0;
 
     public function getUploadedSize(): int
@@ -87,9 +75,7 @@ class UploadedPartialFile implements JsonSerializable
         return $this->totalSize === $this->uploadedSize;
     }
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $chunks = 0;
 
     public function getChunks(): int
@@ -97,9 +83,7 @@ class UploadedPartialFile implements JsonSerializable
         return $this->chunks;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $user;
 
     public function getUser(): ?User

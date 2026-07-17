@@ -4,29 +4,22 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"name", "exercise_id"})})
- */
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['name', 'exercise_id'])]
+#[ORM\Entity]
 class ExerciseTag
 {
     use CreatableEntity;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string", length=32)
-     */
+    #[ORM\Column(type: 'string', length: 32)]
     protected $name;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     public function getAuthor(): ?User
@@ -34,9 +27,7 @@ class ExerciseTag
         return $this->author->isDeleted() ? null : $this->author;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Exercise")
-     */
+    #[ORM\ManyToOne(targetEntity: Exercise::class)]
     protected $exercise;
 
     public function getExercise(): ?Exercise

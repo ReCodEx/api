@@ -5,20 +5,14 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class LocalizedNotification extends LocalizedEntity implements JsonSerializable
 {
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $text;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="LocalizedNotification")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: LocalizedNotification::class)]
     protected $createdFrom;
 
 

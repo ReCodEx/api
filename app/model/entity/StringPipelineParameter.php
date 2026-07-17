@@ -5,14 +5,10 @@ namespace App\Model\Entity;
 use App\Exceptions\InvalidApiArgumentException;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class StringPipelineParameter extends PipelineParameter
 {
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $stringValue;
 
     public function getValue()

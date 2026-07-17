@@ -8,46 +8,36 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\YamlException;
 use App\Helpers\Yaml;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class ExerciseEnvironmentConfig
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
-     */
+    #[ORM\ManyToOne(targetEntity: RuntimeEnvironment::class)]
     protected $runtimeEnvironment;
 
-    /**
-     * @ORM\Column(type="text", length=65535)
-     */
+    #[ORM\Column(type: 'text', length: 65535)]
     protected $variablesTable;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $createdAt;
 
     /**
      * Created from.
-     * @ORM\ManyToOne(targetEntity="ExerciseEnvironmentConfig")
-     * @ORM\JoinColumn(onDelete="SET NULL")
      * @var ExerciseEnvironmentConfig
      */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: ExerciseEnvironmentConfig::class)]
     protected $createdFrom;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     public function getAuthor(): ?User

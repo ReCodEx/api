@@ -7,28 +7,22 @@ use App\Helpers\EvaluationStatus\IEvaluable;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\MappedSuperclass
- */
+#[ORM\MappedSuperclass]
 abstract class Submission implements IEvaluable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $submittedAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $submittedBy;
 
     public function getSubmittedBy(): ?User
@@ -37,21 +31,19 @@ abstract class Submission implements IEvaluable
     }
 
     /**
-     * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"}, fetch="EAGER")
      * @var SolutionEvaluation
      */
+    #[ORM\OneToOne(targetEntity: SolutionEvaluation::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
     protected $evaluation;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isDebug;
 
     /**
-     * @ORM\Column(type="string")
      * Bin subdirectory in paths to related files (job config, results zip).
      * The subdir names are typically time-related (e.g., YYYY-MM) to optimize backup management.
      */
+    #[ORM\Column(type: 'string')]
     protected $subdir;
 
 

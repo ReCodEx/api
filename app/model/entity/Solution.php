@@ -9,53 +9,42 @@ use Doctrine\Common\Collections\ArrayCollection;
 use DateTime;
 use App\Helpers\Yaml;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="solution_created_at_idx", columns={"created_at"})})
- */
+#[ORM\Table]
+#[ORM\Index(name: 'solution_created_at_idx', columns: ['created_at'])]
+#[ORM\Entity]
 class Solution
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
-    /**
-     * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
-     */
+    #[ORM\OneToMany(targetEntity: SolutionFile::class, mappedBy: 'solution')]
     protected $files;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
-     */
+    #[ORM\ManyToOne(targetEntity: RuntimeEnvironment::class)]
     protected $runtimeEnvironment;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $evaluated;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $solutionParams;
 
     /**
-     * @ORM\Column(type="string")
      * Subdirectory in path to the ZIP archive where all solution files are.
      * The subdir names are typically time-related (e.g., YYYY-MM) to optimize backup management.
      */
+    #[ORM\Column(type: 'string')]
     protected $subdir;
 
     /**

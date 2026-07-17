@@ -9,34 +9,28 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class SolutionEvaluation
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $evaluatedAt;
 
     /**
      * If true, the solution cannot be compiled.
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     protected $initFailed;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $score;
 
     public function getScore(): float
@@ -44,9 +38,7 @@ class SolutionEvaluation
         return $this->score;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ExerciseScoreConfig")
-     */
+    #[ORM\ManyToOne(targetEntity: ExerciseScoreConfig::class)]
     protected $scoreConfig;
 
     public function getScoreConfig(): ?ExerciseScoreConfig
@@ -65,19 +57,13 @@ class SolutionEvaluation
         $this->scoreConfig = $scoreConfig;
     }
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $points;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $initiationOutputs;
 
-    /**
-     * @ORM\OneToMany(targetEntity="TestResult", mappedBy="solutionEvaluation", cascade={"persist", "remove"})
-     */
+    #[ORM\OneToMany(targetEntity: TestResult::class, mappedBy: 'solutionEvaluation', cascade: ['persist', 'remove'])]
     protected $testResults;
 
     public function getDataForView(SubmissionViewOptions $options)

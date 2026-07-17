@@ -6,9 +6,7 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class SubmissionFailure implements JsonSerializable
 {
     use CreatableEntity;
@@ -39,43 +37,33 @@ class SubmissionFailure implements JsonSerializable
     public const TYPE_SOFT_CONFIG_ERROR = "soft_config_error";
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $type;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $description;
 
-    /**
-     * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", mappedBy="failure")
-     */
+    #[ORM\OneToOne(targetEntity: AssignmentSolutionSubmission::class, mappedBy: 'failure')]
     protected $assignmentSolutionSubmission;
 
-    /**
-     * @ORM\OneToOne(targetEntity="ReferenceSolutionSubmission", mappedBy="failure")
-     */
+    #[ORM\OneToOne(targetEntity: ReferenceSolutionSubmission::class, mappedBy: 'failure')]
     protected $referenceSolutionSubmission;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var ?DateTime
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $resolvedAt;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $resolutionNote;
 
     /**

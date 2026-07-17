@@ -12,10 +12,8 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use App\Helpers\ExercisesConfig;
 
-/**
- * @ORM\Entity
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- */
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class Exercise implements IExercise
 {
     use ExerciseData;
@@ -25,97 +23,77 @@ class Exercise implements IExercise
     use VersionableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $difficulty;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
-     */
+    #[ORM\ManyToMany(targetEntity: RuntimeEnvironment::class)]
     protected $runtimeEnvironments;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Exercise")
-     * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
-     */
+    #[ORM\JoinColumn(name: 'exercise_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: Exercise::class)]
     protected $exercise;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
-     */
+    #[ORM\OneToMany(targetEntity: ReferenceExerciseSolution::class, mappedBy: 'exercise')]
     protected $referenceSolutions;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'exercises')]
     protected $author;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="User")
-     */
+    #[ORM\ManyToMany(targetEntity: User::class)]
     protected $admins;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isPublic;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isLocked;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default":0})
-     */
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     protected $isBroken = false;
 
-    /**
-     * @ORM\Column(type="text", length=65535)
-     */
+    #[ORM\Column(type: 'text', length: 65535)]
     protected $validationError;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Group", inversedBy="exercises")
-     */
+    #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'exercises')]
     protected $groups;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Assignment", mappedBy="exercise")
-     */
+    #[ORM\OneToMany(targetEntity: Assignment::class, mappedBy: 'exercise')]
     protected $assignments;
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="ExerciseTag", mappedBy="exercise",
-     *                cascade={"persist", "remove"}, orphanRemoval=true)
      */
+    #[ORM\OneToMany(
+        targetEntity: ExerciseTag::class,
+        mappedBy: 'exercise',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     protected $tags;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $mergeJudgeLogs;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $archivedAt = null;
 
     /**
-     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="exercise", cascade={"persist", "remove"},
-     *                orphanRemoval=true)
      * @var Collection<ExerciseFileLink>
      */
+    #[ORM\OneToMany(
+        targetEntity: ExerciseFileLink::class,
+        mappedBy: 'exercise',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     protected $fileLinks;
 
     /**

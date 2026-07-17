@@ -9,22 +9,17 @@ use App\Helpers\EvaluationStatus as ES;
 use App\Helpers\EvaluationResults as ER;
 use App\Model\View\Helpers\SubmissionViewOptions;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="ref_solution_submission_submitted_at_idx", columns={"submitted_at"})})
- */
+#[ORM\Table]
+#[ORM\Index(name: 'ref_solution_submission_submitted_at_idx', columns: ['submitted_at'])]
+#[ORM\Entity]
 class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
     public const JOB_TYPE = "reference";
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="submissions")
-     */
+    #[ORM\ManyToOne(targetEntity: ReferenceExerciseSolution::class, inversedBy: 'submissions')]
     protected $referenceSolution;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="HardwareGroup")
-     */
+    #[ORM\ManyToOne(targetEntity: HardwareGroup::class)]
     protected $hwGroup;
 
 
@@ -34,10 +29,14 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     }
 
     /**
-     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"},
-     *               inversedBy="referenceSolutionSubmission", fetch="EAGER")
      * @var SubmissionFailure
      */
+    #[ORM\OneToOne(
+        targetEntity: SubmissionFailure::class,
+        cascade: ['persist', 'remove'],
+        inversedBy: 'referenceSolutionSubmission',
+        fetch: 'EAGER'
+    )]
     protected $failure;
 
     public function jsonSerialize(): mixed

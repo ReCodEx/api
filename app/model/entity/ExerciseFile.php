@@ -10,21 +10,19 @@ use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use DateTime;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class ExerciseFile extends UploadedFile implements JsonSerializable
 {
     /**
      * Identifier used to store/retrieve the file in/from the storage.
-     * @ORM\Column(type="string")
      */
+    #[ORM\Column(type: 'string')]
     protected $hashName;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseFiles")
      * @var Collection<Exercise>
      */
+    #[ORM\ManyToMany(targetEntity: Exercise::class, mappedBy: 'exerciseFiles')]
     protected $exercises;
 
     /**
@@ -40,9 +38,9 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="exerciseFiles")
      * @var Collection<Assignment>
      */
+    #[ORM\ManyToMany(targetEntity: Assignment::class, mappedBy: 'exerciseFiles')]
     protected $assignments;
 
     /**
@@ -58,9 +56,9 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="exerciseFiles")
      * @var Collection<Pipeline>
      */
+    #[ORM\ManyToMany(targetEntity: Pipeline::class, mappedBy: 'exerciseFiles')]
     protected $pipelines;
 
     /**

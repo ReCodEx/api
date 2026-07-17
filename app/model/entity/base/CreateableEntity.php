@@ -8,9 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 trait CreatableEntity
 {
     /**
-     * @ORM\Column(type="datetime")
      * @var DateTime
      */
+    #[ORM\Column(type: 'datetime')]
     protected $createdAt;
 
     public function getCreatedAt(): DateTime

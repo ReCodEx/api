@@ -8,9 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 trait UpdatableEntity
 {
     /**
-     * @ORM\Column(type="datetime")
      * @var DateTime
      */
+    #[ORM\Column(type: 'datetime')]
     protected $updatedAt;
 
     public function getUpdatedAt(): DateTime

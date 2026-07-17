@@ -15,10 +15,8 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeImmutable;
 
-/**
- * @ORM\Entity
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- */
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class User
 {
     use CreatableEntity;
@@ -63,27 +61,21 @@ class User
     }
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $titlesBeforeName;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $firstName;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $lastName;
 
     public function getName()
@@ -91,19 +83,13 @@ class User
         return trim("{$this->titlesBeforeName} {$this->firstName} {$this->lastName} {$this->titlesAfterName}");
     }
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $titlesAfterName;
 
-    /**
-     * @ORM\Column(type="string", unique=true)
-     */
+    #[ORM\Column(type: 'string', unique: true)]
     protected $email;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $avatarUrl;
 
     /**
@@ -116,9 +102,7 @@ class User
             Gravatar::image($this->email, 200, "retro", "g", "png", false)->url();
     }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isVerified;
 
     public function isVerified()
@@ -131,9 +115,7 @@ class User
         $this->isVerified = $verified;
     }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isAllowed;
 
     public function isAllowed()
@@ -141,9 +123,7 @@ class User
         return $this->isAllowed;
     }
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Instance", inversedBy="members")
-     */
+    #[ORM\ManyToMany(targetEntity: Instance::class, inversedBy: 'members')]
     protected $instances;
 
     public function belongsTo(Instance $instance)
@@ -160,19 +140,13 @@ class User
         )->getValues();
     }
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $tokenValidityThreshold;
 
-    /**
-     * @ORM\OneToOne(targetEntity="UserSettings", cascade={"persist"})
-     */
+    #[ORM\OneToOne(targetEntity: UserSettings::class, cascade: ['persist'])]
     protected $settings;
 
-    /**
-     * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})
-     */
+    #[ORM\OneToMany(targetEntity: GroupMembership::class, mappedBy: 'user', cascade: ['all'])]
     protected $memberships;
 
     protected function findMembership(Group $group, string $type)
@@ -295,24 +269,16 @@ class User
         $this->makeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="Exercise", mappedBy="author")
-     */
+    #[ORM\OneToMany(targetEntity: Exercise::class, mappedBy: 'author')]
     protected $exercises;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $role;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ExternalLogin", mappedBy="user", cascade={"all"})
-     */
+    #[ORM\OneToMany(targetEntity: ExternalLogin::class, mappedBy: 'user', cascade: ['all'])]
     protected $externalLogins;
 
-    /**
-     * @ORM\OneToOne(targetEntity="Login", mappedBy="user", cascade={"all"})
-     */
+    #[ORM\OneToOne(targetEntity: Login::class, mappedBy: 'user', cascade: ['all'])]
     protected $login;
 
 
@@ -392,10 +358,10 @@ class User
     }
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime
      * When the last authentication or token renewal occurred.
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $lastAuthenticationAt = null;
 
     /**
@@ -407,29 +373,26 @@ class User
         $this->lastAuthenticationAt = $time ?? new DateTime();
     }
 
-    /**
-     * @ORM\OneToOne(targetEntity="UserUiData", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
+    #[ORM\OneToOne(targetEntity: UserUiData::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     protected $uiData = null;
 
     /*
      * Additional security stuff, locking the user for one IP and/or one group.
      * This stuff is used when a student have an exam in particular group.
      */
-
     /**
-     * @ORM\Column(type="string", nullable=true)
      * IP address (either IPv4 or IPv6) the user is locked to. API requests from different addresses
      * will be treated as unauthorized.
      * @var string|null
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $ipLock = null;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      * When the current IP lock expires (null = never, or lock is not set).
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $ipLockExpiration = null;
 
     public function getIpLockRaw(): ?string
@@ -498,25 +461,25 @@ class User
     }
 
     /**
-     * @ORM\ManyToOne(targetEntity="Group")
      * If set, any user actions will be restricted to this group only.
      * (except for fundamental operations like listing groups or getting group name)
      * @var Group|null
      */
+    #[ORM\ManyToOne(targetEntity: Group::class)]
     protected $groupLock = null;
 
     /**
-     * @ORM\Column(type="string")
      * String representation of the GroupExamLockType enum (copied from the group exam).
      * @var string
      */
+    #[ORM\Column(type: 'string')]
     protected $groupLockType = GroupExamLockType::Visible->value;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      * When the current group lock expires (null = never, or lock is not set).
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $groupLockExpiration = null;
 
     /**

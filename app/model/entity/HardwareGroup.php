@@ -6,30 +6,20 @@ use App\Helpers\EntityMetadata\HwGroupMeta;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class HardwareGroup implements JsonSerializable
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=32)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 32)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
-    /**
-     * @ORM\Column(type="string", length=1024)
-     */
+    #[ORM\Column(type: 'string', length: 1024)]
     protected $description;
 
-    /**
-     * @ORM\Column(type="text", length=65535)
-     */
+    #[ORM\Column(type: 'text', length: 65535)]
     protected $metadata;
 
 

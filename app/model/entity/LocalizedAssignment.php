@@ -6,23 +6,21 @@ use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class LocalizedAssignment extends LocalizedEntity implements JsonSerializable
 {
     /**
-     * @ORM\ManyToOne(targetEntity="LocalizedAssignment")
-     * @ORM\JoinColumn(onDelete="SET NULL")
      * @var LocalizedAssignment
      */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: LocalizedAssignment::class)]
     protected $createdFrom;
 
     /**
      * Separate text visible to students which is kept separately from the exercise specification,
      * so it will not be overwritten every time an assignment is synced with exercise.
-     * @ORM\Column(type="text")
      */
+    #[ORM\Column(type: 'text')]
     protected $studentHint;
 
     public function __construct(string $locale, string $studentHint, ?LocalizedAssignment $createdFrom = null)
