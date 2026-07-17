@@ -5,10 +5,9 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 
-/**
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"shadow_assignment_id", "awardee_id"})})
- */
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['shadow_assignment_id', 'awardee_id'])]
+#[ORM\Entity]
 class ShadowAssignmentPoints
 {
     use CreatableEntity;
@@ -33,28 +32,24 @@ class ShadowAssignmentPoints
     }
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $points;
 
-    /**
-     * @ORM\Column(type="string", length=1024)
-     */
+    #[ORM\Column(type: 'string', length: 1024)]
     protected $note;
 
     /**
      * @var ShadowAssignment
-     * @ORM\ManyToOne(targetEntity="ShadowAssignment")
      */
+    #[ORM\ManyToOne(targetEntity: ShadowAssignment::class)]
     protected $shadowAssignment;
 
     public function getShadowAssignment(): ?ShadowAssignment
@@ -63,9 +58,9 @@ class ShadowAssignmentPoints
     }
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
      * Author is the person (typically teacher) who authorized the points.
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     public function getAuthor(): ?User
@@ -74,9 +69,9 @@ class ShadowAssignmentPoints
     }
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
      * Awardee is the person (typically student) who accepted (benefit from) the points.
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $awardee;
 
     public function getAwardee(): ?User
@@ -84,9 +79,7 @@ class ShadowAssignmentPoints
         return $this->awardee->isDeleted() ? null : $this->awardee;
     }
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $awardedAt;
 
     /*

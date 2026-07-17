@@ -7,9 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class AssignmentSolution
 {
     use FlagAccessor;
@@ -17,23 +15,21 @@ class AssignmentSolution
     public const JOB_TYPE = "student";
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string", length=1024)
-     */
+    #[ORM\Column(type: 'string', length: 1024)]
     protected $note;
 
     /**
      * @var ?Assignment
-     * @ORM\ManyToOne(targetEntity="Assignment", inversedBy="assignmentSolutions")
      */
+    #[ORM\ManyToOne(targetEntity: Assignment::class, inversedBy: 'assignmentSolutions')]
     protected $assignment;
 
     public function getAssignment(): ?Assignment
@@ -65,52 +61,46 @@ class AssignmentSolution
 
     /**
      * @var Solution
-     * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
      */
+    #[ORM\ManyToOne(targetEntity: Solution::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
     protected $solution;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $accepted;
 
     /**
-     * @ORM\Column(type="boolean")
      * If true, the student is requesting a code review for this solution.
      * One solution of one solver at most may have this flag set (similarly to accepted flag).
      * The flag is automatically reset when review is saved.
      */
+    #[ORM\Column(type: 'boolean')]
     protected $reviewRequest = false;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * Time when a review was started.
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $reviewStartedAt = null;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * Time when a review was closed (and the students were duly notified the comments are complete).
      * Not null value also marks the solution as "reviewed" (replaces previous bool flag).
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $reviewedAt = null;
 
     /**
-     * @ORM\Column(type="integer")
      * Number of issues made in review comments. This is an aggregated cached value so it can be accessed faster.
      * The number of issues is computed when (and updated after) the review is closed.
      * When the review is open, the number of issues is kept 0, regardless of how many issue comments exist.
      */
+    #[ORM\Column(type: 'integer')]
     protected $issues = 0;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $bonusPoints;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
+    #[ORM\Column(type: 'integer', nullable: true)]
     protected $overriddenPoints;
 
     /**
@@ -148,10 +138,13 @@ class AssignmentSolution
 
     /**
      * Note that order by annotation has to be present!
-     *
-     * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution", cascade={"remove"})
-     * @ORM\OrderBy({"submittedAt" = "DESC"})
      */
+    #[ORM\OneToMany(
+        targetEntity: AssignmentSolutionSubmission::class,
+        mappedBy: 'assignmentSolution',
+        cascade: ['remove']
+    )]
+    #[ORM\OrderBy(['submittedAt' => 'DESC'])]
     protected $submissions;
 
     /**
@@ -159,9 +152,9 @@ class AssignmentSolution
      * The reference should speed up loading in many cases since the last submission is the only one that counts.
      * However, this behavior might be altered in the future, so we can actively select which submission is relevant.
      *
-     * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER", cascade={"persist"})
      * @var AssignmentSolutionSubmission|null
      */
+    #[ORM\OneToOne(targetEntity: AssignmentSolutionSubmission::class, fetch: 'EAGER', cascade: ['persist'])]
     protected $lastSubmission = null;
 
     /**
@@ -180,21 +173,19 @@ class AssignmentSolution
      * Incremental counter marking submission attempts of one user solving one assignment (one-based).
      * Each solution gets an unique marker (per user x assignment) which is immutable,
      * so it will hold even when some solutions get deleted.
-     * @ORM\Column(type="integer")
      */
+    #[ORM\Column(type: 'integer')]
     protected $attemptIndex;
 
-    /**
-     * @ORM\OneToMany(targetEntity="ReviewComment", mappedBy="solution")
-     */
+    #[ORM\OneToMany(targetEntity: ReviewComment::class, mappedBy: 'solution')]
     protected $reviewComments;
 
     /**
      * @var PlagiarismDetectionBatch|null
-     * @ORM\ManyToOne(targetEntity="PlagiarismDetectionBatch")
      * Refers to last plagiarism detection batch, in which similarities were detected for this solution.
      * If null, no similarities were detected (yet).
      */
+    #[ORM\ManyToOne(targetEntity: PlagiarismDetectionBatch::class)]
     protected $plagiarismBatch = null;
 
     /**

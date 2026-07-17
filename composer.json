@@ -67,7 +67,8 @@
         "nette/tester": "^2.6",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-nette": "^2.0",
-        "vrana/adminer": "^5.4"
+        "vrana/adminer": "^5.4",
+        "rector/rector": "^2.5"
     },
     "minimum-stability": "dev",
     "prefer-stable": true

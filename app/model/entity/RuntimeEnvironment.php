@@ -8,32 +8,24 @@ use App\Helpers\Yaml;
 use App\Helpers\YamlException;
 use App\Exceptions\ParseException as AppParseException;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class RuntimeEnvironment implements JsonSerializable
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=32)
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 32)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $longName;
 
     /**
      * List of extensions in YAML format. No extension is also extension.
      * Example: [ "cpp", "hpp", "h", "" ]
-     * @ORM\Column(type="string")
      */
+    #[ORM\Column(type: 'string')]
     protected $extensions;
 
     /**
@@ -52,19 +44,13 @@ class RuntimeEnvironment implements JsonSerializable
         return $parsedConfig;
     }
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $platform;
 
-    /**
-     * @ORM\Column(type="string", length=1024)
-     */
+    #[ORM\Column(type: 'string', length: 1024)]
     protected $description;
 
-    /**
-     * @ORM\Column(type="text", length=65535)
-     */
+    #[ORM\Column(type: 'text', length: 65535)]
     protected $defaultVariables;
 
     /**

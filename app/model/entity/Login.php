@@ -7,33 +7,25 @@ use App\Exceptions\InvalidApiArgumentException;
 use Nette\Security\Passwords;
 use Nette\Utils\Validators;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Login
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string", length=128, unique=true)
-     */
+    #[ORM\Column(type: 'string', length: 128, unique: true)]
     protected $username;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $passwordHash;
 
-    /**
-     * @ORM\OneToOne(targetEntity="User", inversedBy="login")
-     */
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'login')]
     protected $user;
 
     /**

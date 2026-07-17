@@ -5,47 +5,39 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"group_id", "service", "key", "value"})},
- *            indexes={@ORM\Index(name="keys_idx", columns={"service", "key"})})
- *
- * Key-value attributes assigned to groups to connect them to 3rd party systems to simplify
- * external group management (creation, archiving) and student membership management.
- */
+#[ORM\Table]
+#[ORM\Index(name: 'keys_idx', columns: ['service', 'key'])]
+#[ORM\UniqueConstraint(columns: ['group_id', 'service', 'key', 'value'])]
+#[ORM\Entity]
 class GroupExternalAttribute implements JsonSerializable
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="externalAttributes")
-     */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'externalAttributes')]
     protected $group;
 
     /**
-     * @ORM\Column(type="string", length=32)
      * Identifies 3rd party service which assigned the attribute. This is basically a namespace for keys.
      */
+    #[ORM\Column(type: 'string', length: 32)]
     protected $service;
 
     /**
-     * @ORM\Column(name="`key`", type="string", length=32)
      * Key of the attribute under which it can be searched.
      */
+    #[ORM\Column(name: '`key`', type: 'string', length: 32)]
     protected $key;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $value;
 
     /**

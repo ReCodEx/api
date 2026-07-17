@@ -6,44 +6,35 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="lock_created_at_idx", columns={"created_at"})})
- * Logs locking events for a particular exam. Every time student acquires group-lock, this entity is created.
- * If the user is explicitly unlocked, the time of that event is also recorded.
- */
+#[ORM\Table]
+#[ORM\Index(name: 'lock_created_at_idx', columns: ['created_at'])]
+#[ORM\Entity]
 class GroupExamLock implements JsonSerializable
 {
     use CreatableEntity;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="GroupExam")
-     */
+    #[ORM\ManyToOne(targetEntity: GroupExam::class)]
     protected $groupExam;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $student;
 
     /**
-     * @ORM\Column(type="string")
      * remote IP address from which the user requested locking
      */
+    #[ORM\Column(type: 'string')]
     protected $remoteAddr;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      * If the student is explicitly unlocked, the time is recorded.
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $unlockedAt = null;
 
     /**

@@ -10,10 +10,8 @@ use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
 use DateTime;
 
-/**
- * @ORM\Entity
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- */
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class ShadowAssignment extends AssignmentBase
 {
     private function __construct(
@@ -47,18 +45,18 @@ class ShadowAssignment extends AssignmentBase
     }
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
-     * @ORM\ManyToMany(targetEntity="LocalizedShadowAssignment", indexBy="locale")
      * @var Collection|Selectable
      */
+    #[ORM\ManyToMany(targetEntity: LocalizedShadowAssignment::class, indexBy: 'locale')]
     protected $localizedTexts;
 
     public function getLocalizedTexts(): Collection
@@ -83,9 +81,7 @@ class ShadowAssignment extends AssignmentBase
         return $first === false ? null : $first;
     }
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $maxPoints;
 
     public function getMaxPoints(): int
@@ -93,9 +89,7 @@ class ShadowAssignment extends AssignmentBase
         return $this->maxPoints;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="shadowAssignments")
-     */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'shadowAssignments')]
     protected $group;
 
     public function getGroup(): ?Group
@@ -103,9 +97,7 @@ class ShadowAssignment extends AssignmentBase
         return $this->group->isDeleted() ? null : $this->group;
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="ShadowAssignmentPoints", mappedBy="shadowAssignment")
-     */
+    #[ORM\OneToMany(targetEntity: ShadowAssignmentPoints::class, mappedBy: 'shadowAssignment')]
     protected $shadowAssignmentPointsCollection;
 
     public function getPointsByUser(User $user)
@@ -115,9 +107,7 @@ class ShadowAssignment extends AssignmentBase
         return $first === false ? null : $first;
     }
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $deadline = null;
 
     /*

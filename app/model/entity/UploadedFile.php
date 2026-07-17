@@ -8,27 +8,25 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
 
-/**
- * @ORM\Entity
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn("discriminator")
- * @ORM\Table(name="`uploaded_file`")
- */
+#[ORM\Table(name: '`uploaded_file`')]
+#[ORM\Entity]
+#[ORM\InheritanceType('SINGLE_TABLE')]
+#[ORM\DiscriminatorColumn('discriminator')]
 class UploadedFile implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
      * The name under which the file was uploaded
-     * @ORM\Column(type="string")
      */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
     /**
@@ -40,19 +38,13 @@ class UploadedFile implements JsonSerializable
         return pathinfo($this->name, PATHINFO_EXTENSION);
     }
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $uploadedAt;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     protected $fileSize;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $user;
 
     public function getUser(): ?User

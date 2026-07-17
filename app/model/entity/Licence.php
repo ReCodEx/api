@@ -4,27 +4,24 @@ namespace App\Model\Entity;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Licence implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="licences")
      * @var Instance
      */
+    #[ORM\ManyToOne(targetEntity: Instance::class, inversedBy: 'licences')]
     protected $instance;
 
     public function getInstance(): ?Instance
@@ -34,15 +31,15 @@ class Licence implements JsonSerializable
 
     /**
      * A licence can be manually marked as invalid by the admins.
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     protected $isValid;
 
     /**
      * The very last date on which this licence is valid (unless invalidated manually)
-     * @ORM\Column(type="datetime")
      * @var DateTime
      */
+    #[ORM\Column(type: 'datetime')]
     protected $validUntil;
 
     /**
@@ -60,8 +57,8 @@ class Licence implements JsonSerializable
 
     /**
      * Internal note for the license.
-     * @ORM\Column(type="string")
      */
+    #[ORM\Column(type: 'string')]
     protected $note;
 
     public function jsonSerialize(): mixed

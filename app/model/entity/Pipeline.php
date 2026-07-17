@@ -11,10 +11,8 @@ use DateTime;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- */
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class Pipeline
 {
     use CreatableEntity;
@@ -23,33 +21,27 @@ class Pipeline
     use VersionableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface|string
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $description;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="PipelineConfig", inversedBy="pipelines", cascade={"persist"})
-     */
+    #[ORM\ManyToOne(targetEntity: PipelineConfig::class, inversedBy: 'pipelines', cascade: ['persist'])]
     protected $pipelineConfig;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
      * If the pipeline has no author set, it is treated as predefined global pipeline used by everyone.
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     public function getAuthor(): ?User
@@ -71,9 +63,7 @@ class Pipeline
         return $this->getAuthor() === null;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Pipeline")
-     */
+    #[ORM\ManyToOne(targetEntity: Pipeline::class)]
     protected $createdFrom;
 
     public function getCreatedFrom(): ?Pipeline
@@ -87,21 +77,24 @@ class Pipeline
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="ExerciseFile", inversedBy="pipelines")
      * @var Collection
      */
+    #[ORM\ManyToMany(targetEntity: ExerciseFile::class, inversedBy: 'pipelines')]
     protected $exerciseFiles;
 
     /**
-     * @ORM\OneToMany(targetEntity="PipelineParameter", mappedBy="pipeline", indexBy="name",
-     *                cascade={"persist"}, orphanRemoval=true)
      * @var Collection
      */
+    #[ORM\OneToMany(
+        targetEntity: PipelineParameter::class,
+        mappedBy: 'pipeline',
+        indexBy: 'name',
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
     protected $parameters;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
-     */
+    #[ORM\ManyToMany(targetEntity: RuntimeEnvironment::class)]
     protected $runtimeEnvironments;
 
     public const DEFAULT_PARAMETERS = [

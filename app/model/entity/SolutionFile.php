@@ -7,15 +7,11 @@ use App\Helpers\FileStorage\IImmutableFile;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class SolutionFile extends UploadedFile
 {
-    /**
-     * @ORM\ManyToOne(targetEntity="Solution")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: Solution::class)]
     protected $solution;
 
     public function __construct($name, DateTime $uploadedAt, $fileSize, ?User $user, Solution $solution)

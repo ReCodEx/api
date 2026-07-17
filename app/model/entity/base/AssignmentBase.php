@@ -5,9 +5,7 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @ORM\MappedSuperclass
- */
+#[ORM\MappedSuperclass]
 abstract class AssignmentBase
 {
     use CreatableEntity;
@@ -23,9 +21,7 @@ abstract class AssignmentBase
 
     abstract public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isPublic;
 
     public function isPublic(): bool
@@ -33,9 +29,7 @@ abstract class AssignmentBase
         return $this->isPublic;
     }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isBonus;
 
     public function isBonus(): bool

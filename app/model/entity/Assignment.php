@@ -14,21 +14,24 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use DateTime;
 use InvalidArgumentException;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="first_deadline_idx", columns={"first_deadline"}),
- *                                @ORM\Index(name="second_deadline_idx", columns={"second_deadline"})})
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- */
+#[ORM\Table]
+#[ORM\Index(name: 'first_deadline_idx', columns: ['first_deadline'])]
+#[ORM\Index(name: 'second_deadline_idx', columns: ['second_deadline'])]
+#[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class Assignment extends AssignmentBase implements IExercise
 {
     use ExerciseData;
 
     /**
-     * @ORM\OneToMany(targetEntity="ExerciseFileLink", mappedBy="assignment", cascade={"persist", "remove"},
-     *                orphanRemoval=true)
      * @var Collection<ExerciseFileLink>
      */
+    #[ORM\OneToMany(
+        targetEntity: ExerciseFileLink::class,
+        mappedBy: 'assignment',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     protected $exerciseFileLinks;
 
     /**
@@ -133,23 +136,21 @@ class Assignment extends AssignmentBase implements IExercise
     }
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    #[ORM\Column(type: 'float')]
     protected $pointsPercentualThreshold;
 
     /**
-     * @ORM\ManyToMany(targetEntity="LocalizedAssignment", indexBy="locale")
      * @var Collection|Selectable
      */
+    #[ORM\ManyToMany(targetEntity: LocalizedAssignment::class, indexBy: 'locale')]
     protected $localizedAssignments;
 
     public function getLocalizedAssignments(): Collection
@@ -174,14 +175,10 @@ class Assignment extends AssignmentBase implements IExercise
         return $first === false ? null : $first;
     }
 
-    /**
-     * @ORM\Column(type="smallint")
-     */
+    #[ORM\Column(type: 'smallint')]
     protected $submissionsCountLimit;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $visibleFrom;
 
     public function isVisibleToStudents()
@@ -190,19 +187,13 @@ class Assignment extends AssignmentBase implements IExercise
         return $this->isPublic() && (!$this->visibleFrom || $this->visibleFrom <= (new DateTime()));
     }
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $firstDeadline;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $allowSecondDeadline;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $secondDeadline;
 
     public function isAfterDeadline(?DateTime $now = null): bool
@@ -226,19 +217,13 @@ class Assignment extends AssignmentBase implements IExercise
         return $this->firstDeadline < $now;
     }
 
-    /**
-     * @ORM\Column(type="smallint")
-     */
+    #[ORM\Column(type: 'smallint')]
     protected $maxPointsBeforeFirstDeadline;
 
-    /**
-     * @ORM\Column(type="smallint")
-     */
+    #[ORM\Column(type: 'smallint')]
     protected $maxPointsBeforeSecondDeadline;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $maxPointsDeadlineInterpolation = false;
 
     public function getMaxPoints(?DateTime $time = null): int
@@ -278,43 +263,35 @@ class Assignment extends AssignmentBase implements IExercise
     }
 
     /**
-     * @ORM\Column(type="boolean")
      * Whether a student can see the relative consumed time and memory (for each test).
      */
+    #[ORM\Column(type: 'boolean')]
     protected $canViewLimitRatios = false;
 
     /**
-     * @ORM\Column(type="boolean")
      * Whether a student can see the absolute values of consumed time and memory (for each test).
      * This only applies if $canViewLimitRatios is true.
      */
+    #[ORM\Column(type: 'boolean')]
     protected $canViewMeasuredValues = false;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $canViewJudgeStdout = false;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $canViewJudgeStderr = false;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $mergeJudgeLogs = false;
 
     /**
-     * @ORM\Column(type="boolean")
      * True if this is an assignment dedicated for an exam.
      * Exam assignments are visualized differently and have auto-synced visibility and deadline with exam period.
      */
+    #[ORM\Column(type: 'boolean')]
     protected $exam = false;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")
-     */
+    #[ORM\ManyToOne(targetEntity: Exercise::class, inversedBy: 'assignments')]
     protected $exercise;
 
     public function getExercise(): ?Exercise
@@ -322,9 +299,7 @@ class Assignment extends AssignmentBase implements IExercise
         return $this->exercise->isDeleted() ? null : $this->exercise;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
-     */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'assignments')]
     protected $group;
 
     public function getGroup(): ?Group
@@ -332,15 +307,11 @@ class Assignment extends AssignmentBase implements IExercise
         return $this->group->isDeleted() ? null : $this->group;
     }
 
-    /**
-     * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")
-     */
+    #[ORM\OneToMany(targetEntity: AssignmentSolution::class, mappedBy: 'assignment')]
     protected $assignmentSolutions;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
-     * @ORM\JoinTable(name="assignment_disabled_runtime_environments")
-     */
+    #[ORM\JoinTable(name: 'assignment_disabled_runtime_environments')]
+    #[ORM\ManyToMany(targetEntity: RuntimeEnvironment::class)]
     protected $disabledRuntimeEnvironments;
 
     public function getRuntimeEnvironments(): ReadableCollection
@@ -378,9 +349,7 @@ class Assignment extends AssignmentBase implements IExercise
         )->getValues();
     }
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $syncedAt;
 
     public function getSyncedAt(): DateTime
@@ -648,9 +617,9 @@ class Assignment extends AssignmentBase implements IExercise
 
     /**
      * @var PlagiarismDetectionBatch|null
-     * @ORM\ManyToOne(targetEntity="PlagiarismDetectionBatch")
      * Refers to last plagiarism detection batch which checked solutions of this assignment.
      */
+    #[ORM\ManyToOne(targetEntity: PlagiarismDetectionBatch::class)]
     protected $plagiarismBatch = null;
 
     /*

@@ -8,20 +8,18 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class ExerciseScoreConfig implements JsonSerializable
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
@@ -33,9 +31,9 @@ class ExerciseScoreConfig implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="string")
      * Identifier of the calculator
      */
+    #[ORM\Column(type: 'string')]
     protected $calculator;
 
     public function getCalculator(): string
@@ -44,9 +42,9 @@ class ExerciseScoreConfig implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="text", nullable=true)
      * Calculator configuration data.
      */
+    #[ORM\Column(type: 'text', nullable: true)]
     protected $config;
 
     public function getConfig(): ?string
@@ -73,10 +71,8 @@ class ExerciseScoreConfig implements JsonSerializable
         return $serialized === $this->config;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ExerciseScoreConfig")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: ExerciseScoreConfig::class)]
     protected $createdFrom;
 
     /**

@@ -6,9 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializable
 {
     public function __construct(
@@ -25,28 +23,26 @@ class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializa
         $this->externalAssignmentLink = $externalAssignmentLink;
     }
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
     /**
      * Text of the assignment (for students)
-     * @ORM\Column(type="text")
      */
+    #[ORM\Column(type: 'text')]
     protected $assignmentText;
 
     /**
      * A link to an external assignment for students
-     * @ORM\Column(type="string", length=1024, nullable=true)
      */
+    #[ORM\Column(type: 'string', length: 1024, nullable: true)]
     protected $externalAssignmentLink;
 
     /**
-     * @ORM\ManyToOne(targetEntity="LocalizedShadowAssignment")
-     * @ORM\JoinColumn(onDelete="SET NULL")
      * @var LocalizedShadowAssignment
      */
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: LocalizedShadowAssignment::class)]
     protected $createdFrom;
 
     public function equals(LocalizedEntity $other): bool

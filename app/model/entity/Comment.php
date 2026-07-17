@@ -6,30 +6,28 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Comment implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
      * @var CommentThread
-     * @ORM\ManyToOne(targetEntity="CommentThread", inversedBy="comments")
      */
+    #[ORM\ManyToOne(targetEntity: CommentThread::class, inversedBy: 'comments')]
     protected $commentThread;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="User")
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $user;
 
     public function getUser(): ?User
@@ -37,9 +35,7 @@ class Comment implements JsonSerializable
         return $this->user->isDeleted() ? null : $this->user;
     }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $isPrivate;
 
     /**
@@ -65,14 +61,10 @@ class Comment implements JsonSerializable
         return $this->commentThread;
     }
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $postedAt;
 
-    /**
-     * @ORM\Column(type="text", length=65535)
-     */
+    #[ORM\Column(type: 'text', length: 65535)]
     protected $text;
 
     public function jsonSerialize(): mixed

@@ -10,9 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait ExerciseData
 {
-    /**
-     * @ORM\Column(type="string", options={"default":"simpleExerciseConfig"})
-     */
+    #[ORM\Column(type: 'string', options: ['default' => 'simpleExerciseConfig'])]
     protected $configurationType;
 
     public function getConfigurationType(): string
@@ -21,9 +19,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
      * @var Collection<LocalizedExercise>|Selectable
      */
+    #[ORM\ManyToMany(targetEntity: LocalizedExercise::class, indexBy: 'locale')]
     protected $localizedTexts;
 
     public function getLocalizedTexts(): Collection
@@ -63,9 +61,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
      * @var Collection
      */
+    #[ORM\ManyToMany(targetEntity: RuntimeEnvironment::class)]
     protected $runtimeEnvironments;
 
     /**
@@ -91,9 +89,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="HardwareGroup")
      * @var Collection
      */
+    #[ORM\ManyToMany(targetEntity: HardwareGroup::class)]
     protected $hardwareGroups;
 
     /**
@@ -118,9 +116,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="ExerciseLimits", cascade={"persist"})
      * @var Collection
      */
+    #[ORM\ManyToMany(targetEntity: ExerciseLimits::class, cascade: ['persist'])]
     protected $exerciseLimits;
 
     /**
@@ -167,9 +165,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="ExerciseEnvironmentConfig", cascade={"persist"})
      * @var Collection|Selectable
      */
+    #[ORM\ManyToMany(targetEntity: ExerciseEnvironmentConfig::class, cascade: ['persist'])]
     protected $exerciseEnvironmentConfigs;
 
     /**
@@ -197,9 +195,7 @@ trait ExerciseData
         return $first === false ? null : $first;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ExerciseConfig", cascade={"persist"})
-     */
+    #[ORM\ManyToOne(targetEntity: ExerciseConfig::class, cascade: ['persist'])]
     protected $exerciseConfig;
 
     public function getExerciseConfig(): ?ExerciseConfig
@@ -207,9 +203,7 @@ trait ExerciseData
         return $this->exerciseConfig;
     }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ExerciseScoreConfig", cascade={"persist"})
-     */
+    #[ORM\ManyToOne(targetEntity: ExerciseScoreConfig::class, cascade: ['persist'])]
     protected $scoreConfig;
 
     public function getScoreConfig(): ExerciseScoreConfig
@@ -218,9 +212,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="ExerciseTest", cascade={"persist"})
      * @var Collection|Selectable
      */
+    #[ORM\ManyToMany(targetEntity: ExerciseTest::class, cascade: ['persist'])]
     protected $exerciseTests;
 
     public function getExerciseTests(): Collection
@@ -279,9 +273,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="ExerciseFile")
      * @var Collection<ExerciseFile>
      */
+    #[ORM\ManyToMany(targetEntity: ExerciseFile::class)]
     protected $exerciseFiles;
 
     public function getExerciseFiles(): Collection
@@ -327,9 +321,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\ManyToMany(targetEntity="AttachmentFile")
      * @var Collection<AttachmentFile>
      */
+    #[ORM\ManyToMany(targetEntity: AttachmentFile::class)]
     protected $attachmentFiles;
 
     public function getAttachmentFiles(): Collection
@@ -365,9 +359,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
      * How many files may one submit in a solution.
      */
+    #[ORM\Column(type: 'integer', nullable: true)]
     protected $solutionFilesLimit = null;
 
     public function getSolutionFilesLimit(): ?int
@@ -381,9 +375,9 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
      * Maximal allowed size (in bytes) of all files submitted for a solution.
      */
+    #[ORM\Column(type: 'integer', nullable: true)]
     protected $solutionSizeLimit = null;
 
     public function getSolutionSizeLimit(): ?int

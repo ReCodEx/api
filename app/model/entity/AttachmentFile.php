@@ -10,14 +10,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use DateTime;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class AttachmentFile extends UploadedFile implements JsonSerializable
 {
-    /**
-     * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="attachmentFiles")
-     */
+    #[ORM\ManyToMany(targetEntity: Exercise::class, mappedBy: 'attachmentFiles')]
     protected $exercises;
 
     /**
@@ -40,9 +36,7 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
         return $this->exercises;
     }
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="attachmentFiles")
-     */
+    #[ORM\ManyToMany(targetEntity: Assignment::class, mappedBy: 'attachmentFiles')]
     protected $assignments;
 
     /**

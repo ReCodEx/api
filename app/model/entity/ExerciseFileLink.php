@@ -12,60 +12,51 @@ use DateTime;
  * exercise-assignment records. However, links are small, so they are copied eagerly (not by CoW).
  * I.e., when Assignment is created from Exercise, the links are copied (immediately) as well.
  * The link of an exercise may be updated, but the link of an assignment is immutable.
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"key", "exercise_id"})})
- *
- * Note: technically, there should be also unique constraint on (key, assignment_id); however, it causes more problems
- * than it solves. During sync operation, the assignment-related links are cleared and re-filled. Since the Doctrine
- * performs inserts before deletes, and we do not want to flush in the middle, it causes unique constraint violation.
  */
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['key', 'exercise_id'])]
+#[ORM\Entity]
 class ExerciseFileLink implements JsonSerializable
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
      * The key (fixed ID) used to identify the file in exercise specification (for simple replacement).
-     * @ORM\Column(name="`key`", type="string", length=16)
      */
+    #[ORM\Column(name: '`key`', type: 'string', length: 16)]
     protected $key;
 
     /**
      * New name under which the file is downloaded (null means the original name).
-     * @ORM\Column(type="string", nullable=true)
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $saveName;
 
     /**
      * Minimal required user role to access the file (null means even non-logged-in users).
-     * @ORM\Column(type="string", nullable=true)
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $requiredRole;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ExerciseFile")
-     * @ORM\JoinColumn(onDelete="CASCADE")
-     */
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: ExerciseFile::class)]
     protected $exerciseFile;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="fileLinks")
-     * @ORM\JoinColumn(onDelete="CASCADE")
-     */
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: Exercise::class, inversedBy: 'fileLinks')]
     protected $exercise;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Assignment", inversedBy="exerciseFileLinks")
-     * @ORM\JoinColumn(onDelete="CASCADE")
-     */
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: Assignment::class, inversedBy: 'exerciseFileLinks')]
     protected $assignment;
 
     /**

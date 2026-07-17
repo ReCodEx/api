@@ -6,11 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="event_created_at_idx", columns={"created_at"})})
- * A logged security event such as user login or token refresh.
- */
+#[ORM\Table]
+#[ORM\Index(name: 'event_created_at_idx', columns: ['created_at'])]
+#[ORM\Entity]
 class SecurityEvent implements JsonSerializable
 {
     use CreatableEntity;
@@ -22,33 +20,27 @@ class SecurityEvent implements JsonSerializable
     public const TYPE_INVALIDATE_TOKENS = 'invalid';
     public const TYPE_CHANGE_PASSWORD = 'password';
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
-     * @ORM\Column(type="string")
      * Must match one of the TYPE constants
      */
+    #[ORM\Column(type: 'string')]
     protected $type;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $remoteAddr;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $user;
 
     /**
-     * @ORM\Column(type="text", length=65535)
      * Additional JSON encoded data (type-specific)
      */
+    #[ORM\Column(type: 'text', length: 65535)]
     protected $data;
 
     /**

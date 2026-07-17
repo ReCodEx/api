@@ -8,24 +8,21 @@ use InvalidArgumentException;
 use LogicException;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={
- *   @ORM\Index(name="created_at_idx", columns={"created_at"}),
- *   @ORM\Index(name="scheduled_at_idx", columns={"scheduled_at"}),
- *   @ORM\Index(name="started_at_idx", columns={"started_at"}),
- *   @ORM\Index(name="finished_at_idx", columns={"finished_at"})
- * })
- */
+#[ORM\Table]
+#[ORM\Index(name: 'created_at_idx', columns: ['created_at'])]
+#[ORM\Index(name: 'scheduled_at_idx', columns: ['scheduled_at'])]
+#[ORM\Index(name: 'started_at_idx', columns: ['started_at'])]
+#[ORM\Index(name: 'finished_at_idx', columns: ['finished_at'])]
+#[ORM\Entity]
 class AsyncJob implements JsonSerializable
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     public function getId(): ?string
@@ -34,9 +31,9 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
      * @var User|null
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $createdBy;
 
     public function getCreatedBy(): ?User
@@ -45,9 +42,9 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="datetime")
      * @var DateTime
      */
+    #[ORM\Column(type: 'datetime')]
     protected $createdAt;
 
     public function getCreatedAt(): DateTime
@@ -56,10 +53,10 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      * Time when the async task should be executed. If null, the task is executed as soon as possible.
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $scheduledAt = null;
 
     public function getScheduledAt(): ?DateTime
@@ -80,9 +77,9 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $startedAt = null;
 
     public function getStartedAt(): ?DateTime
@@ -91,10 +88,10 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
      * @var DateTime|null
      * This is the time when the task was either processed, killed, or deferred as unsolvable.
      */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     protected $finishedAt = null;
 
     public function getFinishedAt(): ?DateTime
@@ -108,11 +105,11 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="integer")
      * @var int
      * Every time the task is taken for execution, this number is incremented.
      * A threshold of max. retries may be applied to avoid infinite re-execution of broken tasks.
      */
+    #[ORM\Column(type: 'integer')]
     protected $retries = 0;
 
     public function getRetries(): int
@@ -121,10 +118,10 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="string", nullable=true)
      * @var string
      * ID of a worker who took this task. Once a task is assigned to a worker, it may not be relocated to another one.
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $workerId = null;
 
     public function getWorkerId(): ?string
@@ -157,9 +154,9 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="string")
      * @var string
      */
+    #[ORM\Column(type: 'string')]
     protected $command;
 
     public function getCommand(): string
@@ -168,10 +165,10 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="string")
      * @var string
      * Arguments of command encoded in json.
      */
+    #[ORM\Column(type: 'string')]
     protected $arguments = '';
 
     /**
@@ -195,10 +192,10 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="string", nullable=true)
      * @var string|null
      * Last error message registered with this task.
      */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $error = null;
 
     public function getError(): ?string
@@ -234,9 +231,9 @@ class AsyncJob implements JsonSerializable
     }
 
     /**
-     * @ORM\ManyToOne(targetEntity="Assignment", cascade={"persist"})
      * @var Assignment|null
      */
+    #[ORM\ManyToOne(targetEntity: Assignment::class, cascade: ['persist'])]
     protected $associatedAssignment = null;
 
     public function getAssociatedAssignment(): ?Assignment

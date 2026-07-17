@@ -10,26 +10,24 @@ use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity]
 class Notification implements JsonSerializable
 {
     use CreatableEntity;
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="User")
      */
+    #[ORM\ManyToOne(targetEntity: User::class)]
     protected $author;
 
     public function getAuthor(): ?User
@@ -39,20 +37,20 @@ class Notification implements JsonSerializable
 
     /**
      * @var DateTime
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     protected $visibleFrom;
 
     /**
      * @var DateTime
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     protected $visibleTo;
 
     /**
      * @var Collection|Selectable
-     * @ORM\ManyToMany(targetEntity="LocalizedNotification", indexBy="locale", cascade={"persist"})
      */
+    #[ORM\ManyToMany(targetEntity: LocalizedNotification::class, indexBy: 'locale', cascade: ['persist'])]
     protected $localizedTexts;
 
     public function getLocalizedTexts(): Collection
@@ -77,9 +75,7 @@ class Notification implements JsonSerializable
         return $first === false ? null : $first;
     }
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Group")
-     */
+    #[ORM\ManyToMany(targetEntity: Group::class)]
     protected $groups;
 
     /**
@@ -112,14 +108,10 @@ class Notification implements JsonSerializable
         )->getValues();
     }
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $role;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $type;
 
 

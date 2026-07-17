@@ -7,24 +7,25 @@ use App\Helpers\EvaluationPointsLoader;
 use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\EvaluationStatus as ES;
 
-/**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="assignment_solution_submission_submitted_at_idx", columns={"submitted_at"})})
- */
+#[ORM\Table]
+#[ORM\Index(name: 'assignment_solution_submission_submitted_at_idx', columns: ['submitted_at'])]
+#[ORM\Entity]
 class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 {
     public const JOB_TYPE = "student";
 
-    /**
-     * @ORM\ManyToOne(targetEntity="AssignmentSolution", inversedBy="submissions")
-     */
+    #[ORM\ManyToOne(targetEntity: AssignmentSolution::class, inversedBy: 'submissions')]
     protected $assignmentSolution;
 
     /**
-     * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"},
-     *               inversedBy="assignmentSolutionSubmission", fetch="EAGER")
      * @var SubmissionFailure
      */
+    #[ORM\OneToOne(
+        targetEntity: SubmissionFailure::class,
+        cascade: ['persist', 'remove'],
+        inversedBy: 'assignmentSolutionSubmission',
+        fetch: 'EAGER'
+    )]
     protected $failure;
 
 

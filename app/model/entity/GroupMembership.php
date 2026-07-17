@@ -7,10 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
 
-/**
- * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"user_id", "group_id", "inherited_from_id"})})
- */
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['user_id', 'group_id', 'inherited_from_id'])]
+#[ORM\Entity]
 class GroupMembership implements JsonSerializable
 {
     public const TYPE_ADMIN = "admin";
@@ -44,42 +43,34 @@ class GroupMembership implements JsonSerializable
     }
 
     /**
-     * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=\Ramsey\Uuid\Doctrine\UuidGenerator::class)
      * @var \Ramsey\Uuid\UuidInterface
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: \Ramsey\Uuid\Doctrine\UuidGenerator::class)]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="memberships")
-     */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'memberships')]
     protected $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="memberships")
-     */
+    #[ORM\ManyToOne(targetEntity: Group::class, inversedBy: 'memberships')]
     protected $group;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $type;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     protected $createdAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Group")
      * When not null, it indicates the membership was inherited from ancestral group (id of which it holds).
      * Inheritance applies only for selected types of memberships (e.g., admin).
      * At present, explicit inherited memberships are used to capture inherited admin privileges
      * which are in place at the moment when a sub-groups are being placed to archive.
      * In the future, this technique may be used for performance optimizations as well.
      */
+    #[ORM\ManyToOne(targetEntity: Group::class)]
     protected $inheritedFrom = null;
 
     public function setType(string $type)
