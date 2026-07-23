@@ -6,6 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
+/**
+ * Entity holding information about iCal provider for user events.
+ */
 #[ORM\Entity]
 class UserCalendar implements JsonSerializable
 {

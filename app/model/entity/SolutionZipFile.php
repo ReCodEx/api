@@ -8,6 +8,10 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
 
+/**
+ * A special case of solution file which is used when the user submits single ZIP archive.
+ * In such case it would be impractical to put it into another ZIP archive.
+ */
 #[ORM\Entity]
 class SolutionZipFile extends SolutionFile implements JsonSerializable
 {

@@ -6,6 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
+/**
+ * A logged security event such as user login or token refresh.
+ */
 #[ORM\Table]
 #[ORM\Index(name: 'event_created_at_idx', columns: ['created_at'])]
 #[ORM\Entity]

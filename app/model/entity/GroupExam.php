@@ -7,6 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
+/**
+ * Holds history record of an exam that took place in a group.
+ * The `examBegin`, `examEnd` fields are copied from group to `begin`, `end` fields here,
+ * `examLockType` is copied to `lockType` field.
+ * This entity is created when the first user locks in (i.e., only exams with users are recorded in history).
+ */
 #[ORM\Table]
 #[ORM\UniqueConstraint(columns: ['group_id', 'begin'])]
 #[ORM\Entity]

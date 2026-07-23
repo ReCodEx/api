@@ -6,6 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
 
+/**
+ * Logs locking events for a particular exam. Every time student acquires group-lock, this entity is created.
+ * If the user is explicitly unlocked, the time of that event is also recorded.
+ */
 #[ORM\Table]
 #[ORM\Index(name: 'lock_created_at_idx', columns: ['created_at'])]
 #[ORM\Entity]

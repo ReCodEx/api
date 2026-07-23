@@ -12,6 +12,10 @@ use DateTime;
  * exercise-assignment records. However, links are small, so they are copied eagerly (not by CoW).
  * I.e., when Assignment is created from Exercise, the links are copied (immediately) as well.
  * The link of an exercise may be updated, but the link of an assignment is immutable.
+ *
+ * Note: technically, there should be also unique constraint on (key, assignment_id); however, it causes more problems
+ * than it solves. During sync operation, the assignment-related links are cleared and re-filled. Since the Doctrine
+ * performs inserts before deletes, and we do not want to flush in the middle, it causes unique constraint violation.
  */
 #[ORM\Table]
 #[ORM\UniqueConstraint(columns: ['key', 'exercise_id'])]

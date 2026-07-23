@@ -6,6 +6,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
+/**
+ * A record (node) representing a similarity detected between a file and a set of files of a particular user.
+ * This entity holds the tested file and a reference to the author of similar files (possible sources of plagiarism).
+ * There should be at least one PlagiarismDetectedSimilarFile record associated with detected similarity
+ * (i.e., all possible sources of plagiarism of one author).
+ */
 #[ORM\Table]
 #[ORM\UniqueConstraint(columns: ['batch_id', 'author_id', 'solution_file_id', 'file_entry'])]
 #[ORM\Entity]

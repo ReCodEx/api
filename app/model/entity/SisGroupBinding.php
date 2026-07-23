@@ -4,6 +4,9 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * DEPRECATED (replaced by group external attributes)
+ */
 #[ORM\Entity]
 class SisGroupBinding
 {

@@ -7,6 +7,10 @@ use JsonSerializable;
 use DateTime;
 use OverflowException;
 
+/**
+ * This entity tracks an upload of a file per partes (chunked upload).
+ * Once the file is uploaded completely, it will be converted into UploadedFile entity.
+ */
 #[ORM\Entity]
 class UploadedPartialFile implements JsonSerializable
 {
