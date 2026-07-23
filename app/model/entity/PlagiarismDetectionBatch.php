@@ -6,6 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
 
+/**
+ * A record representing one processing batch of plagiarism detection.
+ * The detection is performed by external tools (solutions are downloaded and results are uploaded via API).
+ */
 #[ORM\Entity]
 class PlagiarismDetectionBatch implements JsonSerializable
 {

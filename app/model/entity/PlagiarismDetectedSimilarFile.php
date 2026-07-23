@@ -5,6 +5,14 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Helpers\Plagiarism\SimilarityFragments;
 
+/**
+ * A record representing a similarity detected in two compared files, which is part of one
+ * detected similarity record.
+ * The detected similarity holds the reference to the tested file, this entity holds reference
+ * to the other file where a similarity was detected.
+ * A similarity can comprise multiple text blocks, the details about similar code fragments are
+ * encoded in internal JSON record 'fragments' (violating 1NF).
+ */
 #[ORM\Table]
 #[ORM\UniqueConstraint(columns: ['detected_similarity_id', 'solution_file_id', 'file_entry'])]
 #[ORM\Entity]

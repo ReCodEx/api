@@ -6,6 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
 
+/**
+ * Single comment within a review of an assignment solution.
+ * A comment is tied to a particular line of code in a given file.
+ */
 #[ORM\Entity]
 class ReviewComment implements JsonSerializable
 {

@@ -4,6 +4,9 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Entity holding user-specific data stored by the UI.
+ */
 #[ORM\Entity]
 class UserUiData
 {

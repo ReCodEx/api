@@ -5,6 +5,10 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
+/**
+ * Key-value attributes assigned to groups to connect them to 3rd party systems to simplify
+ * external group management (creation, archiving) and student membership management.
+ */
 #[ORM\Table]
 #[ORM\Index(name: 'keys_idx', columns: ['service', 'key'])]
 #[ORM\UniqueConstraint(columns: ['group_id', 'service', 'key', 'value'])]
