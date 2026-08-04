@@ -66,7 +66,7 @@ abstract class ExecutionBox extends Box
         $task->setPriority(Priorities::$EXECUTION);
         $task->setType(TaskType::$EXECUTION);
 
-        $sandbox = (new SandboxConfig())->setName(LinuxSandbox::$ISOLATE);
+        $sandbox = (new SandboxConfig())->setName(LinuxSandbox::DEFAULT);
         if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {
             $sandbox->setStdin($this->getInputPortValue(self::$STDIN_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR));
         }

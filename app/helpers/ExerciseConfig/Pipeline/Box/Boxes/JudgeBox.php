@@ -230,7 +230,7 @@ class JudgeBox extends Box
             )
         );
 
-        $sandbox = (new SandboxConfig())->setName(LinuxSandbox::$ISOLATE);
+        $sandbox = (new SandboxConfig())->setName(LinuxSandbox::DEFAULT);
         $sandbox->setOutput(true);
         $task->setSandboxConfig($sandbox);
 

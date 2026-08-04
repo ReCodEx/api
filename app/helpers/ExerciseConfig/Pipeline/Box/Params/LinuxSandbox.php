@@ -7,5 +7,9 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box\Params;
  */
 class LinuxSandbox
 {
-    public static $ISOLATE = "isolate";
+    public const DEFAULT = ""; // use the sandbox specified in the worker configuration
+
+    // these are currently not used as we rely on worker configuration, but that may change in the future
+    public const ISOLATE = "isolate";
+    public const GUARDIAN = "recodex-guardian";
 }

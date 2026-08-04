@@ -469,7 +469,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(TaskType::$INITIATION, $initiationCompilationTask->getType());
         Assert::equal(null, $initiationCompilationTask->getTestId());
         Assert::notEqual(null, $initiationCompilationTask->getSandboxConfig());
-        Assert::equal(LinuxSandbox::$ISOLATE, $initiationCompilationTask->getSandboxConfig()->getName());
+        Assert::equal(LinuxSandbox::DEFAULT, $initiationCompilationTask->getSandboxConfig()->getName());
         Assert::true($initiationCompilationTask->getSandboxConfig()->getStderrToStdout());
         Assert::contains(".out", $initiationCompilationTask->getSandboxConfig()->getCarbonCopyStdout());
         Assert::contains(
@@ -553,7 +553,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(TaskType::$EXECUTION, $testARunTask->getType());
         Assert::equal("testA", $testARunTask->getTestId());
         Assert::notEqual(null, $testARunTask->getSandboxConfig());
-        Assert::equal(LinuxSandbox::$ISOLATE, $testARunTask->getSandboxConfig()->getName());
+        Assert::equal(LinuxSandbox::DEFAULT, $testARunTask->getSandboxConfig()->getName());
         Assert::null($testARunTask->getSandboxConfig()->getChdir());
         Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
         Assert::equal(ConfigParams::$EVAL_DIR . "expected.A.in.hash", $testARunTask->getSandboxConfig()->getStdin());
@@ -601,7 +601,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(TaskType::$EVALUATION, $testAJudgeTask->getType());
         Assert::equal("testA", $testAJudgeTask->getTestId());
         Assert::notEqual(null, $testAJudgeTask->getSandboxConfig());
-        Assert::equal(LinuxSandbox::$ISOLATE, $testAJudgeTask->getSandboxConfig()->getName());
+        Assert::equal(LinuxSandbox::DEFAULT, $testAJudgeTask->getSandboxConfig()->getName());
         Assert::equal("testA", $testAJudgeTask->getSandboxConfig()->getWorkingDirectory());
         Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
 
@@ -662,7 +662,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(TaskType::$EXECUTION, $testBRunTask->getType());
         Assert::equal("testB", $testBRunTask->getTestId());
         Assert::notEqual(null, $testBRunTask->getSandboxConfig());
-        Assert::equal(LinuxSandbox::$ISOLATE, $testBRunTask->getSandboxConfig()->getName());
+        Assert::equal(LinuxSandbox::DEFAULT, $testBRunTask->getSandboxConfig()->getName());
         Assert::null($testBRunTask->getSandboxConfig()->getChdir());
         Assert::count(0, $testBRunTask->getSandboxConfig()->getLimitsArray());
         Assert::equal(ConfigParams::$EVAL_DIR . "expected.B.in.hash", $testBRunTask->getSandboxConfig()->getStdin());
@@ -706,7 +706,7 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::equal(TaskType::$EVALUATION, $testBJudgeTask->getType());
         Assert::equal("testB", $testBJudgeTask->getTestId());
         Assert::notEqual(null, $testBJudgeTask->getSandboxConfig());
-        Assert::equal(LinuxSandbox::$ISOLATE, $testBJudgeTask->getSandboxConfig()->getName());
+        Assert::equal(LinuxSandbox::DEFAULT, $testBJudgeTask->getSandboxConfig()->getName());
         Assert::equal("testB", $testBJudgeTask->getSandboxConfig()->getWorkingDirectory());
         Assert::count(0, $testBJudgeTask->getSandboxConfig()->getLimitsArray());
     }
