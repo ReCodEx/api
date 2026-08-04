@@ -27,7 +27,7 @@ abstract class CompilationBox extends Box
     public static $RUNNER_FILE_PORT_KEY = "runner";
     public static $COMPILER_EXEC_PATH_PORT_KEY = "compiler-exec-path";
     public static $EXISTS_FAILED_MSG =
-        "Compilation process completed correctly but no executable file was yielded. Unable to proceed with testing.";
+    "Compilation process completed correctly but no executable file was yielded. Unable to proceed with testing.";
 
 
     /**
@@ -64,8 +64,8 @@ abstract class CompilationBox extends Box
             // My debug, you bow to no one...
             $sandbox->setStderrToStdout(true);
             $stdoutRandom = "compilation." . Random::generate(20) . ".out";
-            // all outputs are stored as carboncopies in results directory
-            $sandbox->setCarboncopyStdout(ConfigParams::$RESULT_DIR . $stdoutRandom);
+            // all outputs are stored as carbon copies in results directory
+            $sandbox->setCarbonCopyStdout(ConfigParams::$RESULT_DIR . $stdoutRandom);
         }
 
         return $task;

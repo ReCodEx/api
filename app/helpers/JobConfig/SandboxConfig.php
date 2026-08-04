@@ -25,9 +25,9 @@ class SandboxConfig
     /** Output config key */
     public const OUTPUT_KEY = "output";
     /** Carbon copy stdout key */
-    public const CARBONCOPY_STDOUT_KEY = "carboncopy-stdout";
+    public const CARBON_COPY_STDOUT_KEY = "carboncopy-stdout";
     /** Carbon copy stderr key */
-    public const CARBONCOPY_STDERR_KEY = "carboncopy-stderr";
+    public const CARBON_COPY_STDERR_KEY = "carboncopy-stderr";
     /** Change directory key */
     public const CHDIR_KEY = "chdir";
     /** Working directory key */
@@ -48,9 +48,9 @@ class SandboxConfig
     /** @var bool Output from stdout and stderr will be written to result yaml */
     private $output = false;
     /** @var string|null Standard output carbon copy file */
-    private $carboncopyStdout = null;
+    private $carbonCopyStdout = null;
     /** @var string|null Standard error carbon copy file */
-    private $carboncopyStderr = null;
+    private $carbonCopyStderr = null;
     /** @var string|null Change directory */
     protected $chdir = null;
     /** @var string|null Working directory */
@@ -184,9 +184,9 @@ class SandboxConfig
      * Return standard output carbon copy file.
      * @return string|null
      */
-    public function getCarboncopyStdout()
+    public function getCarbonCopyStdout()
     {
-        return $this->carboncopyStdout;
+        return $this->carbonCopyStdout;
     }
 
     /**
@@ -194,9 +194,9 @@ class SandboxConfig
      * @param string $stdout
      * @return $this
      */
-    public function setCarboncopyStdout($stdout)
+    public function setCarbonCopyStdout($stdout)
     {
-        $this->carboncopyStdout = $stdout;
+        $this->carbonCopyStdout = $stdout;
         return $this;
     }
 
@@ -204,9 +204,9 @@ class SandboxConfig
      * Get standard error carbon copy file.
      * @return string|null
      */
-    public function getCarboncopyStderr()
+    public function getCarbonCopyStderr()
     {
-        return $this->carboncopyStderr;
+        return $this->carbonCopyStderr;
     }
 
     /**
@@ -214,9 +214,9 @@ class SandboxConfig
      * @param string $stderr
      * @return $this
      */
-    public function setCarboncopyStderr($stderr)
+    public function setCarbonCopyStderr($stderr)
     {
-        $this->carboncopyStderr = $stderr;
+        $this->carbonCopyStderr = $stderr;
         return $this;
     }
 
@@ -358,11 +358,11 @@ class SandboxConfig
         if ($this->output) {
             $data[self::OUTPUT_KEY] = $this->output;
         }
-        if (!empty($this->carboncopyStdout)) {
-            $data[self::CARBONCOPY_STDOUT_KEY] = $this->carboncopyStdout;
+        if (!empty($this->carbonCopyStdout)) {
+            $data[self::CARBON_COPY_STDOUT_KEY] = $this->carbonCopyStdout;
         }
-        if (!empty($this->carboncopyStderr)) {
-            $data[self::CARBONCOPY_STDERR_KEY] = $this->carboncopyStderr;
+        if (!empty($this->carbonCopyStderr)) {
+            $data[self::CARBON_COPY_STDERR_KEY] = $this->carbonCopyStderr;
         }
         if (!empty($this->chdir)) {
             $data[self::CHDIR_KEY] = $this->chdir;

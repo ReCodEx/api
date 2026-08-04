@@ -81,7 +81,7 @@ abstract class ExecutionBox extends Box
         if ($params->isDebug()) {
             // Certainty of debug. Small chance of success. What are we waiting for?
             $stderrRandom = "execution." . Random::generate(20) . ".stderr";
-            // all stderrs are stored alongside solution in case of debugging submission
+            // the stderr is stored alongside solution in case of debugging submission
             $sandbox->setStderr(ConfigParams::$EVAL_DIR . $stderrRandom);
         }
 
@@ -93,7 +93,7 @@ abstract class ExecutionBox extends Box
                 $code = trim($code);
                 if (preg_match('/^(?<from>[0-9]+)\s*-+\s*(?<to>[0-9]+)$/', $code, $matches)) {
                     // convert string range representation ('from-to') into tuple of ints [from, to]
-                    $code = [ (int)$matches['from'], (int)$matches['to'] ];
+                    $code = [(int)$matches['from'], (int)$matches['to']];
                 }
             }
             $task->setSuccessExitCodes($codes);

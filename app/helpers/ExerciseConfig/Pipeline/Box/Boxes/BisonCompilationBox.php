@@ -4,14 +4,9 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\SandboxConfig;
-use App\Helpers\JobConfig\Tasks\Task;
 
 /**
  * Box that compile Bison format into C/C++ sources.
@@ -112,7 +107,7 @@ class BisonCompilationBox extends CompilationBox
         $inputFile = $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
         $inputBaseName = basename($inputFile, self::$BISON_EXT);
 
-        // Prepare cmdline args
+        // Prepare commandline args
         $args = [];
         if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
             $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();

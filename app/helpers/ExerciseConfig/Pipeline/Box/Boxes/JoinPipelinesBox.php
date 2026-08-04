@@ -14,7 +14,7 @@ use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
 
 /**
- * Customizable box for joing two pipelines in-between. There are only one input
+ * Customizable box for joining two pipelines in-between. There are only one input
  * port and only one output port, ports can be modified.
  * Default values for ports and name are not implemented.
  * @note Should be used only for internal purposes.

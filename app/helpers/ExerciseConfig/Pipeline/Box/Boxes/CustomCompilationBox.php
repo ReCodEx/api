@@ -4,14 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\SandboxConfig;
-use App\Helpers\JobConfig\Tasks\Task;
 
 /**
  * Box which represents custom compilation unit.
@@ -49,7 +42,7 @@ class CustomCompilationBox extends CompilationBox
     }
 
     /**
-     * JudgeNormalBox constructor.
+     * CustomCompilationBox constructor.
      * @param BoxMeta $meta
      */
     public function __construct(BoxMeta $meta)

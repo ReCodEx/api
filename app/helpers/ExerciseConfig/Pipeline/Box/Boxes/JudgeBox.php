@@ -140,7 +140,7 @@ class JudgeBox extends Box
         // Translation of judge type to command and args. The first item is the default.
         static $judgeTypes = null;
         if ($judgeTypes === null) {
-            // TODO - this is work in progress, a more elaborate way to define recodex-token-judge parameters will be devised soon
+            // TODO - this is work in progress, we need a better way to define recodex-token-judge parameters
             // TODO - shuffle-rows and shuffle-all versions are not implemented yet in recodex-token-judge
             // Note: recodex-token-judge is the new judge, which provides more verbose output for the logs
             $commonArgs = ['--log-limit', '4k', '--ignore-trailing-whitespace'];

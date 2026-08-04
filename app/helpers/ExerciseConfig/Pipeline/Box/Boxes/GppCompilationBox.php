@@ -4,14 +4,9 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\SandboxConfig;
-use App\Helpers\JobConfig\Tasks\Task;
 
 /**
  * Box which represents g++ compilation unit.
@@ -112,7 +107,7 @@ class GppCompilationBox extends CompilationBox
 
         $task->setCommandBinary(
             $this->hasInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)
-            ? $this->getInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)->getValue() : self::$GPP_BINARY_DEFAULT
+                ? $this->getInputPortValue(self::$COMPILER_EXEC_PATH_PORT_KEY)->getValue() : self::$GPP_BINARY_DEFAULT
         );
 
         $args = [];

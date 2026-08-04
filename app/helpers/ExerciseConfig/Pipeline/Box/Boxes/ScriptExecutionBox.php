@@ -4,14 +4,11 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
 
 /**
  * Box which represents execution where the main scripting file (entry-point)
- * needs to be passed to a particular scripting runtime. Optinally, the runtime
+ * needs to be passed to a particular scripting runtime. Optionally, the runtime
  * may get arguments of its own.
  */
 class ScriptExecutionBox extends ExecutionBox

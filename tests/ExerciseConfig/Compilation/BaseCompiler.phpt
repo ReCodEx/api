@@ -471,10 +471,10 @@ class TestBaseCompiler extends Tester\TestCase
         Assert::notEqual(null, $initiationCompilationTask->getSandboxConfig());
         Assert::equal(LinuxSandbox::$ISOLATE, $initiationCompilationTask->getSandboxConfig()->getName());
         Assert::true($initiationCompilationTask->getSandboxConfig()->getStderrToStdout());
-        Assert::contains(".out", $initiationCompilationTask->getSandboxConfig()->getCarboncopyStdout());
+        Assert::contains(".out", $initiationCompilationTask->getSandboxConfig()->getCarbonCopyStdout());
         Assert::contains(
             '${RESULT_DIR}/compilation.',
-            $initiationCompilationTask->getSandboxConfig()->getCarboncopyStdout()
+            $initiationCompilationTask->getSandboxConfig()->getCarbonCopyStdout()
         );
         Assert::equal($initiationDir, $initiationCompilationTask->getSandboxConfig()->getWorkingDirectory());
         Assert::count(0, $initiationCompilationTask->getSandboxConfig()->getLimitsArray());

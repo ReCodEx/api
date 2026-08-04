@@ -88,8 +88,8 @@ class TestJobConfigLoader extends Tester\TestCase
         Assert::equal("outstd", $sandboxConfig->getStdout());
         Assert::equal("errstd", $sandboxConfig->getStderr());
         Assert::true($sandboxConfig->getStderrToStdout());
-        Assert::equal("carboncopy-stdout-file", $sandboxConfig->getCarboncopyStdout());
-        Assert::equal("carboncopy-stderr-file", $sandboxConfig->getCarboncopyStderr());
+        Assert::equal("carboncopy-stdout-file", $sandboxConfig->getCarbonCopyStdout());
+        Assert::equal("carboncopy-stderr-file", $sandboxConfig->getCarbonCopyStderr());
         Assert::equal("working-dir", $sandboxConfig->getWorkingDirectory());
         Assert::count(1, $sandboxConfig->getLimitsArray());
         Assert::true($sandboxConfig->hasLimits("A"));

@@ -5,13 +5,11 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
 
 /**
  * Box which represents execution where the executable file needs to
- * be passed to a particular runtime. Optinally, the runtime may get
+ * be passed to a particular runtime. Optionally, the runtime may get
  * arguments of its own.
  */
 class WrappedExecutionBox extends ExecutionBox
