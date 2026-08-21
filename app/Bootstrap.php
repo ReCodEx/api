@@ -3,6 +3,7 @@
 namespace App;
 
 use Nette\Configurator;
+use Tracy\Debugger;
 
 class Bootstrap
 {
@@ -13,6 +14,7 @@ class Bootstrap
         //$configurator->setDebugMode('secret@23.75.345.200'); // enable for your remote IP
         // $configurator->setDebugMode(false);
         $configurator->enableTracy(__DIR__ . '/../log');
+        Debugger::$strictMode = E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED;
 
         $configurator->setTimeZone('Europe/Prague');
         $configurator->setTempDirectory(__DIR__ . '/../temp');
