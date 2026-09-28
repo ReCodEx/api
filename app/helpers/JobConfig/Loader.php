@@ -196,17 +196,10 @@ class Loader
     {
         $sandboxConfig = new SandboxConfig();
 
-        if (!isset($data[SandboxConfig::NAME_KEY])) {
-            throw new JobConfigLoadingException(
-                "Task '" . $taskId . "': sandbox section does not contain required field '"
-                    . SandboxConfig::NAME_KEY . "'"
-            );
+        if (isset($data[SandboxConfig::NAME_KEY])) {
+            $sandboxConfig->setName($data[SandboxConfig::NAME_KEY]);
+            unset($data[SandboxConfig::NAME_KEY]);
         }
-        $sandboxConfig->setName($data[SandboxConfig::NAME_KEY]);
-        unset($data[SandboxConfig::NAME_KEY]);
-
-        // *** LOAD OPTIONAL ITEMS
-
         if (isset($data[SandboxConfig::STDIN_KEY])) {
             $sandboxConfig->setStdin($data[SandboxConfig::STDIN_KEY]);
             unset($data[SandboxConfig::STDIN_KEY]);

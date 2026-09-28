@@ -4,7 +4,6 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\Loader;
-use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Limits;
 use App\Helpers\JobConfig\UndefinedLimits;
 use App\Exceptions\JobConfigLoadingException;
@@ -36,18 +35,6 @@ class TestSandboxConfig extends Tester\TestCase
     public function __construct()
     {
         $this->builder = new Loader();
-    }
-
-    public function testMissingSandboxName()
-    {
-        Assert::exception(
-            function () {
-                $data = self::$cfg;
-                unset($data["name"]);
-                $this->builder->loadSandboxConfig($data);
-            },
-            JobConfigLoadingException::class
-        );
     }
 
     public function testLimitsIsNotArray()
@@ -145,7 +132,6 @@ class TestSandboxConfig extends Tester\TestCase
         Assert::true($sandbox->hasLimits("idA"));
         Assert::type(UndefinedLimits::class, $sandbox->getLimits("idA"));
     }
-
 }
 
 # Testing methods run
