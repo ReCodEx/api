@@ -53,7 +53,7 @@ class RequestFactory extends Nette\Http\RequestFactory
                 $request->getHeaders(),
                 $request->getMethod(),
                 $request->getRemoteAddress(),
-                $request->getRemoteHost(),
+                null,
                 function () {
                     return file_get_contents('php://input');
                 }
