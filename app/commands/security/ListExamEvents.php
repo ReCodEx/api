@@ -94,7 +94,7 @@ class ListExamEvents extends BaseCommand
         static $fp = null;
         if ($fp === null) {
             $fp = fopen('php://output', 'w');
-            fputcsv($fp, self::$csvColumns, self::$csvDelimiter);
+            fputcsv($fp, self::$csvColumns, self::$csvDelimiter, '"', '');
         }
 
         // put the data in the right order
@@ -102,7 +102,7 @@ class ListExamEvents extends BaseCommand
         foreach (self::$csvColumns as $col) {
             $line[] = $data[$col] ?? null;
         }
-        fputcsv($fp, $line, self::$csvDelimiter);
+        fputcsv($fp, $line, self::$csvDelimiter, '"', '');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
