@@ -3,7 +3,6 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Loader;
 use App\Exceptions\JobConfigLoadingException;
 
@@ -18,7 +17,6 @@ class TestExternalTask extends Tester\TestCase
             "bin" => "cmdA"
         ],
         "sandbox" => [
-            "name" => "isolate",
             "limits" => [
                 [
                     "hw-group-id" => "A",
@@ -61,7 +59,6 @@ class TestExternalTask extends Tester\TestCase
         Assert::equal(null, $task->getType());
         Assert::equal(null, $task->getTestId());
         Assert::true($task->isSandboxedTask());
-        Assert::equal("isolate", $task->getSandboxConfig()->getName());
 
         Assert::equal(self::$basic, $task->toArray());
     }

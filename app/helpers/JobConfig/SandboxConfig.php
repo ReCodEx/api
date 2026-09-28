@@ -342,7 +342,9 @@ class SandboxConfig
     public function toArray(): array
     {
         $data = $this->data;
-        $data[self::NAME_KEY] = $this->name;
+        if (!empty($this->name)) {
+            $data[self::NAME_KEY] = $this->name;
+        }
         if (!empty($this->stdin)) {
             $data[self::STDIN_KEY] = $this->stdin;
         }
