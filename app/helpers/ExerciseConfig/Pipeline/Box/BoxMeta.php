@@ -105,7 +105,7 @@ class BoxMeta implements JsonSerializable
     {
         $this->portsIn = array();
         foreach ($ports as $port) {
-            $this->portsIn[$port->getName()] = $port;
+            $this->portsIn[$port->getName() ?? ''] = $port;
         }
         return $this;
     }
