@@ -67,7 +67,7 @@ class UserActions
 
         // write content as csv to file
         $log = fopen(Debugger::$logDirectory . '/' . self::USER_ACTIONS_LOG, 'a');
-        $putResult = fputcsv($log, $content, self::COLUMNS_GLUE);
+        $putResult = fputcsv($log, $content, self::COLUMNS_GLUE, '"', '');
         $closeResult = fclose($log);
         return $putResult && $closeResult;
     }

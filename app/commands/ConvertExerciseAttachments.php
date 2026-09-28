@@ -664,13 +664,13 @@ class ConvertExerciseAttachments extends BaseCommand
     private function saveCsv(string $filePath, array $header, array $rows): void
     {
         $fp = fopen($filePath, 'w');
-        fputcsv($fp, $header);
+        fputcsv($fp, $header, ',', '"', '');
         foreach ($rows as $row) {
             $orderedRow = [];
             foreach ($header as $col) {
                 $orderedRow[] = $row[$col] ?? '';
             }
-            fputcsv($fp, $orderedRow);
+            fputcsv($fp, $orderedRow, ',', '"', '');
         }
         fclose($fp);
     }
