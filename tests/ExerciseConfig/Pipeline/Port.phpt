@@ -144,9 +144,9 @@ class TestPort extends Tester\TestCase
     {
         $port = new PortMeta();
 
-        Assert::equal(null, $port->getName());
-        Assert::equal(null, $port->getType());
-        Assert::equal("", $port->getVariable());
+        Assert::equal('', $port->getName());
+        Assert::equal('', $port->getType());
+        Assert::equal('', $port->getVariable());
 
         $port->setName("name");
         $port->setType("file");
@@ -164,7 +164,6 @@ class TestPort extends Tester\TestCase
         Assert::equal("string", $port->getType());
         Assert::equal("varValue", $port->getVariable());
     }
-
 }
 
 # Testing methods run

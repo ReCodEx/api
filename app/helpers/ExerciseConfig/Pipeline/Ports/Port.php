@@ -9,8 +9,7 @@ use JsonSerializable;
 use App\Helpers\Yaml;
 
 /**
- * Port structure which contains type information and possibly reference to
- * variable.
+ * Port structure which contains type information and possibly reference to variable.
  */
 class Port implements JsonSerializable
 {
@@ -83,27 +82,27 @@ class Port implements JsonSerializable
 
     /**
      * Get name of this port.
-     * @return null|string
+     * @return string
      */
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->meta->getName();
     }
 
     /**
      * Get type of this port.
-     * @return null|string
+     * @return string
      */
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->meta->getType();
     }
 
     /**
      * Get variable value of the port.
-     * @return null|string
+     * @return string
      */
-    public function getVariable(): ?string
+    public function getVariable(): string
     {
         return $this->meta->getVariable();
     }
