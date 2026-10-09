@@ -10,7 +10,6 @@ use App\Helpers\Emails\EmailRenderResult;
 use App\Helpers\WebappLinks;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentBase;
-use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
