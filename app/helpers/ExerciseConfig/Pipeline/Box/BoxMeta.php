@@ -11,15 +11,14 @@ use JsonSerializable;
  */
 class BoxMeta implements JsonSerializable
 {
-
     /** Name of the name key */
-    const NAME_KEY = "name";
+    public const NAME_KEY = "name";
     /** Name of the ports in key */
-    const PORTS_IN_KEY = "portsIn";
+    public const PORTS_IN_KEY = "portsIn";
     /** Name of the ports out key */
-    const PORTS_OUT_KEY = "portsOut";
+    public const PORTS_OUT_KEY = "portsOut";
     /** Name of the type key */
-    const TYPE_KEY = "type";
+    public const TYPE_KEY = "type";
 
 
     /**
@@ -38,13 +37,13 @@ class BoxMeta implements JsonSerializable
      * Ports in for this box.
      * @var array
      */
-    protected $portsIn = array();
+    protected $portsIn = [];
 
     /**
      * Ports out for this box.
      * @var array
      */
-    protected $portsOut = array();
+    protected $portsOut = [];
 
 
     /**

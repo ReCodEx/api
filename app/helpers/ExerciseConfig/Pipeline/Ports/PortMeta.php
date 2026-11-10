@@ -10,30 +10,29 @@ use JsonSerializable;
  */
 class PortMeta implements JsonSerializable
 {
-
     /** Name of the type key */
-    const TYPE_KEY = "type";
+    public const TYPE_KEY = "type";
     /** Name of the value key */
-    const VARIABLE_KEY = "value";
+    public const VARIABLE_KEY = "value";
 
 
     /**
      * Port identification.
      * @var string
      */
-    protected $name = null;
+    protected $name = '';
 
     /**
      * Type of this port.
      * @var string
      */
-    protected $type = null;
+    protected $type = '';
 
     /**
      * Bound variable for this port.
      * @var string
      */
-    protected $variable = "";
+    protected $variable = '';
 
     /**
      * Create instance of PortMeta with given values.
@@ -53,9 +52,9 @@ class PortMeta implements JsonSerializable
 
     /**
      * Get name of this port.
-     * @return null|string
+     * @return string
      */
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -73,9 +72,9 @@ class PortMeta implements JsonSerializable
 
     /**
      * Get type of this port.
-     * @return null|string
+     * @return string
      */
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
