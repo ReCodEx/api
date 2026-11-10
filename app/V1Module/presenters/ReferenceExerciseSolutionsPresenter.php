@@ -366,7 +366,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws ExerciseConfigException
      * @throws BadRequestException
      */
-    #[Post("files", new VArray())]
+    #[Post("files", new VArray(new VUuid()), "Files of the reference solution", required: true)]
     #[Path("exerciseId", new VUuid(), "identifier of exercise", required: true)]
     public function actionPreSubmit(string $exerciseId)
     {
@@ -420,7 +420,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
      * @throws BadRequestException
      */
     #[Post("note", new VString(), "Description of this particular reference solution, for example used algorithm")]
-    #[Post("files", new VMixed(), "Files of the reference solution", nullable: true)]
+    #[Post("files", new VArray(new VUuid()), "Files of the reference solution", required: true)]
     #[Post("runtimeEnvironmentId", new VMixed(), "ID of runtime for this solution", nullable: true)]
     #[Post("solutionParams", new VMixed(), "Solution parameters", required: false, nullable: true)]
     #[Path("exerciseId", new VUuid(), "Identifier of the exercise", required: true)]
