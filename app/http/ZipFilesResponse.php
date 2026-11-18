@@ -35,6 +35,11 @@ class ZipFilesResponse implements Response
     private $forceDownload;
 
     /**
+     * Empty zip file content, which is used when no files are given to the response.
+     */
+    private const EMPTY_ZIP = "PK\x05\x06" . "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+
+    /**
      * ZipFilesResponse constructor.
      * @param array $files indexed by original name (becomes zip entry) where values are local paths (strings)
      *                        or possibly IImmutableFile objects
@@ -55,11 +60,22 @@ class ZipFilesResponse implements Response
 
     /**
      * Compress given files to zip archive.
-     * @return string path to the constructed tmp zip archive
+     * @return string|null path to the constructed tmp zip archive, null if no files were given
      * @throws ApiException
      */
-    private function compress(): string
+    private function compress(): ?string
     {
+        if (count($this->files) === 0) {
+            // Well the php is interesting in handling zip archives, if you do not
+            // provide any file to it, the php will process everything correctly and
+            // successfully, creating and even closing, butt beware because if you do
+            // not provided nada files, the zip will not be created at all!!!
+            // So for further processing we need to at least create an empty file,
+            // which will omit further warnings concerning non-existing file during
+            // sending back to the user.
+            return null;
+        }
+
         $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
         $zip = new ZipArchive();
         if ($zip->open($tmpFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
@@ -85,17 +101,6 @@ class ZipFilesResponse implements Response
             throw new ApiException("Archive could not be properly saved");
         }
 
-        if (count($this->files) === 0) {
-            // Well the php is interesting in handling zip archives, if you do not
-            // provide any file to it, the php will process everything correctly and
-            // successfully, creating and even closing, butt beware because if you do
-            // not provided nada files, the zip will not be created at all!!!
-            // So for further processing we need to at least create an empty file,
-            // which will omit further warnings concerning non-existing file during
-            // sending back to the user.
-            touch($tmpFile);
-        }
-
         return $tmpFile;
     }
 
@@ -110,6 +115,20 @@ class ZipFilesResponse implements Response
     {
         // first compress all given files into zip
         $zipFile = $this->compress();
+
+        if ($zipFile === null) {
+            // send over a correct empty zip file, so the user will not get any error
+            $httpResponse->setContentType("application/zip");
+            $httpResponse->setHeader(
+                'Content-Disposition',
+                ($this->forceDownload ? 'attachment' : 'inline')
+                    . '; filename="' . $this->name . '"'
+                    . '; filename*=utf-8\'\'' . rawurlencode($this->name),
+            );
+            $httpResponse->setHeader("Content-Length", (string)strlen(self::EMPTY_ZIP));
+            echo self::EMPTY_ZIP;
+            return;
+        }
 
         // clear all potentially cached information like filesize and such
         clearstatcache();
