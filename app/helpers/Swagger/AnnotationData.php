@@ -101,26 +101,26 @@ class AnnotationData
     }
 
     /**
-     * Creates a method annotation string parsable by the swagger generator.
-     * Example: if the method name is 'Put', the method will return '@OA\\PUT'.
-     * @return string Returns the method annotation.
+     * Creates the opening of the operation attribute parsable by the swagger generator.
+     * The generic 'OA\Operation' is used because the HTTP method shorthands (such as 'OA\Operation\Get') do not
+     * accept a request body. The HTTP method is added as an argument of the attribute.
+     * @return string Returns the opening of the method attribute (without the arguments and the closing bracket).
      */
     private function getHttpMethodAnnotation(): string
     {
-        // sample: converts 'PUT' to 'Put'
-        $httpMethodString = ucfirst(strtolower($this->httpMethod->name));
-        return "@OA\\" . $httpMethodString;
+        return "#[OA\\Operation";
     }
 
     /**
-     * Creates a requestBody annotation string parsable by the swagger generator.
+     * Creates a requestBody expression parsable by the swagger generator.
      * Processes JSON request body and files (form-data, octet-stream).
-     * @return string|null Returns the annotation string or null, if there is no body.
+     * @return string|null Returns the attribute expression or null, if there is no body.
      */
     private function getBodyAnnotation(): string | null
     {
-        $head = '@OA\RequestBody';
+        $head = 'new OA\RequestBody';
         $body = new ParenthesesBuilder();
+        $mediaTypes = [];
 
         // add the json schema
         $jsonSchema = $this->serializeBodyParams(
@@ -128,19 +128,20 @@ class AnnotationData
             $this->bodyParams
         );
         if ($jsonSchema !== null) {
-            $body->addValue($jsonSchema);
+            $mediaTypes[] = $jsonSchema;
         }
 
         // add the file schema
         $fileSchema = $this->getFileAnnotation();
         if ($fileSchema !== null) {
-            $body->addValue($fileSchema);
+            $mediaTypes[] = $fileSchema;
         }
 
-        if ($jsonSchema === null && $fileSchema === null) {
+        if (count($mediaTypes) === 0) {
             return null;
         }
 
+        $body->addKeyArray("content", $mediaTypes);
         return $head . $body->toString();
     }
 
@@ -181,12 +182,12 @@ class AnnotationData
     }
 
     /**
-     * Creates a content annotation string parsable by the swagger generator.
+     * Creates a media type expression parsable by the swagger generator.
      * Example: if a JSON request body contains only the 'url' property, this method will produce:
-     * '@OA\MediaType(mediaType="application/json",@OA\Schema(@OA\Property(property="url",type="string")))'
+     * "new OA\MediaType(mediaType: 'application/json', schema: new OA\Schema(properties: [new OA\Property(...)]))"
      * @param string $mediaType The media type of the parameters ("application/json", "multipart/form-data").
-     * @param array $bodyParams AnnotationParameterData array used to generate the annotation.
-     * @return string|null Returns the annotation string or null, if there are no body parameters.
+     * @param array $bodyParams AnnotationParameterData array used to generate the expression.
+     * @return string|null Returns the expression string or null, if there are no body parameters.
      */
     private function serializeBodyParams(string $mediaType, array $bodyParams): string | null
     {
@@ -194,37 +195,41 @@ class AnnotationData
             return null;
         }
 
-        $head = '@OA\MediaType(mediaType="' . $mediaType . '",@OA\Schema';
-        $body = new ParenthesesBuilder();
+        $schema = new ParenthesesBuilder();
+        $properties = [];
         // list of all required properties
         $required = [];
 
         foreach ($bodyParams as $bodyParam) {
-            $body->addValue($bodyParam->toPropertyAnnotation());
+            $properties[] = $bodyParam->toPropertyAnnotation();
             if ($bodyParam->required) {
-                // add quotes around the names (required by the swagger generator)
-                $required[] = '"' . $bodyParam->name . '"';
+                $required[] = ParenthesesBuilder::stringLiteral($bodyParam->name);
             }
         }
 
+        $schema->addKeyArray("properties", $properties);
+
         // add a list of required properties
         if (count($required) > 0) {
-            // stringify the list (it has to be in '{"name1","name1",...}' format)
-            $requiredString = "{" . implode(",", $required) . "}";
-            $body->addValue("required=" . $requiredString);
+            $schema->addKeyArray("required", $required);
         }
 
-        return $head . $body->toString() . ")";
+        $mediaTypeBody = new ParenthesesBuilder();
+        $mediaTypeBody->addKeyValue("mediaType", $mediaType);
+        $mediaTypeBody->addKeyRaw("schema", 'new OA\Schema' . $schema->toString());
+        return 'new OA\MediaType' . $mediaTypeBody->toString();
     }
 
     private function getOctetStreamAnnotation(AnnotationParameterData $octetParam): string
     {
-        $head = '@OA\MediaType(mediaType="application/octet-stream",@OA\Schema';
-        $body = new ParenthesesBuilder();
+        $schema = new ParenthesesBuilder();
+        $schema->addKeyValue("type", $octetParam->swaggerType);
+        $schema->addKeyValue("format", "binary");
 
-        $body->addKeyValue("type", $octetParam->swaggerType);
-        $body->addKeyValue("format", "binary");
-        return $head . $body->toString() . ")";
+        $mediaTypeBody = new ParenthesesBuilder();
+        $mediaTypeBody->addKeyValue("mediaType", "application/octet-stream");
+        $mediaTypeBody->addKeyRaw("schema", 'new OA\Schema' . $schema->toString());
+        return 'new OA\MediaType' . $mediaTypeBody->toString();
     }
 
     /**
@@ -242,14 +247,15 @@ class AnnotationData
     }
 
     /**
-     * Converts the extracted annotation data to a string parsable by the Swagger-PHP library.
+     * Converts the extracted annotation data to an attribute string parsable by the Swagger-PHP library.
      * @param string $route The route of the handler this set of data represents.
-     * @return string Returns the transpiled annotations on a single line.
+     * @return string Returns the transpiled attribute on a single line.
      */
     public function toSwaggerAnnotations(string $route)
     {
         $httpMethodAnnotation = $this->getHttpMethodAnnotation();
         $body = new ParenthesesBuilder();
+        $body->addKeyValue("method", strtolower($this->httpMethod->name));
         $body->addKeyValue("path", $route);
         $body->addKeyValue("operationId", $this->constructOperationId());
 
@@ -259,19 +265,24 @@ class AnnotationData
             $body->addKeyValue("description", $this->getDescription());
         }
 
+        $parameters = [];
         foreach ($this->pathParams as $pathParam) {
-            $body->addValue($pathParam->toParameterAnnotation());
+            $parameters[] = $pathParam->toParameterAnnotation();
         }
         foreach ($this->queryParams as $queryParam) {
-            $body->addValue($queryParam->toParameterAnnotation());
+            $parameters[] = $queryParam->toParameterAnnotation();
+        }
+        if (count($parameters) > 0) {
+            $body->addKeyArray("parameters", $parameters);
         }
 
         $bodyProperties = $this->getBodyAnnotation();
         if ($bodyProperties !== null) {
-            $body->addValue($bodyProperties);
+            $body->addKeyRaw("requestBody", $bodyProperties);
         }
 
         // generate responses
+        $responses = [];
         foreach ($this->responseDataList as $responseData) {
             $responseSchema = $this->serializeBodyParams(
                 "application/json",
@@ -281,20 +292,23 @@ class AnnotationData
             $responseBody = new ParenthesesBuilder();
             $responseBody->addKeyValue("response", $responseData->statusCode);
             $responseBody->addKeyValue("description", $responseData->description);
-            $responseBody->addValue($responseSchema);
+            if ($responseSchema !== null) {
+                $responseBody->addKeyArray("content", [$responseSchema]);
+            }
 
-            $body->addValue("@OA\Response" . $responseBody->toString());
+            $responses[] = 'new OA\Response' . $responseBody->toString();
         }
 
         // add a placeholder response if none present
         if (count($this->responseDataList) === 0) {
-            $body->addValue('@OA\Response(response="200",description="Placeholder response")');
+            $responses[] = "new OA\\Response(response: '200', description: 'Placeholder response')";
         }
+        $body->addKeyArray("responses", $responses);
 
         if ($this->deprecated) {
             $body->addKeyValue("deprecated", true);
         }
 
-        return $httpMethodAnnotation . $body->toString();
+        return $httpMethodAnnotation . $body->toString() . "]";
     }
 }
