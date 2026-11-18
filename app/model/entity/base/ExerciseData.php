@@ -5,7 +5,6 @@ namespace App\Model\Entity;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 
 trait ExerciseData
@@ -19,7 +18,7 @@ trait ExerciseData
     }
 
     /**
-     * @var Collection<LocalizedExercise>|Selectable
+     * @var Collection<LocalizedExercise>
      */
     #[ORM\ManyToMany(targetEntity: LocalizedExercise::class, indexBy: 'locale')]
     protected $localizedTexts;
@@ -165,7 +164,7 @@ trait ExerciseData
     }
 
     /**
-     * @var Collection|Selectable
+     * @var Collection
      */
     #[ORM\ManyToMany(targetEntity: ExerciseEnvironmentConfig::class, cascade: ['persist'])]
     protected $exerciseEnvironmentConfigs;
@@ -212,7 +211,7 @@ trait ExerciseData
     }
 
     /**
-     * @var Collection|Selectable
+     * @var Collection
      */
     #[ORM\ManyToMany(targetEntity: ExerciseTest::class, cascade: ['persist'])]
     protected $exerciseTests;

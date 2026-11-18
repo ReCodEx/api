@@ -6,6 +6,7 @@ use App\Model\Entity\AsyncJob;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 use DateTime;
 
 /**
@@ -53,7 +54,7 @@ class AsyncJobs extends BaseRepository
                 ->setParameter("assignment", $assignment->getId());
         }
 
-        $qb->addOrderBy('j.createdAt', 'DESC');
+        $qb->addOrderBy('j.createdAt', SortDirection::Descending);
         return $qb->getQuery()->getResult();
     }
 
@@ -86,7 +87,8 @@ class AsyncJobs extends BaseRepository
                 ->setParameter("assignment", $assignment->getId());
         }
 
-        $qb->addOrderBy('j.finishedAt', 'DESC')->addOrderBy('j.createdAt', 'DESC');
+        $qb->addOrderBy('j.finishedAt', SortDirection::Descending)
+            ->addOrderBy('j.createdAt', SortDirection::Descending);
         return $qb->getQuery()->getResult();
     }
 

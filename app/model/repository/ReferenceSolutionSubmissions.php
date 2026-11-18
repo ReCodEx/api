@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\ReferenceExerciseSolution;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 use DateTime;
 
 /**
@@ -43,8 +44,8 @@ class ReferenceSolutionSubmissions extends BaseRepository
         $submissions = $this->findBy(
             ["referenceSolution" => $solution],
             [
-                "submittedAt" => "DESC",  // make sure the last one submitted is first one in the result
-                "id" => "ASC",
+                "submittedAt" => SortDirection::Descending,  // make sure the last one submitted is first one in the result
+                "id" => SortDirection::Ascending,
             ]
         );
 

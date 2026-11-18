@@ -2,7 +2,6 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Helpers\MetaFormats\Attributes\Post;
 use App\Helpers\MetaFormats\Attributes\Path;
 use App\Helpers\MetaFormats\Validators\VString;
 use App\Helpers\MetaFormats\Validators\VUuid;
@@ -25,6 +24,7 @@ use Eluceo\iCal\Domain\Entity\Event;
 use Eluceo\iCal\Domain\Entity\Calendar;
 use Eluceo\iCal\Presentation\Factory\CalendarFactory;
 use Eluceo\iCal\Domain\ValueObject;
+use SortDirection;
 
 /**
  * User iCal management endpoints
@@ -187,7 +187,7 @@ class UserCalendarsPresenter extends BasePresenter
     public function actionUserCalendars(string $id)
     {
         $user = $this->users->findOrThrow($id);
-        $calendars = $this->userCalendars->findBy(['user' => $user], ['createdAt' => 'DESC']);
+        $calendars = $this->userCalendars->findBy(['user' => $user], ['createdAt' => SortDirection::Descending]);
         $this->sendSuccessResponse($calendars);
     }
 

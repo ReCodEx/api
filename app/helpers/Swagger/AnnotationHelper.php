@@ -533,7 +533,7 @@ class AnnotationHelper
                 $class = $class->getParentClass();
                 $property = null;
             }
-        } while ($property === null && $class !== null);
+        } while (!$property && $class);
 
         return $property->getValue($object);
     }

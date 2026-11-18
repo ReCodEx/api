@@ -6,6 +6,7 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 
 /**
  * @extends BaseRepository<AssignmentSolutionSubmission>
@@ -43,8 +44,8 @@ class AssignmentSolutionSubmissions extends BaseRepository
         $submissions = $this->findBy(
             ["assignmentSolution" => $solution],
             [
-                "submittedAt" => "DESC",  // make sure the last one submitted is first one in the result
-                "id" => "ASC",
+                "submittedAt" => SortDirection::Descending,  // make sure the last one submitted is first one in the result
+                "id" => SortDirection::Ascending,
             ]
         );
 

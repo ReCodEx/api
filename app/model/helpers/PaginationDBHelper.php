@@ -7,6 +7,7 @@ use Doctrine\ORM\QueryBuilder;
 use App\Exceptions\InvalidApiArgumentException;
 use Doctrine\ORM\Query;
 use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
+use SortDirection;
 
 /**
  * Helper class that adds common features (search and order by) to query builder
@@ -144,7 +145,8 @@ class PaginationDbHelper
             && !empty($this->orderByColumns[$pagination->getOrderBy()])
         ) {
             foreach ($this->orderByColumns[$pagination->getOrderBy()] as $orderBy) {
-                $qb->addOrderBy($orderBy, $pagination->isOrderAscending() ? 'ASC' : 'DESC');
+                $qb->addOrderBy($orderBy, $pagination->isOrderAscending()
+                    ? SortDirection::Ascending : SortDirection::Descending);
             }
         }
 

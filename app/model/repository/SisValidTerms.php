@@ -4,6 +4,7 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\SisValidTerm;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 
 /**
  * @extends BaseRepository<SisValidTerm>
@@ -39,8 +40,8 @@ class SisValidTerms extends BaseRepository
         return $this->repository->findBy(
             [],
             [
-                "year" => "DESC",
-                "term" => "DESC",
+                "year" => SortDirection::Descending,
+                "term" => SortDirection::Descending,
             ]
         );
     }

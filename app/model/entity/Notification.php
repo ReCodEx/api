@@ -6,7 +6,6 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
@@ -48,7 +47,7 @@ class Notification implements JsonSerializable
     protected $visibleTo;
 
     /**
-     * @var Collection|Selectable
+     * @var Collection
      */
     #[ORM\ManyToMany(targetEntity: LocalizedNotification::class, indexBy: 'locale', cascade: ['persist'])]
     protected $localizedTexts;
