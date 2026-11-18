@@ -59,7 +59,7 @@ class AnnotationParameterData
             return;
         }
 
-        $itemsHead = "@OA\\Items";
+        $itemsHead = "new OA\\Schema";
         $layers = [];
         for ($i = 0; $i < $this->arrayDepth; $i++) {
             $items = new ParenthesesBuilder();
@@ -91,11 +91,11 @@ class AnnotationParameterData
         $serialized_layer = $itemsHead . $layers[0]->toString();
         for ($i = 1; $i < $this->arrayDepth; $i++) {
             $layer = $layers[$i];
-            $layer->addValue($serialized_layer);
+            $layer->addKeyRaw("items", $serialized_layer);
             $serialized_layer = $itemsHead . $layer->toString();
         }
 
-        $container->addValue($serialized_layer);
+        $container->addKeyRaw("items", $serialized_layer);
     }
 
     private function addObjectParamsIfObject(ParenthesesBuilder $container)
@@ -104,9 +104,13 @@ class AnnotationParameterData
             return;
         }
 
+        $properties = [];
         foreach ($this->nestedObjectParameterData as $paramData) {
-            $annotation = $paramData->toPropertyAnnotation();
-            $container->addValue($annotation);
+            $properties[] = $paramData->toPropertyAnnotation();
+        }
+
+        if (count($properties) > 0) {
+            $container->addKeyArray("properties", $properties);
         }
     }
 
@@ -120,12 +124,12 @@ class AnnotationParameterData
     }
 
     /**
-     * Generates swagger schema annotations based on the data type.
-     * @return string Returns the annotation.
+     * Generates swagger schema attributes based on the data type.
+     * @return string Returns the attribute expression.
      */
     private function generateSchemaAnnotation(): string
     {
-        $head = "@OA\\Schema";
+        $head = "new OA\\Schema";
         $body = new ParenthesesBuilder();
 
         $body->addKeyValue("type", $this->swaggerType);
@@ -142,11 +146,11 @@ class AnnotationParameterData
     }
 
     /**
-     * Converts the object to a @OA\Parameter(...) annotation string
+     * Converts the object to a 'new OA\Parameter(...)' expression string
      */
     public function toParameterAnnotation(): string
     {
-        $head = "@OA\\Parameter";
+        $head = "new OA\\Parameter";
         $body = new ParenthesesBuilder();
 
         $body->addKeyValue("name", $this->name);
@@ -163,48 +167,52 @@ class AnnotationParameterData
             $body->addKeyValue("description", $this->description);
         }
 
-        $body->addValue($this->generateSchemaAnnotation());
+        $body->addKeyRaw("schema", $this->generateSchemaAnnotation());
 
         return $head . $body->toString();
     }
 
     /**
-     * Generates swagger property annotations based on the data type.
-     * @return string Returns the annotation.
+     * Generates swagger property attributes based on the data type.
+     * @return string Returns the attribute expression.
      */
     public function toPropertyAnnotation(): string
     {
-        $head = "@OA\\Property";
+        $head = "new OA\\Property";
         $body = new ParenthesesBuilder();
-
         $body->addKeyValue("property", $this->name);
-        $body->addKeyValue("type", $this->swaggerType);
-        $body->addKeyValue("nullable", $this->nullable);
+
+        // the property type and constraints are defined by its schema
+        $schema = new ParenthesesBuilder();
+        $schema->addKeyValue("type", $this->swaggerType);
+        $schema->addKeyValue("nullable", $this->nullable);
 
         if ($this->description !== null) {
-            $body->addKeyValue("description", $this->description);
+            $schema->addKeyValue("description", $this->description);
         }
 
         // handle param constraints (array constrains have to be added to the element, not the array)
         if ($this->swaggerType !== "array") {
-            $this->constraints?->addConstraints($body);
+            $this->constraints?->addConstraints($schema);
         }
 
         // handle arrays
-        $this->addArrayItemsIfArray($body);
+        $this->addArrayItemsIfArray($schema);
 
         // handle objects
-        $this->addObjectParamsIfObject($body);
+        $this->addObjectParamsIfObject($schema);
 
         // handle files
-        $this->addFileParamsIfFile($body);
+        $this->addFileParamsIfFile($schema);
 
         // add example value
         if ($this->swaggerType !== "array" && $this->swaggerType !== "object") {
             if ($this->example != null) {
-                $body->addKeyValue("example", $this->example);
+                $schema->addKeyValue("example", $this->example);
             }
         }
+
+        $body->addKeyRaw("schema", "new OA\\Schema" . $schema->toString());
 
         return $head . $body->toString();
     }
