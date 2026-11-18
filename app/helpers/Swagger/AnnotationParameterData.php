@@ -2,7 +2,6 @@
 
 namespace App\Helpers\Swagger;
 
-use App\Exceptions\InternalServerException;
 use App\Helpers\MetaFormats\FileRequestType;
 use App\Helpers\MetaFormats\Type;
 

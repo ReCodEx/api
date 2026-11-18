@@ -2,7 +2,6 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Helpers\MetaFormats\Attributes\Post;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Security\Identity;

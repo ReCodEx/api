@@ -64,7 +64,7 @@ class ResponseData
         if ($payloadParam === null) {
             throw new InternalServerException("The SuccessResponseFormat is corrupted (no 'payload' field).");
         }
-    
+
         // wrap responseParams
         $payloadParam->nestedObjectParameterData = $this->responseParams;
         $payloadParam->swaggerType = VObject::SWAGGER_TYPE;

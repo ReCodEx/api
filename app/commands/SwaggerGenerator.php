@@ -33,13 +33,8 @@ class SwaggerGenerator extends Command
         $result = $builder->build();
         $output->writeln($result->toYaml());
 
-        // $generator = new Generator();
-        // $openapi = $generator->generate([self::$annotationsFile]);
-
-        //$output->writeln($openapi->toYaml());
-
         // delete the temp file
-        //        unlink(self::$annotationsFile);
+        unlink(self::$annotationsFile);
 
         return Command::SUCCESS;
     }
