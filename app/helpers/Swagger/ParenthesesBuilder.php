@@ -3,7 +3,7 @@
 namespace App\Helpers\Swagger;
 
 /**
- * Builder class that can create strings of the schema: '(key1: 'value1', key2: 'value2', standalone1, standalone2, ...)'
+ * Builder class that can create strings of the schema: '(key1: 'val1', key2: 'val2', standalone1, standalone2, ...)'
  */
 class ParenthesesBuilder
 {
@@ -36,7 +36,7 @@ class ParenthesesBuilder
         // strings need to be wrapped in quotes
         if (is_string($value)) {
             $valueString = self::stringLiteral($value);
-        // convert bools to strings
+            // convert bools to strings
         } elseif (is_bool($value)) {
             $valueString = ($value ? "true" : "false");
         }

@@ -7,7 +7,7 @@ namespace App\Helpers\Swagger;
  */
 class TempAnnotationFileBuilder
 {
-    private $methodEntries;
+    private int $methodEntries;
     private string $content;
     private string $filename;
 
