@@ -9,6 +9,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\GroupMembership;
 use Doctrine\ORM\EntityManagerInterface;
 use Nette\Utils\Arrays;
+use SortDirection;
 use DateTime;
 
 /**
@@ -34,7 +35,7 @@ class AssignmentSolutions extends BaseRepository
             ->andWhere($qb->expr()->eq("asol.assignment", ":assignment"))
             ->setParameter("author", $user->getId())
             ->setParameter("assignment", $assignment->getId())
-            ->orderBy("sol.createdAt", "DESC");
+            ->orderBy("sol.createdAt", SortDirection::Descending);
         return $qb->getQuery()->getResult();
     }
 
@@ -72,7 +73,7 @@ class AssignmentSolutions extends BaseRepository
             ->andWhere($qb->expr()->eq("ass.group", ":group"))
             ->setParameter("author", $user->getId())
             ->setParameter("group", $group->getId())
-            ->orderBy("sol.createdAt", "DESC");
+            ->orderBy("sol.createdAt", SortDirection::Descending);
         return $qb->getQuery()->getResult();
     }
 
@@ -130,7 +131,7 @@ class AssignmentSolutions extends BaseRepository
             $qb->andWhere("sol.author = :author");
             $qb->setParameter('author', $user->getId());
         }
-        $qb->orderBy("sol.createdAt", "DESC");
+        $qb->orderBy("sol.createdAt", SortDirection::Descending);
         $solutions = $qb->getQuery()->getResult();
         return self::filterValidSolutions($solutions);
     }

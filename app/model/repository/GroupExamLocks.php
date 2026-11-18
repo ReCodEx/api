@@ -2,13 +2,10 @@
 
 namespace App\Model\Repository;
 
-use DateTime;
-use App\Model\Entity\Group;
-use App\Model\Entity\GroupExam;
 use App\Model\Entity\GroupExamLock;
 use App\Model\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use LogicException;
+use SortDirection;
 
 /**
  * @extends BaseRepository<GroupExamLock>
@@ -37,8 +34,8 @@ class GroupExamLocks extends BaseRepository
         }
 
         $locks = $this->findBy(
-            [ 'student' => $user, 'groupExam' => $exam, 'unlockedAt' => null ],
-            [ 'createdAt' => 'DESC' ] // first one is the last one created
+            ['student' => $user, 'groupExam' => $exam, 'unlockedAt' => null],
+            ['createdAt' => SortDirection::Descending] // first one is the last one created
         );
         return $locks ? $locks[0] : null;
     }

@@ -3,7 +3,6 @@
 namespace App\Model\Entity;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -54,7 +53,7 @@ class ShadowAssignment extends AssignmentBase
     protected $id;
 
     /**
-     * @var Collection|Selectable
+     * @var Collection
      */
     #[ORM\ManyToMany(targetEntity: LocalizedShadowAssignment::class, indexBy: 'locale')]
     protected $localizedTexts;

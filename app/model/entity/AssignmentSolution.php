@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use SortDirection;
 use DateTime;
 
 #[ORM\Entity]
@@ -144,7 +145,7 @@ class AssignmentSolution
         mappedBy: 'assignmentSolution',
         cascade: ['remove']
     )]
-    #[ORM\OrderBy(['submittedAt' => 'DESC'])]
+    #[ORM\OrderBy(['submittedAt' => SortDirection::Descending])]
     protected $submissions;
 
     /**

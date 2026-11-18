@@ -9,5 +9,5 @@ nettrine.dbal:
       url: "sqlite:///:memory:"
 
 services:
-    cacheStorage:
+    cache.storage:
         factory: Nette\Caching\Storages\MemoryStorage

@@ -15,6 +15,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use SortDirection;
 
 /**
  * Export data from database into Doctrine Fixtures. Exported data are stored in
@@ -126,7 +127,7 @@ class ExportDatabase extends Command
         $content[self::PARAMETERS_KEY] = [];
         $content[HardwareGroup::class] = [];
 
-        foreach ($this->hardwareGroups->findBy([], ["id" => "ASC"]) as $group) {
+        foreach ($this->hardwareGroups->findBy([], ['id' => SortDirection::Ascending]) as $group) {
             /** @var HardwareGroup $group */
 
             $constructArr = [];
@@ -156,7 +157,7 @@ class ExportDatabase extends Command
         $content[self::PARAMETERS_KEY] = [];
         $content[RuntimeEnvironment::class] = [];
 
-        foreach ($this->runtimeEnvironments->findBy([], ["id" => "ASC"]) as $runtime) {
+        foreach ($this->runtimeEnvironments->findBy([], ['id' => SortDirection::Ascending]) as $runtime) {
             /** @var RuntimeEnvironment $runtime */
 
             $constructArr = [];
@@ -199,7 +200,7 @@ class ExportDatabase extends Command
         $pipelines = [];
 
         $index = 0;
-        foreach ($this->pipelines->findBy(["author" => null], ["name" => "ASC"]) as $pipeline) {
+        foreach ($this->pipelines->findBy(['author' => null], ['name' => SortDirection::Ascending]) as $pipeline) {
             /** @var Pipeline $pipeline */
 
             $index++;

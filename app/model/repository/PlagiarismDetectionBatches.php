@@ -6,6 +6,7 @@ use App\Model\Entity\PlagiarismDetectionBatch;
 use App\Model\Entity\PlagiarismDetectedSimilarity;
 use App\Model\Entity\AssignmentSolution;
 use Doctrine\ORM\EntityManagerInterface;
+use SortDirection;
 
 /**
  * @extends BaseRepository<PlagiarismDetectionBatch>
@@ -38,7 +39,7 @@ class PlagiarismDetectionBatches extends BaseRepository
             $qb->andWhere($qb->expr()->exists($sub->getDQL()))
                 ->setParameter("sid", $solution->getId());
         }
-        $qb->orderBy("b.createdAt", "DESC");
+        $qb->orderBy("b.createdAt", SortDirection::Descending);
         return $qb->getQuery()->getResult();
     }
 }

@@ -148,7 +148,7 @@ class Assignment extends AssignmentBase implements IExercise
     protected $pointsPercentualThreshold;
 
     /**
-     * @var Collection|Selectable
+     * @var Collection
      */
     #[ORM\ManyToMany(targetEntity: LocalizedAssignment::class, indexBy: 'locale')]
     protected $localizedAssignments;

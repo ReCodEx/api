@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use SortDirection;
 use LogicException;
 use InvalidArgumentException;
 use DateTime;
@@ -249,7 +250,7 @@ class Group
         cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
-    #[ORM\OrderBy(['begin' => 'DESC'])]
+    #[ORM\OrderBy(['begin' => SortDirection::Descending])]
     protected $exams;
 
     /**
@@ -340,7 +341,7 @@ class Group
         cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
-    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    #[ORM\OrderBy(['createdAt' => SortDirection::Descending])]
     protected $invitations;
 
     #[ORM\ManyToMany(targetEntity: Exercise::class, mappedBy: 'groups')]

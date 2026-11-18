@@ -40,7 +40,7 @@ class PolicyRegistry
     {
         if ($subject !== null) {
             foreach ($this->policies as $policy) {
-                // se need this search due to entity inheritance (TODO: find a better way in the future)
+                // we need this search due to entity inheritance (TODO: find a better way in the future)
                 $associatedClass = $policy->getAssociatedClass();
                 if ($subject instanceof $associatedClass && method_exists($policy, $policyName)) {
                     return $policy;

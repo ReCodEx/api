@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
+use SortDirection;
 use JsonSerializable;
 
 #[ORM\Entity]
@@ -16,7 +17,7 @@ class CommentThread implements JsonSerializable
     protected $id;
 
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'commentThread')]
-    #[ORM\OrderBy(['postedAt' => 'ASC'])]
+    #[ORM\OrderBy(['postedAt' => SortDirection::Ascending])]
     protected $comments;
 
     public function addComment(Comment $comment)

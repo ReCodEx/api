@@ -116,7 +116,7 @@ class TestWorkerFilesPresenter extends Tester\TestCase
                 ['action' => 'downloadExerciseFile', 'hash' => 'a123']
             );
             $response = $this->presenter->run($request);
-        }, WrongCredentialsException::class, '');
+        }, WrongCredentialsException::class);
     }
 
     public function testDisabled()

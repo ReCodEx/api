@@ -18,6 +18,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use Doctrine\Common\Collections\Criteria;
+use SortDirection;
 use Exception;
 use DateTime;
 
@@ -129,7 +130,7 @@ class AsyncJobsPresenter extends BasePresenter
                     Criteria::expr()->eq('scheduledAt', null)
                 )
         );
-        $criteria->orderBy(['createdAt' => 'ASC']);
+        $criteria->orderBy(['createdAt' => SortDirection::Ascending]);
         $jobs = $this->asyncJobs->matching($criteria)->toArray();
 
         $jobs = array_filter($jobs, function ($job) {
