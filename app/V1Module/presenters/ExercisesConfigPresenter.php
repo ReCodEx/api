@@ -745,8 +745,6 @@ class ExercisesConfigPresenter extends BasePresenter
     public function actionGetTests(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
-
-        // Get to da responsa!
         $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
     }
 
@@ -782,6 +780,7 @@ class ExercisesConfigPresenter extends BasePresenter
          */
 
         $newTests = [];
+        /** @var array<string, string> */
         $namesToOldIds = [];  // new test name => old test ID
         $testsModified = false;
 
@@ -810,11 +809,6 @@ class ExercisesConfigPresenter extends BasePresenter
             if ($testEntity === null) {
                 // new exercise test was requested to be created
                 $testsModified = true;
-
-                if ($exercise->getExerciseTestByName($name)) {
-                    throw new InvalidApiArgumentException('tests', "given test name '$name' is already taken");
-                }
-
                 $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
                 $this->exerciseTests->persist($testEntity);
             } elseif ($testEntity->getName() !== $name || $testEntity->getDescription() !== $description) {
